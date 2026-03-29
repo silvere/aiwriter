@@ -1,0 +1,22 @@
+[vault]
+path = "~/Documents/Obsidian/MyVault"
+articles_folder = "AI-Articles"
+images_folder = "attachments"
+
+[style]
+default = "wechat"
+default_language = "zh"
+
+[images]
+prefer_web_search = true
+max_images_per_section = 2
+min_image_width = 800
+
+[search]
+max_results = 8
+
+[llm]
+writing_model = "claude-sonnet-4-6"
+# Alternatives: "gpt-4o", "deepseek-chat"
+auxiliary_model = "claude-haiku-4-5-20251001"
+# Cheaper model for auxiliary tasks (chart data extraction, image prompts)
