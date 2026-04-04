@@ -298,7 +298,13 @@ mkdir -p "posts/{今日日期}/{slug}/images"
 ### 7.3 写入 article.html
 
 用 **Write 工具**将完整文章写入 `posts/{今日日期}/{slug}/article.html`。
-以 `skills/templates/article.html` 为模板，替换其中的 `{{占位符}}` 内容即可，CSS/JS 无需改动。
+以 `skills/templates/article.html` 为模板，替换 `{{占位符}}` 内容，CSS/JS 无需改动。
+
+**来源 footer**：把 Step 2 研究阶段抓取/搜索到的所有原始 URL 写成可点击链接，格式：
+```html
+<a href="https://原始URL" target="_blank" rel="noopener">媒体名（日期）</a> ·
+```
+正文里**不要**再出现纯文本"数据来源"行，统一放 footer，只写一次。
 
 ### 7.4 填充图片（fill_images.py）
 

@@ -362,6 +362,19 @@
     }
     #back-to-top:hover { transform: translateY(-3px); }
 
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 2; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 8px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; }
+    .footer-sources a:hover { text-decoration: underline; }
+
     /* ── 响应式 ───────────────────────────────── */
     @media (max-width: 600px) {
       .hero { padding: 40px 20px 36px; }
@@ -470,6 +483,16 @@
     <div class="conclusion-card-label">结论</div>
     <p>{{CONCLUSION_P1}}</p>
     <p>{{CONCLUSION_P2}}</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <a href="{{SOURCE_URL_1}}" target="_blank" rel="noopener">{{SOURCE_NAME_1}}</a> ·
+      <a href="{{SOURCE_URL_2}}" target="_blank" rel="noopener">{{SOURCE_NAME_2}}</a>
+      <!-- 按实际来源数量增减 -->
+    </div>
   </div>
 
 </div><!-- /wrapper -->
