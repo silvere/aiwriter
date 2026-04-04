@@ -1,0 +1,40 @@
+name: 自动填充文章配图
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'posts/**'          # 有新文章时触发
+  workflow_dispatch:        # 也支持手动触发
+
+jobs:
+  fill-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # 需要写权限来 commit 图片
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 填充图片占位符
+        env:
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+        run: python3 skills/scripts/fill_images.py posts/
+
+      - name: Commit 图片到仓库
+        run: |
+          git config user.name  "AIWriter Bot"
+          git config user.email "aiwriter-bot@users.noreply.github.com"
+          git add posts/
+          # 只有真正有变化才 commit
+          git diff --staged --quiet \
+            && echo "没有新图片需要提交" \
+            || (git commit -m "auto: 自动填充文章配图 [skip ci]" && git push)
