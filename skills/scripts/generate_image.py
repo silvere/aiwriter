@@ -70,6 +70,53 @@ def try_openai(prompt, output_path):
         return f"error:{e}"
 
 
+def try_pexels(query, output_path):
+    """尝试用 Pexels API 下载图片（免费，20000次/月）。返回错误原因或 None（成功）。"""
+    api_key = os.environ.get("PEXELS_API_KEY", "")
+    if not api_key:
+        return "no_key"
+
+    try:
+        encoded_query = urllib.parse.quote(query)
+        api_url = (
+            f"https://api.pexels.com/v1/search"
+            f"?query={encoded_query}&per_page=1&orientation=landscape"
+        )
+        req = urllib.request.Request(
+            api_url,
+            headers={"Authorization": api_key, "User-Agent": "AIWriter/1.0"},
+        )
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read())
+
+        photos = data.get("photos", [])
+        if not photos:
+            return "no_results"
+
+        img_url = photos[0]["src"].get("large2x") or photos[0]["src"].get("large")
+        if not img_url:
+            return "no_url"
+
+        img_req = urllib.request.Request(img_url, headers={"User-Agent": "AIWriter/1.0"})
+        with urllib.request.urlopen(img_req, timeout=30) as resp:
+            raw = resp.read()
+
+        if len(raw) < 1024:
+            return "too_small"
+
+        output_path.write_bytes(raw)
+        return None  # 成功
+
+    except urllib.error.HTTPError as e:
+        if e.code == 403:
+            return "invalid_key"
+        if e.code == 429:
+            return "rate_limit"
+        return f"http_{e.code}"
+    except Exception as e:
+        return f"error:{e}"
+
+
 def try_unsplash(query, output_path):
     """尝试用 Unsplash API 下载图片。返回错误原因或 None（成功）。"""
     access_key = os.environ.get("UNSPLASH_ACCESS_KEY", "")
@@ -153,12 +200,19 @@ def main():
 
     print(f"Unsplash 跳过: {reason2}", file=sys.stderr)
 
-    # ── 3. 全部失败 → 软失败，输出 Prompt ───────────────────────
+    # ── 3. 尝试 Pexels 兜底 ─────────────────────────────────────
+    reason3 = try_pexels(unsplash_query, output_path)
+    if reason3 is None:
+        size_kb = output_path.stat().st_size // 1024
+        print(f"OK [pexels]: {output_path} ({size_kb}KB, query: {unsplash_query!r})")
+        sys.exit(0)
+
+    print(f"Pexels 跳过: {reason3}", file=sys.stderr)
+
+    # ── 4. 全部失败 → 软失败，输出 Prompt ───────────────────────
     print(prompt)  # stdout 给 skill 捕获
-    hint = ""
-    if "no_key" in reason2:
-        hint = "（提示：在 https://unsplash.com/developers 免费注册，将 Access Key 设为 UNSPLASH_ACCESS_KEY 环境变量即可启用兜底）"
-    print(f"SOFT_FAIL: OpenAI({reason}) + Unsplash({reason2}) 均不可用 {hint}", file=sys.stderr)
+    hint = "（提示：配置 UNSPLASH_ACCESS_KEY 或 PEXELS_API_KEY 环境变量可自动下载图片）"
+    print(f"SOFT_FAIL: OpenAI({reason}) + Unsplash({reason2}) + Pexels({reason3}) 均不可用 {hint}", file=sys.stderr)
     sys.exit(2)
 
 

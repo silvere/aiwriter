@@ -225,13 +225,25 @@ python3 ~/.claude/commands/aiwriter/generate_image.py \
 
 结果处理：
 - 输出 `OK:` → 图片已保存，插入 `![配图]({attachments_relative}/{section_id}.png)`
-- 退出码 2（软失败，stdout 有 Prompt）→ 插入以下占位注释：
+- 退出码 2（软失败，stdout 有 Prompt）→ 生成带 Prompt 的 HTML 占位块：
+  ```html
+  <div class="img-placeholder concept">
+    <div class="img-placeholder-icon">🎨</div>
+    <div class="img-placeholder-label">概念图占位</div>
+    <details><summary>生成 Prompt</summary><pre>{stdout输出的Prompt}</pre></details>
+  </div>
   ```
-  <!-- 🎨 concept图 Prompt（粘贴到即梦/ChatGPT生成）:
-  {stdout输出的Prompt}
-  -->
-  ```
-- 退出码 1（硬失败）→ 插入 `<!-- TODO: 配图 {image_query} -->`
+- 退出码 1（硬失败）→ 同上，pre 里写 image_query
+
+**所有节写完后**，用 Bash 调用 fill_images.py 批量填充占位符：
+
+```bash
+python3 ~/.claude/commands/aiwriter/fill_images.py "{article_html_path}"
+```
+
+- 脚本自动提取每个占位块里的 Prompt 关键词，搜索 Pexels / Unsplash 下载图片
+- 如果研究阶段抓取到相关图片 URL，通过 `--candidate-urls url1 url2 ...` 传入，优先使用
+- diagram 类占位符自动跳过
 
 ---
 
@@ -342,7 +354,7 @@ image_credits: []
 ✅ 文章已保存
 📄 路径：{article_path}
 📊 字数：约 X,XXX 字
-🖼️  配图：X张下载成功，X张占位注释
+🖼️  配图：X张成功，X张占位（diagram类需手动制作）
 ```
 
 ---
