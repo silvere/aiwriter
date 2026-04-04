@@ -297,8 +297,49 @@ mkdir -p "posts/{今日日期}/{slug}/images"
 
 ### 7.3 写入 article.html
 
-用 **Write 工具**将完整文章写入 `posts/{今日日期}/{slug}/article.html`。
-以 `skills/templates/article.html` 为模板，替换 `{{占位符}}` 内容，CSS/JS 无需改动。
+**必须用 Bash + Python 写文件**（不要用 Write 工具——长文章会触发 8000 token 截断，导致 content 参数丢失）。
+
+```bash
+python3 << 'PYEOF'
+html = open('skills/templates/article.html', encoding='utf-8').read()
+
+# 替换所有 {{占位符}}
+html = html.replace('{{TITLE}}',    '...')
+html = html.replace('{{CATEGORY}}', '...')
+html = html.replace('{{DATE}}',     '...')
+html = html.replace('{{INSIGHT_1}}','...')
+html = html.replace('{{INSIGHT_2}}','...')
+html = html.replace('{{INSIGHT_3}}','...')
+html = html.replace('{{LEAD}}',     '...')
+html = html.replace('{{CONCLUSION_P1}}', '...')
+html = html.replace('{{CONCLUSION_P2}}', '...')
+
+# 替换正文占位区域（模板里 <!-- 各节内容... --> 那段）
+BODY = """
+<h2>一、节标题</h2>
+<p>...</p>
+<!-- 图片占位、stat-box、callout 等 -->
+"""
+html = html.replace('''    <!-- 各节内容由 AIWriter 生成，示例结构：-->
+...（模板原始占位内容）...''', BODY)
+
+# 替换来源 footer
+SOURCES = """
+<a href="https://..." target="_blank" rel="noopener">来源名</a> ·
+"""
+html = html.replace(
+    '<a href="{{SOURCE_URL_1}}" target="_blank" rel="noopener">{{SOURCE_NAME_1}}</a> ·\n'
+    '      <a href="{{SOURCE_URL_2}}" target="_blank" rel="noopener">{{SOURCE_NAME_2}}</a>\n'
+    '      <!-- 按实际来源数量增减 -->',
+    SOURCES)
+
+open('posts/{今日日期}/{slug}/article.html', 'w', encoding='utf-8').write(html)
+print(f'Written {len(html)} chars')
+PYEOF
+```
+
+**技巧**：用 `html.replace(old, new)` 替换模板中的固定占位段落；
+正文 BODY 变量用三重引号多行字符串，包含所有 HTML 节、占位块、stat-box 等。
 
 **来源 footer**：把 Step 2 研究阶段抓取/搜索到的所有原始 URL 写成可点击链接，格式：
 ```html

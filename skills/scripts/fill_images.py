@@ -166,10 +166,13 @@ def _generate_chart(spec_text: str, dest: Path) -> bool:
     # 中文字体
     zh_fonts = [
         f.fname for f in fm.fontManager.ttflist
-        if any(k in f.name.lower() for k in ("cjk", "noto", "wqy", "pingfang", "heiti", "simsun", "simhei"))
+        if any(k in f.name.lower() for k in ("cjk", "noto", "wqy", "wenquanyi", "zen hei", "pingfang", "heiti", "simsun", "simhei"))
     ]
     if zh_fonts:
-        plt.rcParams["font.family"] = fm.FontProperties(fname=zh_fonts[0]).get_name()
+        fm.fontManager.addfont(zh_fonts[0])
+        prop = fm.FontProperties(fname=zh_fonts[0])
+        plt.rcParams["font.family"] = prop.get_name()
+    plt.rcParams["axes.unicode_minus"] = False
 
     labels = [it["label"] for it in items]
     values = [it["value"] for it in items]

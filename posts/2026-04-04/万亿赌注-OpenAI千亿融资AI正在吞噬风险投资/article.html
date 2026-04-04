@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>万亿赌注：OpenAI 1220亿美元融资，AI正在吞噬整个风险投资业</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+    /* ── 2. 核心观点卡 ────────────────────────── */
+    .key-insights {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--brand);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 24px 28px;
+      margin-bottom: 40px;
+      box-shadow: 0 2px 16px rgba(26,86,219,.06);
+    }
+    .key-insights-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--brand);
+      margin-bottom: 14px;
+    }
+    .key-insights-header::before {
+      content: '';
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: var(--brand);
+      border-radius: 50%;
+    }
+    .key-insights ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .key-insights li {
+      font-size: 15px;
+      color: var(--text);
+      padding-left: 20px;
+      position: relative;
+      line-height: 1.6;
+    }
+    .key-insights li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--brand);
+      font-weight: 700;
+      font-size: 18px;
+      line-height: 1.3;
+    }
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 2; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 8px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; }
+    .footer-sources a:hover { text-decoration: underline; }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">融资 · 趋势</span>
+  <h1>万亿赌注：OpenAI 1220亿美元融资，AI正在吞噬整个风险投资业</h1>
+  <div class="hero-meta">
+    <span>2026年4月4日</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 2. 核心观点卡 -->
+  <div class="key-insights">
+    <div class="key-insights-header">核心观点</div>
+    <ul>
+      <li>OpenAI完成史上最大私募融资（$1220亿），估值逼近$8520亿，下一步就是万亿俱乐部</li>
+      <li>2026年Q1，AI独吞全球风险投资的81%（$2390亿），非AI赛道被系统性抽血</li>
+      <li>资本极度集中：前4家AI公司独揽单季全球VC的64%，这是历史上从未有过的格局</li>
+      <!-- 可选第 4 条 -->
+    </ul>
+  </div>
+
+  <!-- 导语 -->
+  <div class="lead">有些数字在你看到它的瞬间，就永远改变了你对世界的理解。$1220亿——这是OpenAI在2026年3月31日单笔融到的金额，是人类商业史上规模最大的一笔私募融资。与此同时，2026年第一季度，AI公司拿走了全球风险投资总额的81%。不是40%，不是60%，是81%。当你开始思考剩下的19%要被多少个其他行业瓜分，你就会明白：这不只是一次融资记录，这是资本在用它最直接的语言，告诉我们这个时代的真相。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+
+    <h2>第一幕：数字的重量</h2>
+    <p>让我们先停下来，认真感受一下这个数字的重量。</p>
+    <p><strong>$1220亿。</strong>这是什么概念？这比沙特阿美的2022年IPO融资额还高出近一倍。这相当于Twitter被收购价格的近4倍。这是三个Uber IPO叠加在一起。放在中国，这笔钱可以买下两个贵州茅台。</p>
+    <p>更令人窒息的是：这家公司成立不过9年，至今尚未盈利。</p>
+
+    <div class="stat-box">
+      <h3>关键数据一览</h3>
+      <div class="stat-grid">
+        <div class="stat-item">
+          <span class="stat-value">$1220亿</span>
+          <span class="stat-label">OpenAI单笔融资额<br>史上最大私募</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">$8520亿</span>
+          <span class="stat-label">融资后估值<br>逼近万亿</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">81%</span>
+          <span class="stat-label">AI占Q1全球VC<br>2026年第一季度</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">$2B/月</span>
+          <span class="stat-label">OpenAI月收入<br>年化$240亿</span>
+        </div>
+      </div>
+    </div>
+
+    <p>这笔融资的投资方名单本身就是一部权力地图：亚马逊以$500亿领衔（其中$350亿附条件，需OpenAI完成IPO或实现AGI方可到位），英伟达出资$300亿，软银跟投$300亿。这不是风投机构在押注一家初创公司，这是科技巨头们在为下一个时代的"基础设施"买单——因为他们深知，错过这趟车的代价是什么。</p>
+
+    <p>值得一提的是：这是OpenAI历史上第一次向个人投资者开放，$30亿的零售份额瞬间被抢购一空。这个信号本身就说明了一切——当散户都开始参与AGI赌局，这场游戏已经进入了一个新的阶段。</p>
+
+    <div class="img-placeholder concept">
+      <div class="img-placeholder-icon">🎨</div>
+      <div class="img-placeholder-label">概念配图</div>
+      <details><summary>生成 Prompt</summary><pre>Dramatic wide-angle photograph of a massive vault door opening, with streams of glowing blue light and currency flowing inward, representing unprecedented capital flowing into AI technology. Dark dramatic background, cinematic lighting, photorealistic style, 16:9 ratio.</pre></details>
+    </div>
+
+    <blockquote><p>"OpenAI正在成为AI的核心基础设施，让全球各地的人和大大小小的企业都能在此基础上构建一切。"——OpenAI官方声明，2026年4月1日</p></blockquote>
+
+    <h2>第二幕：这不是泡沫，这是地心引力</h2>
+    <p>每次历史上出现这种规模的资本集中，总有人第一时间喊出"泡沫"二字。这次也不例外。但在喊泡沫之前，先看几个数字。</p>
+
+    <p>OpenAI的收入增速是这样的：2023年年化收入$20亿，2024年$60亿，2025年底$200亿，2026年2月已达$250亿年化，现在月收入突破$20亿。这是一条几乎垂直的增长曲线，三年内翻了10倍以上，且没有任何放缓的迹象。按照内部预测，2026年全年营收将达到<strong>$460亿</strong>，增速约2.3倍。</p>
+
+    <p>对比一下：谷歌从创立到年收入$460亿花了多少年？15年。Facebook花了多少年？12年。OpenAI大概需要多少年？从零到这个量级，不超过10年。</p>
+
+    <p>当然，市销率（P/S）还是让人眩晕——基于当前收入，倍数在42到65倍之间。但如果你往前看，基于2026年$460亿的预测收入，前向P/S约为18倍，已经接近成熟科技公司的范围。这不是一个用后视镜估值的时代，这是一个用望远镜定价的时代。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/diagram_01.png" alt="数据图" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <p>再来看宏观数据。2026年第一季度，全球风险投资总额约$2970亿——这个数字是什么概念？2021年，也就是上一次科技泡沫的顶峰，全年全球风险投资总额约$6200亿。而2026年仅第一季度就相当于那个顶峰年份全年的<strong>近一半</strong>。更关键的是：这一季度，有81%流向了AI。</p>
+
+    <p>这不是资本在盲目追风。这是资本在做一道简单的数学题：</p>
+    <ol>
+      <li>AI正在替代人类劳动的相当一部分认知工作</li>
+      <li>能够提供这种替代能力的公司，其"可寻址市场"几乎等于全球GDP</li>
+      <li>在赢家通吃的网络效应下，最先建立领先地位的公司将锁定大多数价值</li>
+    </ol>
+    <p>这三个命题如果成立，那么即使$8520亿的估值也可能是保守的。孙正义理解这一点。他已经累计押注OpenAI约$646亿，软银甚至专门借款$400亿来凑足这笔投资。</p>
+
+    <blockquote><p>"我现在意识到AGI会来得更早。"——孙正义（Masayoshi Son），SoftBank，2025年</p></blockquote>
+
+    <p>当然，也有清醒的声音。红杉资本的David Cahn指出：AI公司当前需要每年$6000亿的收入才能覆盖基础设施支出，而实际AI收入约$1000亿——存在六倍的缺口。摩根士丹利也警告，超大云厂商的AI资本支出已超过互联网泡沫时期电信行业的CAPEX规模。这些声音是理性的；但理性也曾在2010年说苹果不该值$3000亿。</p>
+
+    <div class="callout"><p>真正的问题不是"这是不是泡沫"。真正的问题是：如果你不在这个赌局里，你的位置在哪里？</p></div>
+
+    <h2>第三幕：当资本只认一个赛道</h2>
+    <p>让我们把视角转向那被挤压的19%。</p>
+
+    <p>生物科技、气候科技、金融科技、非AI SaaS——这些赛道不是消失了，而是被系统性地"去优先级"。Benchmark合伙人Bill Gurley的原话让人印象深刻："机构投资者对非AI交易表现出<strong>零兴趣</strong>。"不是"兴趣下降"，是字面意义上的归零。</p>
+
+    <p>这意味着什么？这意味着如果你现在创业，不在AI赛道，你面对的融资市场是2021年的零头。这意味着如果你是一家传统软件公司，你的竞争对手正在用AI重写产品，而你的投资人正在把钱转移到那些竞争对手身上。这意味着如果你是一个职场人，你所在行业的"护城河"正在以你意想不到的速度被侵蚀。</p>
+
+    <p>前4家AI公司——OpenAI、Anthropic、xAI、Waymo——在Q1 2026单季合计融资$1880亿，占全球VC总额的<strong>64%</strong>。历史上从来没有任何一个行业的头部公司，在单季度内集中了如此高比例的全球风险资本。</p>
+
+    <p>乔布斯曾说，伟大的产品不是满足现有需求，而是创造人们还不知道自己需要的需求。OpenAI正在做的，是创造一种需求：用AI替代人类认知劳动的需求。而资本，用$1220亿美元投票，说它相信这种需求是真实的、是巨大的、是不可逆的。</p>
+
+    <p>马斯克的第一性原理告诉我们：去掉所有的假设，从物理定律出发重新推导。从第一性原理看AI：如果智能可以被数字化、复制、扩展，那么任何依赖人类"不可替代智慧"的商业模式，都面临根本性挑战。而这个逻辑，正是$2390亿资金涌入AI的底层驱动力。</p>
+
+    <p>这场游戏，已经开始了。</p>
+
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>OpenAI的$1220亿融资，不只是一个财务事件。它是一个时代的宣言：智能基础设施的卡位战已经开始，而且可能即将结束。那些在资本、算力、数据和人才上落后的玩家，将面临越来越难以逾越的结构性壁垒。</p>
+    <p>对于每一个人——无论你是投资人、创业者、还是职场人——真正需要回答的问题只有一个：在这场历史上最大规模的资本集中事件中，你站在哪里？时间窗口，比你想象的更短。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <a href="https://www.bloomberg.com/news/articles/2026-03-31/openai-valued-at-852-billion-after-completing-122-billion-round" target="_blank" rel="noopener">Bloomberg · OpenAI Valued at $852B</a> ·
+      <a href="https://techcrunch.com/2026/03/31/openai-not-yet-public-raises-3b-from-retail-investors-in-monster-122b-fund-raise/" target="_blank" rel="noopener">TechCrunch · OpenAI $122B Fundraise</a> ·
+      <a href="https://www.cnbc.com/2026/03/31/openai-funding-round-ipo.html" target="_blank" rel="noopener">CNBC · OpenAI融资报道</a> ·
+      <a href="https://news.crunchbase.com/venture/record-breaking-funding-ai-global-q1-2026/" target="_blank" rel="noopener">Crunchbase · Q1 2026 VC Report</a> ·
+      <a href="https://news.crunchbase.com/venture/foundational-ai-startup-funding-doubled-openai-anthropic-xai-q1-2026/" target="_blank" rel="noopener">Crunchbase · AI Funding Doubled</a> ·
+      <a href="https://openai.com/index/accelerating-the-next-phase-ai/" target="_blank" rel="noopener">OpenAI官方声明</a>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
