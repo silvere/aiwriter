@@ -247,24 +247,118 @@
       line-height: 2;
     }
     .footer-sources strong { color: var(--text); display: block; margin-bottom: 8px; }
+    /* ── 1. 进度条 ── */
+    #progress-bar {
+      position: fixed; top: 0; left: 0;
+      height: 3px; width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+    /* ── 2. 核心观点卡 ── */
+    .key-insights {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--brand);
+      border-radius: 0 14px 14px 0;
+      padding: 24px 28px;
+      margin-bottom: 40px;
+      box-shadow: 0 2px 16px rgba(26,86,219,.06);
+    }
+    .key-insights-header {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--brand); margin-bottom: 14px;
+    }
+    .key-insights-header::before {
+      content: ''; display: inline-block;
+      width: 8px; height: 8px;
+      background: var(--brand); border-radius: 50%;
+    }
+    .key-insights ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+    .key-insights li { font-size: 15px; padding-left: 20px; position: relative; line-height: 1.6; }
+    .key-insights li::before {
+      content: '›'; position: absolute; left: 0;
+      color: var(--brand); font-weight: 700; font-size: 18px; line-height: 1.3;
+    }
+    /* ── 3. 阅读时长 badge ── */
+    .read-time {
+      background: rgba(255,255,255,.18);
+      padding: 2px 10px; border-radius: 20px; font-size: 12px;
+    }
+    /* ── 5a. 结论卡 ── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff; border-radius: 18px;
+      padding: 36px 40px; margin: 56px 0 40px;
+      position: relative; overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; opacity: .6;
+      margin-bottom: 14px; position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px; font-weight: 600; line-height: 1.75;
+      margin-bottom: 12px; color: #fff; position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+    /* ── 5b. 返回顶部 ── */
+    #back-to-top {
+      display: none; position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand); color: #fff;
+      border: none; border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px; line-height: 44px; text-align: center;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: transform .2s; z-index: 100;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+    /* 4. 图片统一 */
+    .article-body img, .article-body figure img {
+      max-width: 100%; border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block; margin: 0 auto;
+    }
+    .article-body figure { margin: 32px 0; text-align: center; }
     @media (max-width: 600px) {
       .hero { padding: 40px 24px 36px; border-radius: 0 0 16px 16px; }
       .stat-grid { grid-template-columns: repeat(2, 1fr); }
+      .conclusion-card { padding: 28px 22px; }
     }
   </style>
 </head>
 <body>
+<div id="progress-bar"></div>
   <div class="hero">
     <div class="hero-tag">🔥 今日深度</div>
     <h1>最讽刺的一幕：警告AI会黑掉你的公司，结果Anthropic先黑了自己</h1>
     <div class="hero-meta">
       <span>📅 2026年4月4日</span>
       <span>🏷️ AI · 网络安全 · Anthropic</span>
-      <span>⏱️ 约15分钟阅读</span>
+      <span class="read-time" id="read-time">计算中…</span>
     </div>
   </div>
 
   <div class="wrapper">
+
+    <!-- 2. 核心观点卡 -->
+    <div class="key-insights">
+      <div class="key-insights-header">核心观点</div>
+      <ul>
+        <li>Anthropic 在警告"AI会威胁网络安全"的同时，接连两次因低级失误泄露内部机密，讽刺性拉满</li>
+        <li>泄露的 Mythos 模型定位在 Opus 之上，Anthropic 内部称其网络攻击能力"远超现有任何 AI"</li>
+        <li>消息公开当天，网络安全赛道头部股集体暴跌 6–9%，市场已在为 AI 攻守失衡定价</li>
+        <li>2026 年的答案不是"用不用 AI 防御"，而是"你用的 AI 够不够强"</li>
+      </ul>
+    </div>
 
     <div class="lead">
       3月27日，Anthropic向美国政府高级官员私下传递了一个秘密警告：他们即将发布的新模型，将让2026年发生大规模网络攻击的可能性"显著提升"。<br><br>
@@ -404,8 +498,11 @@
 <p><em>数据来源：Fortune、CNN Business、Axios、CNBC、Euronews、Dark Reading、The Register（2026年3月-4月）</em></p>
     </div>
 
-    <div class="callout">
-      <p>💬 Anthropic在一份关于AI网络安全威胁的警告文件里，用一个网络安全漏洞，把这份警告泄露给了全世界。<br><br>这件事告诉我们，没有人在这场游戏里站在上帝视角。不是Anthropic，不是任何大公司，也不是任何政府。我们都是第一次经历这件事。</p>
+    <!-- 5a. 结论卡 -->
+    <div class="conclusion-card">
+      <div class="conclusion-card-label">结论</div>
+      <p>Anthropic 在一份关于 AI 网络安全威胁的警告文件里，用一个网络安全漏洞，把这份警告泄露给了全世界。</p>
+      <p>这件事告诉我们，没有人在这场游戏里站在上帝视角。不是 Anthropic，不是任何大公司，也不是任何政府。我们都是第一次经历这件事。</p>
     </div>
 
     <div class="footer">
@@ -421,5 +518,32 @@
     </div>
 
   </div>
+
+<!-- 5b. 返回顶部 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.querySelector('.article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = '约 ' + mins + ' 分钟';
+  }
+
+  // 5b. 返回顶部按钮
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
 </body>
 </html>

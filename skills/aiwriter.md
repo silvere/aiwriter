@@ -299,29 +299,26 @@ mkdir -p "posts/{今日日期}/{slug}/images"
 
 用 **Write 工具**将完整文章写入 `posts/{今日日期}/{slug}/article.html`。
 
-HTML 格式要求（与现有文章风格一致）：
+**必须以 `skills/templates/article.html` 为基准模板**，该模板已包含所有 UI 功能，只需填充内容占位符：
 
-```html
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{文章标题}</title>
-  <style>
-    /* 复用现有文章的完整 CSS（从已有 article.html 直接引用风格变量） */
-    :root { --brand:#1A56DB; --danger:#F05252; --text:#1a1a2e; --subtext:#4a4a6a;
-            --bg:#f8f9ff; --card:#ffffff; --border:#e2e8f0; --accent-bg:#EBF5FF; }
-    /* ... 其余 CSS ... */
-  </style>
-</head>
-<body>
-  <!-- hero、正文各节、img-placeholder 占位块 -->
-</body>
-</html>
-```
+| 占位符 | 填写内容 |
+|--------|---------|
+| `{{TITLE}}` | 文章标题 |
+| `{{CATEGORY}}` | 文章分类标签（如"AI 安全"、"行业深度"） |
+| `{{DATE}}` | 发布日期（如"2026年4月4日"） |
+| `{{INSIGHT_1~3}}` | 3–4 条核心观点（各一句话，精炼有力） |
+| `{{LEAD}}` | 导语（2–3 句，抓住读者） |
+| `{{CONCLUSION_P1~2}}` | 结论段落（1–2 段，有力收尾） |
 
-所有 concept / diagram 占位块均已在 Step 5 写好，直接嵌入文章 HTML 中。
+**模板已内置的功能（不要删除对应 CSS/JS）：**
+- 顶部蓝红渐变**阅读进度条**（滚动时实时更新）
+- **核心观点卡**（文章顶部，3–4 条要点）
+- **阅读时长**自动计算（JS 读取正文字数，400字/分钟）
+- **图片统一样式**（圆角 12px + 阴影）
+- **结论高亮卡**（深蓝渐变背景，文章结尾）
+- **返回顶部**按钮（滚动超过 600px 出现）
+
+所有 concept / diagram 占位块均已在 Step 5 写好，直接嵌入正文中。
 图片路径统一用相对路径：`images/concept_01.jpg`、`images/diagram_01.png`。
 
 ### 7.4 填充图片（fill_images.py）
