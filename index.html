@@ -187,46 +187,42 @@ const BRANCH          = 'main';      // 发布分支
     if (seg) repo = seg;
   }
 
-  // 2. 从 GitHub API 拉取整个文件树（一次请求）
-  let tree;
+  // 2. 快速路径：优先加载同目录的 posts.json（由 CI 自动生成）
+  let posts = null;
   try {
-    const url = `https://api.github.com/repos/${owner}/${repo}/git/trees/${BRANCH}?recursive=1`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`GitHub API ${res.status}: ${res.statusText}`);
-    const data = await res.json();
-    tree = data.tree ?? [];
-  } catch (e) {
-    list.innerHTML = `<div class="state">
-      <div class="icon">⚠️</div>
-      <p>无法从 GitHub API 加载文章列表。<br>
-         请确认仓库为公开仓库，或检查网络连接。<br>
-         <small style="opacity:.6">${e.message}</small></p>
-    </div>`;
-    return;
-  }
+    const r = await fetch('posts.json?_=' + Date.now());
+    if (r.ok) posts = await r.json();
+  } catch (_) {}
 
-  // 3. 过滤 posts/<date>/<slug>/article.html
-  const ARTICLE_RE = /^posts\/(\d{4}-\d{2}-\d{2})\/([^/]+)\/article\.html$/;
-  const posts = tree
-    .filter(f => f.type === 'blob' && ARTICLE_RE.test(f.path))
-    .map(f => {
-      const [, date, slug] = f.path.match(ARTICLE_RE);
-      return { date, slug, url: f.path };
-    })
-    .sort((a, b) => b.date.localeCompare(a.date));
+  // 3. 降级：posts.json 不存在时调 GitHub API（较慢）
+  if (!posts) {
+    try {
+      const url = `https://api.github.com/repos/${owner}/${repo}/git/trees/${BRANCH}?recursive=1`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+      const data = await res.json();
+      const RE = /^posts\/(\d{4}-\d{2}-\d{2})\/([^/]+)\/article\.html$/;
+      posts = (data.tree ?? [])
+        .filter(f => f.type === 'blob' && RE.test(f.path))
+        .map(f => { const [,date,slug] = f.path.match(RE); return { date, title: slug.replace(/-/g,' '), url: f.path }; })
+        .sort((a, b) => b.date.localeCompare(a.date));
+    } catch (e) {
+      list.innerHTML = `<div class="state"><div class="icon">⚠️</div>
+        <p>加载失败：${e.message}</p></div>`;
+      return;
+    }
+  }
 
   // 4. 渲染
   if (!posts.length) {
-    list.innerHTML = `<div class="state"><div class="icon">📭</div>
-      <p>posts/ 下暂无文章。</p></div>`;
+    list.innerHTML = `<div class="state"><div class="icon">📭</div><p>暂无文章。</p></div>`;
     return;
   }
 
   list.innerHTML = posts.map(p => {
-    const [year, month, day] = p.date.split('-');
-    // slug 标点还原：连字符替换为中文间隔
-    const title = p.slug.replace(/-/g, ' ');
-    const href  = p.url; // 相对路径，GitHub Pages 会正确解析
+    const [year, month, day] = (p.date || '--').split('-');
+    const title = p.title || (p.url || '').split('/').slice(-2, -1)[0]?.replace(/-/g,' ') || '文章';
+    const href  = p.url;
     return `
     <a class="post-card" href="${esc(href)}">
       <div class="post-date-col">

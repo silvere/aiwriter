@@ -29,12 +29,26 @@ jobs:
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
         run: python3 skills/scripts/fill_images.py posts/
 
-      - name: Commit 图片到仓库
+      - name: 生成 posts.json（加速首页加载）
+        run: |
+          python3 - <<'EOF'
+          import json, re
+          from pathlib import Path
+          T = re.compile(r'<title>(.*?)</title>', re.I)
+          posts = []
+          for f in sorted(Path('posts').glob('*/*/article.html'), reverse=True):
+              p = f.parts  # ('posts', date, slug, 'article.html')
+              m = T.search(f.read_text(encoding='utf-8', errors='ignore'))
+              posts.append({'title': m.group(1) if m else p[2], 'date': p[1], 'url': '/'.join(p)})
+          Path('posts.json').write_text(json.dumps(posts, ensure_ascii=False), encoding='utf-8')
+          print(f'posts.json: {len(posts)} 篇')
+          EOF
+
+      - name: Commit 图片和 posts.json
         run: |
           git config user.name  "AIWriter Bot"
           git config user.email "aiwriter-bot@users.noreply.github.com"
-          git add posts/
-          # 只有真正有变化才 commit
+          git add posts/ posts.json
           git diff --staged --quiet \
-            && echo "没有新图片需要提交" \
-            || (git commit -m "auto: 自动填充文章配图 [skip ci]" && git push)
+            && echo "无变化" \
+            || (git commit -m "auto: 填充配图 + 更新 posts.json [skip ci]" && git push)
