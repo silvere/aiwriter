@@ -337,45 +337,58 @@ mkdir -p "posts/{今日日期}/{slug}/images"
 
 ```bash
 python3 << 'PYEOF'
+import re
+
 html = open('skills/templates/article.html', encoding='utf-8').read()
 
-# 替换所有 {{占位符}}
-html = html.replace('{{TITLE}}',    '...')
-html = html.replace('{{CATEGORY}}', '...')
-html = html.replace('{{DATE}}',     '...')
-html = html.replace('{{INSIGHT_1}}','...')
-html = html.replace('{{INSIGHT_2}}','...')
-html = html.replace('{{INSIGHT_3}}','...')
-html = html.replace('{{LEAD}}',     '...')
-html = html.replace('{{CONCLUSION_P1}}', '...')
-html = html.replace('{{CONCLUSION_P2}}', '...')
+# ── 替换所有 {{单行占位符}} ──────────────────────────
+html = html.replace('{{TITLE}}',    '文章标题')
+html = html.replace('{{CATEGORY}}', '分类标签')
+html = html.replace('{{DATE}}',     '发布日期')
+html = html.replace('{{INSIGHT_1}}','核心观点1')
+html = html.replace('{{INSIGHT_2}}','核心观点2')
+html = html.replace('{{INSIGHT_3}}','核心观点3')
+html = html.replace('{{LEAD}}',     '导语文字')
+html = html.replace('{{CONCLUSION_P1}}', '结论第一段')
+html = html.replace('{{CONCLUSION_P2}}', '结论第二段')
 
-# 替换正文占位区域（模板里 <!-- 各节内容... --> 那段）
+# ── 替换正文区域（用标记定位，不做字符串精确匹配）────
+# 模板在正文区域用 <!-- BODY_START --> 和 <!-- BODY_END --> 标记
 BODY = """
-<h2>一、节标题</h2>
-<p>...</p>
-<!-- 图片占位、stat-box、callout 等 -->
+    <h2>一、节标题</h2>
+    <p>正文内容……</p>
 """
-html = html.replace('''    <!-- 各节内容由 AIWriter 生成，示例结构：-->
-...（模板原始占位内容）...''', BODY)
+# 用正则替换 BODY_START 到 BODY_END 之间的所有内容
+html = re.sub(
+    r'<!-- BODY_START -->.*?<!-- BODY_END -->',
+    '<!-- BODY_START -->' + BODY + '    <!-- BODY_END -->',
+    html,
+    flags=re.DOTALL
+)
 
-# 替换来源 footer
+# ── 替换来源 footer ──────────────────────────────────
 SOURCES = """
-<a href="https://..." target="_blank" rel="noopener">来源名</a> ·
+      <a href="https://example.com/1" target="_blank" rel="noopener">来源名1（日期）</a> ·
+      <a href="https://example.com/2" target="_blank" rel="noopener">来源名2（日期）</a>
 """
-html = html.replace(
-    '<a href="{{SOURCE_URL_1}}" target="_blank" rel="noopener">{{SOURCE_NAME_1}}</a> ·\n'
-    '      <a href="{{SOURCE_URL_2}}" target="_blank" rel="noopener">{{SOURCE_NAME_2}}</a>\n'
-    '      <!-- 按实际来源数量增减 -->',
-    SOURCES)
+html = re.sub(
+    r'<a href="\{\{SOURCE_URL_1\}\}".*?<!-- 按实际来源数量增减 -->',
+    SOURCES.strip(),
+    html,
+    flags=re.DOTALL
+)
 
-open('posts/{今日日期}/{slug}/article.html', 'w', encoding='utf-8').write(html)
-print(f'Written {len(html)} chars')
+out = 'posts/{今日日期}/{slug}/article.html'
+open(out, 'w', encoding='utf-8').write(html)
+print(f'Written {len(html)} chars to {out}')
 PYEOF
 ```
 
-**技巧**：用 `html.replace(old, new)` 替换模板中的固定占位段落；
-正文 BODY 变量用三重引号多行字符串，包含所有 HTML 节、占位块、stat-box 等。
+**关键规则**：
+- `{{单行占位符}}` 用 `str.replace()` 精确替换，绝不跨行
+- **正文区域**用 `re.sub(DOTALL)` 匹配 `<!-- BODY_START -->` 到 `<!-- BODY_END -->` 之间的内容——不论模板示例内容如何变化，替换永远成功
+- **来源 footer** 同样用正则替换，避免因模板更新导致字符串不匹配
+- 不要在 Python 脚本里手写 `old_placeholder` 多行字符串去匹配模板——模板会更新，匹配会静默失败
 
 **来源 footer**：把 Step 2 研究阶段抓取/搜索到的所有原始 URL 写成可点击链接，格式：
 ```html
