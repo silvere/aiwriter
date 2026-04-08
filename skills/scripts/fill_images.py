@@ -218,18 +218,131 @@ def _generate_chart(spec_text: str, dest: Path) -> bool:
     return True
 
 
-def _spec_card_html(spec_text: str) -> str:
-    """当图表生成失败时，将规格卡渲染为可读的 HTML 数据卡片。"""
-    spec = _parse_spec(spec_text)
-    rows = ""
-    for it in spec["items"]:
+def _bar_chart_html(title: str, items: list) -> str:
+    """水平条形图：每项渲染为带比例宽度的进度条。"""
+    max_val = max(abs(it["value"]) for it in items) or 1
+    bars = ""
+    for it in items:
+        pct = min(100, abs(it["value"]) / max_val * 100)
         color = "#F05252" if it["value"] < 0 else "#1A56DB"
-        rows += (
-            f'<tr><td style="padding:6px 12px;color:#333">{it["label"]}</td>'
-            f'<td style="padding:6px 12px;font-weight:700;color:{color};text-align:right">'
-            f'{it["raw"]}</td></tr>'
+        track_color = "#FFE4E4" if it["value"] < 0 else "#EEF2FF"
+        bars += (
+            f'<div style="margin-bottom:16px">'
+            f'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">'
+            f'<span style="font-size:13px;color:#374151;flex:1;padding-right:12px">{it["label"]}</span>'
+            f'<span style="font-size:15px;font-weight:700;color:{color};white-space:nowrap">{it["raw"]}</span>'
+            f'</div>'
+            f'<div style="background:{track_color};border-radius:5px;height:10px;overflow:hidden">'
+            f'<div style="background:{color};width:{pct:.1f}%;height:100%;border-radius:5px;'
+            f'transition:width .4s ease"></div>'
+            f'</div>'
+            f'</div>'
         )
-    if not rows:
+    return (
+        f'<div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;'
+        f'border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)">'
+        f'<div style="background:#1A56DB;color:#fff;padding:10px 16px;font-size:13px;'
+        f'font-weight:700">{title}</div>'
+        f'<div style="padding:20px 24px">{bars}</div>'
+        f'</div>'
+    )
+
+
+def _flow_chart_html(title: str, items: list) -> str:
+    """步骤流程图：编号方框 + 箭头连接。"""
+    steps = ""
+    for i, it in enumerate(items):
+        num = int(it["value"]) if it["value"] == int(it["value"]) else i + 1
+        if i > 0:
+            steps += (
+                f'<div style="font-size:22px;color:#93C5FD;margin:0 4px;'
+                f'align-self:center">→</div>'
+            )
+        steps += (
+            f'<div style="background:#EEF2FF;border:1.5px solid #C7D2FE;border-radius:10px;'
+            f'padding:12px 16px;text-align:center;min-width:90px;max-width:160px;flex:1">'
+            f'<div style="font-size:22px;font-weight:700;color:#1A56DB;line-height:1">{num}</div>'
+            f'<div style="font-size:12px;color:#374151;margin-top:6px;line-height:1.4">{it["label"]}</div>'
+            f'</div>'
+        )
+    return (
+        f'<div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;'
+        f'border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)">'
+        f'<div style="background:#1A56DB;color:#fff;padding:10px 16px;font-size:13px;'
+        f'font-weight:700">{title}</div>'
+        f'<div style="padding:20px 24px;display:flex;flex-wrap:wrap;align-items:stretch;gap:8px">'
+        f'{steps}</div>'
+        f'</div>'
+    )
+
+
+def _donut_chart_html(title: str, items: list) -> str:
+    """SVG 圆环图 + 图例列表。"""
+    _PALETTE = ["#1A56DB", "#F05252", "#0E9F6E", "#FBBF24", "#8B5CF6", "#EC4899"]
+    total = sum(abs(it["value"]) for it in items) or 1
+    cx, cy, r_out, r_in = 80, 80, 70, 42
+    import math
+
+    def arc_path(start_deg: float, sweep_deg: float) -> str:
+        start = math.radians(start_deg - 90)
+        end = math.radians(start_deg + sweep_deg - 90)
+        x1, y1 = cx + r_out * math.cos(start), cy + r_out * math.sin(start)
+        x2, y2 = cx + r_out * math.cos(end),   cy + r_out * math.sin(end)
+        ix1, iy1 = cx + r_in * math.cos(end),   cy + r_in * math.sin(end)
+        ix2, iy2 = cx + r_in * math.cos(start), cy + r_in * math.sin(start)
+        large = 1 if sweep_deg > 180 else 0
+        return (
+            f"M {x1:.2f} {y1:.2f} "
+            f"A {r_out} {r_out} 0 {large} 1 {x2:.2f} {y2:.2f} "
+            f"L {ix1:.2f} {iy1:.2f} "
+            f"A {r_in} {r_in} 0 {large} 0 {ix2:.2f} {iy2:.2f} Z"
+        )
+
+    slices = ""
+    angle = 0
+    for i, it in enumerate(items):
+        color = _PALETTE[i % len(_PALETTE)]
+        sweep = abs(it["value"]) / total * 360
+        slices += f'<path d="{arc_path(angle, sweep)}" fill="{color}" stroke="#fff" stroke-width="2"/>'
+        angle += sweep
+
+    legend = ""
+    for i, it in enumerate(items):
+        color = _PALETTE[i % len(_PALETTE)]
+        pct = abs(it["value"]) / total * 100
+        legend += (
+            f'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+            f'<div style="width:12px;height:12px;border-radius:3px;background:{color};flex-shrink:0"></div>'
+            f'<span style="font-size:12px;color:#374151;flex:1">{it["label"]}</span>'
+            f'<span style="font-size:12px;font-weight:700;color:{color}">{pct:.0f}%</span>'
+            f'</div>'
+        )
+
+    svg = (
+        f'<svg width="160" height="160" viewBox="0 0 160 160" style="flex-shrink:0">'
+        f'{slices}'
+        f'</svg>'
+    )
+    return (
+        f'<div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;'
+        f'border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)">'
+        f'<div style="background:#1A56DB;color:#fff;padding:10px 16px;font-size:13px;'
+        f'font-weight:700">{title}</div>'
+        f'<div style="padding:20px 24px;display:flex;align-items:center;gap:24px;flex-wrap:wrap">'
+        f'{svg}'
+        f'<div style="flex:1;min-width:160px">{legend}</div>'
+        f'</div>'
+        f'</div>'
+    )
+
+
+def _spec_card_html(spec_text: str) -> str:
+    """将规格卡渲染为可视化 HTML 图表（条形图 / 流程图 / 圆环图）。"""
+    spec = _parse_spec(spec_text)
+    title = spec["chart_type"] or "数据图"
+    items = spec["items"]
+
+    if not items:
         # 无法解析数据时直接显示原始规格卡文字
         plain = spec_text.replace("<!--", "").replace("-->", "").strip()
         return (
@@ -237,15 +350,14 @@ def _spec_card_html(spec_text: str) -> str:
             f'padding:20px 24px;margin:32px 0;font-size:13px;color:#4a4a6a;white-space:pre-wrap">'
             f'{plain}</div>'
         )
-    title = spec["chart_type"] or "数据图"
-    return (
-        f'<div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;'
-        f'border-radius:12px;overflow:hidden">'
-        f'<div style="background:#1A56DB;color:#fff;padding:10px 16px;font-size:13px;'
-        f'font-weight:700">{title}</div>'
-        f'<table style="width:100%;border-collapse:collapse">{rows}</table>'
-        f'</div>'
-    )
+
+    ct = title
+    if "流程" in ct:
+        return _flow_chart_html(title, items)
+    if "饼" in ct or "占比" in ct or "比例" in ct:
+        return _donut_chart_html(title, items)
+    # 默认：条形图 / 数据图 / 对比图
+    return _bar_chart_html(title, items)
 
 
 def _img_html(rel_path: str, alt: str) -> str:
