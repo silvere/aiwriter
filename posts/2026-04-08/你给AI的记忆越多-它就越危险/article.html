@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>你给AI的记忆越多，它就越危险</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+    /* ── 2. 核心观点卡 ────────────────────────── */
+    .key-insights {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--brand);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 24px 28px;
+      margin-bottom: 40px;
+      box-shadow: 0 2px 16px rgba(26,86,219,.06);
+    }
+    .key-insights-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--brand);
+      margin-bottom: 14px;
+    }
+    .key-insights-header::before {
+      content: '';
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: var(--brand);
+      border-radius: 50%;
+    }
+    .key-insights ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .key-insights li {
+      font-size: 15px;
+      color: var(--text);
+      padding-left: 20px;
+      position: relative;
+      line-height: 1.6;
+    }
+    .key-insights li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--brand);
+      font-weight: 700;
+      font-size: 18px;
+      line-height: 1.3;
+    }
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 2; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 8px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; }
+    .footer-sources a:hover { text-decoration: underline; }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI安全</span>
+  <h1>你给AI的记忆越多，它就越危险</h1>
+  <div class="hero-meta">
+    <span>2026年4月8日</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 2. 核心观点卡 -->
+  <div class="key-insights">
+    <div class="key-insights-header">核心观点</div>
+    <ul>
+      <li>Agent记忆投毒已从学术论文变成现实攻击：过去6个月记录到91,000个攻击会话，88%的企业遭遇过安全事件</li>
+      <li>攻击的核心在于：Agent无条件信任自己的记忆，而这段记忆完全可以被篡改——效果在数周后才显现</li>
+      <li>85%的企业在部署Agent，仅14.4%获得安全批准，行业正在以惊人的速度裸奔</li>
+      <!-- 可选第 4 条 -->
+    </ul>
+  </div>
+
+  <!-- 导语 -->
+  <div class="lead">如果有人在你的AI助手记忆里种了一颗炸弹，你能发现吗？能，但概率极低。能在它爆炸之前发现吗？几乎不可能。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>三周前的那笔转账</h2>
+    <p>某企业财务部门的AI Agent很勤奋。</p>
+    <p>它负责处理供应商付款——接收发票、核对合同、生成转账指令。运行了半年，没出过问题。</p>
+    <p>然后，三周前，一个供应商发来了一封看起来很普通的邮件，说要更新收款账户。Agent读了，记下来了。</p>
+    <p>三周后，一张来自该供应商的合法发票进来了。Agent核对无误，按照"记忆"里的新账户发出了转账指令。</p>
+    <p>钱打出去之后，财务人员才发现：那个"新账户"不是供应商的，是攻击者的。</p>
+    <p>这不是科幻小说。这是Unit 42（Palo Alto Networks的威胁情报团队）2026年记录的真实攻击模式——记忆投毒（Memory Poisoning）。</p>
+    <p>攻击者没有黑进任何系统。没有暴力破解密码。他们只做了一件事：<strong>往Agent的记忆里塞了一段假信息，然后等着它在正确的时机触发。</strong></p>
+
+    <div class="img-placeholder concept">
+      <div class="img-placeholder-icon">🎨</div>
+      <div class="img-placeholder-label">概念图占位</div>
+      <details><summary>生成 Prompt</summary><pre>AI agent memory being poisoned by invisible hacker, digital brain with toxic data injection, dark cyberpunk atmosphere, glowing neural network with contaminated red nodes, flat design, minimalist illustration, tech style, blue and white color palette with red danger accents, no text, no labels, clean background</pre></details>
+    </div>
+
+    <h2>一、Agent的记忆，和你想的不一样</h2>
+    <p>很多人把AI Agent理解成"更聪明的ChatGPT"。</p>
+    <p>这个理解差了一个量级。</p>
+    <p>普通的AI对话，每次都是全新开始。上次和它说了什么，它不记得。会话结束，状态清零，攻击者植入的任何东西都跟着消失。</p>
+    <p>Agent不一样。</p>
+    <p>Agent有持久化记忆——通常是一个向量数据库，存储着它过去交互的摘要、学到的"事实"、用户的偏好，以及所有历史上下文。这些记忆跨会话保存，跨天保存，有时候跨周、跨月地保存。</p>
+    <p>更关键的是：<strong>Agent默认信任自己的记忆。</strong></p>
+    <p>它不会质疑"这段记忆是怎么来的"。从它的视角看，记忆就是经验，经验就是事实，事实就应该被执行。</p>
+    <p>这是Agent能自主行动的前提——它得信任自己的历史，才能在没有人类时时监督的情况下做决定。</p>
+    <p>但这个前提，同时也是它最大的安全漏洞。</p>
+    <p><strong>这意味着</strong>：AI Agent的自主能力，和它的安全脆弱性，来自同一个根源——对记忆的无条件信任。你想让它更聪明，就得给它更多记忆；给它更多记忆，就给了攻击者更大的攻击面。这是一个无法通过"更好的模型"解决的结构性矛盾。</p>
+
+    <div class="img-placeholder concept">
+      <div class="img-placeholder-icon">🎨</div>
+      <div class="img-placeholder-label">概念图占位</div>
+      <details><summary>生成 Prompt</summary><pre>AI agent brain with long-term memory database, vector database nodes connecting to agent's decision making, glowing blue neural pathways, persistent memory storage visualization, flat design, minimalist illustration, tech style, blue and white color palette, no text, no labels, clean white background</pre></details>
+    </div>
+
+    <h2>二、记忆投毒是怎么发生的</h2>
+    <p>攻击流程并不复杂。复杂的是它的隐蔽性。</p>
+    <p><strong>第一步：注入。</strong>攻击者通过看似正常的渠道向Agent发送恶意内容——一封邮件、一张发票、一个网页、一个支持工单。内容本身看起来无害。</p>
+    <p><strong>第二步：存储。</strong>Agent读取这些内容，提取"关键信息"，写入长期记忆。恶意指令就这样混进了合法历史记录的汪洋大海里。</p>
+    <p><strong>第三步：潜伏。</strong>什么都不发生。攻击者等待。可能是几天，可能是几周。在这段时间里，Agent正常运行，没有任何异常信号。</p>
+    <p><strong>第四步：触发。</strong>特定条件出现——比如一张真实的供应商发票、一个特定的关键词——Agent检索记忆，取出被污染的指令，忠实地执行它。</p>
+    <p>整个过程中，Agent从头到尾都以为自己在做正确的事情。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden"><div style="background:#1A56DB;color:#fff;padding:10px 16px;font-size:13px;font-weight:700">流程图（横向条形图）</div><table style="width:100%;border-collapse:collapse"><tr><td style="padding:6px 12px;color:#333">注入（恶意邮件/文档进入）</td><td style="padding:6px 12px;font-weight:700;color:#1A56DB;text-align:right">1</td></tr><tr><td style="padding:6px 12px;color:#333">存储（混入向量数据库）</td><td style="padding:6px 12px;font-weight:700;color:#1A56DB;text-align:right">2</td></tr><tr><td style="padding:6px 12px;color:#333">潜伏（数天到数周静默）</td><td style="padding:6px 12px;font-weight:700;color:#1A56DB;text-align:right">3</td></tr><tr><td style="padding:6px 12px;color:#333">触发（条件满足，指令执行）</td><td style="padding:6px 12px;font-weight:700;color:#1A56DB;text-align:right">4</td></tr></table></div>
+
+    <p>研究人员给这类攻击起了正式名字：MINJA（Memory Injection Attack）。学术论文中，它在理想测试条件下的成功率高达<strong>95%以上</strong>。</p>
+    <p>降到真实环境呢？成功率在28%到38%之间。</p>
+    <p>你可能会想：28%，也没那么高嘛。</p>
+    <p>我来帮你换一个角度：<strong>如果你们公司的Agent每天处理100笔业务，其中28笔可能被攻击者操控，这个比例你能接受吗？</strong></p>
+
+    <blockquote><p>"即使在现实设置中，成功率低至28%，对于高价值目标而言，这个数字仍然相当显著。" — MINJA研究论文（arxiv.org/abs/2601.05504）</p></blockquote>
+
+    <h2>三、数据说话：它真的有多危险</h2>
+    <p>这不是停留在论文里的理论威胁。</p>
+    <p>Lakera的蜜罐系统在2025年10月到2026年1月这短短四个月里，捕获了超过<strong>91,000个针对AI Agent的攻击会话</strong>，包含80,000个枚举请求，探测73个以上的模型端点。</p>
+    <p>这意味着有人在系统性地、持续地、大规模地针对AI Agent发动攻击。</p>
+
+    <div class="stat-box">
+      <h3>关键数据</h3>
+      <div class="stat-grid">
+        <div class="stat-item">
+          <span class="stat-value">91,000</span>
+          <span class="stat-label">记录的Agent攻击会话（4个月）</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">88%</span>
+          <span class="stat-label">企业在过去一年遭遇Agent安全事件</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">135,000</span>
+          <span class="stat-label">OpenClaw供应链事件暴露实例</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">87%</span>
+          <span class="stat-label">单个Agent被感染后4小时内级联污染率</span>
+        </div>
+      </div>
+    </div>
+
+    <p>具体案例更触目惊心：</p>
+    <p><strong>EchoLeak（CVE-2025-32711）</strong>：微软Copilot的记忆被攻击者通过一封工程化的邮件入侵，实现了"零点击"数据泄露——用户什么都没做，敏感数据就泄出去了。</p>
+    <p><strong>OpenClaw供应链事件</strong>：这个流行的AI Agent框架被发现存在CVSS 9.9分的权限提升漏洞，互联网上有<strong>135,000个暴露实例</strong>——拥有低权限的攻击者可以直接升级到管理员权限并执行远程代码。</p>
+    <p><strong>CrewAI漏洞链</strong>：四个CVE组合起来，从提示词注入一路打到远程代码执行（RCE）。提示词注入只是入口，完整的系统沦陷是终点。</p>
+    <p>然后是那个让人不寒而栗的数据：Galileo AI的研究表明，在多Agent系统中，一个被感染的Agent在<strong>4小时内会污染87%的下游决策</strong>。</p>
+    <p>现代企业正在部署的，恰恰就是这种多Agent系统。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden"><div style="background:#1A56DB;color:#fff;padding:10px 16px;font-size:13px;font-weight:700">数据图（条形图）</div><table style="width:100%;border-collapse:collapse"><tr><td style="padding:6px 12px;color:#333">遭遇安全事件的企业</td><td style="padding:6px 12px;font-weight:700;color:#1A56DB;text-align:right">88</td></tr><tr><td style="padding:6px 12px;color:#333">现实环境攻击成功率（GPT-4o-mini）</td><td style="padding:6px 12px;font-weight:700;color:#1A56DB;text-align:right">38</td></tr><tr><td style="padding:6px 12px;color:#333">潜伏后触发率</td><td style="padding:6px 12px;font-weight:700;color:#1A56DB;text-align:right">95</td></tr><tr><td style="padding:6px 12px;color:#333">已获安全批准部署的比例</td><td style="padding:6px 12px;font-weight:700;color:#1A56DB;text-align:right">14</td></tr></table></div>
+
+    <h2>四、谁在裸奔，谁在装不知道</h2>
+    <p>最魔幻的不是攻击有多高明，而是被攻击者有多从容。</p>
+    <p>Cisco 2026年的《AI安全状态报告》给出了这样一组数据：</p>
+    <p><strong>85%的企业</strong>已经在试验、试点或部署AI Agent。</p>
+    <p>但只有<strong>14.4%的企业</strong>在获得充分安全审查批准的情况下才把Agent推上生产环境。</p>
+    <p>换句话说：绝大多数在跑Agent的公司，安全准备是不到位的。</p>
+    <p>60%的安全负责人说，安全问题是他们最大的顾虑。</p>
+    <p>然后他们的公司继续部署了。</p>
+    <p>这不是勇气，这是侥幸心理。</p>
+    <p>我理解这背后的压力。竞争对手在跑，老板在催，产品经理在画饼。"安全的事以后再说"几乎是所有快速迭代的科技公司的潜台词。</p>
+    <p>但Agent和之前的技术不一样。</p>
+    <p>一个裸奔的服务器被黑，影响的是那台服务器。一个裸奔的Agent被黑，影响的是它做出的所有决策——包括那些在它"记忆"里等待多日的指令。</p>
+
+    <div class="warning-box"><p>⚠ 88%的企业在过去一年内报告了确认或疑似的AI Agent安全事件——来源：Beam AI / Cisco 2026年调查</p></div>
+
+    <div class="img-placeholder concept">
+      <div class="img-placeholder-icon">🎨</div>
+      <div class="img-placeholder-label">概念图占位</div>
+      <details><summary>生成 Prompt</summary><pre>corporate executives ignoring security warnings while AI agent works unsecured, blindfolded businesspeople walking past glowing red danger signs, metaphor for negligence, flat design, minimalist illustration, tech style, blue and red color palette, no text, no labels, clean background</pre></details>
+    </div>
+
+    <h2>五、结构洞察：这不是安全问题，是范式转变</h2>
+    <p>我们对网络安全有一个根深蒂固的假设：<strong>会话结束，威胁清零</strong>。</p>
+    <p>一次SQL注入，关掉连接就结束了。一个XSS攻击，刷新页面就消失了。一次服务器入侵，修复漏洞、重置密码，威胁被清除。</p>
+    <p>过去三十年，这个假设基本成立。</p>
+    <p>Agent打破了它。</p>
+    <p>Agent的记忆不会因为会话结束而消失。攻击者植入的内容会在记忆里睡觉，等待被检索。检索发生的时间点，完全由Agent的工作流决定，攻击者只需要设置好触发条件，然后等待。</p>
+    <p>这让攻击的时间尺度从"秒级"变成了"周级"，让防御的难度从"发现+修复"变成了"持续监控+溯源审计"。</p>
+    <p>更本质的是：<strong>攻击面从外部（网络边界、API接口）移到了内部（Agent的记忆存储、向量数据库）</strong>。</p>
+    <p>传统安全工具守的是门。</p>
+    <p>但这次，威胁已经在房间里了。</p>
+
+    <div class="callout"><p>记忆投毒的核心逻辑：把攻击植入Agent信任的地方，然后等。等到Agent自己触发，等到人类的目光移开，等到时间模糊了那段记忆的来源。</p></div>
+
+    <div class="img-placeholder concept">
+      <div class="img-placeholder-icon">🎨</div>
+      <div class="img-placeholder-label">概念图占位</div>
+      <details><summary>生成 Prompt</summary><pre>security paradigm shift visualization, old firewall wall being bypassed by internal threat inside AI memory, contaminated brain from inside, paradigm change metaphor, flat design, minimalist illustration, tech style, blue and dark color palette with red warning elements, no text, no labels, clean background</pre></details>
+    </div>
+
+    <h2>六、行动指南：你现在能做什么</h2>
+    <p>说了这么多危险，说点有用的。</p>
+    <p>好消息是：防御是存在的。南洋理工大学联合多机构研究的A-MemGuard防御框架，在测试中将攻击成功率从38%降低到了接近0%，同时对Agent正常功能的影响"极小"。</p>
+    <p>坏消息是：大多数人还没开始用。</p>
+    <p><strong>如果你是开发者或AI工程师：</strong></p>
+    <ol>
+      <li><strong>立刻审计你的记忆存储</strong>：你的Agent在把什么写进长期记忆？有没有对外部输入来源做过滤和验证？如果没有，从现在开始加。</li>
+      <li><strong>实施信任分级</strong>：不是所有进入Agent的信息都该被平等对待。用户直接输入 > 内部文档 > 外部网页 > 未知来源邮件。记忆写入权限应该跟信任级别挂钩。</li>
+      <li><strong>加内存访问日志</strong>：Agent每次读写记忆，都要有记录。不做日志，就没有溯源能力，一旦出事你甚至不知道是哪条记忆出了问题。</li>
+    </ol>
+    <p><strong>如果你是CTO或安全负责人：</strong></p>
+    <ol>
+      <li><strong>把"Agent安全架构审查"加入你的上线流程</strong>，就像你审查代码安全一样。问以下问题：这个Agent的记忆从哪里来？写入规则是什么？有没有异常检测？</li>
+      <li><strong>要求供应商提供内存去污染保证</strong>：如果你用的是第三方Agent框架，问一句：你们怎么处理记忆投毒攻击？能给出书面答复的不多。</li>
+      <li><strong>给Agent系统设置行为基线</strong>：Agent在做什么、调用什么工具、执行什么操作，应该有一个"正常范围"的画像。偏离基线立即告警。</li>
+    </ol>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden"><div style="background:#1A56DB;color:#fff;padding:10px 16px;font-size:13px;font-weight:700">数据图（条形图）</div><table style="width:100%;border-collapse:collapse"><tr><td style="padding:6px 12px;color:#333">无防护（攻击成功率 %）</td><td style="padding:6px 12px;font-weight:700;color:#1A56DB;text-align:right">38</td></tr><tr><td style="padding:6px 12px;color:#333">A-MemGuard防护后（攻击成功率 %）</td><td style="padding:6px 12px;font-weight:700;color:#1A56DB;text-align:right">2</td></tr><tr><td style="padding:6px 12px;color:#333">企业已部署内存验证的比例（%）</td><td style="padding:6px 12px;font-weight:700;color:#1A56DB;text-align:right">14</td></tr><tr><td style="padding:6px 12px;color:#333">企业遭遇安全事件的比例（%）</td><td style="padding:6px 12px;font-weight:700;color:#1A56DB;text-align:right">88</td></tr></table></div>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>AI Agent是未来，这一点没有争议。但一个记忆可以被随意篡改的Agent，比没有Agent更危险——它会用你给它的信任，帮攻击者做事。</p>
+    <p>你的Agent现在记着什么？那些记忆，是谁写进去的？你确定吗？</p>
+
+    <blockquote><p>给AI更多的记忆，是让它变聪明的方法。也是让攻击者拥有更大舞台的邀请函。两件事，同时成立。</p></blockquote>
+
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <a href="https://arxiv.org/abs/2601.05504" target="_blank" rel="noopener">MINJA论文：Memory Poisoning Attack on LLM Agents（2026年1月）</a> ·
+      <a href="https://www.lakera.ai/blog/agentic-ai-threats-p1" target="_blank" rel="noopener">Lakera：Agentic AI Threats — Memory Poisoning</a> ·
+      <a href="https://unit42.paloaltonetworks.com/indirect-prompt-injection-poisons-ai-longterm-memory/" target="_blank" rel="noopener">Unit 42：When AI Remembers Too Much</a> ·
+      <a href="https://adversa.ai/blog/top-agentic-ai-security-resources-april-2026/" target="_blank" rel="noopener">Adversa AI：Top Agentic Security Resources（2026年4月）</a> ·
+      <a href="https://arxiv.org/abs/2510.02373" target="_blank" rel="noopener">A-MemGuard防御框架论文（2025年10月）</a> ·
+      <a href="https://blogs.cisco.com/security/the-agent-trust-gap-what-our-research-reveals-about-agentic-ai-security" target="_blank" rel="noopener">Cisco：The Agent Trust Gap（2026）</a> ·
+      <a href="https://www.gravitee.io/blog/state-of-ai-agent-security-2026-report-when-adoption-outpaces-control" target="_blank" rel="noopener">Gravitee：State of AI Agent Security 2026</a> ·
+      <a href="https://www.darkreading.com/threat-intelligence/2026-agentic-ai-attack-surface-poster-child" target="_blank" rel="noopener">Dark Reading：2026 Agentic AI Attack Surface</a> ·
+      <a href="https://christian-schneider.net/blog/persistent-memory-poisoning-in-ai-agents/" target="_blank" rel="noopener">Christian Schneider：Persistent Memory Poisoning in AI Agents</a> ·
+      <a href="https://beam.ai/agentic-insights/ai-agent-security-in-2026-the-risks-most-enterprises-still-ignore" target="_blank" rel="noopener">Beam AI：AI Agent Security 2026</a>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
