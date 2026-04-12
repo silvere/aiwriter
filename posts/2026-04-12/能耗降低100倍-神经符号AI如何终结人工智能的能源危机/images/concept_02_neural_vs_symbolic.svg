@@ -1,0 +1,36 @@
+<svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,sans-serif">
+  <rect width="800" height="400" fill="#f8f9ff"/>
+  <circle cx="50" cy="200" r="18" fill="#fed7aa" stroke="#f97316" stroke-width="2"/>
+  <circle cx="50" cy="260" r="18" fill="#fed7aa" stroke="#f97316" stroke-width="2"/>
+  <circle cx="50" cy="320" r="18" fill="#fed7aa" stroke="#f97316" stroke-width="2"/>
+  <circle cx="145" cy="150" r="18" fill="#fdba74" stroke="#f97316" stroke-width="2"/>
+  <circle cx="145" cy="200" r="18" fill="#fdba74" stroke="#f97316" stroke-width="2"/>
+  <circle cx="145" cy="250" r="18" fill="#fdba74" stroke="#f97316" stroke-width="2"/>
+  <circle cx="145" cy="300" r="18" fill="#fdba74" stroke="#f97316" stroke-width="2"/>
+  <circle cx="145" cy="350" r="18" fill="#fdba74" stroke="#f97316" stroke-width="2"/>
+  <circle cx="240" cy="180" r="18" fill="#fb923c" stroke="#ea580c" stroke-width="2"/>
+  <circle cx="240" cy="230" r="18" fill="#fb923c" stroke="#ea580c" stroke-width="2"/>
+  <circle cx="240" cy="280" r="18" fill="#fb923c" stroke="#ea580c" stroke-width="2"/>
+  <circle cx="335" cy="200" r="18" fill="#f97316" stroke="#c2410c" stroke-width="2"/>
+  <circle cx="335" cy="280" r="18" fill="#f97316" stroke="#c2410c" stroke-width="2"/>
+  <text x="180" y="55" font-size="26" text-anchor="middle">&#x1F525;&#x1F525;&#x1F525;</text>
+  <text x="180" y="80" text-anchor="middle" font-size="11" fill="#f97316" font-weight="700">x100 能耗</text>
+  <line x1="400" y1="30" x2="400" y2="390" stroke="#e2e8f0" stroke-width="2" stroke-dasharray="10,6"/>
+  <text x="400" y="22" text-anchor="middle" font-size="13" fill="#94a3b8" font-weight="600">vs</text>
+  <circle cx="460" cy="200" r="14" fill="#bfdbfe" stroke="#3b82f6" stroke-width="2"/>
+  <circle cx="460" cy="250" r="14" fill="#bfdbfe" stroke="#3b82f6" stroke-width="2"/>
+  <circle cx="520" cy="175" r="14" fill="#93c5fd" stroke="#3b82f6" stroke-width="2"/>
+  <circle cx="520" cy="225" r="14" fill="#93c5fd" stroke="#3b82f6" stroke-width="2"/>
+  <circle cx="520" cy="275" r="14" fill="#93c5fd" stroke="#3b82f6" stroke-width="2"/>
+  <path d="M548,225 L585,225" stroke="#1A56DB" stroke-width="2"/>
+  <rect x="590" y="165" width="120" height="120" rx="12" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="650" y="200" text-anchor="middle" font-size="11" fill="#5b21b6" font-weight="700">符号规划器</text>
+  <text x="650" y="222" text-anchor="middle" font-size="18" fill="#7c3aed">&#x2200;&#x2203;&#x2192;</text>
+  <text x="650" y="252" text-anchor="middle" font-size="10" fill="#6d28d9">PDDL Planning</text>
+  <text x="620" y="55" font-size="26" text-anchor="middle">&#x1F33F;</text>
+  <text x="620" y="80" text-anchor="middle" font-size="11" fill="#16a34a" font-weight="700">1% 能耗</text>
+  <text x="180" y="100" text-anchor="middle" font-size="14" fill="#ea580c" font-weight="800">标准 VLA 模型</text>
+  <text x="180" y="118" text-anchor="middle" font-size="12" fill="#9a3412">成功率 34%</text>
+  <text x="600" y="100" text-anchor="middle" font-size="14" fill="#1d4ed8" font-weight="800">神经符号 AI</text>
+  <text x="600" y="118" text-anchor="middle" font-size="12" fill="#1e40af">成功率 95%</text>
+</svg>
