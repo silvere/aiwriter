@@ -27,6 +27,18 @@ import urllib.request
 from pathlib import Path
 from typing import Optional
 
+# 自动从项目根的 .env 加载环境变量（symlink 调用也生效，因 resolve() 会跟随软链）
+try:
+    from dotenv import load_dotenv as _load_dotenv
+    _script_path = Path(__file__).resolve()
+    for _parent in [_script_path.parent, *_script_path.parents]:
+        _env_file = _parent / ".env"
+        if _env_file.exists():
+            _load_dotenv(_env_file, override=False)
+            break
+except ImportError:
+    pass
+
 _STYLE_WORDS = {
     "flat", "design", "minimalist", "illustration", "tech", "style",
     "no", "text", "labels", "clean", "white", "background", "blue",
@@ -34,9 +46,9 @@ _STYLE_WORDS = {
     "on", "at", "to", "for", "is", "are", "was", "were",
 }
 
-# 占位符匹配：外层 div 以 </details>\s*</div> 结尾
+# 占位符匹配：</div> 可选（兼容 LLM 漏写关闭标签的情况）
 _PLACEHOLDER_RE = re.compile(
-    r'<div class="img-placeholder (concept|diagram)">(.*?</details>\s*)</div>',
+    r'<div class="img-placeholder (concept|diagram)">(.*?</details>)\s*(?:</div>)?',
     re.DOTALL,
 )
 _PRE_RE = re.compile(r"<pre>(.*?)</pre>", re.DOTALL)
@@ -110,11 +122,48 @@ def _try_unsplash(query: str, dest: Path) -> bool:
         return False
 
 
+def _try_gemini(prompt: str, dest: Path) -> bool:
+    """用 Gemini 2.5 Flash Image (nano banana) 生成概念图，成功返回 True。"""
+    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY", "")
+    if not api_key:
+        return False
+    try:
+        from google import genai
+        from google.genai import types
+    except ImportError:
+        return False
+    model = os.environ.get("GEMINI_IMAGE_MODEL", "gemini-2.5-flash-image")
+    try:
+        client = genai.Client(api_key=api_key)
+        response = client.models.generate_content(
+            model=model,
+            contents=[prompt],
+            config=types.GenerateContentConfig(response_modalities=["IMAGE"]),
+        )
+        candidates = getattr(response, "candidates", None) or []
+        if not candidates:
+            return False
+        for part in candidates[0].content.parts:
+            inline = getattr(part, "inline_data", None)
+            if inline and getattr(inline, "data", None):
+                dest.write_bytes(inline.data)
+                return True
+        return False
+    except Exception as e:
+        err = str(e).lower()
+        # 地区限制（Claude Code sandbox IP 被 Google 封）→ 静默 fallback
+        if "location is not supported" in err or "failed_precondition" in err:
+            return False
+        return False
+
+
 def fetch_concept_image(prompt: str, dest: Path, candidate_urls: list[str]) -> Optional[str]:
-    """候选 URL → Pexels → Unsplash，成功返回来源字符串，失败返回 None。"""
+    """候选 URL → Gemini → Pexels → Unsplash，成功返回来源字符串，失败返回 None。"""
     for url in candidate_urls:
         if _download_url(url, dest):
-            return f"candidate"
+            return "candidate"
+    if _try_gemini(prompt, dest):
+        return "gemini"
     keywords = _extract_keywords(prompt)
     if _try_pexels(keywords, dest):
         return f"pexels [{keywords}]"
@@ -445,10 +494,12 @@ def main():
         print("没有找到可处理的文章。", file=sys.stderr)
         sys.exit(1)
 
-    if not os.environ.get("PEXELS_API_KEY") and not os.environ.get("UNSPLASH_ACCESS_KEY"):
+    if (not os.environ.get("GEMINI_API_KEY")
+            and not os.environ.get("PEXELS_API_KEY")
+            and not os.environ.get("UNSPLASH_ACCESS_KEY")):
         print(
-            "⚠  未配置图片 API key，concept 图将跳过。\n"
-            "   建议设置 PEXELS_API_KEY（免费：https://www.pexels.com/api/）",
+            "⚠  未配置任何图片 API key，concept 图将跳过。\n"
+            "   推荐设置 GEMINI_API_KEY（nano banana）或 PEXELS_API_KEY（https://www.pexels.com/api/）",
             file=sys.stderr,
         )
 
