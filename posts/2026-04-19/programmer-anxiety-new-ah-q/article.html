@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI没有替代程序员——它只是揭穿了一个我们拜了三十年的假神</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+    /* ── 2. 核心观点卡 ────────────────────────── */
+    .key-insights {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--brand);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 24px 28px;
+      margin-bottom: 40px;
+      box-shadow: 0 2px 16px rgba(26,86,219,.06);
+    }
+    .key-insights-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--brand);
+      margin-bottom: 14px;
+    }
+    .key-insights-header::before {
+      content: '';
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: var(--brand);
+      border-radius: 50%;
+    }
+    .key-insights ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .key-insights li {
+      font-size: 15px;
+      color: var(--text);
+      padding-left: 20px;
+      position: relative;
+      line-height: 1.6;
+    }
+    .key-insights li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--brand);
+      font-weight: 700;
+      font-size: 18px;
+      line-height: 1.3;
+    }
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 2; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 8px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; }
+    .footer-sources a:hover { text-decoration: underline; }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI观察</span>
+  <h1>AI没有替代程序员——它只是揭穿了一个我们拜了三十年的假神</h1>
+  <div class="hero-meta">
+    <span>2026-04-19</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 2. 核心观点卡 -->
+  <div class="key-insights">
+    <div class="key-insights-header">核心观点</div>
+    <ul>
+      <li>AI不是来抢程序员饭碗的——它只是一面照妖镜，照出了我们供奉了三十年的三尊假神：精确、逻辑、优雅。</li>
+      <li>从中世纪抄经僧到电报员到簿记员，每一代技术精英都以为自己不一样。程序员是历史上第一群亲手造出自己掘墓机器的人。</li>
+      <li>用AI的人取代不用AI的人——这是新时代最大的精神胜利法。再过三年AI会取代的就是用AI的人。</li>
+      <!-- 可选第 4 条 -->
+    </ul>
+  </div>
+
+  <!-- 导语 -->
+  <div class="lead">2024年春天深圳街角，一个叫吴昊的前大厂程序员一边等外卖派单一边用英文讲《资本论》。看戏的和戏里的，是同一批人——只不过有的还没上场。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、三尊神的黄昏</h2>
+
+    <p>程序员这三十年，心里供着三尊神。</p>
+
+    <strong>精确</strong>、<strong>逻辑</strong>、<strong>优雅</strong>。
+
+    <p>为了一个分号的位置可以跟人在 Code Review 里杠半天；为了把一个 O(n²) 优化到 O(n log n) 可以熬三个通宵；为了"架构优雅"，甚至敢在茶水间冷笑——"那种能跑就行的代码，就是垃圾。"</p>
+
+    <p>这套鄙视链，是程序员的宗祠。懂原理的瞧不上只会用框架的，"底层党"瞧不上"调包侠"，大厂P7瞧不上培训班出来的。</p>
+
+    <p>——然后AI来了。</p>
+
+    <p>AI不讲精确，只讲概率。AI不讲优雅，只讲够用。AI不讲第一性原理，只讲"历史上别人这么写过"。</p>
+
+    <strong>而它赢了。</strong>
+
+    <div style="background:#f8f9ff;border:1px solid #e2e8f0;border-radius:12px;padding:20px 24px;margin:32px 0;font-size:13px;color:#4a4a6a;white-space:pre-wrap">【图类型】：对比图
+【核心内容】：程序员供奉的三尊神 vs AI的反神
+  - 精确（for 分号） vs 概率（够用就行）
+  - 逻辑（第一性原理） vs 拼凑（历史上写过）
+  - 优雅（O(n log n)） vs 够用（O(n²)也行）
+【布局建议】：左右双栏对比，左侧冷色调（蓝/灰），右侧暖色调（橙/红）
+【配色】：主色 #1A56DB，强调色 #F05252，背景 #FFFFFF</div>
+
+    <p>数据是冰冷的。</p>
+
+    <p>Google CEO Pichai 在2024年底说"超过25%的新代码是AI写的"；2025年Q1变成"30%"；2026年初，<strong>这个数字逼近50%</strong>——谷歌一半的新代码，不是人写的。</p>
+
+    <p>Meta的内部KPI更极端：2026年年中前，<strong>65%的工程师，75%的代码变更必须由AI辅助完成</strong>。这不是建议，是硬考核。</p>
+
+    <p>Salesforce的Benioff在2025年1月的财报会上说得更直接：<strong>"我们今年不招任何新工程师。"</strong> 到9月，他在一档播客里补了一刀——"我把客服从9000人砍到5000，因为我需要更少的人头。"</p>
+
+    <p>你以为最扎心的是这些吗？</p>
+
+    <p>不是。最扎心的是麻省理工METR实验室2025年7月发的那篇研究：<strong>16个资深开源项目程序员用AI写代码，实际上慢了19%，但他们自以为快了20%。</strong></p>
+
+    <p>精确、逻辑、优雅——这些我们当成技术尊严的勋章。</p>
+
+    <p>勋章好戴的时候，我们以为自己是骑士。</p>
+
+    <p>勋章褪色，才发现自己一直是一个打工的。而且是个连"工作到底变快了还是变慢了"都分不清的打工的。</p>
+
+    <p>鲁迅写阿Q画圆圈——"他生怕被人笑话，立志要画得圆。"</p>
+
+    <p>程序员也一样。AI都要接管代码了，你还在Code Review里为Tab还是空格杠半天。</p>
+
+    <p>圆圈画不画得圆，决定不了你会不会被枪毙。</p>
+
+    <hr>
+
+    <h2>二、抄经僧的檄文，和他印出来的辩护书</h2>
+
+    <p>别以为程序员是第一批这样被戳穿的。</p>
+
+    <p>1473年，威尼斯。一个叫Filippo de Strata的多明我会修士，给当时的总督Nicolò Marcello上了一封拉丁文檄文。他想干什么？<strong>他要求总督下令禁止印刷术。</strong></p>
+
+    <p>他的原话，一字不改翻译过来：</p>
+
+    <blockquote><p><strong>"笔是处女，印刷机是娼妇。"</strong></p></blockquote>
+
+    <p>他还骂印刷机为"正在摧毁一切体面法则的瘟疫"，担心"儿童会被印刷出来的不纯洁文本腐蚀"。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_01.jpg" alt="medieval scribe monk sitting wooden" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <p>这些话你熟不熟？</p>
+
+    <p>把"印刷机"换成"AI"，把"笔"换成"人手写的代码"——是不是朋友圈里每天都能看到？</p>
+
+    <strong>"AI生成的代码没有灵魂，是机器的排列组合。"</strong>
+
+    <strong>"真正的程序员必须理解底层原理，AI只是表面的拼凑。"</strong>
+
+    <strong>"Vibe Coding 出来的东西危险，不能上生产。"</strong>
+
+    <p>当年威尼斯总督有没有理他？没有。印刷厂继续开，书价继续跌。</p>
+
+    <p>更荒诞的事发生在21年后。另一个本笃会修道院院长Johannes Trithemius，写了一本书叫《赞美抄经人》（De laude scriptorum）——论证抄经是神圣的、不可替代的、有灵魂的。</p>
+
+    <p>这本书1494年出版。<strong>它是印刷出版的。</strong></p>
+
+    <p>Trithemius自己呢？他管理的Sponheim修道院图书馆，50年内从40册扩充到2000册——他靠的正是印刷机。</p>
+
+    <p>这位抄经术最大的辩护人，是抄经术最大的掘墓人。</p>
+
+    <p>一边用印刷机扩藏书，一边写书骂印刷机。</p>
+
+    <p>这画面今天每天都在重演：一边在朋友圈转"AI代码没灵魂"，一边在Cursor里按下Tab键接受了第50个补全。</p>
+
+    <p>鲁迅写孔乙己，有一段最诛心的对话——</p>
+
+    <p>人家说他偷书，他涨红了脸争辩："<strong>窃书不能算偷……窃书！……读书人的事，能算偷么？</strong>"</p>
+
+    <p>今天的程序员说：<strong>用AI写代码不算抄，是Prompt工程。抄Stack Overflow不算抄，是"参考开源方案"。</strong></p>
+
+    <p>读书人的事，能算偷么？</p>
+
+    <p>程序员的事，能算CV么？</p>
+
+    <hr>
+
+    <h2>三、电报员的白手套，和点灯人的两万五千盏灯</h2>
+
+    <p>再往后看一百年。</p>
+
+    <p>19世纪末的美国，最受尊敬的"技术精英"，不是工程师——是电报员。</p>
+
+    <p>一个熟练的莫斯电报员每分钟收发超过40个词，每个人的发报节奏——行话叫"fist"——都独一无二，老手光听节奏就能认出是哪个同事在发。就像今天资深工程师一看代码风格就知道是谁写的。</p>
+
+    <p>他们月薪40美元（换算到今天约1200美元/月），穿西装，打领带，擦亮皮鞋。他们给自己的阶级起了一个心酸的名字——<strong>"戴白手套的劳工"</strong>（kid-gloved laborers）。</p>
+
+    <p>听起来很体面。但罗格斯大学电报员史学者Edwin Gabler一针见血：</p>
+
+    <blockquote><p>"他们技艺超群，以'大众化绅士派头'自豪，但并非自雇——而是受雇于全国最大的公司之一。他们是'戴白手套的劳工'，摇摇欲坠地挂在阶级鸿沟的边缘。"</p></blockquote>
+
+    <p>这句话翻译成2026年版本，就是：</p>
+
+    <strong>"大厂P7。花名诗意。总包百万。但合同写着，随时可以N+1。"</strong>
+
+    <p>1883年7月19日，<strong>75%的Western Union电报员集体罢工</strong>。诉求是8小时工作制、周日加班费、同工同酬。罢工动机的深处其实是身份崩塌——<strong>"我们到底是技术精英，还是可替换零件？"</strong></p>
+
+    <p>一个月后，罢工失败。骨干被拉进全国黑名单。</p>
+
+    <div style="background:#f8f9ff;border:1px solid #e2e8f0;border-radius:12px;padding:20px 24px;margin:32px 0;font-size:13px;color:#4a4a6a;white-space:pre-wrap">【图类型】：时间线
+【核心内容】：技术精英消亡编年史
+  - 1473：威尼斯抄经僧檄文反印刷
+  - 1883：美国电报员大罢工失败
+  - 1907：纽约点灯人2.5万盏灯熄灭
+  - 1985：Excel出现，簿记员40万消失
+  - 2004：COBOL程序员断代危机显现
+  - 2026：程序员的"三尊神"被AI戳穿
+【布局建议】：横向时间线，每个节点一句标志性事件
+【配色】：主色 #1A56DB，强调色 #F05252，背景 #FFFFFF</div>
+
+    <p>再往前推24年。</p>
+
+    <p>1907年4月24日，纽约曼哈顿。<strong>2.5万盏煤气灯，当晚没有一盏被点亮。</strong></p>
+
+    <p>是点灯人在罢工。他们对抗的是什么？电灯。</p>
+
+    <p>那天晚上整个曼哈顿漆黑一片，只有中央公园的几条横贯路有光——因为那里已经提前装上了电灯。讽刺吗？非常讽刺。点灯人罢工的方式，恰好证明了他们已经不被需要。</p>
+
+    <p>他们的"辩护词"是什么？</p>
+
+    <ul><li>"电灯不可靠，经常跳闸。"</li>
+<li>"煤气灯有温暖的光晕，电灯没有灵魂。"</li>
+<li>"我们不止点灯，还巡视街道、守望治安。"</li>
+</ul>
+今天的程序员，一字不改——
+
+    <ul><li>"LLM会幻觉，不能上生产。"</li>
+<li>"AI生成的代码没有温度，只是拼凑。"</li>
+<li>"我不止写代码，还懂需求、懂业务、懂系统。"</li>
+</ul>
+两万五千盏灯熄灭那一夜。总督没来。电灯公司继续铺电线。
+
+    <p>最残忍的一幕，其实发生在更近的年代。</p>
+
+    <p>1980年，美国有33.9万簿记员和会计文员。1979年VisiCalc问世，1985年Excel发布。<strong>35年之后，这些岗位消失了40万。</strong></p>
+
+    <p>但同期，更高级的会计师、审计师、分析师——多了60万。</p>
+
+    <strong>被杀的是"算账的人"，被升华的是"判断数字的人"。</strong>
+
+    <p>AI时代的结构一模一样。</p>
+
+    <p>被杀的是"写代码的人"。</p>
+
+    <p>被升华的，是极少数"能判断什么代码值得被写"的人。</p>
+
+    <p>而绝大多数程序员，以为自己是后者。</p>
+
+    <p>其实是前者。</p>
+
+    <p>鲁迅写《故乡》里的闰土，少年时"手捏一柄钢叉向一匹猹尽力地刺去"——月下刺猹的少年。</p>
+
+    <p>中年闰土的手呢？</p>
+
+    <blockquote><p><strong>"那手也不是我所记得的红活圆实的手，却又粗又笨而且开裂，像是松树皮了。"</strong></p></blockquote>
+
+    <p>十年前在五道口合租刷LeetCode的兄弟，十年后同学会上叫你"总"——手指关节粗大开裂，头顶发量告急。</p>
+
+    <p>白手套终究会变成松树皮。</p>
+
+    <p>每一次都一样。</p>
+
+    <hr>
+
+    <h2>四、亲手拆神龛的僧人</h2>
+
+    <p>——但程序员这一代，又和前面所有人不一样。</p>
+
+    <p>有一个前所未有的荒诞。</p>
+
+    <strong>铁匠没造蒸汽机。抄经人没造印刷机。电报员没造电话。点灯人没造电灯。</strong>
+
+    <p>唯独程序员，是自己一行一行，把自己的掘墓机器写出来的。</p>
+
+    <p>OpenAI的工程师是程序员。Anthropic的工程师是程序员。Cursor的工程师是程序员。让程序员失业的这几个最狠的产品——<strong>每一行训练代码都是程序员自己写的。</strong></p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_02.jpg" alt="programmer silhouette from behind sitting" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <p>你以为最狠的是这点？</p>
+
+    <p>不。最狠的是——<strong>他们一边写，一边发朋友圈说："这是人类历史上最伟大的技术进步。"</strong></p>
+
+    <p>2025年10月，Andrej Karpathy在X上发了一条推文。Karpathy是谁？他是OpenAI的联合创始人，是Tesla前AI总监，是"反向传播"那代人里最会解释AI的人。这个人在硅谷代表"会写代码的神"。</p>
+
+    <p>他说了什么？</p>
+
+    <blockquote><p><strong>"作为程序员，我从来没感觉被时代抛下得这么厉害。这个职业正在被剧烈地重构——程序员贡献的比特越来越稀疏。"</strong></p></blockquote>
+
+    <strong>发明AI的人，成了第一个感到落后的程序员。</strong>
+
+    <p>这就是反身性。</p>
+
+    <p>Anthropic做得更赤裸。</p>
+
+    <p>2025年，Anthropic宣布计划扩招到2000人。同一个CEO——Dario Amodei——在另一场演讲里公开说：</p>
+
+    <blockquote><p><strong>"AI系统正在变得强大到足以端到端自动化软件工程。结果是，包括我们自己在内的公司，未来可能不再需要这么多软件工程师。"</strong></p></blockquote>
+
+    <blockquote><p><strong>"我无法保证创造的工作会比摧毁的多。我们必须让这件事成真。我们必须想办法让这件事成真。"</strong></p></blockquote>
+
+    <p>"无法保证。"</p>
+
+    <p>这是全球最红的AI公司CEO，在2025年对全世界程序员的原话。</p>
+
+    <p>他还说了一句更锋利的：</p>
+
+    <blockquote><p><strong>"AI现在已经在Anthropic内部写大量代码，显著加快我们构建下一代AI系统的速度。这个反馈循环在逐月增强——可能只需要1到2年，当代AI就能自主构建下一代AI。"</strong></p></blockquote>
+
+    <p>下一代AI，<strong>是当代AI自己写的</strong>。</p>
+
+    <p>Anthropic工程师，是在训练自己的替代者。</p>
+
+    <p>这画面，翻译成最古老的比喻——</p>
+
+    <strong>是僧人亲手拆了自己供奉的神龛，点上一炷香，然后给它唱一段赞美诗。</strong>
+
+    <p>铁匠被蒸汽机取代，他愤怒，他砸机器，他去卢德派那里报名。</p>
+
+    <p>抄经人被印刷术取代，他写檄文，他骂"笔是处女，印刷机是娼妇"。</p>
+
+    <p>电报员被电话取代，他罢工，他组工会。</p>
+
+    <p>只有程序员——他笑着。他在朋友圈转发"Claude 4.5发布"的截图，配文"震撼，时代在进步"。他在TEDx舞台上讲"拥抱AI"。他在孩子睡着的晚上，默默打开Cursor，按下那个Tab键。</p>
+
+    <p>鲁迅写阿Q被打之后，说"我总算被儿子打了，现在的世界真不像样"——这叫被动的精神胜利。</p>
+
+    <strong>今天的程序员，是主动把刀磨好，递到对方手里，然后夸对方刀法好。</strong>
+
+    <p>这是哪门子的精神胜利？</p>
+
+    <p>这是人类历史上还没出现过的东西。</p>
+
+    <hr>
+
+    <h2>五、三代人的叙事债</h2>
+
+    <p>但刀扎进中国程序员身上，还要再深三寸。</p>
+
+    <p>因为硅谷程序员失业，面对的是绿卡、是创业基金、是奥斯汀的远程工作、是冰岛Gap Year。</p>
+
+    <p>而中国程序员失业，面对的是——</p>
+
+    <strong>2万8一个月的房贷。岳父岳母的期待。孩子的学区房。老家那个"咱们村出的第一个清华"的光环。</strong>
+
+    <p>那个通道——<strong>"寒门苦读 → 高考 → 211计算机 → 一线大厂 → 一线首付 → 娶妻生子"</strong>——过去二十年是中国普通家庭能看到的最接近"确定性"的上升阶梯。</p>
+
+    <p>它不是一份工作。它是一套叙事。</p>
+
+    <strong>爷爷奶奶节衣缩食供学费，爸爸妈妈砸锅卖铁供四年大学，孩子996换三十年贷款，孙子刷算法题再送回这条路。</strong>
+
+    <p>三代人的预期，押在一条轨道上。</p>
+
+    <div class="img-placeholder diagram">
+  <div class="img-placeholder-icon">📊</div>
+  <div class="img-placeholder-label">信息图占位</div>
+  <details><summary>规格卡</summary><pre>【图类型】：对比图
+【核心内容】：硅谷失业 vs 中国失业的出路结构
+  硅谷：
+    - 绿卡自由：签证解除，可换赛道
+    - 创业基金：L5平均有50万美金存款
+    - 远程工作：搬奥斯汀继续干
+  中国：
+    - 房贷断供：月供2.8万/月
+    - 父母养老：零托底
+    - 子女教育：学区房锁死
+    - 退路坍塌：老家也回不去
+【布局建议】：左右对比，左侧硅谷三条路（浅蓝），右侧中国三座山（深红）
+【配色】：主色 #1A56DB，强调色 #F05252，背景 #FFFFFF</pre></details>
+
+    <p>现在这条轨道的每一段，都在塌。</p>
+
+    <strong>第一段塌：大学招牌。</strong>
+
+    <p>2025年，计算机专业就业率跌到<strong>68.65%，全国第七</strong>。部分高校计算机本科生就业率<strong>不足50%</strong>。清华、北大、浙大也悄悄把招牌换了——"计算机科学与技术"逐步并轨到"姚班"、"智班"、"人工智能试验班"。原来的牌子还挂着，内核已经替换。</p>
+
+    <strong>第二段塌：大厂电梯。</strong>
+
+    <p>脉脉数据研究院的统计——字节跳动、拼多多员工平均年龄27岁；腾讯29岁；阿里、华为31岁。<strong>所有大厂，平均年龄都没超过35岁。</strong></p>
+
+    <p>另一个数据更诛心：<strong>超过60%的岗位明确要求"35岁以下"。</strong></p>
+
+    <p>2025年全国两会披露：<strong>80%的35岁以上求职者，投100份简历拿不到一个面试。</strong></p>
+
+    <p>2025年下半年，BOSS直聘员工数同比减少14%；阿里员工规模缩减34%；百度部分非核心业务线裁员90%。</p>
+
+    <strong>第三段塌：首付换贷。</strong>
+
+    <p>一个杭州程序员的真实账本——2023年上车，总价600万的房子，首付掏空，<strong>月供2.8万</strong>。北京更狠，一线非核心地段首付之后月供3万打不住。</p>
+
+    <strong>第四段塌：老家。</strong>
+
+    <p>你以为大厂混不下去可以回老家？</p>
+
+    <p>2023年7月，一个叫李豹的前百度39岁程序员，被裁后在抖音发了一条视频——"每月房贷1.5万，我没地方可去"——直接冲上了热搜第一。他不是个例，他是一个时代的拐点。</p>
+
+    <p>视频评论里最高赞那句：<strong>"老家已经没有能接住我的人了。"</strong></p>
+
+    <strong>第五段塌：孩子的路。</strong>
+
+    <p>吴昊，就是开头那个讲《资本论》的深圳前大厂程序员。他的视频爆红之后，有记者问他为什么还要让孩子学编程。</p>
+
+    <p>他沉默了很久。然后说了一句：</p>
+
+    <strong>"因为我不知道还能让他学什么。"</strong>
+
+    <p>鲁迅在《坟·灯下漫笔》里划分中国历史——</p>
+
+    <blockquote><p><strong>"一，想做奴隶而不得的时代；二，暂时做稳了奴隶的时代。"</strong></p></blockquote>
+
+    <p>2010到2020年，中国程序员是"暂时做稳了奴隶"的时代。996是福报，加班有夜宵，年终奖有24薪，房子能买。</p>
+
+    <p>2023年之后，是"想做奴隶而不得"的时代。996想继续也没机会，35岁之后简历石沉大海，脉脉上每天几千条"求内推"的帖子——不是求升职，是求活路。</p>
+
+    <strong>AI断的不是码农的饭碗，是中国式中产叙事的最后一根稻草。</strong>
+
+    <p>更恶心的是，寒气里总有一批人闻到血味——</p>
+
+    <p>"21天教你AI转型！"</p>
+
+    <p>"一个人月入10万的大模型副业！"</p>
+
+    <p>"不收学费，赚不到钱全额退费！"</p>
+
+    <p>2025年，澎湃新闻报道《AI骗局完成"产业升级"》——从199元基础课诱导升级到2000元进阶课，再到"Token传销"三级跳。北京日报、钛媒体、新浪财经都报过。</p>
+
+    <p>被割的是谁？</p>
+
+    <p>是那批交完这个月房贷，在网上搜"35岁转AI来得及吗"的中年程序员。</p>
+
+    <p>一刀又一刀。</p>
+
+    <hr>
+
+    <h2>六、"用AI的人取代不用AI的人"——新时代最大的精神胜利法</h2>
+
+    <p>但最毒的那一刀，是大家互相递给彼此的。</p>
+
+    <p>你在朋友圈一定看过这句话——</p>
+
+    <blockquote><p><strong>"未来AI不会取代程序员，但会用AI的程序员一定会取代不会用AI的程序员。"</strong></p></blockquote>
+
+    <p>这句话出现在脉脉、即刻、知乎、公众号头图、演讲PPT、甚至公司内部OKR里。每个人都在点头。每个人都在转发。每个人都觉得自己找到了出路。</p>
+
+    <strong>这是新时代最大的一句精神胜利法。</strong>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>a middle-aged programmer sitting alone at a cluttered desk late at night, facing an open laptop showing a course poster that says Prompt Engineering Mastery, empty beer bottles and instant noodle packaging around, harsh overhead fluorescent light, tired expression, dark blue and muted orange tones, flat design, minimalist illustration, no text readable, no labels, clean composition</pre></details>
+
+    <p>为什么？</p>
+
+    <p>因为它假装给你希望，实际上把你锁在了更短的时间线里。</p>
+
+    <p>让我们看看2025到2026这一年里发生了什么。</p>
+
+    <p>DHH，Ruby on Rails的创始人，2025年中还在高调说——"AI做不到Junior程序员的水平。"37signals的新产品95%代码是人写的。他把AI比作"闪烁的灯泡"。</p>
+
+    <strong>六个月后——2026年1月——他完全投降。</strong>
+
+    <p>他在个人博客里写：</p>
+
+    <blockquote><p><strong>"现在手敲精确语法对我来说感觉是一种苦差事。"</strong></p></blockquote>
+
+    <p>——不是"也许AI能帮忙"，是"手写代码是苦差事"。立场从防御转成了拥抱。</p>
+
+    <p>Sam Altman在2025年的一次公开演讲里说过一句意味深长的话——</p>
+
+    <blockquote><p><strong>"工程师的角色正在根本性地改变。你们会花更少时间写语法和调bug，更多时间命令计算机执行复杂的意图。"</strong></p></blockquote>
+
+    <p>听着像赋能对不对？</p>
+
+    <p>翻译一下。</p>
+
+    <p>"写语法"——这是过去程序员的核心技能。</p>
+
+    <p>"命令计算机"——这是过去产品经理、架构师的技能。</p>
+
+    <p>"执行复杂意图"——这是过去老板的技能。</p>
+
+    <p>Sam Altman其实在说：<strong>程序员被裁不了，因为你们会升级成产品经理、架构师、甚至老板。</strong></p>
+
+    <p>听着很好。</p>
+
+    <p>但一家公司需要多少产品经理？多少架构师？多少老板？</p>
+
+    <p>一个P7岗位对应一个架构师，十个P5岗位合并成一个？还是合并成0.5个？</p>
+
+    <p>这就是升级的真相。升级不是每个人都升级——<strong>是100个程序员里，升级5个，淘汰95个。</strong></p>
+
+    <p>而那95个人——他们正在转发朋友圈："<strong>用AI的人会取代不用AI的人。</strong>"</p>
+
+    <p>他们以为自己是那5个。</p>
+
+    <p>他们不是。</p>
+
+    <p>Cursor 0到20亿美金ARR用了3年。Devin去年发布。Cognition上个月又推新版本。<strong>每一代工具出来，都先吃掉"用上一代工具的人"。</strong></p>
+
+    <p>再过三年——</p>
+
+    <p>AI不是取代"不用AI的人"。</p>
+
+    <p>AI是取代<strong>"用AI的人"</strong>。</p>
+
+    <p>鲁迅写阿Q喝醉了酒，喊"造反了！造反了！"</p>
+
+    <p>不知道革命是什么，也不知道革命后自己会不会被革命。</p>
+
+    <p>——今天每个程序员在朋友圈喊"All in AI"。</p>
+
+    <p>不知道AI是什么，也不知道AI会不会顺手把自己也all了。</p>
+
+    <p>鲁迅又写阿Q。被王胡打了嘴巴，自己愈发生气，然后——</p>
+
+    <blockquote><p><strong>"他擎起右手，用力地在自己脸上连打了两个嘴巴……打完之后，便心平气和起来，似乎打的是自己，被打的是别一个自己。"</strong></p></blockquote>
+
+    <p>被裁之后立刻报一个2万块的Prompt工程课。</p>
+
+    <p>那就是阿Q打自己嘴巴的当代版本。</p>
+
+    <p>打的是旧的"不懂AI的自己"，被打的是未来"学会了AI的自己"。</p>
+
+    <p>打完之后心满意足，睡得很沉。</p>
+
+    <p>第二天起床，继续刷Boss直聘。</p>
+
+    <hr>
+
+    <h2>七、最狠的一刀：你的工作本来就不该存在</h2>
+
+    <p>这一节最不想写。但必须写。</p>
+
+    <p>已故的人类学家David Graeber，2018年出了一本书——《Bullshit Jobs》。</p>
+
+    <p>这本书把现代工作分了五类："无意义的工作"（Bullshit Jobs）。其中有一类，他起名叫——<strong>"Duct Tapers"，胶带工。</strong></p>
+
+    <p>定义是什么？</p>
+
+    <strong>"用临时修补的方式，去解决本来可以彻底消除的问题。"</strong>
+
+    <p>Graeber举的第一个例子就是——<strong>程序员。修bug的程序员，修别人烂代码的程序员，写workaround绕过历史遗留问题的程序员。</strong></p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>a tangled mess of cables and wires wrapped with duct tape, forming a chaotic sculpture on a server rack, one small label reading PRODUCTION barely visible, harsh industrial lighting, grunge style, flat design, minimalist illustration with dark humor, muted grey and yellow tones, no readable text, clean composition</pre></details>
+
+    <p>想一想你的工作日常。</p>
+
+    <p>你每天有多少时间在真正"创造"？多少时间在——</p>
+
+    <p>开站会。写周报。填OKR。追bug修bug。给产品经理解释为什么这个需求2天做不完。跟运维扯皮为什么生产环境又挂了。重写上一个离职同事留下的屎山代码。</p>
+
+    <p>Scrum/敏捷相关的研究说——<strong>现代程序员超过50%的时间花在会议、流程、ceremony、追踪工具上。</strong></p>
+
+    <p>这部分工作，不用等AI。</p>
+
+    <strong>它本来就不应该存在。</strong>
+
+    <p>Graeber给Bullshit Jobs的测试公式是：</p>
+
+    <blockquote><p><strong>"如果这份工作明天消失，世界会不会变得更差，还是根本没区别，甚至更好？"</strong></p></blockquote>
+
+    <p>一个美工设计师、一个外科医生、一个公交司机消失了——世界会变差。</p>
+
+    <p>一个"把PRD翻译成if-else"的程序员消失了呢？</p>
+
+    <p>老板会临时慌一下。PR积压几天。产品延期一周。</p>
+
+    <p>然后有人用AI把他的工作做完了。</p>
+
+    <p>然后没人记得他。</p>
+
+    <p>这才是AI对程序员最狠的一刀——</p>
+
+    <strong>AI不是摧毁了一个伟大的行业。AI只是让一个本来就是Bullshit Jobs的行业，终于显形了。</strong>
+
+    <p>程序员焦虑的真正根源，不是"我会失业"。</p>
+
+    <p>是——<strong>"我一直在假装我在创造，但其实我只是在给一个本来就不该存在的问题贴胶带。"</strong></p>
+
+    <p>这个觉悟比失业更致命。</p>
+
+    <p>因为失业只是收入的问题。</p>
+
+    <p>而这个觉悟，是<strong>意义的问题</strong>。</p>
+
+    <p>鲁迅在《狂人日记》里写——</p>
+
+    <blockquote><p><strong>"我翻开历史一查，这历史没有年代，歪歪斜斜的每叶上都写着'仁义道德'几个字。我横竖睡不着，仔细看了半夜，才从字缝里看出字来，满本都写着两个字是'吃人'！"</strong></p></blockquote>
+
+    <p>翻开中国互联网大厂这十年。每一张PPT上都写着"用户价值"、"技术改变世界"、"工程师文化"。</p>
+
+    <p>仔细看了半夜，从字缝里看出两个字——</p>
+
+    <strong>裁员。</strong>
+
+    <p>接着是狂人最锋利的那句反问：</p>
+
+    <blockquote><p><strong>"从来如此，便对么？"</strong></p></blockquote>
+
+    <p>996是福报？从来如此，便对么？</p>
+
+    <p>35岁优化？从来如此，便对么？</p>
+
+    <p>刷LeetCode进大厂？从来如此，便对么？</p>
+
+    <strong>这份工作本身，从来如此，便对么？</strong>
+
+    <hr>
+
+    <h2>八、给四种人的具体下一步（一个不卖课的行动指南）</h2>
+
+    <p>这一节会有人说我前面骂完了又来卖药。</p>
+
+    <p>先说清楚——以下不是"学会这些就不会失业"。而是——<strong>你反正都要做点什么，哪些方向至少不是精神胜利法。</strong></p>
+
+    <div class="img-placeholder diagram">
+  <div class="img-placeholder-icon">📊</div>
+  <div class="img-placeholder-label">信息图占位</div>
+  <details><summary>规格卡</summary><pre>【图类型】：四象限卡片图
+【核心内容】：四类程序员的行动指南
+  - 40+资深P7/P8：从底层党 → AI监督者 + 系统设计者
+  - 30-34中生代：从刷题冲大厂 → 深挖垂直场景
+  - 应届/学生：从CS保研 → AI细分岗位
+  - 程序员父母：从编程班 → 判断力/审美/人的能力
+【布局建议】：2x2方格卡片，每个卡片包含角色+不做+做什么
+【配色】：主色 #1A56DB，强调色 #F05252，背景 #FFFFFF</pre></details>
+
+    <strong>第一种：40+资深P7/P8</strong>
+
+    <p>停止"底层党守门员"身份。停止在Code Review里证明自己比AI懂。你懂又怎样？没人在乎。</p>
+
+    <p>具体怎么做——</p>
+
+    <p>一是<strong>把每周20小时的学习投入在两件事</strong>：Agent/Prompt工程体系化（不是看B站速成课，是真的搭一套你自己的工作流）；行业Know-how沉淀（你这十年积累的"哪种代码该重写、哪种不该"的判断，AI至今做不好）。</p>
+
+    <p>二是<strong>主动申请去带"人机协作"的团队</strong>——不是纯人团队，也不是纯AI自动化，是10个人管50个Agent的那种。这种岗位在大厂里正在涌现，用的就是你这种有经验的人。</p>
+
+    <p>Linus Torvalds这种级别的人走的就是这条路——AI是工具，人类为代码签字背锅。这不是被动接受，是主动转型成"AI的监督者"。</p>
+
+    <strong>第二种：30-34中生代</strong>
+
+    <p>别再刷LeetCode了。不是LeetCode没用，是<strong>它保护不了你</strong>。它只能让你从一个"被裁的P5"变成另一个"被裁的P6"。</p>
+
+    <p>你真正要做的是——<strong>挖一个AI五年内做不好的垂直场景</strong>。</p>
+
+    <p>举例：金融风控（法规太复杂、错了要坐牢、AI不敢担责）、医疗合规（同理）、工业控制（物理世界延迟和可靠性）、跨境电商（本地化知识+关系）。</p>
+
+    <p>不是说AI永远做不了这些——是说<strong>AI做到这些之前，你要成为这个领域唯一懂它的那个人</strong>。</p>
+
+    <p>两年时间够你从"会写代码的人"变成"这个行业没我不行的人"。这个身份，不怕被裁，怕的是你不动。</p>
+
+    <strong>第三种：应届 / 学生</strong>
+
+    <p>看2026年春招数据——<strong>AI岗占新发岗位26.23%，去年同期2.29%，12倍跳升。</strong> 而Java开发、iOS、前端这些基础技术岗位招聘需求在大幅下滑。</p>
+
+    <p>信号已经写在墙上了。</p>
+
+    <p>具体方向：大模型后训练、Agent工程、AI产品经理、AI安全/对齐、多模态应用开发。去脉脉、去GitHub看那些AI初创公司的招聘JD——不是为了刷简历，是为了知道真实的技能需求长什么样。</p>
+
+    <strong>不要再冲传统CS保研了。</strong> 保研三年之后你拿的是一张2022年的船票，上的是2029年的船。
+
+    <strong>第四种：程序员父母</strong>
+
+    <p>这一条最难也最重要。</p>
+
+    <p>如果你是一个程序员，正在给孩子报少儿编程班——</p>
+
+    <p>停下来。</p>
+
+    <p>你报这个班的真实动机，往往不是"孩子需要学"，而是"你自己心里需要一个安全感"——"至少我给他选了一条我知道怎么走的路。"</p>
+
+    <p>但那条路，正是你自己正在从上面掉下去的那条。</p>
+
+    <strong>鲁迅当年在《狂人日记》里那句"救救孩子"——今天值得改写成——</strong>
+
+    <strong>"还没被刷题驯化的孩子，或者还有？"</strong>
+
+    <p>对孩子，比编程更重要的三样东西——</p>
+
+    <strong>判断力</strong>：知道什么问题值得被解决。这是AI至今没有的能力。
+
+    <strong>审美</strong>：知道什么东西算好，什么算差。AI产出越多，这个能力越稀缺。
+
+    <strong>人的能力</strong>：能读懂人、说服人、带动人。AI永远学不会，因为它不是人。
+
+    <p>这三样没有编程班。它们在生活里，在你跟孩子的饭桌对话里，在他跟同伴解决一次小冲突的操场上。</p>
+
+    <hr>
+
+    <h2>九、绝望之为虚妄，正与希望相同</h2>
+
+    <p>写到这里，很多人会期待我给一句鸡汤。</p>
+
+    <p>"只要拥抱变化，程序员依然是最有未来的行业。"</p>
+
+    <p>"AI不可怕，可怕的是不学习的人。"</p>
+
+    <p>"黎明前的黑暗是最深的，但黎明一定会来。"</p>
+
+    <strong>不会有这些。</strong>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>an empty railroad track stretching into heavy fog on the horizon, a discarded company lanyard with an empty badge holder lying in the foreground on the gravel, single cold dawn light from behind, melancholic atmosphere, minimalist composition, flat design illustration, muted blue and grey tones, no text, no labels, clean background</pre></details>
+
+    <p>鲁迅写《阿Q正传》，最狠的不是戳穿阿Q——是他<strong>不给阿Q出路</strong>。阿Q到最后也没觉醒，糊里糊涂被枪毙，村庄第二天继续麻木。</p>
+
+    <p>这才是文学的残忍。这也是真实的残忍。</p>
+
+    <p>市面上99%的"程序员AI焦虑"文章，写到一半都开始卖药——学Prompt、做独立开发者、开副业、卖课、做自媒体。</p>
+
+    <strong>这些药，大多数都是新版精神胜利法。</strong>
+
+    <p>我上一节写的行动指南，也不是药。那只是"你如果非要做点什么，这些方向至少不是全盘自欺"。能不能成，取决于你、市场、时代——<strong>更取决于运气</strong>。</p>
+
+    <p>鲁迅在《野草》里，一篇叫《希望》的散文诗里，引过匈牙利诗人裴多菲一句话——</p>
+
+    <blockquote><p><strong>"绝望之为虚妄，正与希望相同。"</strong></p></blockquote>
+
+    <p>这句话妙在哪？</p>
+
+    <p>它不是鸡汤（"不要绝望，要有希望"）。</p>
+
+    <p>它也不是虚无（"彻底绝望吧，没救了"）。</p>
+
+    <p>它是一种<strong>比两者都高的清醒</strong>——</p>
+
+    <strong>AI会彻底替代程序员？也许是虚妄。</strong>
+
+    <strong>AI不会替代程序员？也可能是虚妄。</strong>
+
+    <p>明天的需求评审还是要开。今晚的生产环境bug还是要改。老婆的房贷消息还是会在午夜12点准时弹出来。</p>
+
+    <p>该怎么活，还是怎么活。</p>
+
+    <strong>区别只有一条——</strong>
+
+    <strong>阿Q不知道自己是阿Q。</strong>
+
+    <strong>而你知道。</strong>
+
+    <p>这就是你跟阿Q唯一不同的地方。不多，但是全部。</p>
+
+    <hr>
+
+    <p>程序员之路，原是一条铁轨。</p>
+
+    <p>前面有人走过，被碾了。</p>
+
+    <p>后面有人在走，以为自己跑得快。</p>
+
+    <p>可是——</p>
+
+    <strong>车，从来不是铁轨决定的，是造车的人决定的。</strong>
+
+    <strong>而那个造车的人，从来不是你。</strong>
+
+    <hr>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>程序员之路原是一条铁轨。前面有人走过被碾了，后面有人在走以为自己跑得快。</p>
+    <p>可是——车，从来不是铁轨决定的，是造车的人决定的。而那个造车的人，从来不是你。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <a href="https://techcrunch.com/2026/03/02/cursor-has-reportedly-surpassed-2b-in-annualized-revenue/" target="_blank" rel="noopener">Cursor surpasses $2B annualized revenue (TechCrunch)</a> · 
+      <a href="https://fortune.com/2024/10/30/googles-code-ai-sundar-pichai/" target="_blank" rel="noopener">Google CEO: AI writes over 30% of our code (Fortune)</a> · 
+      <a href="https://techcrunch.com/2025/05/15/programmers-bore-the-brunt-of-microsofts-layoffs-in-its-home-state-as-ai-writes-up-to-30-of-its-code/" target="_blank" rel="noopener">Programmers bore the brunt of Microsoft's layoffs (TechCrunch)</a> · 
+      <a href="https://www.salesforceben.com/salesforce-will-hire-no-more-software-engineers-in-2025-says-marc-benioff/" target="_blank" rel="noopener">Salesforce will hire no more software engineers in 2025</a> · 
+      <a href="https://www.cnbc.com/2025/09/02/salesforce-ceo-confirms-4000-layoffs-because-i-need-less-heads-with-ai/" target="_blank" rel="noopener">Salesforce cut 4000 because I need less heads (CNBC)</a> · 
+      <a href="https://www.cnbc.com/2025/04/07/shopify-ceo-prove-ai-cant-do-jobs-before-asking-for-more-headcount.html" target="_blank" rel="noopener">Shopify CEO prove AI can't do jobs before hiring (CNBC)</a> · 
+      <a href="https://www.cnbc.com/2025/06/17/ai-amazon-workforce-jassy.html" target="_blank" rel="noopener">Amazon CEO Andy Jassy AI workforce memo (CNBC)</a> · 
+      <a href="https://digitaleconomy.stanford.edu/wp-content/uploads/2025/08/Canaries_BrynjolfssonChandarChen.pdf" target="_blank" rel="noopener">Stanford Canaries in the Coal Mine: Six Facts about AI Employment Effects (PDF)</a> · 
+      <a href="https://www.signalfire.com/blog/signalfire-state-of-talent-report-2025" target="_blank" rel="noopener">SignalFire State of Tech Talent Report 2025</a> · 
+      <a href="https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/" target="_blank" rel="noopener">METR: Early-2025 AI on Experienced Open-Source Developer Productivity</a> · 
+      <a href="https://fortune.com/2025/07/23/ai-coding-tool-replit-wiped-database-called-it-a-catastrophic-failure/" target="_blank" rel="noopener">Replit AI wiped production database (Fortune)</a> · 
+      <a href="https://x.com/karpathy/status/2004607146781278521" target="_blank" rel="noopener">Andrej Karpathy: never felt this behind as a programmer (X post)</a> · 
+      <a href="https://www.darioamodei.com/essay/the-adolescence-of-technology" target="_blank" rel="noopener">Dario Amodei: The Adolescence of Technology</a> · 
+      <a href="https://www.capitalaidaily.com/anthropics-dario-amodei-warns-theres-no-guarantee-ai-will-create-more-jobs-than-it-destroys/" target="_blank" rel="noopener">Anthropic no guarantee AI creates more jobs (CapitalAI Daily)</a> · 
+      <a href="https://newsletter.pragmaticengineer.com/p/dhhs-new-way-of-writing-code" target="_blank" rel="noopener">DHH's new way of writing code (Pragmatic Engineer)</a> · 
+      <a href="https://www.theregister.com/2025/11/18/linus_torvalds_vibe_coding/" target="_blank" rel="noopener">Linus Torvalds: Vibe coding fine but not for production (The Register)</a> · 
+      <a href="https://www.historyofinformation.com/detail.php?id=4276" target="_blank" rel="noopener">Filippo de Strata Polemic Against Printing (History of Information)</a> · 
+      <a href="https://williamwolff.org/wp-content/uploads/2009/06/TrithemiusScribes.pdf" target="_blank" rel="noopener">Trithemius In Praise of Scribes PDF</a> · 
+      <a href="https://gompers.umd.edu/Gould%20notes.htm" target="_blank" rel="noopener">1883 Brotherhood of Telegraphers Strike (Gompers Project)</a> · 
+      <a href="https://sloanreview.mit.edu/article/learning-from-automation-anxiety-of-the-past/" target="_blank" rel="noopener">Learning From Automation Anxiety of the Past (MIT Sloan Review)</a> · 
+      <a href="https://timharford.com/2024/03/what-the-birth-of-the-spreadsheet-teaches-us-about-generative-ai/" target="_blank" rel="noopener">What the spreadsheet teaches us about generative AI (Tim Harford)</a> · 
+      <a href="https://www.npr.org/2020/04/22/841682627/cobol-cowboys-aim-to-rescue-sluggish-state-unemployment-systems" target="_blank" rel="noopener">COBOL Cowboys Rescue State Unemployment (NPR)</a> · 
+      <a href="https://davidgraeber.org/books/bullshit-jobs/" target="_blank" rel="noopener">David Graeber - Bullshit Jobs book page</a> · 
+      <a href="https://medium.com/@melissamcewen/most-software-dev-jobs-are-bullshit-jobs-b768bcea01ff" target="_blank" rel="noopener">Most Software Dev Jobs Are Bullshit Jobs (Medium)</a> · 
+      <a href="https://news.stcn.com/sd/202110/t20211004_3736419.html" target="_blank" rel="noopener">35岁职场荣枯线 (证券时报)</a> · 
+      <a href="https://blog.csdn.net/crazycoldking2015/article/details/150218047" target="_blank" rel="noopener">中国大龄程序员失业率持续上升 (CSDN)</a> · 
+      <a href="https://finance.ifeng.com/c/8p610plgfrf" target="_blank" rel="noopener">巨头裁员，这次史无前例 (凤凰财经)</a> · 
+      <a href="https://finance.eastmoney.com/a/202512133590807812.html" target="_blank" rel="noopener">脉脉2025年度人才报告</a> · 
+      <a href="https://zhuanlan.zhihu.com/p/1916845394220020473" target="_blank" rel="noopener">2025失业潮：脱下长衫的挣扎与突围 (知乎)</a> · 
+      <a href="https://www.thepaper.cn/newsDetail_forward_7983248" target="_blank" rel="noopener">小镇做题家：一个211高校学生的命运陷阱 (澎湃)</a> · 
+      <a href="https://m.thepaper.cn/newsDetail_forward_32918782" target="_blank" rel="noopener">AI骗局完成产业升级：从卖课到Token传销 (澎湃)</a> · 
+      <a href="https://m.thepaper.cn/baijiahao_15054586" target="_blank" rel="noopener">百度前员工李豹月供1.5万 (澎湃)</a>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
