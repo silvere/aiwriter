@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600">
+  <defs>
+    <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#dbeafe"/>
+    </linearGradient>
+    <linearGradient id="layer1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e3a8a"/>
+      <stop offset="100%" stop-color="#1e40af"/>
+    </linearGradient>
+    <linearGradient id="layer2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="layer3" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#60a5fa"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+    <linearGradient id="layer4" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fef3c7"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="600" fill="url(#bg2)"/>
+
+  <!-- 标题：包装在一起卖 -->
+  <text x="600" y="60" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" font-size="22" font-weight="700" fill="#1e293b">8520亿估值 = 四样东西打包</text>
+  <text x="600" y="86" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" font-size="13" fill="#64748b">最贵的那一样，没人能告诉你什么时候到货</text>
+
+  <!-- 第四层（顶层）：AGI 期权（半透明 + 问号） -->
+  <g transform="translate(450, 130)">
+    <rect x="0" y="0" width="300" height="80" rx="6" fill="url(#layer4)" stroke="#d97706" stroke-width="2" stroke-dasharray="8,6" opacity="0.85"/>
+    <text x="150" y="38" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" font-size="16" font-weight="700" fill="#78350f">AGI 期权</text>
+    <text x="150" y="60" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" font-size="12" fill="#92400e">亚马逊 350 亿挂钩</text>
+  </g>
+  <text x="780" y="180" font-family="-apple-system, system-ui, sans-serif" font-size="40" font-weight="800" fill="#fbbf24" opacity="0.85">?</text>
+
+  <!-- 第三层：微软算力锁仓 -->
+  <g transform="translate(420, 230)">
+    <rect x="0" y="0" width="360" height="75" rx="6" fill="url(#layer3)"/>
+    <text x="180" y="34" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" font-size="16" font-weight="700" fill="#fff">微软 Azure 算力锁仓</text>
+    <text x="180" y="56" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" font-size="12" fill="#dbeafe">最大单客 + 多年承诺</text>
+  </g>
+
+  <!-- 第二层：消费者品牌溢价 -->
+  <g transform="translate(390, 320)">
+    <rect x="0" y="0" width="420" height="80" rx="6" fill="url(#layer2)"/>
+    <text x="210" y="36" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" font-size="16" font-weight="700" fill="#fff">ChatGPT 消费者品牌溢价</text>
+    <text x="210" y="58" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" font-size="12" fill="#dbeafe">9 亿周活，95% 不付费</text>
+  </g>
+
+  <!-- 第一层（底层）：实际收入 -->
+  <g transform="translate(360, 415)">
+    <rect x="0" y="0" width="480" height="90" rx="6" fill="url(#layer1)"/>
+    <text x="240" y="40" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" font-size="18" font-weight="800" fill="#fff">实际年化收入 250 亿</text>
+    <text x="240" y="64" text-anchor="middle" font-family="-apple-system, system-ui, sans-serif" font-size="12" fill="#bfdbfe">企业占比 40%，月收入 20 亿</text>
+  </g>
+
+  <!-- 底座 -->
+  <rect x="320" y="520" width="560" height="14" rx="3" fill="#475569"/>
+  <rect x="280" y="534" width="640" height="20" rx="3" fill="#334155"/>
+
+  <!-- 右侧标注 -->
+  <line x1="900" y1="170" x2="930" y2="170" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="940" y="174" font-family="-apple-system, system-ui, sans-serif" font-size="12" fill="#475569">叙事</text>
+  <line x1="900" y1="265" x2="930" y2="265" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="940" y="269" font-family="-apple-system, system-ui, sans-serif" font-size="12" fill="#475569">护城河</text>
+  <line x1="900" y1="360" x2="930" y2="360" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="940" y="364" font-family="-apple-system, system-ui, sans-serif" font-size="12" fill="#475569">流量</text>
+  <line x1="900" y1="460" x2="930" y2="460" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="940" y="464" font-family="-apple-system, system-ui, sans-serif" font-size="12" fill="#475569">事实</text>
+</svg>
