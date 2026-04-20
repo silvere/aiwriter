@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI行业最体面的抢劫：20%的公司拿走了74%的钱</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+    /* ── 2. 核心观点卡 ────────────────────────── */
+    .key-insights {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--brand);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 24px 28px;
+      margin-bottom: 40px;
+      box-shadow: 0 2px 16px rgba(26,86,219,.06);
+    }
+    .key-insights-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--brand);
+      margin-bottom: 14px;
+    }
+    .key-insights-header::before {
+      content: '';
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: var(--brand);
+      border-radius: 50%;
+    }
+    .key-insights ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .key-insights li {
+      font-size: 15px;
+      color: var(--text);
+      padding-left: 20px;
+      position: relative;
+      line-height: 1.6;
+    }
+    .key-insights li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--brand);
+      font-weight: 700;
+      font-size: 18px;
+      line-height: 1.3;
+    }
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 2; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 8px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; }
+    .footer-sources a:hover { text-decoration: underline; }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI行业</span>
+  <h1>AI行业最体面的抢劫：20%的公司拿走了74%的钱</h1>
+  <div class="hero-meta">
+    <span>2026-04-20</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 2. 核心观点卡 -->
+  <div class="key-insights">
+    <div class="key-insights-header">核心观点</div>
+    <ul>
+      <li>AI越成功，受益者越少——74%的经济收益流向20%的企业，剩下80%连本都没回</li>
+      <li>中国大模型赢了调用量输了利润率，这场价格战的真正赢家还没出现</li>
+      <li>AI不淘汰行业，AI淘汰平均数——分化不在公司之间，在每个人的技能定价上</li>
+      <!-- 可选第 4 条 -->
+    </ul>
+  </div>
+
+  <!-- 导语 -->
+  <div class="lead">PwC报告显示，全球AI产业74%的经济收益被20%的公司拿走。剩下80%花了预算上了系统，得到了一个我们也在做AI的标签。这场革命更像一场重新分配。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、数字不会撒谎，撒谎的是解读数字的人</h2>
+
+    <p>PwC这份《2026 AI Performance Study》调查了25个行业、1217位高管。结果如下：</p>
+
+    <p>AI领跑企业每投入1美元，平均回收3.70美元。最顶尖的那批，1美元换10.30美元。</p>
+
+    <p>而56%的企业表示，AI没给自己带来任何显著的财务收益。</p>
+
+    <p>95%的生成式AI试点项目，没有产生直接的财务回报。</p>
+
+    <p>九成五。</p>
+
+    <p>这不是"技术不成熟"的问题。今年斯坦福AI指数报告刚出炉——在SWE-bench编码基准测试里，AI的表现从去年的60%飙到了接近100%。博士级科学问答、多模态推理、竞赛数学，AI全面达到或超过人类基线。</p>
+
+    <p>技术层面已经接近满分了。可赚钱的人还是那20%。</p>
+
+    <p>红杉资本算过一笔账：按照当前的基础设施投入，全球AI公司需要每年赚6000亿美元才能打平。实际收入呢？大约1000亿。中间差了5000亿的缺口。</p>
+
+    <p>这5000亿从哪来？从你的AI预算来。从你买的API调用来。从你给AI供应商交的学费来。</p>
+
+    <p>你以为自己在"拥抱AI"，实际上你在帮别人回本（笑）。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)"><div style="background:#1A56DB;color:#fff;padding:10px 16px;font-size:13px;font-weight:700">数据图（条形图）</div><div style="padding:20px 24px"><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">无显著收益企业占比</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">56%</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:100.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div></div></div>
+
+    <hr>
+
+    <h2>二、赢家的牌桌和输家的PPT</h2>
+
+    <p>PwC的报告里藏着一个更扎心的细节。</p>
+
+    <p>那20%的赢家，并不是技术最好的公司，也不是砸钱最多的公司。他们的共同点只有一个：<strong>用AI重构了业务模型，而不是用AI装点了现有流程。</strong></p>
+
+    <p>AI领跑者把AI用于"业务再造"的概率是其他公司的2.6倍。用AI切入新市场的概率是同行的2到3倍。而最显著的特征——让AI自主决策的比例，以每年2.8倍于同行的速度在增长。</p>
+
+    <p>赢家让AI做决定，输家让AI做汇报。</p>
+
+    <p>80%的企业怎么用AI呢？让AI帮员工写邮件。让AI帮客服回消息。让AI生成一份看起来很专业的报告。</p>
+
+    <p>这些事情，AI确实能做。但这些事情不产生利润，只减少摩擦。你省下了一个实习生的工资，但你的商业模式没变过一个字节。</p>
+
+    <p>这就好比你买了一辆赛车，结果只用来送外卖。车是好车，跑得也快，但你赚的还是每单五块钱。</p>
+
+    <p>真正赚钱的那20%，在用同一辆赛车参加比赛，赢了奖金，拿了赞助，还卖了周边（笑）。</p>
+
+    <p>差距不在工具，在吃法。你拿AI当打字机，人家拿AI当印钞机，然后你还疑惑："为什么我花了同样的钱，效果不一样？"</p>
+
+    <p>因为你不一样。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_01.jpg" alt="split-screen contrast left side showing" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <hr>
+
+    <h2>三、中国AI赢了牌面，但利润呢？</h2>
+
+    <p>2026年2月的第二周，中国大模型的单周调用量达到4.12万亿Token，首次超过了美国的2.94万亿。</p>
+
+    <p>这个数字传遍了所有科技媒体。标题清一色的画风："中国AI调用量超越美国！""中国大模型全球登顶！"</p>
+
+    <p>确实登顶了。但登顶的是调用量，不是利润。</p>
+
+    <p>来看价格：DeepSeek V3.2的API定价是每百万Token 0.28美元。同期Anthropic Claude Opus的定价是5美元。OpenAI GPT-5.4是2.50美元。</p>
+
+    <p>中国最火的模型，比美国最贵的模型便宜了18倍。</p>
+
+    <p>这意味着什么？意味着中国模型要跑出美国模型同样的收入，需要18倍的调用量。我们现在超了多少？1.4倍。</p>
+
+    <p>距离"赢了利润"还差大约13倍的距离，客气地说。</p>
+
+    <p>4月初，OpenRouter平台调用量前十里有6个中国模型——小米MiMo-V2-Pro以4.82万亿Token登顶全球第一。与此同时，斯坦福AI指数显示美国对AI的私人投资是2859亿美元，中国是124亿美元。差了23倍。</p>
+
+    <p>一边在拼命跑量，一边在拼命砸钱。这场仗到底谁赢了？</p>
+
+    <p>有意思的是，风向已经开始变了。2026年2月，智谱AI宣布API涨价，海外订阅价格涨幅30%到60%。月之暗面旗下的Kimi K2.5发布不到一个月，海外收入就超过了国内。</p>
+
+    <p>价格战的逻辑正在反转：打得起的已经打完了，活下来的开始涨价了。</p>
+
+    <strong>这是一场典型的"用亏损换份额，用份额换定价权"的游戏。</strong>问题是，最后拿到定价权的，可能只有两三家。剩下的，连亏损的资格都不会再有。
+
+    <div style="background:#f8f9ff;border:1px solid #e2e8f0;border-radius:12px;padding:20px 24px;margin:32px 0;font-size:13px;color:#4a4a6a;white-space:pre-wrap">【图类型】：对比图
+【核心内容】：
+  - DeepSeek V3.2: $0.28/百万Token
+  - MiniMax M2.5: $0.30/百万Token
+  - OpenAI GPT-5.4: $2.50/百万Token
+  - Anthropic Claude Opus: $5.00/百万Token
+【布局建议】：横向条形
+【配色】：主色 #1A56DB，强调色 #F05252，背景 #FFFFFF</div>
+
+    <hr>
+
+    <h2>四、Agent狂欢——一场没人系安全带的超速行驶</h2>
+
+    <p>2026年最火的词不是"大模型"了，是"Agent"。</p>
+
+    <p>所有大厂都在抢这个词。4月2日阿里发布Qwen3.6-Plus，4月8日DeepSeek上线专家模式，清一色的叙事："我们的模型现在能当Agent了！"</p>
+
+    <p>数据层面，自主AI Agent的流量同比暴增了7851%。你没看错，不是78%，是7851%。HUMAN Security的报告分析了超过一千万亿次交互，结论是：机器对机器的流量已经开始主导互联网。</p>
+
+    <p>2.3%的Agent活动发生在结账页面——意味着AI正在替人类完成购物，从浏览到付款全自动。</p>
+
+    <p>听起来很酷。</p>
+
+    <p>但这里有一个所有人都不太想提的事实：48.9%的企业完全无法监控自己系统里的非人类流量。48.3%的企业分不清合法的AI Agent和恶意的机器人。</p>
+
+    <p>一半的公司不知道自己的系统里有多少AI在跑，也不知道这些AI是在帮你还是在偷你。</p>
+
+    <p>OpenClaw是今年最火的开源Agent框架。GitHub星标27.3万，三周内增速创下开源项目历史纪录。</p>
+
+    <p>同时，公网上可探测到的OpenClaw暴露实例超过46.9万个，其中27.2%存在高危漏洞。工信部3月8日发了安全预警。2月底ClawHub的技能注册表里，约20%是恶意或可疑插件。</p>
+
+    <p>也就是说，每五个Agent插件里就有一个可能是来搞你的。</p>
+
+    <p>这个场景其实很眼熟。全球几百万个App，最终赚到钱的不到1%。剩下99%是给平台交了渠道费，给用户提供了免费劳动。</p>
+
+    <p>Agent的故事正在重演这个剧本。只不过这次更刺激——App最多浪费你的时间，Agent能直接动你的钱。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_02.jpg" alt="digital fortress multiple autonomous robot" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <hr>
+
+    <h2>五、AI不杀人，AI杀平均数</h2>
+
+    <p>公司层面的分化已经够刺激了。但更狠的分化，发生在人身上。</p>
+
+    <p>斯坦福2026年AI指数报告里有一组数据：过去七年，进入美国的AI研究者数量下降了89%。仅过去一年就下降了80%。</p>
+
+    <p>同时，AI在编码基准测试上的表现从60%飙到接近100%，只用了一年。</p>
+
+    <p>把这两件事放在一起看：AI在以指数速度学会程序员的活儿，同时，顶级AI人才的流动正在剧烈收缩。</p>
+
+    <p>这意味着什么？意味着"平庸"这个词正在被重新定价。</p>
+
+    <p>以前，一个中等水平的程序员和一个顶尖程序员，薪资差距大概是2到3倍。以后呢？当AI能做到接近100%的编码任务时，中等水平的程序员提供的价值和AI重叠了。而顶尖程序员——那些能定义问题、设计系统、让AI为自己工作的人——他们的稀缺性反而上升了。</p>
+
+    <p>差距会从3倍拉到10倍，甚至更大。</p>
+
+    <p>这不只发生在程序员身上。PwC的报告显示，AI领跑者扩大自主决策的速度是同行的2.8倍。越来越多的"执行层"决策被AI接管了。</p>
+
+    <p>被接管的不是岗位，是定价权。你的工作还在，但你的议价能力没了。你还在上班，但你的薪资被钉在了AI的成本线上。</p>
+
+    <p>AI不裁员，AI调价。它不会把你赶走，它会让你变得不值钱。</p>
+
+    <p>62%的企业已经在试用Agent，23%已经在部分职能里规模化部署。每多一个Agent上岗，就多一个人类岗位的定价权被压缩。</p>
+
+    <p>这才是AI行业分化最深的一层——不是公司和公司之间的差距，是"能驾驭AI的人"和"被AI替代的人"之间的差距。前者越来越贵，后者越来越便宜。中间没有过渡地带。</p>
+
+    <strong>AI不杀人。AI杀平均数。</strong>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_03.jpg" alt="abstract showing bell curve being" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <hr>
+
+    <h2>结语</h2>
+
+    <p>所以，回到开头那个数字：74%和20%。</p>
+
+    <p>这不是一个关于技术的故事。AI的技术已经够好了，好到在博士级考试里碾压人类，好到一年之内把编码能力从及格拉到满分。</p>
+
+    <p>这是一个关于分配的故事。</p>
+
+    <p>技术越成熟，分配越集中。模型越强大，能驾驭它的人越少。入场券越便宜，赢家通吃的程度越高。</p>
+
+    <p>你要想清楚的不是"要不要用AI"——2026年了，这个问题已经不存在。</p>
+
+    <p>你要想清楚的是：在这场重新分配里，你是收钱的，还是付钱的？你是拿AI重构了自己的核心竞争力，还是花了一笔预算买了一个"我们也在做AI"的安慰剂？</p>
+
+    <strong>AI对所有人开放，但AI的利润只对少数人开放。</strong>
+
+    <p>这就是2026年AI行业最体面的抢劫——门开着，灯亮着，所有人都被邀请入场。只不过，大多数人进去之后才会发现，自己不是客人，是菜。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>AI对所有人开放，但AI的利润只对少数人开放。</p>
+    <p>这就是2026年AI行业最体面的抢劫——门开着，灯亮着，所有人都被邀请入场。只不过，大多数人进去之后才会发现，自己不是客人，是菜。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <a href="https://www.pwc.com/gx/en/news-room/press-releases/2026/pwc-2026-ai-performance-study.html" target="_blank" rel="noopener">PwC 2026 AI Performance Study（2026年4月）</a> · 
+      <a href="https://hai.stanford.edu/ai-index/2026-ai-index-report" target="_blank" rel="noopener">Stanford HAI AI Index 2026 Report（2026年4月）</a> · 
+      <a href="https://www.humansecurity.com/learn/resources/2026-state-of-ai-traffic-cyberthreat-benchmarks/" target="_blank" rel="noopener">HUMAN Security 2026 AI Traffic Report（2026年）</a> · 
+      <a href="https://finance.sina.com.cn/stock/t/2026-03-02/doc-inhpqvaq5350351.shtml" target="_blank" rel="noopener">新浪财经：中国大模型一年狂飙421%（2026年3月）</a> · 
+      <a href="https://www.nbd.com.cn/articles/2026-04-08/4330365.html" target="_blank" rel="noopener">每经网：强化Agent能力成2026年重要方向（2026年4月）</a> · 
+      <a href="https://finance.sina.com.cn/roll/2026-02-13/doc-inhmqwcv6494730.shtml" target="_blank" rel="noopener">新浪财经：智谱打响涨价第一枪（2026年2月）</a> · 
+      <a href="https://www.secrss.com/articles/88391" target="_blank" rel="noopener">安全内参：OpenClaw发展现状与风险分析（2026年3月）</a>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
