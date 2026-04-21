@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meta花了140亿，买了个"不用再装开源理想主义"的许可证</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+    /* ── 2. 核心观点卡 ────────────────────────── */
+    .key-insights {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--brand);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 24px 28px;
+      margin-bottom: 40px;
+      box-shadow: 0 2px 16px rgba(26,86,219,.06);
+    }
+    .key-insights-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--brand);
+      margin-bottom: 14px;
+    }
+    .key-insights-header::before {
+      content: '';
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: var(--brand);
+      border-radius: 50%;
+    }
+    .key-insights ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .key-insights li {
+      font-size: 15px;
+      color: var(--text);
+      padding-left: 20px;
+      position: relative;
+      line-height: 1.6;
+    }
+    .key-insights li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--brand);
+      font-weight: 700;
+      font-size: 18px;
+      line-height: 1.3;
+    }
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 2; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 8px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; }
+    .footer-sources a:hover { text-decoration: underline; }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI行业观察</span>
+  <h1>Meta花了140亿，买了个"不用再装开源理想主义"的许可证</h1>
+  <div class="hero-meta">
+    <span>2026-04-21</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 2. 核心观点卡 -->
+  <div class="key-insights">
+    <div class="key-insights-header">核心观点</div>
+    <ul>
+      <li>Meta的"开源理想主义"从来不是信仰，是打不过OpenAI时的战术工具</li>
+      <li>140亿买Wang，一半买技术，一半买"我可以不再是开源派"的剧本切换费</li>
+      <li>谁在大声拥抱开源，翻译过来就是"目前我排不到第一梯队"</li>
+      <!-- 可选第 4 条 -->
+    </ul>
+  </div>
+
+  <!-- 导语 -->
+  <div class="lead">Meta发Muse Spark的第一件事，是把自己供了三年的开源神龛悄悄拆了。没有悼词，没有交代。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、三年前那篇"开源宣言"，究竟讲的是什么故事</h2>
+
+    <p>要看懂这事儿，先得回到2023年。</p>
+
+    <p>那年2月，Meta悄悄把第一代Llama的权重"泄露"给了研究圈。几周后，社区反应起来了，Meta顺势承认：这就是我们的开源战略。2023年7月，Llama 2正式开源商用免费。</p>
+
+    <p>彼时，OpenAI的GPT-4已经把API价格抬到天上，Anthropic跟着闭源收费，Google还在用各种Gemini演示视频画大饼。</p>
+
+    <p>Meta的位置是什么？</p>
+
+    <p>Meta的位置是：自研模型追不上GPT-4，但我有Facebook、Instagram、WhatsApp三十亿日活——我手上有的是场景，缺的是别人已经跑在前面的模型能力。</p>
+
+    <p>这时候扎克伯格做了一件聪明的事：把"追不上"包装成"送给全世界"。</p>
+
+    <p>开源变成了一种叙事武器。你付费用GPT-4？我Llama 2免费给你。你想做企业落地？我开源你自己部署。你担心数据隐私？我权重下载到本地。</p>
+
+    <p>开发者很感动。学术圈很感动。监管部门很感动——"啊Meta是民主化AI的推动者"。</p>
+
+    <p>唯一不感动的是OpenAI，因为它的API生意被从下面挖墙脚。</p>
+
+    <p>这就是Meta开源战略的真实功能：<strong>它是用"免费"把对手的收费模型打成"值不值"的选择题</strong>。</p>
+
+    <p>2024年7月，扎克伯格写了一篇两千多字的公开信，标题叫"Open Source AI Is the Path Forward"。通篇讲开源对人类、对开发者、对美国创新生态多么重要。</p>
+
+    <p>写得情真意切，像个理想主义者。</p>
+
+    <p>但理想主义者不会在两年后，自己憋出一个更强的模型时，连招呼都不打就关门上锁。</p>
+
+    <p>战术家会。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)"><div style="background:#1A56DB;color:#fff;padding:10px 16px;font-size:13px;font-weight:700">对比图</div><div style="padding:20px 24px"><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">2025年6月</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">143</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:100.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div></div></div>
+
+    <hr>
+
+    <h2>二、Llama 4 是那根压断信仰的稻草</h2>
+
+    <p>2025年4月，Meta发布了Llama 4，包括Scout和Maverick两个版本。</p>
+
+    <p>发布时的宣传口径是：性能对标GPT-4o，开源，可商用，权重全放。</p>
+
+    <p>然后独立研究员开始跑基准测试，发现了一个小问题——Meta在LMArena上送测的Maverick版本，和给开发者下载的版本，不是同一个。</p>
+
+    <p>送测的那份经过了专门的对话格式优化。通俗的说法叫"应试微调"。不通俗的说法叫作弊。</p>
+
+    <p>社区一夜之间从欢迎变成嘲讽。Reddit的r/LocalLLaMA板块开始流行一句话："Meta的基准分，除以2再用。"</p>
+
+    <p>这不是Meta第一次被骂，但这是第一次Meta的"开源人设"被骂。</p>
+
+    <strong>因为开源的道德制高点，是建立在"不装X"这个前提上的。</strong>
+
+    <p>你闭源收费，用户不会骂你作弊，因为用户不知道你里面是什么——反正花钱买产品，体感不行就不续费。</p>
+
+    <p>你开源免费，全世界都能审查你的权重、你的训练方式、你的测评流程。作弊一次，信仰崩一半。</p>
+
+    <p>Llama 4的故事真正吓到扎克伯格的，可能不是"我们模型不够强"，而是"我们连'开源'这张牌都打不干净了"。</p>
+
+    <p>开源本来是Meta在AI竞赛里握着的一张"道德牌+用户牌"。打赢的时候它是护城河，打输的时候它是抽血机——因为越开源越多人发现你不行。</p>
+
+    <p>这时候扎克伯格面临一道选择题：</p>
+
+    <p>A. 继续做开源，死磕Llama 5，把道德牌攥到发烂。  <br>B. 从"我们开源"切换到"我们有钱"，换个故事重来一遍。</p>
+
+    <p>他选B。</p>
+
+    <p>2025年6月，143亿美金砸进Scale AI，49%非投票股权，顺便把28岁的Alexandr Wang抢过来，给了他一个连Meta都没设过的新头衔：Chief AI Officer。</p>
+
+    <p>与此同时，Meta AI被重组。Yann LeCun领导的FAIR被边缘化（几个月后LeCun也宣布离职）。一个全新的部门"Meta Superintelligence Labs"凭空出现。</p>
+
+    <p>所有跟Llama过去相关的人和事，被装进了旧抽屉。</p>
+
+    <p>换人、换部门、换命名体系（从动物系的Llama换到文艺系的Muse），换叙事（从"开源民主化AI"换到"personal superintelligence"）。</p>
+
+    <p>这一整套动作，翻译成大白话是：我们要开始讲一个新故事了，之前那个不算数了。</p>
+
+    <p>143亿，付的主要不是工资，是这张故事切换的许可证费。</p>
+
+    <hr>
+
+    <h2>三、Muse Spark的真实水位：从掉队追到打平手</h2>
+
+    <p>数据放一下（来自独立第三方Artificial Analysis）：</p>
+
+    <ul><li>Muse Spark 在Intelligence Index上拿52分</li>
+<li>Gemini 3.1 Pro Preview：57分</li>
+<li>GPT-5.4 Thinking：57分</li>
+<li>Claude Opus 4.6：53分</li>
+<li>Llama 4 Maverick（Meta自家上一代）：18分</li>
+</ul>
+9个月时间，Meta从18分跑到52分，这是真涨。但跑到52分之后，它还是第四名。
+
+    <p>Health领域有亮点：HealthBench Hard 42.8分，确实全球第一——Meta花钱请了1000多位医生参与训练，垂直领域堆人堆出来的。</p>
+
+    <p>但在ARC AGI 2这种纯抽象推理测试上，Muse Spark只有42.5分。对面Gemini 3.1 Pro 76.5，GPT-5.4 76.1。差了三分之一。</p>
+
+    <p>这个模型的真实评价，不是"翻身"，是"终于进场"。</p>
+
+    <p>一个"刚刚能打"的模型，为什么第一件事是闭源？</p>
+
+    <p>这是整个故事最关键的那个问题。</p>
+
+    <p>答案不复杂：<strong>开源作为战术，只在你追不上的时候有用。</strong></p>
+
+    <p>追不上的时候，你送给世界免费用，至少能挖对手的墙角、挖对手的收费模式、挖对手的开发者生态。这时候你的模型弱一点没关系，你的定位是"免费大礼包"。</p>
+
+    <p>追上来了——哪怕只是追到打平手——继续开源就开始亏了。</p>
+
+    <p>因为你现在的模型每免费放出去一个权重，都是在给自己的下游竞争对手（做API转卖的、做部署服务的、做垂直小模型的）送子弹。你自己辛辛苦苦训出来的能力，别人拿去收钱，你还要倒贴GPU。</p>
+
+    <p>更重要的是：当你的模型能跟GPT-5.4打个七七八八的时候，闭源的API收入预期才终于有了算术意义。</p>
+
+    <p>Meta 2026年AI资本开支指引：1150-1350亿美金。</p>
+
+    <p>接近上一年的两倍。</p>
+
+    <p>花这种钱做出来的东西，免费发到Hugging Face上？这不是理想主义，这是财务事故。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)"><div style="background:#1A56DB;color:#fff;padding:10px 16px;font-size:13px;font-weight:700">数据图（条形图）</div><div style="padding:20px 24px"><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">Gemini 3.1 Pro Preview</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">57</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:100.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">GPT-5.4 Thinking</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">57</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:100.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">Claude Opus 4.6</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">53</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:93.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">Muse Spark</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">52</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:91.2%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">Llama 4 Maverick（Meta上一代）</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">18</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:31.6%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div></div></div>
+
+    <hr>
+
+    <h2>四、谁在拥抱开源，谁在装睡——一张产业位次表</h2>
+
+    <p>这事儿真要看清楚，你得把2026年几个头部玩家的开源姿势摊开看。</p>
+
+    <strong>从不开源的：OpenAI、Anthropic。</strong>
+
+    <p>它们从GPT-3、Claude 1开始就闭源。市场领头位置，不需要用"免费"做叙事，API收入扎实得很。没装过理想，也不用切换。</p>
+
+    <strong>一直开源的：DeepSeek、Qwen、Mistral的部分模型。</strong>
+
+    <p>DeepSeek V4依然放权重。Qwen3.6系列继续开源。这些玩家现在的位置，恰好类似2023年的Meta——模型能力在追赶期，开源是它们挖美国对手墙角最好用的那把铲子。等到有一天它们真的追上了头部，我几乎可以打包票：开源这把铲子会被收回抽屉。</p>
+
+    <strong>从开源转闭源的：Meta。</strong>
+
+    <p>Llama三年，Muse Spark一步。转的时机踩得精准——不早不晚，在"终于能打"但"还没领先"的那个刻度上。</p>
+
+    <strong>从闭源偶尔开源的：Google。</strong>
+
+    <p>Gemma系列开源，Gemini正主闭源。这是"一脚在门里一脚在门外"的标准动作——Gemma让学术圈有面子，Gemini给股东有收入。</p>
+
+    <p>四种姿势，背后是同一个规律：<strong>开源不是价值观，是位置报表。</strong></p>
+
+    <p>你看一家公司在某个时间点开不开源，大概率能倒推出它在这个赛道的自我定位——不是领先，就是认了。</p>
+
+    <p>所以下次再看到某家大厂的CEO在主旨演讲里放出一张slide，上面写着"We embrace open source as a core value"，先不用感动，先掏手机查它最新一代模型的Benchmark。</p>
+
+    <p>要是前三，这是做公益。  <br>要是前十，这是卖广告。  <br>要是三十名开外，这是找同伴。</p>
+
+    <hr>
+
+    <h2>五、结尾</h2>
+
+    <p>Muse Spark不是Meta堕落，是Meta终于可以不装了。</p>
+
+    <p>143亿买的不是一个28岁CEO，是一个"剧本切换"的许可证。Llama的开源神龛被悄悄拆走，不是因为Meta变坏了，是因为Meta终于不需要"免费"这条护城河了——它的钱烧到了每年一千三百亿美金这个量级，再讲情怀讲不过去。</p>
+
+    <p>真正该警惕的不是"Meta闭源"这件事，是下一次有某个科技巨头站在台上，深情地告诉你"开源是AI民主化的未来"。</p>
+
+    <p>别感动。</p>
+
+    <p>先问他：你今年第几名。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>Muse Spark不是Meta堕落，是Meta终于可以不装了。</p>
+    <p>下次某家大厂深情地告诉你"开源是AI民主化的未来"，先问一句：你今年第几名。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <a href="https://techcrunch.com/2026/04/08/meta-debuts-the-muse-spark-model-in-a-ground-up-overhaul-of-its-ai/" target="_blank" rel="noopener">Meta debuts Muse Spark model - TechCrunch (2026-04-08)</a> · 
+      <a href="https://fortune.com/2026/04/08/meta-unveils-muse-spark-mark-zuckerberg-ai-push/" target="_blank" rel="noopener">Meta unveils Muse Spark - Fortune (2026-04-08)</a> · 
+      <a href="https://artificialanalysis.ai/models/muse-spark" target="_blank" rel="noopener">Muse Spark benchmarks - Artificial Analysis</a> · 
+      <a href="https://venturebeat.com/technology/goodbye-llama-meta-launches-new-proprietary-ai-model-muse-spark-first-since" target="_blank" rel="noopener">Goodbye Llama - VentureBeat (2026-04)</a> · 
+      <a href="https://www.theregister.com/2026/04/08/meta_muse_spark/" target="_blank" rel="noopener">Meta's Muse Spark is closed source - The Register (2026-04-08)</a> · 
+      <a href="https://www.cnbc.com/2026/04/08/meta-debuts-first-major-ai-model-since-14-billion-deal-to-bring-in-alexandr-wang.html" target="_blank" rel="noopener">Meta debuts first major AI model since $14B Scale AI deal - CNBC (2026-04-08)</a> · 
+      <a href="https://www.cnbc.com/2025/06/12/scale-ai-founder-wang-announces-exit-for-meta-part-of-14-billion-deal.html" target="_blank" rel="noopener">Scale AI's Alexandr Wang confirms departure - CNBC (2025-06)</a> · 
+      <a href="https://builtin.com/articles/meta-muse-spark-ai-model" target="_blank" rel="noopener">Meta's Muse Spark AI Model - Built In</a>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
