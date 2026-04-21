@@ -24,9 +24,17 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: 安装图片生成依赖
+        run: pip install --quiet openai python-dotenv matplotlib
+
       - name: 填充图片占位符
         env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL }}
+          OPENAI_IMAGE_MODEL: ${{ vars.OPENAI_IMAGE_MODEL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
         run: python3 skills/scripts/fill_images.py posts/
 
       - name: 生成 posts.json（加速首页加载）
