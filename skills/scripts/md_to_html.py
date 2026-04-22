@@ -9,7 +9,6 @@ md_to_html.py  —  将 article.md + metadata.json 组装进 HTML 模板
   --title       文章标题（覆盖 MD 一级标题）
   --category    分类标签（默认：AI深度报道）
   --date        日期 YYYY-MM-DD（默认：今天）
-  --insight1/2/3  三条核心观点
   --lead        导语
   --conclusion1/2 结论段落
   --out         输出 HTML 路径（默认：同目录 article.html）
@@ -106,9 +105,6 @@ def main():
     parser.add_argument('--title', default='')
     parser.add_argument('--category', default='AI深度报道')
     parser.add_argument('--date', default=str(date.today()))
-    parser.add_argument('--insight1', default='')
-    parser.add_argument('--insight2', default='')
-    parser.add_argument('--insight3', default='')
     parser.add_argument('--lead', default='')
     parser.add_argument('--conclusion1', default='')
     parser.add_argument('--conclusion2', default='')
@@ -134,9 +130,6 @@ def main():
     title       = get('title',       args.title,       '文章标题')
     category    = get('category',    args.category,    'AI深度报道')
     pub_date    = get('date',        args.date,        str(date.today()))
-    insight1    = get('insight1',    args.insight1,    '')
-    insight2    = get('insight2',    args.insight2,    '')
-    insight3    = get('insight3',    args.insight3,    '')
     lead        = get('lead',        args.lead,        '')
     conclusion1 = get('conclusion1', args.conclusion1, '')
     conclusion2 = get('conclusion2', args.conclusion2, '')
@@ -149,9 +142,6 @@ def main():
     html = html.replace('{{TITLE}}',          title)
     html = html.replace('{{CATEGORY}}',       category)
     html = html.replace('{{DATE}}',           pub_date)
-    html = html.replace('{{INSIGHT_1}}',      insight1)
-    html = html.replace('{{INSIGHT_2}}',      insight2)
-    html = html.replace('{{INSIGHT_3}}',      insight3)
     html = html.replace('{{LEAD}}',           lead)
     html = html.replace('{{CONCLUSION_P1}}',  conclusion1)
     html = html.replace('{{CONCLUSION_P2}}',  conclusion2)

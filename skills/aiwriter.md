@@ -620,9 +620,6 @@ python3 skills/scripts/md_to_html.py \
   --title    "{文章标题}" \
   --category "{分类标签}" \
   --date     "{今日日期}" \
-  --insight1 "{核心观点1}" \
-  --insight2 "{核心观点2}" \
-  --insight3 "{核心观点3}" \
   --lead     "{导语}" \
   --conclusion1 "{结论第一段}" \
   --conclusion2 "{结论第二段}"
