@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>学术圈最爱的"思维链"，原来是4chan大爷搞黄色时捡的</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+    /* ── 2. 核心观点卡 ────────────────────────── */
+    .key-insights {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--brand);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 24px 28px;
+      margin-bottom: 40px;
+      box-shadow: 0 2px 16px rgba(26,86,219,.06);
+    }
+    .key-insights-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--brand);
+      margin-bottom: 14px;
+    }
+    .key-insights-header::before {
+      content: '';
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: var(--brand);
+      border-radius: 50%;
+    }
+    .key-insights ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .key-insights li {
+      font-size: 15px;
+      color: var(--text);
+      padding-left: 20px;
+      position: relative;
+      line-height: 1.6;
+    }
+    .key-insights li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--brand);
+      font-weight: 700;
+      font-size: 18px;
+      line-height: 1.3;
+    }
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 2; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 8px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; }
+    .footer-sources a:hover { text-decoration: underline; }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI行业观察</span>
+  <h1>学术圈最爱的"思维链"，原来是4chan大爷搞黄色时捡的</h1>
+  <div class="hero-meta">
+    <span>2026-04-22</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 2. 核心观点卡 -->
+  <div class="key-insights">
+    <div class="key-insights-header">核心观点</div>
+    <ul>
+      <li>Chain of Thought不是Google发现的，是2020年4chan网友在AI Dungeon里撞出来的副产品，早了一年半</li>
+      <li>学术圈被考古后悄悄删掉"first"claim，但从不引用Reddit和游戏截图——因为那不是引用格式</li>
+      <li>2026年的AI行业最大信息差不在arxiv和大厂发布会，而在Discord、Reddit和玩家群</li>
+      <!-- 可选第 4 条 -->
+    </ul>
+  </div>
+
+  <!-- 导语 -->
+  <div class="lead">AI行业最大的信息差，不是谁的模型参数多，而是谁知道学术圈只是一个延迟两年的盖章部门。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、案发现场：2020 年那个夏天，AI Dungeon 的聊天框</h2>
+
+    <p>时间回到 2020 年 7 月。</p>
+
+    <p>OpenAI 把 GPT-3 开放给外部开发者，第一个现象级落地产品不是 ChatGPT——那玩意儿还得再等两年半——而是一个叫 <strong>AI Dungeon</strong> 的文字冒险游戏。你输入一段情景，AI 扮演的世界会按你写的方向一直往下编。</p>
+
+    <p>AI Dungeon 最早用的是 GPT-2，7 月接入 GPT-3 之后，玩家体验直接起飞，当月活跃用户一度冲到百万级别。</p>
+
+    <p>这个游戏的玩家构成也很有意思——官方数据从来没细分过，但熟悉内部构成的人都知道，玩家里相当一部分是来"测试模型边界"的。通俗翻译是：来搞黄色的、来写暴力情节的、来玩各种没法在现实里玩的剧本的。</p>
+
+    <p>就是这群人，最先发现了一个奇怪的现象。</p>
+
+    <p>AI 扮演 NPC 的时候，如果你直接问 NPC "37 × 24 等于几"，大概率算不对。但你要是在前面加一句"这个 NPC 是个数学老师，他保持角色、把每一步都写在黑板上"，然后让他一步一步来——算对的概率会肉眼可见地涨。</p>
+
+    <p>这事儿在 4chan 的 /v/（游戏板）和后来的 /x/（超自然板）先传开，然后扩散到 Reddit 的 r/AIDungeon 和 Discord 社区。</p>
+
+    <p>有人把这个叫"让 AI 戴上面具"，有人叫"让 AI 展开想一下"，还有人干脆叫"治好 AI 的短路病"——反正没一个正经词。但有一点是共识：<strong>加了这套"一步步来"的咒语之后，模型什么都算得更准，故事也讲得更圆</strong>。</p>
+
+    <p>他们的动机不是发论文，是让剧情跑得更顺。</p>
+
+    <p>因为你要让 NPC 演一场完整的犯罪推理剧，光是让 NPC 说一句"我杀了他"不够，你得让 NPC 一步步交代动机、作案工具、不在场证明、心理活动——不然剧情会崩。你要让 AI 扮演的女仆演一段有情节的剧本，光是"她脱掉了衣服"也不够，你得让她一步步想她为什么在这间屋子里、她在等谁、她之后要说什么——不然这段戏就特别瘸。</p>
+
+    <p>半年之后，这套方法已经成了 AI Dungeon 高级玩家的基础操作。Discord 上有人开帖整理，Reddit 上有精华帖总结。甚至还有玩家用这套方法让 GPT-3 去做初中物理题——当年的 GPT-3 原本物理题正确率大概 17%，加了"一步步来"之后能飙到 60%+。</p>
+
+    <p>这些讨论的时间戳都还在。</p>
+
+    <p>没人给它起英文名字。也没人想过要去 arxiv 投稿。</p>
+
+    <hr>
+
+    <h2>二、一年半后，Google Brain 决定给这件事起个名字</h2>
+
+    <p>2022 年 1 月 28 日，arxiv 上挂出一篇九人署名的论文，一作 Jason Wei，合著包括 Dale Schuurmans、Quoc Le 这些 Google Brain 的资深面孔。</p>
+
+    <p>论文题目：<strong>Chain-of-Thought Prompting Elicits Reasoning in Large Language Models</strong>。</p>
+
+    <p>里面的核心操作是这样的——把一道数学题直接扔给模型，让它输出答案，它答不对；但把一道类似的题目连同<strong>逐步解答过程</strong>一起作为 few-shot 示例喂给它，再问新题，它就能把解题步骤模仿着输出来，答案准确率大涨。</p>
+
+    <p>这个叫法很学术，很洋气，很有 Google Brain 的味道。</p>
+
+    <p>论文的 v1 版本里有一句话：*"To our knowledge, this paper is the first to show..."（据我们所知，这是第一篇展示……的论文）*。</p>
+
+    <p>然后就是大家熟悉的学术剧本了——这篇论文火了。火到什么程度？到 2025 年底被引将近一万次，进了几乎所有 LLM 综述的 reference list，进了所有 AI 课程的教学 slide，进了 OpenAI 和 Anthropic 各自安全论文的引用来源。</p>
+
+    <p>"Chain of Thought" 四个字，从此成了一个产业黑话。你跟投资人说"我们做 CoT 优化"，对方眼睛会亮。你说"我们做一步步来的 prompt"，对方大概会让你下次再约。</p>
+
+    <p>问题是，这套操作的 prior art——就是那群 4chan 网友 2020 年夏天在 AI Dungeon 里搞出来的完全一样的技巧——在论文里一个字都没提。</p>
+
+    <p>也没 cite。也没在致谢里写"感谢 r/AIDungeon 社区"。</p>
+
+    <p>不是没人知道，是当作不知道。</p>
+
+    <p>直到 2026 年 4 月，这事儿被重新翻出来。有人把 2020 年 7 月到 2021 年的 Reddit 帖子、4chan 存档、Discord 聊天记录按时间戳拉了一条线，和论文 Figure 1 的示例做对比。</p>
+
+    <p>结论非常尴尬——Google 论文 Figure 1 的典型例子是"让模型一步步解数学应用题"，和 2020 年 AI Dungeon 玩家逼 NPC 一步步解中学数学题的操作，<strong>结构层面是同一件事</strong>。</p>
+
+    <p>Google 后来出了论文 v6 版，把那句 "to our knowledge, this paper is the first to show" 删掉了，换成了更柔和的 "we propose..."。</p>
+
+    <p>但从来没有正式声明。从来没有补充引用。从来没有致谢过 4chan。</p>
+
+    <p>这种处理方式，商业圈有个专门的词叫——<strong>事后对冲</strong>（hedge）。</p>
+
+    <p>你注意看整个过程：先发论文抢立牌坊，立到一半被人抓到把柄，再悄悄把最硬的那句话改软。不认错，不致谢，不补引用，就是把证据口径修一修。</p>
+
+    <p>因为学术圈的底层逻辑从来不是"谁先发现算谁的"，而是"谁先把它写成论文投进 venue 算谁的"。</p>
+
+    <p>Reddit 帖子和 4chan 截图不是引用格式，就等于不存在。</p>
+
+    <p>（多么熟悉的味道）</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)"><div style="background:#1A56DB;color:#fff;padding:10px 16px;font-size:13px;font-weight:700">数据图（条形图）</div><div style="padding:20px 24px"><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">4chan玩家实际开始用</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">0</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:0.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">Reddit精华帖总结</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">6</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:8.8%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">Google提交arxiv</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">18</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:26.5%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">论文被引破千</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">30</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:44.1%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">被写进教科书成"CoT"</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">42</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:61.8%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">Google悄悄删"first"claim</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">68</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:100.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div></div></div>
+
+    <hr>
+
+    <h2>三、这不是花絮，是系统性的漏洞</h2>
+
+    <p>有人会说：这不就是个学术圈小八卦吗？</p>
+
+    <p>不是。这是整个 LLM 时代知识生产体制的一个结构性漏洞。</p>
+
+    <p>为什么这么说。</p>
+
+    <p>因为 Chain of Thought 不是孤例。你把近四年 LLM 圈被写进教科书的几个关键 prompt 技术拉出来盘一下，你会发现同样的剧本在反复上演。</p>
+
+    <strong>ReAct</strong>（让模型"思考—行动—观察"循环）：论文 2022 年 10 月，Princeton + Google。社区 prior art 可以追溯到 2022 年初 GPT-3 玩家的"让 AI 自言自语然后 API 调用"的帖子。
+
+    <strong>Chain of Density</strong>（让模型迭代压缩摘要）：论文 2023 年 9 月。但早在 2022 年底已经有 Reddit 用户在 r/OpenAI 分享过同样结构的 prompt，只不过没人写论文。
+
+    <strong>Tree of Thoughts</strong>（树形思维）：论文 2023 年 5 月。Hacker News 上 2023 年 2 月就有人在讨论用 GPT-4 做"分叉式 prompt"，和 ToT 几乎完全一样的结构。
+
+    <strong>Constitutional AI / RLHF 的早期 jailbreak 应对</strong>：Anthropic 2022 年底的论文。但让模型"扮演一个守则更严格的自己"来抵御 jailbreak 的玩法，4chan 和 Reddit 早在 2022 年初就玩过。
+
+    <p>这里不是说学术圈什么都没做——他们确实把"撞见"变成了"benchmark 化的结论"，这是有价值的工作。</p>
+
+    <strong>但学术圈做的是"二次加工"，它不是"一次发现"。</strong>
+
+    <p>而当二次加工者拿走全部的 credit、命名权、引用权，一次发现者连脚注都混不上的时候，这个系统就已经出问题了。</p>
+
+    <p>MCP（Model Context Protocol）是另一个反例——Anthropic 2024 年底搞的这个东西，到 2026 年 3 月装机量突破 9700 万。它的传播路径是：<strong>GitHub → 工程师博客 → Twitter → Discord</strong>，arxiv 论文都排不上号。整个 MCP 生态是野生长出来的。</p>
+
+    <p>这种民间 → 产业的路径，在 LLM 领域占了 prompt 技术发现的 95% 以上。</p>
+
+    <p>而学术圈处理这件事的方式是——继续把期刊和顶会设为唯一的仲裁权威，继续让 Reddit 帖子无法作为引用格式存在。</p>
+
+    <p>这像不像另一个很熟悉的场景？</p>
+
+    <p>年轻人在短视频上玩出一个新梗，央媒或某个文化专家过几个月把它写成一篇"互联网文化观察"发在学术期刊或大号公众号上，然后就变成"据某某研究表明……"——原本那个玩梗的年轻人，连名字都不会被提一下。</p>
+
+    <p>一模一样的结构。</p>
+
+    <strong>就是在给别人做论文的肉。</strong>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>A split-screen illustration: left side shows chaotic colorful forum threads, chat bubbles, game screenshots floating around; right side shows a single pristine white academic paper with a formal seal on top, a thick arrow flowing from left to right transferring content into the paper, flat design, minimalist illustration, tech style, blue and white color palette, no text, no labels, clean white background</pre></details>
+</div>
+
+    <hr>
+
+    <h2>四、为什么现在 2026 年，这件事突然被挖出来很关键</h2>
+
+    <p>2026 年的 AI 行业已经和 2022 年完全不是一个量级。</p>
+
+    <p>OpenAI 年化营收过 250 亿美元，Anthropic 年化营收过 190 亿美元。第一季度 VC 交易总额 2672 亿美元——历史单季度最高纪录的两倍还多。AI agent 类产品的企业采购决策据 AGAT 的 2026 调研，有 82% 的高管说自己"信心十足"，但实际拿到安全或 IT 审批上生产的只有 14.4%。</p>
+
+    <p>这意味着什么。</p>
+
+    <p>意味着 AI 行业的信息密度极度集中——谁有 prompt 的新玩法、谁发现了 LLM 的新边界、谁先知道某个 agent 架构跑得通——这些信息今天就等于钱。</p>
+
+    <p>而这些信息，<strong>98% 不在 arxiv 论文里</strong>。</p>
+
+    <p>举个具体的例子。上周（2026 年 4 月 15 日前后）Anthropic 宣布它的 Claude Mythos Preview 版本只给少数机构开放，原因是"该模型能识别并利用数万个软件漏洞"。这个消息正式放出之前，X 平台（前 Twitter）和 Discord 的 AI 安全 server 已经传了两周——有安全研究员在 server 里展示 Mythos Preview 能一句 prompt 解完一个 CTF 题目。</p>
+
+    <p>如果你 2026 年还在蹲 arxiv 等突破论文、蹲 NeurIPS 看谁中了 best paper、蹲 OpenAI 开发者大会看主旨演讲——兄弟，你拿到的信息已经过了两轮加工，味道早就变了。</p>
+
+    <p>真正的一手信息在哪里？</p>
+
+    <p>在 Discord 的 AI 服务器（比如 LocalLLaMA 的 server、OpenRouter 的 server、各家模型厂商的 dev channel）。在 X 平台的 prompt engineer 圈（搜 "$claude" "$gemini" 看最新尝试）。在 Reddit 的 r/LocalLLaMA、r/singularity、r/ClaudeAI。在 Hacker News 的 AI 热门帖评论区。</p>
+
+    <p>这些地方有两个特点：</p>
+
+    <p>一，没人在乎谁"先"发现。发现了就贴出来，大家试了就用，根本不 care 命名权。</p>
+
+    <p>二，信息的"半衰期"极短。一个好用的 prompt 技巧从发布到被纳入大厂官方文档，通常不超过 6 个月——2022 到 2025 年的例子证明了这一点。</p>
+
+    <strong>学术圈在 LLM 时代的功能，已经从"发现者"退化为"归档员"。</strong>
+
+    <p>Bengio 去年打脸 CoT 的那篇《CoT Is Not Explainability》论文更加深了这种讽刺——学术圈连"CoT 到底是不是真正的推理"这个问题都还没吵明白，就已经急着把它命名、写论文、收 citation 了。2025 年 25% 的顶会 LLM 论文错把 CoT 当作模型"可解释性"的证据，Bengio 一句"你们搞错了"打掉了上万个 citation 的基石。</p>
+
+    <p>但 CoT 本身照样好用。因为玩家本来就没把它当"推理"用，他们只是觉得"这么问效果好"。</p>
+
+    <p>所以真正的问题从来不是"CoT 到底是不是推理"，而是"我们是不是该继续让学术圈来定义什么算 AI 的新能力"。</p>
+
+    <p>答案你心里有数。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)"><div style="background:#1A56DB;color:#fff;padding:10px 16px;font-size:13px;font-weight:700">数据图（条形图）</div><div style="padding:20px 24px"><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">Discord AI服务器</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">10.0</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:100.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">Reddit r/LocalLLaMA</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">8.5</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:85.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">X平台prompt圈</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">7.8</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:78.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">Hacker News评论区</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">6.2</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:62.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">GitHub热门项目README</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">5.5</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:55.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">arxiv近期paper</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">3.1</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:31.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">大厂官方博客</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">2.4</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:24.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">主旨演讲/行业大会</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">1.0</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:10.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div></div></div>
+
+    <hr>
+
+    <h2>五、结尾：不出版论文，就不算巨人</h2>
+
+    <p>学术圈最喜欢引用牛顿那句话——"我是站在巨人的肩膀上"。</p>
+
+    <p>这句话听上去谦虚，听久了你会发现一件事：<strong>谁算"巨人"，不是物理决定的，是论文决定的</strong>。</p>
+
+    <p>你有没有发现一个 AI 领域的发现、能不能被引用、能不能进教科书、能不能被后人记住，关键从来不是"你发现了什么"——是"你把它写成什么格式、投在什么 venue、有没有英文缩写、有没有 GitHub repo"。</p>
+
+    <p>2020 年那年夏天在 AI Dungeon 里敲"让 NPC 一步步解题"的那批 4chan 网友，从任何一种严肃的"发现者"定义上讲，他们都是 Chain of Thought 这件事的第一批发现者。</p>
+
+    <p>但他们不是巨人。</p>
+
+    <p>因为他们没写论文，没开源，没注册 GitHub 组织，没在 arxiv 提交，没投 NeurIPS。他们做完就回去打游戏了。有些人早就把当年的 4chan 账号删了，有些人根本不知道自己曾经碰到过一个"奠基性"的技巧。</p>
+
+    <p>没有人会在教科书里提他们。</p>
+
+    <p>没有人会在 Jason Wei 的 Google Scholar 主页上点开引用列表，然后发现最上面写着"感谢 2020 年 7 月 AI Dungeon 的 Anonymous 玩家"。</p>
+
+    <p>他们是 AI 行业的"肉"。他们的发现被学术圈切好、装盘、摆到了巨人的桌上。</p>
+
+    <p>（笑）</p>
+
+    <p>但下一次 AI 重大突破出现的时候，大概率还是这套剧本——某个高中生在家用 4090 跑的某个模型撞出一个现象，他在 Discord 发了个帖子，一群人试了觉得牛逼，过三个月 Stanford 的一个博士生把它总结成 arxiv 论文、取个英文名、cite 自己的导师，然后它就成了 "Stanford 某某组的发现"。</p>
+
+    <p>如果你是那个高中生，你有两个选择。</p>
+
+    <p>第一，赶紧注册个 arxiv 账号，学会用 LaTeX，研究 NeurIPS 投稿格式，然后在下次撞见新东西的时候抢先提交 prior art——确保引用列表里至少有你的名字。</p>
+
+    <p>第二，继续回去打游戏。让学术圈继续写论文，让引用数继续涨，但你知道<strong>真相</strong>。</p>
+
+    <p>大多数人会选第二。</p>
+
+    <p>因为真相是一种内部货币，不上流通。</p>
+
+    <p>而论文是外部货币，能换钱、换教职、换 H-index、换 Elon Musk 转发。</p>
+
+    <p>这两种货币之间的汇率，就是 AI 时代最大的认知鸿沟——<strong>谁在玩，谁在归档；谁在发现，谁在命名；谁在跑，谁在盖章</strong>。</p>
+
+    <p>2020 年那个夏天的 4chan 网友不会写论文。</p>
+
+    <p>但 2026 年的你，应该至少知道这件事是怎么运作的。</p>
+
+    <p>（就这）</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>论文是外部货币能换钱、换教职、换H-index、换Elon Musk转发；真相是内部货币不上流通——这两种货币的汇率，就是AI时代的认知鸿沟。</p>
+    <p>2020年那个夏天的4chan网友不会写论文，但2026年的你，应该至少知道这件事是怎么运作的。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <a href="https://finance.biggo.com/news/V1agmp0BvbjfYyetY6Uq" target="_blank" rel="noopener">BigGo Finance：追溯 AI 思维链的起源 — 4chan 玩家的意外发现</a> · 
+      <a href="https://letsdatascience.com/news/4chan-sparks-discovery-of-ai-reasoning-techniques-68f40338" target="_blank" rel="noopener">Let's Data Science：4chan 激发 AI 推理技术的发现</a> · 
+      <a href="https://arxiv.org/abs/2201.11903" target="_blank" rel="noopener">Chain-of-Thought Prompting Elicits Reasoning in Large Language Models (arXiv 2201.11903)</a> · 
+      <a href="https://www.crescendo.ai/news/latest-ai-news-and-updates" target="_blank" rel="noopener">Crescendo AI：2026 年 AI 最新动态</a> · 
+      <a href="https://radicaldatascience.wordpress.com/2026/04/17/ai-news-briefs-bulletin-board-for-april-2026/" target="_blank" rel="noopener">Radical Data Science：2026 年 4 月 AI 新闻简报</a> · 
+      <a href="https://agatsoftware.com/blog/ai-agent-security-enterprise-2026/" target="_blank" rel="noopener">AGAT Software：2026 企业 AI Agent 安全调研</a> · 
+      <a href="https://digitaleconomy.stanford.edu/app/uploads/2026/03/EnterpriseAIPlaybook_PereiraGraylinBrynjolfsson.pdf" target="_blank" rel="noopener">Stanford Enterprise AI Playbook (2026)</a> · 
+      <a href="https://arxiv.org/html/2507.11473v1" target="_blank" rel="noopener">Chain of Thought Monitorability (arxiv 2507.11473)</a>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
