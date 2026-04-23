@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI替你做完了，你为什么还想自己做一遍？</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 2; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 8px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; }
+    .footer-sources a:hover { text-decoration: underline; }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI深度</span>
+  <h1>AI替你做完了，你为什么还想自己做一遍？</h1>
+  <div class="hero-meta">
+    <span>2026-04-23</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">一个程序员朋友把AI写的代码删了，花四十分钟自己重写了一遍。代码能跑，测试也过了。他说：因为我看不懂它在干什么。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一个40%的秘密</h2>
+
+    <p>2026年初，开发者社区的一项研究追踪了1.53亿行代码的生命轨迹，发现了一个违反直觉的趋势：AI生成的代码中，有40%在提交后两周内被开发者重写。两年前这个数字是33%。AI写代码的能力在变强，被重写的比例反而在升。</p>
+
+    <p>同一时期，代码分析公司GitClear在2.11亿行代码中发现了另一组数据：包含五行以上重复代码的代码块比往年多了8倍，而代码重构量下降了近40%。开发者在越来越多地复制粘贴AI的输出，同时越来越少地去整理和优化。代码库在膨胀，理解在萎缩。</p>
+
+    <p>如果你觉得是因为AI代码质量差，数据不完全支持这个解释。CodeRabbit对470个开源项目的Pull Request做了逐条分析，AI代码的问题确实比人写的多1.7倍，但主要集中在命名规范和可读性层面，不是逻辑错误。代码在技术上是对的。删掉它的理由不是"不能用"，而是"不敢用"。</p>
+
+    <p>Stack Overflow今年2月的调查给了另一个线索：开发者使用AI编程工具后，花在重复性劳动上的总时间几乎没变。AI替你写了代码，但你得花差不多的时间去读它、审它、测它、改它。效率的净提升，远没有Keynote演示里看起来那么大。</p>
+
+    <p>96%的开发者说自己不完全信任AI生成的代码。但59%的人承认正在使用自己不完全理解的AI代码。</p>
+
+    <p>这两个数字放在一起才有意思：大多数人不信任，但大多数人还是在用。不是因为觉得安全，而是因为不用的话太慢了。</p>
+
+    <p>那些选择把代码删掉重写的人，在做一笔看似亏本的交易——用四十分钟，买一样叫"理解"的东西。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)"><div style="background:#1A56DB;color:#fff;padding:10px 16px;font-size:13px;font-weight:700">数据图（横向条形图）</div><div style="padding:20px 24px"><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">AI代码重写率(2024)</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">33%</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:34.4%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">AI代码重写率(2026)</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">40%</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:41.7%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">不信任AI代码的开发者</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">96%</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:100.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">使用不理解AI代码的开发者</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">59%</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:61.5%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">Debug AI代码时间超过手写</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">63%</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:65.6%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div></div></div>
+
+    <hr>
+
+    <h2>你在买的不是效率</h2>
+
+    <p>我们对"工作"有一个根深蒂固的误解：以为产出就是结果。代码、报告、方案、PPT——做出来就行了，过程是成本，能省则省。</p>
+
+    <p>但如果你写过任何需要动脑子的东西，你知道这不对。写一份分析报告写到第三页，你可能推翻第一页的结论。这个"推翻"不是浪费，它是收获——它改变了你对问题的理解。让AI写这份报告，你得到了一份读起来不错的文档，但没经历那个推翻的过程。你得到了答案，但跳过了得出答案的路径。</p>
+
+    <p>而那条路径，才是你下次还能做对的原因。</p>
+
+    <p>63%的开发者说，他们debug AI代码花的时间比自己写更多。这个数字常被引用来证明"AI还不够好"。但它证明的可能是另一件事：读懂别人的思路，本来就比自己想一遍更难。这不是AI特有的问题——任何一个程序员都会告诉你，读别人的代码比自己写更痛苦。AI只是把这个古老的困境放大了。</p>
+
+    <p>理解不是阅读。理解是重建——在自己脑子里把逻辑从头走一遍。看一遍不算，抄一遍也不算。只有自己走过那条路，你才知道每个分叉口为什么选了这个方向。</p>
+
+    <p>我那个朋友在做的事，不是纠错，是重建。</p>
+
+    <p>效率叙事的逻辑是：能省的步骤都应该省。但"理解"不是一个可以省掉的步骤，它是能力的积累。你省掉这次，下次面对类似问题，你的判断力不会增长。今天你依赖AI写了一个模块，明天这个模块出了bug，你不知道从哪里下手——不是因为你笨，而是因为你从来没在脑子里走过这段逻辑。</p>
+
+    <p>AI给你一次性用品，用完就没了。你亲手做获得的是长期资产，越用越值钱。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_01.jpg" alt="Abstract concept building knowledge through" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <hr>
+
+    <h2>谁还有资格"重写"</h2>
+
+    <p>当然，你可以马上反驳我：重写是一种奢侈。</p>
+
+    <p>我那个朋友能花四十分钟重写，是因为他在一个不催命的项目里，有一个不催命的老板。更多的人没有这个条件。</p>
+
+    <p>微软公开说自己20%到30%的代码由AI编写，谷歌是大约20%。大厂的程序员有完整的代码审查流程、安全扫描工具、充裕的review时间。他们有资格说"这段我想自己写一下"。</p>
+
+    <p>但中小团队呢？外包项目呢？那些deadline是昨天的创业公司呢？</p>
+
+    <p>他们没有时间重写，甚至没有时间review。他们做的事情就是那59%——用自己不完全理解的AI代码，一层一层往上堆。后果已经在账单上了：Copilot生成的程序中38.8%包含安全漏洞，AI代码出现性能问题的频率是人类手写代码的8倍。这些百分比背后是真实的安全事故和真实的用户损失。</p>
+
+    <p>而这种分层不限于程序员。</p>
+
+    <p>你用AI写了一封英文邮件发给客户，对方回复了一段你看不太懂的话，你又扔给AI翻译，AI又帮你起草了回复。整个对话你参与了，但你不知道自己在聊什么。你用AI做了一份行业分析PPT，老板问了一个数据的出处，你答不上来——因为数据是AI找的，你没验证过。</p>
+
+    <p>这些场景每天都在发生。"用了AI"和"理解AI做了什么"之间的鸿沟，正在成为新的能力分水岭。</p>
+
+    <p>黄仁勋那句被引用到烂的话——"AI不会取代人，但不用AI的人会被用AI的人取代"——只说了一半。用AI但不理解AI在做什么的人，终究会被理解的人取代。不是因为他们能力差，而是因为当系统出了问题——它一定会出问题——只有理解的人能修。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_02.jpg" alt="Digital divide concept showing two" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <hr>
+
+    <p>后来我又问那个朋友：花四十分钟重写，值吗？</p>
+
+    <p>他说："写完之后我终于知道系统的那块在干什么了。之前它对我来说就是个黑盒，现在它是我的了。"</p>
+
+    <p>"是我的了。"</p>
+
+    <p>当AI能替你做完一切，你选择亲手重做的那件事，就定义了你是谁。有些东西，只有亲手做过，才真正属于你。</p>
+
+    <p>理解就是这样的东西。</p>
+
+    <hr>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>当AI能替你做完一切，你选择亲手重做的那件事，就定义了你是谁。</p>
+    <p>有些东西，只有亲手做过，才真正属于你。理解就是这样的东西。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <a href="https://dev.to/kunal_d6a8fea2309e1571ee7/ai-generated-code-is-a-time-bomb-why-40-of-it-gets-rewritten-within-two-weeks-2026-582p" target="_blank" rel="noopener">DEV Community: AI-Generated Code Is a Time Bomb (2026)</a> · 
+      <a href="https://stackoverflow.blog/2026/02/18/closing-the-developer-ai-trust-gap/" target="_blank" rel="noopener">Stack Overflow: Closing the AI Trust Gap (2026)</a> · 
+      <a href="https://www.coderabbit.ai/blog/state-of-ai-vs-human-code-generation-report" target="_blank" rel="noopener">CodeRabbit: State of AI vs Human Code Generation Report</a> · 
+      <a href="https://www.gitclear.com/coding_on_copilot_data_shows_ais_downward_pressure_on_code_quality" target="_blank" rel="noopener">GitClear: Code Quality in the Age of AI (2024-2025)</a> · 
+      <a href="https://thenewstack.io/agentic-ai-verification-impact/" target="_blank" rel="noopener">The New Stack: 96% of Developers Don't Trust AI Code</a> · 
+      <a href="https://clutch.co/resources/devs-use-ai-generated-code-they-dont-understand" target="_blank" rel="noopener">Clutch.co: Devs Use AI Code They Don't Understand</a> · 
+      <a href="https://www.theregister.com/2026/01/09/devs_ai_code/" target="_blank" rel="noopener">The Register: Devs Doubt AI-Written Code (2026)</a>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
