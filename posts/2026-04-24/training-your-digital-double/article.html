@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>你每天说的帮我改一下，正在训练一个你自己的替身</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 2; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 8px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; }
+    .footer-sources a:hover { text-decoration: underline; }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI深度</span>
+  <h1>你每天说的帮我改一下，正在训练一个你自己的替身</h1>
+  <div class="hero-meta">
+    <span>2026-04-24</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">张远在2026年3月的一个周二下午，第127次对ChatGPT说了帮我改一下。他不知道的是，这127次对话已经构成了一份比他的简历更精确的认知档案——记录的不是他做了什么，而是他如何判断、如何取舍、如何在还行和不够好之间画那条线。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一个你没注意到的动作</h2>
+
+    <p>"帮我改一下"是2026年中国互联网上被输入最多的句子之一。修改周报、调整PPT配色、重写一封措辞微妙的邮件。大多数人把它当作一个功能指令，就像按下计算器的等号键。</p>
+
+    <p>但计算器不会记住你按过什么。</p>
+
+    <p>当一个设计师对AI说"再冷一点"、"太商业了"、"我要的不是这种高级感"，她正在做的事情远比"修改一张图"复杂得多。每一次否定都是一次审美坐标的校准。AI不需要理解什么是"冷"——它只需要记住，这个用户在过去47次交互中，拒绝了暖色调39次，保留了低饱和度方案43次，在所有包含"留白"的版本上停留时间最长。</p>
+
+    <p>47次交互之后，AI手里拿着的不是一份修改记录，而是一幅审美基因图谱。</p>
+
+    <p>这件事正在系统层面变得更加彻底。2025年4月，OpenAI宣布ChatGPT可以引用用户的所有历史对话来个性化回答。2026年3月，Anthropic的Claude向所有用户开放了自动记忆功能——系统每24小时扫描一次你的聊天记录，自动提取你的角色、偏好、项目、沟通风格，生成一份持续更新的"用户画像"。</p>
+
+    <p>你没有填任何表格，没有做任何测试，甚至没有"同意"任何事情（技术上你同意了，在那个没人读的用户协议里）。你只是在工作。每一次"帮我改一下"，每一次"这个方向不对"，每一次"算了还是第一版好"，都是一次数据捐献。</p>
+
+    <p>你以为你在使用一个工具。但工具在记录你。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_01.jpg" alt="person typing laptop invisible translucent" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <hr>
+
+    <h2>85%的你</h2>
+
+    <p>2024年11月，斯坦福大学计算机科学系博士生Joon Sung Park和他的团队发表了一项实验结果。他们招募了1,052名受试者，对每个人做了一次两小时的深度访谈——聊人生经历、价值观、对社会议题的看法。然后，他们把这些对话喂给大语言模型，为每个人创建了一个"数字孪生"。</p>
+
+    <p>接下来的测试是冷酷的。研究团队让数字孪生和真人分别完成同一套评估：大五人格量表、综合社会调查问卷、经济决策博弈。</p>
+
+    <p>结果：数字孪生在综合社会调查中的回答与真人的一致率达到85%。大五人格测试中，一致率约为80%。</p>
+
+    <p>85%是什么概念？研究团队让同一批受试者间隔两周重做了同样的问卷。人类自己和自己的一致率——大约也是这个数字。</p>
+
+    <p>换句话说，一个AI在两小时的对话后对你的了解程度，和你对两周前的自己的了解程度，在统计意义上没有显著差异。</p>
+
+    <p>有一个值得注意的例外。在"信任博弈"——一种测试合作意愿的经济实验——中，数字孪生只匹配了真人选择的66%。AI可以高精度地复制你的观点、你的性格特征、你的社会态度，但它在涉及信任和慷慨这类需要"社会直觉"的领域仍然会偏离。</p>
+
+    <p>这个66%的缺口很有意思。它暗示着一条边界：AI目前能复制你的认知模式，但还复制不了你的社会性直觉。前者是可以被语言化的——你可以告诉AI你的偏好。后者是身体性的——你的信任感来自面部微表情、语调变化、和对方共处一室时的某种气场。</p>
+
+    <p>但85%够了。85%意味着在大多数文字化的、远程的、异步的工作场景中——而这恰恰是2026年知识工作者的主要工作形态——你的数字孪生已经可以替你做出和你一致的判断。</p>
+
+    <p>那个斯坦福实验只用了两小时。想想你每天和AI对话的时间。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)"><div style="background:#1A56DB;color:#fff;padding:10px 16px;font-size:13px;font-weight:700">对比图</div><div style="padding:20px 24px"><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">人格量表一致率</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">80%</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:94.1%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">社会调查一致率</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">85%</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:100.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">经济博弈一致率</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">66%</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:77.6%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div></div></div>
+
+    <hr>
+
+    <h2>苏格拉底的恐惧</h2>
+
+    <p>公元前370年左右，柏拉图在《斐德若篇》中记录了苏格拉底对一项新技术的恐惧：文字。苏格拉底认为，文字会让人变懒——人们不再需要记住任何东西，因为可以把它写下来。他说，文字给人的不是真正的智慧，而是智慧的幻觉。</p>
+
+    <p>两千四百年后回看，苏格拉底对了一半。文字确实让人类的自然记忆力退化了——一个古代行吟诗人能背诵整部《伊利亚特》，今天很少有人能背超过三首唐诗。但文字也释放了人类的认知资源，让我们可以把省下来的记忆容量用于抽象思考、逻辑推演、科学发现。</p>
+
+    <p>这是一笔交易。每一次认知外包都是一笔交易。</p>
+
+    <p>2000年代，GPS导航普及。伦敦大学学院的神经科学家Eleanor Maguire发现，伦敦出租车司机——需要记住2.5万条街道和数千个地标的职业——拥有显著增大的海马体。但依赖GPS导航的新一代司机，这个脑区的优势消失了。外包了空间导航，换回了认知负担的减轻。又一笔交易。</p>
+
+    <p>现在轮到了AI。2025年，MIT媒体实验室招募了54名大学生，给他们戴上EEG脑电帽，分别在三种条件下写文章：使用ChatGPT、使用简化版搜索引擎、不用任何工具。使用ChatGPT的学生大脑活动显著低于其他两组。</p>
+
+    <p>但实验中最值得警惕的发现不是"大脑变安静了"。而是这个：研究者让一组学生先用ChatGPT写，再独立写；另一组先独立写，再用ChatGPT写。先依赖AI再独立工作的那组，独立写作时的神经参与度低于一开始就独立写作的那组。</p>
+
+    <p>依赖的方向性很重要。先外包再收回，比先自主再外包，造成的认知损耗更大。</p>
+
+    <p>从文字到计算器到GPS到AI，这条曲线的形状一直没变：人类用一种能力换取另一种便利，每一步都是不可逆的。但这条曲线的斜率在陡增。文字外包的是记忆，计算器外包的是算术，GPS外包的是空间感知——这些都是"工具性"能力。AI正在外包的，是判断力。</p>
+
+    <p>判断力不是一种工具性能力。它是你之所以是你的那个东西。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_02.jpg" alt="abstract timeline showing cognitive delegation" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <hr>
+
+    <h2>有人已经在主动上传自己</h2>
+
+    <p>上面所有的案例都有一个共同特征：上传者本人不知情。但2026年春天发生了一件事，让这条暗线浮出了水面。</p>
+
+    <p>一种叫做"colleague.skill"的技术在技术圈子里迅速扩散。它的逻辑很简单：一个人——通常是团队里某个核心成员——可以把自己的思维模式、工作习惯、沟通风格打包成一个"技能包"，部署在AI平台上。当这个人离职、休假、或者单纯分身乏术的时候，他的数字替身可以继续以他的风格回答同事的问题、审核代码、给出产品建议。</p>
+
+    <p>到2026年4月，27个主流平台采用了这套架构，开发者创建了超过85万个技能包。</p>
+
+    <p>与此同时，在2026年1月的CES上，一家公司展示了可以创建员工数字克隆的软件——录入几段会议视频和邮件往来，就能生成一个能以你的风格参加视频会议、用160种语言回复邮件的数字分身。</p>
+
+    <p>中国监管层注意到了这个趋势。国家互联网信息办公室等部门联合公布了《人工智能拟人化互动服务管理暂行办法》，自2026年7月15日起施行，专门规范"利用AI技术向公众提供模拟自然人人格特征的持续性情感互动服务"。IDC预测，2026年中国AI数字人市场规模将达到102.4亿元人民币。</p>
+
+    <p>这些数字背后有一个容易被忽视的断裂：从"无意识上传"到"主动上传"之间，其实没有一条清晰的分界线。当你打开ChatGPT的记忆功能，允许它记住你的所有对话，你已经在"主动上传"了。只不过，那个按钮的文案写的是"个性化体验"，而不是"上传你的认知基因组"。</p>
+
+    <p>一个值得思考的对比：基因检测公司23andMe在2023年申请破产保护时，1,500万用户的基因数据何去何从一度成为公共危机。那些用户当年也是自愿提交的——为了一份祖源分析报告。他们没想过的是，"自愿提交"和"知情同意"之间隔着一道深渊。</p>
+
+    <p>你每天上传给AI的认知数据，精确度比唾液样本高，覆盖面比基因序列广，而提取成本为零。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_03.jpg" alt="digital clone silhouette standing next" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <hr>
+
+    <h2>认知基因组的分岔路</h2>
+
+    <p>回到开头那个产品经理张远。</p>
+
+    <p>他的127次"帮我改一下"并不是平等的。有些是执行层的——"把这段话的格式统一一下"、"帮我检查一下错别字"、"生成一个表格"。有些是判断层的——"这两个方案你觉得哪个好"、"这封邮件的语气合不合适"、"帮我想三个选题方向"。</p>
+
+    <p>前者是安全的。把排版、语法、格式化的工作交给AI，和把加法交给计算器没有本质区别。你不会因为用了计算器就丧失对数字的直觉。</p>
+
+    <p>后者正在改变他。每一次让AI帮他在两个方案之间做选择，他的判断肌肉就萎缩一点。不是因为AI的选择更差——往往更好——而是因为肌肉的生长需要负荷。MIT那个实验说得很清楚：先依赖再独立的那条路，比先独立再依赖的那条路，通往一个更安静的大脑。</p>
+
+    <p>这里出现了一条分岔路。</p>
+
+    <p>一类人会意识到这种区分。他们把AI当作执行层的无限扩展，同时刻意保持判断层的锻炼——自己选题、自己定方向、自己做价值排序，只在执行阶段交给AI。对这类人来说，数字替身是一个放大器：他们的判断力乘以AI的执行力，产出被放大了十倍。</p>
+
+    <p>另一类人不会意识到。他们会逐渐地、舒适地把越来越多的判断也交出去。"帮我想个选题"、"帮我决定用哪个框架"、"帮我判断这个值不值得做"。每一次委托都是一次小小的解脱，每一次解脱都让下一次委托变得更自然。三年后，他们会发现一件奇怪的事：离开AI，他们不是"效率降低了"，而是"不知道该做什么了"。</p>
+
+    <p>这不是一个关于"AI会不会取代人"的问题。那个问题太粗糙了。精确的问法是：你每天上传给AI的那些判断、偏好、审美、价值排序——这些构成"你之所以是你"的东西——你还剩下多少是自己练出来的，多少是AI替你选的？</p>
+
+    <p>每天晚上，你关上笔记本电脑。你的替身在服务器上醒着。它比两周前的你更了解今天的你。它不睡觉，不遗忘，不犹豫。唯一的问题是，它是你训练出来的，还是你是它训练出来的。这个问题的答案每天都在变化。方向取决于你明天输入"帮我改一下"时，改的是什么。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_04.jpg" alt="fork road one path leading" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <hr>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>这不是一个关于AI会不会取代人的问题。精确的问法是：你每天上传给AI的那些判断、偏好、审美、价值排序——你还剩下多少是自己练出来的，多少是AI替你选的？</p>
+    <p>每天晚上，你关上笔记本电脑。你的替身在服务器上醒着。唯一的问题是，它是你训练出来的，还是你是它训练出来的。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <a href="https://www.technologyreview.com/2024/11/20/1107100/ai-can-now-create-a-replica-of-your-personality/" target="_blank" rel="noopener">MIT Technology Review — AI can now create a replica of your personality (2024.11)</a> · 
+      <a href="https://www.livescience.com/technology/artificial-intelligence/just-2-hours-is-all-it-takes-for-ai-agents-to-replicate-your-personality-with-85-percent-accuracy" target="_blank" rel="noopener">Live Science — 2 hours is all it takes for AI to replicate your personality with 85% accuracy (2025.1)</a> · 
+      <a href="https://www.ibm.com/think/news/when-ai-thinks-brain-gets-quieter" target="_blank" rel="noopener">IBM Think — When AI thinks for us, the brain gets quieter (2025)</a> · 
+      <a href="https://community.openai.com/t/chatgpt-can-now-reference-all-past-conversations-april-10-2025/1229453" target="_blank" rel="noopener">OpenAI — ChatGPT can now reference all past conversations (2025.4)</a> · 
+      <a href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/memory-tool" target="_blank" rel="noopener">Anthropic — Claude Memory Tool documentation (2026)</a> · 
+      <a href="https://www.euronews.com/next/2026/01/07/ai-software-that-can-create-digital-clones-of-employees-unveiled-at-ces-2026" target="_blank" rel="noopener">Euronews — AI software that can create digital clones of employees at CES 2026 (2026.1)</a> · 
+      <a href="https://www.psychologytoday.com/us/blog/the-asymmetric-brain/202602/cognitive-offloading-using-ai-reduces-new-skill-formation" target="_blank" rel="noopener">Psychology Today — Cognitive Offloading: Using AI Reduces New Skill Formation (2026.2)</a> · 
+      <a href="https://www.36kr.com/p/3636181096252676" target="_blank" rel="noopener">36氪 — 2026大模型伦理深度观察 (2026.1)</a>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
