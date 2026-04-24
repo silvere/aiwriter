@@ -207,25 +207,75 @@ def fetch_concept_image(prompt: str, dest: Path, candidate_urls: list[str]) -> O
 
 # ─── diagram：用 matplotlib 生成图表 ────────────────────────────────────────
 
+_GROUP_ALIASES = {
+    "流入": "in", "in": "in", "进": "in", "+": "in",
+    "流出": "out", "out": "out", "出": "out", "-": "out",
+    "参照": "ref", "ref": "ref", "基线": "ref", "baseline": "ref",
+    "正": "pos", "pos": "pos",
+    "负": "neg", "neg": "neg",
+}
+
+
 def _parse_spec(spec_text: str) -> dict:
-    """从规格卡文本中提取结构化数据。"""
-    result = {"chart_type": "", "title": "", "items": [], "raw": spec_text}
+    """从规格卡文本中提取结构化数据。
 
-    # 图类型
-    m = re.search(r"【图类型】[：:](.+)", spec_text)
-    if m:
-        result["chart_type"] = m.group(1).strip()
+    支持字段：
+      【图类型】      图表类型（条形 / 对账 / 流程 / 饼）
+      【副标题】      （可选）图表副标题，显示在标题栏下方
+      【单位】        （可选）所有数值的共同单位（"亿美元"、"%"等）
+      【核心判断】    （可选）底部 punchline 行，图表的"一句话主张"
+      【渲染】        （可选）html / matplotlib；默认 html
+      【核心内容】/【数据】
+        数据条目，支持行内分组标签：
+          - AWS 投资 [流入]：330
+          - 算力合约 [流出]：1000
+          - 年化收入 [参照]：300
+        分组值映射到颜色：流入=蓝 流出=红 参照=灰 正=绿 负=橙
+    """
+    result = {
+        "chart_type": "",
+        "subtitle": "",
+        "unit": "",
+        "punchline": "",
+        "render": "html",
+        "items": [],
+        "raw": spec_text,
+    }
 
-    # 数据条目：匹配 "- 标签：数值" 或 "- 标签: 数值"
-    item_re = re.compile(r"-\s+(.+?)[：:]\s*([+-]?\d+\.?\d*%?)")
+    def _field(name: str) -> str:
+        m = re.search(r"【" + name + r"】[：:]\s*(.+)", spec_text)
+        return m.group(1).strip() if m else ""
+
+    result["chart_type"] = _field("图类型")
+    result["subtitle"]   = _field("副标题")
+    result["unit"]       = _field("单位")
+    result["punchline"]  = _field("核心判断") or _field("一句话")
+    render_raw = _field("渲染").lower()
+    if render_raw:
+        result["render"] = "matplotlib" if ("matplotlib" in render_raw or "png" in render_raw) else "html"
+
+    # 数据条目：支持 "- 标签 [分组]：数值" 或 "- 标签：数值"
+    item_re = re.compile(
+        r"-\s+(.+?)(?:\s*\[([^\]]+)\])?\s*[：:]\s*([+-]?\d+\.?\d*%?)"
+    )
     for match in item_re.finditer(spec_text):
         label = match.group(1).strip()
-        raw_val = match.group(2).strip()
+        group_raw = (match.group(2) or "").strip().lower()
+        raw_val = match.group(3).strip()
         try:
             val = float(raw_val.replace("%", ""))
-            result["items"].append({"label": label, "value": val, "raw": raw_val})
         except ValueError:
-            pass
+            continue
+        group = _GROUP_ALIASES.get(group_raw, "")
+        # 自动推断：无显式分组时，负值归为 neg
+        if not group and val < 0:
+            group = "neg"
+        result["items"].append({
+            "label": label,
+            "value": val,
+            "raw": raw_val,
+            "group": group,
+        })
 
     return result
 
@@ -300,34 +350,180 @@ def _generate_chart(spec_text: str, dest: Path) -> bool:
     return True
 
 
-def _bar_chart_html(title: str, items: list) -> str:
-    """水平条形图：每项渲染为带比例宽度的进度条。"""
+# 分组配色表：流入蓝 / 流出红 / 参照灰 / 正值绿 / 负值橙 / 默认蓝
+_GROUP_STYLE = {
+    "in":  {"bar": "#1A56DB", "track": "#EEF2FF", "tag": "流入"},
+    "out": {"bar": "#F05252", "track": "#FFE4E4", "tag": "流出"},
+    "ref": {"bar": "#94A3B8", "track": "#F1F5F9", "tag": "参照"},
+    "pos": {"bar": "#0E9F6E", "track": "#DEF7EC", "tag": "正"},
+    "neg": {"bar": "#F59E0B", "track": "#FEF3C7", "tag": "负"},
+    "":    {"bar": "#1A56DB", "track": "#EEF2FF", "tag": ""},
+}
+
+
+def _chart_shell(title: str, subtitle: str, body_html: str, punchline: str = "") -> str:
+    """统一的图表外框：标题栏（主标题 + 可选副标题） + 主体 + 可选 punchline 条。"""
+    title_html = f'<div style="font-size:14px;font-weight:700;letter-spacing:.3px">{title}</div>'
+    if subtitle:
+        title_html += (
+            f'<div style="font-size:12px;font-weight:500;color:#BFDBFE;'
+            f'margin-top:3px;letter-spacing:.2px">{subtitle}</div>'
+        )
+    punchline_html = ""
+    if punchline:
+        punchline_html = (
+            f'<div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;'
+            f'font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a">'
+            f'<span style="color:#fbbf24;margin-right:6px">▸</span>{punchline}</div>'
+        )
+    return (
+        f'<div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;'
+        f'border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)">'
+        f'<div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;'
+        f'padding:14px 20px">{title_html}</div>'
+        f'<div style="padding:22px 24px 18px">{body_html}</div>'
+        f'{punchline_html}</div>'
+    )
+
+
+def _scale_pct(val: float, max_val: float) -> float:
+    """把量级压缩到 [8%, 100%] 区间，避免小条在量级悬殊时彻底看不见。"""
+    if max_val <= 0:
+        return 0.0
+    raw_pct = abs(val) / max_val * 100
+    if raw_pct <= 0:
+        return 0.0
+    # 量级相差 > 10x 时，用 sqrt 压缩保证可见性
+    if max_val / max(abs(val), 1) > 10:
+        raw_pct = (raw_pct ** 0.6)
+    return max(8.0, min(100.0, raw_pct))
+
+
+def _bar_chart_html(title: str, items: list, subtitle: str = "",
+                     unit: str = "", punchline: str = "") -> str:
+    """水平条形图：支持分组染色、单位、副标题、punchline。"""
     max_val = max(abs(it["value"]) for it in items) or 1
+    # 判断是否需要展示分组图例
+    groups_used = {it["group"] for it in items if it["group"]}
+    legend_html = ""
+    if groups_used:
+        legend_items = "".join(
+            f'<span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px">'
+            f'<span style="width:10px;height:10px;border-radius:3px;'
+            f'background:{_GROUP_STYLE[g]["bar"]};display:inline-block"></span>'
+            f'<span style="font-size:11px;color:#64748b">{_GROUP_STYLE[g]["tag"]}</span></span>'
+            for g in ["in", "out", "ref", "pos", "neg"] if g in groups_used
+        )
+        unit_badge = (
+            f'<span style="font-size:11px;color:#94a3b8;font-weight:500">单位：{unit}</span>'
+            if unit else ""
+        )
+        legend_html = (
+            f'<div style="display:flex;justify-content:space-between;align-items:center;'
+            f'margin-bottom:16px;padding-bottom:12px;border-bottom:1px dashed #e2e8f0">'
+            f'<div>{legend_items}</div>{unit_badge}</div>'
+        )
+    elif unit:
+        legend_html = (
+            f'<div style="text-align:right;margin-bottom:12px">'
+            f'<span style="font-size:11px;color:#94a3b8">单位：{unit}</span></div>'
+        )
+
     bars = ""
     for it in items:
-        pct = min(100, abs(it["value"]) / max_val * 100)
-        color = "#F05252" if it["value"] < 0 else "#1A56DB"
-        track_color = "#FFE4E4" if it["value"] < 0 else "#EEF2FF"
+        style = _GROUP_STYLE[it["group"]]
+        pct = _scale_pct(it["value"], max_val)
+        # 数值显示：附加单位（如有）
+        value_display = it["raw"]
+        if unit and not it["raw"].endswith("%") and unit not in value_display:
+            value_display = f'{it["raw"]} {unit}'
         bars += (
-            f'<div style="margin-bottom:16px">'
+            f'<div style="margin-bottom:14px">'
             f'<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">'
             f'<span style="font-size:13px;color:#374151;flex:1;padding-right:12px">{it["label"]}</span>'
-            f'<span style="font-size:15px;font-weight:700;color:{color};white-space:nowrap">{it["raw"]}</span>'
+            f'<span style="font-size:15px;font-weight:700;color:{style["bar"]};white-space:nowrap">{value_display}</span>'
             f'</div>'
-            f'<div style="background:{track_color};border-radius:5px;height:10px;overflow:hidden">'
-            f'<div style="background:{color};width:{pct:.1f}%;height:100%;border-radius:5px;'
+            f'<div style="background:{style["track"]};border-radius:5px;height:10px;overflow:hidden">'
+            f'<div style="background:{style["bar"]};width:{pct:.1f}%;height:100%;border-radius:5px;'
             f'transition:width .4s ease"></div>'
             f'</div>'
             f'</div>'
         )
-    return (
-        f'<div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;'
-        f'border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)">'
-        f'<div style="background:#1A56DB;color:#fff;padding:10px 16px;font-size:13px;'
-        f'font-weight:700">{title}</div>'
-        f'<div style="padding:20px 24px">{bars}</div>'
+    return _chart_shell(title, subtitle, legend_html + bars, punchline)
+
+
+def _compare_chart_html(title: str, items: list, subtitle: str = "",
+                         unit: str = "", punchline: str = "") -> str:
+    """对账式成对对比图：把数据按相邻两项自动配对为 流入 vs 流出。
+
+    若用户显式在分组标签里写了 [流入]/[流出]，则按组分边；
+    否则按顺序：第 1、3、5... 项为"流入"侧，第 2、4、6... 项为"流出"侧。
+    """
+    # 按顺序配对
+    pairs = []
+    left_side = []
+    right_side = []
+    for i, it in enumerate(items):
+        if it["group"] == "in":
+            left_side.append(it)
+        elif it["group"] == "out":
+            right_side.append(it)
+        elif i % 2 == 0:
+            left_side.append(it)
+        else:
+            right_side.append(it)
+
+    # 对齐长度
+    n = max(len(left_side), len(right_side))
+    while len(left_side) < n:
+        left_side.append(None)
+    while len(right_side) < n:
+        right_side.append(None)
+    pairs = list(zip(left_side, right_side))
+
+    max_val = max(abs(it["value"]) for it in items if it) or 1
+
+    unit_suffix = f' {unit}' if unit else ''
+
+    def _side_html(it, side: str) -> str:
+        if it is None:
+            return '<div style="flex:1"></div>'
+        color = "#1A56DB" if side == "left" else "#F05252"
+        track = "#EEF2FF" if side == "left" else "#FFE4E4"
+        pct = _scale_pct(it["value"], max_val)
+        bar_align = "flex-end" if side == "left" else "flex-start"
+        return (
+            f'<div style="flex:1;display:flex;flex-direction:column;align-items:{"flex-end" if side == "left" else "flex-start"}">'
+            f'<div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">{it["label"]}</div>'
+            f'<div style="width:100%;display:flex;justify-content:{bar_align}">'
+            f'<div style="background:{track};border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden">'
+            f'<div style="background:{color};height:100%;width:{pct:.1f}%;'
+            f'{"margin-left:auto;border-radius:5px 0 0 5px" if side == "left" else "border-radius:0 5px 5px 0"}"></div>'
+            f'</div></div>'
+            f'<div style="font-size:14px;font-weight:700;color:{color};margin-top:4px">{it["raw"]}{unit_suffix}</div>'
+            f'</div>'
+        )
+
+    headers = (
+        f'<div style="display:flex;align-items:center;gap:24px;margin-bottom:16px;'
+        f'padding-bottom:10px;border-bottom:1px dashed #e2e8f0">'
+        f'<div style="flex:1;text-align:right;font-size:12px;font-weight:700;color:#1A56DB;letter-spacing:1px">← 流入 / INFLOW</div>'
+        f'<div style="width:20px"></div>'
+        f'<div style="flex:1;text-align:left;font-size:12px;font-weight:700;color:#F05252;letter-spacing:1px">OUTFLOW / 流出 →</div>'
         f'</div>'
     )
+
+    rows = ""
+    for left, right in pairs:
+        rows += (
+            f'<div style="display:flex;align-items:center;gap:24px;margin-bottom:20px">'
+            f'{_side_html(left, "left")}'
+            f'<div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div>'
+            f'{_side_html(right, "right")}'
+            f'</div>'
+        )
+
+    return _chart_shell(title, subtitle, headers + rows, punchline)
 
 
 def _flow_chart_html(title: str, items: list) -> str:
@@ -419,10 +615,13 @@ def _donut_chart_html(title: str, items: list) -> str:
 
 
 def _spec_card_html(spec_text: str) -> str:
-    """将规格卡渲染为可视化 HTML 图表（条形图 / 流程图 / 圆环图）。"""
+    """将规格卡渲染为可视化 HTML 图表（条形图 / 对账图 / 流程图 / 圆环图）。"""
     spec = _parse_spec(spec_text)
-    title = spec["chart_type"] or "数据图"
-    items = spec["items"]
+    title     = spec["chart_type"] or "数据图"
+    subtitle  = spec["subtitle"]
+    unit      = spec["unit"]
+    punchline = spec["punchline"]
+    items     = spec["items"]
 
     if not items:
         # 无法解析数据时直接显示原始规格卡文字
@@ -438,8 +637,11 @@ def _spec_card_html(spec_text: str) -> str:
         return _flow_chart_html(title, items)
     if "饼" in ct or "占比" in ct or "比例" in ct:
         return _donut_chart_html(title, items)
+    # 对账 / 成对 / 对比式双列渲染
+    if "对账" in ct or "成对" in ct or "双列" in ct or "pair" in ct.lower():
+        return _compare_chart_html(title, items, subtitle, unit, punchline)
     # 默认：条形图 / 数据图 / 对比图
-    return _bar_chart_html(title, items)
+    return _bar_chart_html(title, items, subtitle, unit, punchline)
 
 
 def _img_html(rel_path: str, alt: str) -> str:
@@ -485,16 +687,24 @@ def fill_article(html_path: Path, candidate_urls: list[str] = []) -> dict:
 
         else:  # diagram
             diagram_count[0] += 1
-            dest = img_dir / f"diagram_{diagram_count[0]:02d}.png"
-            if _generate_chart(spec_text, dest):
-                filled += 1
-                print(f"  ✓ diagram_{diagram_count[0]:02d}.png  [matplotlib]")
-                return _img_html(f"images/{dest.name}", "数据图")
-            else:
-                # 降级：渲染为数据卡片 HTML
-                filled += 1
-                print(f"  ✓ diagram_{diagram_count[0]:02d}  [数据卡片]")
-                return _spec_card_html(spec_text)
+            # 默认走 HTML/SVG 渲染（矢量、零依赖、中文永远不乱码）。
+            # 仅当规格卡显式写 【渲染】：matplotlib / PNG 或设置环境变量
+            # AIWRITER_USE_MATPLOTLIB=1 时，才尝试 matplotlib。
+            spec_preview = _parse_spec(spec_text)
+            use_mpl = (
+                spec_preview["render"] == "matplotlib"
+                or os.environ.get("AIWRITER_USE_MATPLOTLIB") == "1"
+            )
+            if use_mpl:
+                dest = img_dir / f"diagram_{diagram_count[0]:02d}.png"
+                if _generate_chart(spec_text, dest):
+                    filled += 1
+                    print(f"  ✓ diagram_{diagram_count[0]:02d}.png  [matplotlib PNG]")
+                    return _img_html(f"images/{dest.name}", "数据图")
+                print(f"  ⚠  diagram_{diagram_count[0]:02d}  matplotlib 启用但不可用，回退 HTML 路径")
+            filled += 1
+            print(f"  ✓ diagram_{diagram_count[0]:02d}  [HTML图表]")
+            return _spec_card_html(spec_text)
 
     new_html = _PLACEHOLDER_RE.sub(replace_placeholder, html)
     if filled:

@@ -318,10 +318,24 @@
       border-radius: var(--radius);
       border: 1px solid var(--border);
     }
-    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 2; }
-    .footer-sources strong { color: var(--text); display: block; margin-bottom: 8px; }
-    .footer-sources a { color: var(--brand); text-decoration: none; }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
     .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
 
     /* ── 响应式 ───────────────────────────────── */
     @media (max-width: 600px) {

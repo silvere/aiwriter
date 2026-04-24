@@ -88,15 +88,19 @@ def extract_body(md_text):
 
 
 def extract_sources(md_text):
-    """从 ## 数据来源 节提取链接"""
+    """从 ## 数据来源 节提取链接。每条来源独立一行，避免挤成一坨。"""
     m = re.search(r'## 数据来源\n(.*?)$', md_text, re.DOTALL)
     if not m:
         return ''
     links = re.findall(r'\[(.+?)\]\((.+?)\)', m.group(1))
     parts = []
     for name, url in links:
-        parts.append(f'<a href="{url}" target="_blank" rel="noopener">{name}</a>')
-    return ' · \n      '.join(parts)
+        parts.append(
+            f'<div class="footer-source-item">'
+            f'<a href="{url}" target="_blank" rel="noopener">{name}</a>'
+            f'</div>'
+        )
+    return '\n      '.join(parts)
 
 
 def main():
