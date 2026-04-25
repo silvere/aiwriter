@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>三巨头一夜之间不演了：硅谷AI终于学会用'国家安全'涨价</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI与产业</span>
+  <h1>三巨头一夜之间不演了：硅谷AI终于学会用'国家安全'涨价</h1>
+  <div class="hero-meta">
+    <span>2026-04-25</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">三家平时互相挖墙脚的死对头，一夜之间在白宫备忘录前面排好队。这不是反华联盟，这是 AI 行业的 OPEC——只不过它卖的不是石油，是 token。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、三家死对头突然站到一起，时间凑得有点过分</h2>
+
+    <p>我们先把过去 72 小时按时间排一下。</p>
+
+    <p>4 月 22 日：Anthropic 自家那个"太危险不能公开"的 Mythos 模型，被一个第三方供应商路径的私人论坛黑了。Anthropic 在博客里承认了。</p>
+
+    <p>4 月 23 日：白宫科技政策办公室发布备忘录 NSTM-4，标题是《对美国 AI 模型的对抗性蒸馏》（Adversarial Distillation of American AI Models），把 2 月 Anthropic 指控中国三家公司的事，正式升级为政府层面的姿态。</p>
+
+    <p>4 月 24 日上午：Google 官宣投资 Anthropic 100 亿美元现金、外加 300 亿条件追加，估值 3500 亿。这家公司自己有 Gemini，但它在花真金白银扶持自己的"竞争对手"。</p>
+
+    <p>4 月 24 日下午：DeepSeek 把 V4 推了出去。1M token 上下文，论文里大方写着："我们用了 On-Policy Distillation，从 10 个 teacher 模型学。"</p>
+
+    <p>四件事。三天。</p>
+
+    <p>孤立看任何一件，你都能找到一个解释。Mythos 被黑是个安全事故。白宫备忘录是个例行政策。Google 投 Anthropic 是个商业操作。DeepSeek 发 V4 是个产品发布。但把时间线拉开一点看，孤立的解释就站不住了。</p>
+
+    <p>从今年 2 月 Anthropic 公开点名 DeepSeek、Moonshot、MiniMax，到 4 月 7 日 OpenAI、Anthropic、Google 通过 Frontier Model Forum 宣布共享"攻击模式数据"，再到上周白宫拍板——三个月，从"一家公司发的博客"，变成"行业三巨头联防"，再变成"白宫文件"。</p>
+
+    <p>这是一条非常工整的话术升级路径。一件原本属于"商业纠纷"的事，被一步一步抬到了"国家安全"。</p>
+
+    <p>而最关键的一点是：在这个过程里，<strong>三家平时互相拆台的公司，一句争吵都没有</strong>。</p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>Three corporate executives in suits standing together holding hands raised up like an alliance, behind them three different colored logos converging into one shield, dramatic lighting, flat design, minimalist illustration, tech style, blue and white color palette, no text, no labels, clean white background</pre></details>
+</div>
+
+    <hr>
+
+    <h2>二、同一件事，2024 年是违约，2026 年是国家攻击</h2>
+
+    <p>来看一下 Anthropic 控诉的"蒸馏攻击"具体是个什么事。</p>
+
+    <p>2 月 23 日，Anthropic 发文点名 DeepSeek、Moonshot、MiniMax，说这三家用大约 2.4 万个虚假账号，跟 Claude 跑了 1600 万次对话，目的是从输出里反向提炼能力——这就是模型蒸馏。MiniMax 1300 万次最多，Moonshot 340 万次，DeepSeek 15 万次最少但最精准，专挑 Claude 在推理、工具使用、强化学习评分这些关键能力上的输出来薅。</p>
+
+    <p>听起来很严重。然后你去看 DeepSeek 的研究论文。</p>
+
+    <p>DeepSeek V3 的技术报告里就大大方方写着用了知识蒸馏。V4 的论文更进一步，介绍了 On-Policy Distillation（OPD）：让学生模型自己生成回答，然后让 10 个不同领域的"老师"逐 token 给反馈、调分布。论文公开发，代码部分开源，方法在 arXiv 上挂着。</p>
+
+    <p>这事不是中国独有。OpenAI 自己用蒸馏训练过 GPT-4 Turbo。Anthropic 用蒸馏从 Opus 蒸出 Sonnet 和 Haiku。Google 用蒸馏出 Gemini Flash。任何一家做大模型的，蒸馏都是标配。</p>
+
+    <p>那 Anthropic 控诉的到底是什么？是 DeepSeek 用了 Claude 的输出去蒸——也就是用了别人家的 API 而没付钱（或者说没付到 Anthropic 觉得"够"）。这本质是 Terms of Service 违约。是商业纠纷。</p>
+
+    <p>2024 年，OpenAI 也指控过 DeepSeek 干同样的事。当时 OpenAI 怎么处理的？发了个声明，封了几个账号，然后没了下文。它没要求白宫介入，也没把这事拉到"国家安全"层面。</p>
+
+    <p>到了 2026 年，画风彻底变了。Anthropic 的措辞是"工业级蒸馏攻击"、"对抗性蒸馏"、"威胁国家安全"、"破坏出口管制"。然后 OpenAI 跟 Google 几乎同步背书。然后白宫备忘录跟上。</p>
+
+    <p>事实层面没有什么新东西。蒸馏在 2024 年是蒸馏，在 2026 年还是蒸馏。账号是假的——但 2024 年的假账号也是假的。变化的不是行为，是定性。</p>
+
+    <p>马斯克在 X 上贴脸开大："How dare they steal what Anthropic stole from human programmers."（他们怎么敢偷 Anthropic 从人类程序员那里偷来的东西。）这话糙理不糙——它戳破的不是中国清白，而是这套话术升级本身的滑稽。</p>
+
+    <p>Anthropic 拿全人类写的代码训练自己的模型，叫"开放科学"。DeepSeek 拿 Anthropic 模型的输出训练自己的模型，叫"对抗性国家威胁"。</p>
+
+    <p>这不是事实判断，这是叙事工程。</p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>A symbolic illustration showing a large factory labeled with neural network patterns siphoning data from a globe, while a smaller factory siphons from the larger one - both factories are doing the same thing but only one is highlighted as a threat, flat design, minimalist illustration, tech style, blue and red contrast palette, no text, no labels, clean white background</pre></details>
+</div>
+
+    <hr>
+
+    <h2>三、三巨头不是在打中国，是在解决一个共同的麻烦</h2>
+
+    <p>要理解为什么是这个时间点，要先看三家的财务。</p>
+
+    <p>Anthropic 4 月年化收入 300 亿美元，比 2025 年底的 90 亿翻了 3 倍。OpenAI 4 月月收入 20 亿美元，年化 240 亿，估值 8520 亿。xAI 每月烧 10 亿美元，刚被 SpaceX 用全股票交易吞下，合并体准备 6 月以 1.75 万亿估值在纳斯达克 IPO。</p>
+
+    <p>数字漂亮。但漂亮的数字下面，有一个所有人都不愿意公开承认的事——三家的产品差距正在收窄。</p>
+
+    <p>GPT-5.4、Claude Opus 4.6、Gemini 3.1 Pro 在主流 benchmark 上互有胜负，没有谁能甩开谁。API 价格呢？Claude Opus 4.6 每百万 token 输入 5 美元、输出 25 美元；GPT-5.4 是 2.5 美元和 15 美元。Sonnet 和 Haiku 跟 GPT-5.4 mini、Gemini Flash 之间，价格已经压到一两美元的差距。</p>
+
+    <p>这就是 OPEC 在 70 年代面对的局面。三家产品同质化，价格往下走，每家都在亏。继续打价格战，谁先撑不住谁先死，撑下来的也只剩一口气。</p>
+
+    <p>这种局面下，最理性的选择从来不是"团结对外"，是"集体涨价"。但赤裸的涨价同盟会被反垄断盯上——美国 FTC 在 2025 年刚审过一轮 AI 公司间的协调嫌疑。所以三家需要一个东西：一个能让"我们的 API 不卖给某些人"听上去正当的理由。</p>
+
+    <p>"国家安全"是一个完美的理由。</p>
+
+    <p>监管层喜欢——它让 AI 公司变成可控的政策杠杆。媒体喜欢——它让本来枯燥的产业新闻有了反派。投资人喜欢——它把 API 价格从"商业服务"变成"许可证商品"，许可证商品的毛利率永远比商业服务高。</p>
+
+    <p>而最重要的是，"国家安全"叙事完成之后，三家可以光明正大做这些事而不被追责：限制中国 IP 调用、要求企业客户走 KYC（了解你的客户）流程、设置敏感行业溢价、对"高风险"地区索取额外授权费。</p>
+
+    <p>这些动作的真名叫"价格歧视"。但披上"国家安全"外衣之后，它的名字叫"合规"。</p>
+
+    <p>Frontier Model Forum 不是一个反华联盟，它是一个 OPEC——只不过它卖的不是石油，是 token。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">对账图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">三巨头烧的钱 vs 卖的钱</div></div><div style="padding:22px 24px 18px"><div style="display:flex;align-items:center;gap:24px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px dashed #e2e8f0"><div style="flex:1;text-align:right;font-size:12px;font-weight:700;color:#1A56DB;letter-spacing:1px">← 流入 / INFLOW</div><div style="width:20px"></div><div style="flex:1;text-align:left;font-size:12px;font-weight:700;color:#F05252;letter-spacing:1px">OUTFLOW / 流出 →</div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Anthropic 年化收入</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:24.6%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">300 亿美元</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">xAI 年烧钱（月10亿×12）</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:8.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">120 亿美元</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">OpenAI 年化收入</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:19.7%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">240 亿美元</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">OpenAI 最新一轮融资</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:100.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">1220 亿美元</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Anthropic 最新Google加注</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:32.8%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">400 亿美元</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1"></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>产品差距在收窄，烧钱在加速——这种局面下，"对外联防"才是最理性的选择</div></div>
+
+    <hr>
+
+    <h2>四、下一阶段不是"卡中国"，是"持牌运营"</h2>
+
+    <p>这盘棋的下一步不难推。</p>
+
+    <p>把"蒸馏"重新定义成"对抗性蒸馏"——已经走完。白宫的 NSTM-4 备忘录目前还只是姿态，没有新的法律，但备忘录里那句"未来执法行动可能跟进"是钉子，钉子已经下去了。大概率在 2026 年下半年，会出现 API 访问的实质性管制：高级模型 API 调用要走 KYC 审查，敏感行业要单独许可证，对"受关注国家和地区"默认拒绝接入。这套东西早就有现成模板，叫 EAR（出口管制条例），过去管的是芯片和加密技术。</p>
+
+    <p>之后是行业洗牌。能拿到许可证的公司变成"持牌 AI 运营商"，毛利率向公用事业靠拢。拿不到的中小模型公司被挤出顶级合规客户市场。开源模型继续可用，但企业敢不敢用是另一回事——HR 和法务部门会用脚投票。</p>
+
+    <p>对在中国写代码、用 AI 的人来说，这意味着两件具体的事。</p>
+
+    <p>技术栈选型逻辑要变。"用最好的模型"这个标准会被"用合规的模型"覆盖。海外 API 的可用性会从默认稳定，变成默认不稳定。国内大模型的真实价值不在跑分多高，而在它不会因为某天的政策变化突然断供。</p>
+
+    <p>另一件事——别再期待这场"蒸馏争议"会有一个事实层面的真相裁决。它不需要真相。它需要的是叙事胜利。美国三巨头要的不是 DeepSeek 道歉，是把 API 访问权变成可以收牌照费的东西。</p>
+
+    <p>OpenAI 嘴上说的是 AI 安全。Anthropic 嘴上说的是负责任地部署。Google 嘴上说的是开放生态。它们心里算的是同一个东西——以后这门生意，不许新人随便进来。</p>
+
+    <p>欢迎来到 AI 的牌照时代。你以为你在选模型，其实模型在选你。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>美国三巨头不是变团结了，他们终于发现：当产品差距收窄、价格逼近底线时，'对外联防+持牌运营'比'对内厮杀'更划算。</p>
+    <p>下一阶段的 AI 护城河不是模型能力，是 API 的'持牌经营资格'。欢迎来到 AI 的牌照时代——你以为你在选模型，其实模型在选你。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.bloomberg.com/news/articles/2026-04-06/openai-anthropic-google-unite-to-combat-model-copying-in-china" target="_blank" rel="noopener">Bloomberg：OpenAI, Anthropic, Google Unite to Combat Model Copying in China（2026-04-06）</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/02/24/anthropic-openai-china-firms-distillation-deepseek.html" target="_blank" rel="noopener">CNBC：Anthropic accuses DeepSeek, Moonshot and MiniMax of distillation attacks on Claude（2026-02-24）</a></div>
+      <div class="footer-source-item"><a href="https://www.defenseone.com/threats/2026/04/china-steal-ai-models/413103/" target="_blank" rel="noopener">Defense One：China has 'deliberate, industrial-scale campaigns' to steal US AI models, White House says（2026-04-23）</a></div>
+      <div class="footer-source-item"><a href="https://techcrunch.com/2026/04/24/google-to-invest-up-to-40b-in-anthropic-in-cash-and-compute/" target="_blank" rel="noopener">TechCrunch：Google to invest up to $40B in Anthropic in cash and compute（2026-04-24）</a></div>
+      <div class="footer-source-item"><a href="https://asiatimes.com/2026/04/us-sounds-alarm-on-chinas-ai-distillation-as-deepseek-v4-debuts/" target="_blank" rel="noopener">Asia Times：US sounds alarm on China's AI distillation as DeepSeek V4 debuts（2026-04）</a></div>
+      <div class="footer-source-item"><a href="https://www.euronews.com/next/2026/04/22/hackers-breach-anthropics-too-dangerous-to-release-mythos-ai-model-report" target="_blank" rel="noopener">Euronews：Hackers breach Anthropic's 'too dangerous to release' Mythos AI model（2026-04-22）</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com/2026/02/24/anthropic-china-deepseek-theft-claude-distillation-copyright-national-security/" target="_blank" rel="noopener">Fortune：Anthropic claims 3 Chinese companies ripped it off（2026-02-24）</a></div>
+      <div class="footer-source-item"><a href="https://www.saastr.com/anthropic-just-passed-openai-in-revenue-while-spending-4x-less-to-train-their-models/" target="_blank" rel="noopener">SaaStr：Anthropic Just Passed OpenAI in Revenue（2026-04）</a></div>
+      <div class="footer-source-item"><a href="https://thehackernews.com/2026/02/anthropic-says-chinese-ai-firms-used-16.html" target="_blank" rel="noopener">The Hacker News：Anthropic Says Chinese AI Firms Used 16 Million Claude Queries to Copy Model</a></div>
+      <div class="footer-source-item"><a href="https://rits.shanghai.nyu.edu/ai/white-house-memo-targets-adversarial-distillation-of-u-s-ai-models" target="_blank" rel="noopener">White House OSTP NSTM-4: Adversarial Distillation of American AI Models（2026-04-23）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
