@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI干的不是替代你的活，是替代"公司亏了"这四个字</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI深度</span>
+  <h1>AI干的不是替代你的活，是替代"公司亏了"这四个字</h1>
+  <div class="hero-meta">
+    <span>2026-04-27</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">Meta裁8000，Oracle裁3万，微软裁1万多——三家公司一个月小5万人，对外口径出奇一致：AI驱动的效率提升。Sam Altman在印度峰会都看不下去了：'这里面有AI洗白，公司把本来要做的裁员甩锅给AI。'卖AI的人都拆穿了买AI的人。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一周5万人，三家公司，一个理由</h2>
+
+    <p>2026年4月23日，扎克伯格在内部备忘录里宣布Meta裁8000人，占员工10%，5月20日生效。Chief People Officer的官方解释是："为了效率，配合AI投入加速。"</p>
+
+    <p>往前翻三周，3月31日早上六点，Oracle那边的两三万人打开邮箱，看到一封五行字的群发邮件。署名是"Oracle Leadership"，开头第一句："经过对当前业务需求的慎重考虑，我们决定取消你的岗位。"末尾客客气气加一行：今天是你最后一个工作日。</p>
+
+    <p>Oracle的官方解释是：要为AI数据中心建设腾出80到100亿美元现金流。</p>
+
+    <p>微软那边没有发群邮，但CNBC统计4月这一波，加上Meta和Oracle，一个月内全球至少4.6万科技岗位消失。三家公司的对外口径不约而同：AI驱动的组织优化。</p>
+
+    <p>巧不巧（笑）。</p>
+
+    <p>打开Crunchbase的数据：2026年Q1美国科技业裁员7.86万人，47.9%被归因到AI和自动化。这个比例的官方意思是：将近一半的失业，是AI干的。</p>
+
+    <p>但同一份调查里，9%——这是真正招聘经理愿意承认"AI替代了某个具体岗位"的比例。</p>
+
+    <p>47.9% 减去 9% 等于 38.9%。这38.9个百分点的失业人口，按官方口径是被AI替代的；按现实是被甩到AI头上的。</p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>An empty modern tech office with overturned chairs and abandoned desks, a large AI logo glowing on the wall, scattered papers on the floor, dim blue lighting, flat design, minimalist illustration, tech style, blue and white color palette, no text, no labels, clean white background</pre></details>
+</div>
+
+    <h2>AI最大的功劳，是给财报美容</h2>
+
+    <p>为什么所有公司都选AI叙事？因为这套话术在股东那里值钱。</p>
+
+    <p>数字加密公司Block在3月用"AI驱动效率"为由裁了将近4000人。当天股价跳涨。同一周里，Atlassian宣布相同口径裁员，附带宣布招800个AI工程师，股价同样跳。市场的逻辑很朴素：你说"AI转型"，估值给你AI的乘数；你说"经济不行所以砍人"，估值给你周期股的折扣。</p>
+
+    <p>这不是阴谋论。Built In在4月发的那份调查里，受访的招聘经理被问到一个直球问题：你们公告里强调AI是真因为AI替代了岗位，还是因为这套说法对外部更好看？</p>
+
+    <p>59%的人勾选了后者。</p>
+
+    <p>17%的公司更直接，承认是用AI替代"财务紧张"四个字。42%承认部分使用。剩下那一小撮坚持自己是真AI驱动的，比例和实际能用AI替代岗位的9%差不多对得上。</p>
+
+    <p>数字最有意思的是Meta自己的财报。2026年的资本开支预算定在1150到1350亿美金，光是AI基建一项。但同期运营利润率从一年前的48%掉到41%，下滑7个百分点。同时，营收每员工2.26百万美金，比之前7年平均的1.71百万高出32%。</p>
+
+    <p>把这三个数字摆在一起读：员工人均产出已经创历史新高，AI建得越来越贵，利润率却被啃掉一大块。砍人不是因为人没用，是因为算力账单要交。</p>
+
+    <p>裁员公告里没有这一段。公告里写的是"AI让我们更高效"。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">对账图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">AI裁员叙事 vs 真实数据（2026 Q1美国科技业）</div></div><div style="padding:22px 24px 18px"><div style="display:flex;align-items:center;gap:24px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px dashed #e2e8f0"><div style="flex:1;text-align:right;font-size:12px;font-weight:700;color:#1A56DB;letter-spacing:1px">← 流入 / INFLOW</div><div style="width:20px"></div><div style="flex:1;text-align:left;font-size:12px;font-weight:700;color:#F05252;letter-spacing:1px">OUTFLOW / 流出 →</div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">招聘经理承认AI实际替代岗位</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:15.3%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">9 %</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">裁员公告归因AI比例</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:81.2%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">47.9 %</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1"></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">公司明确用AI掩盖财务问题</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:28.8%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">17 %</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1"></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">HR承认强调AI是为股东好看</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:100.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">59 %</div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>47.9%的失业被甩锅给AI，9%才是真的</div></div>
+
+    <h2>连Sam Altman都看不下去了</h2>
+
+    <p>2026年2月19日的印度AI Impact Summit，Sam Altman被CNBC记者堵着问全球裁员潮。换了别的AI公司CEO，这种问题答案大概是"AI正在重塑劳动力市场"配一个微笑。</p>
+
+    <p>Altman原话："这里面有一些AI洗白，公司把本来就要做的裁员甩锅给AI，然后另外一部分是真的AI替代了某些岗位。"</p>
+
+    <p>卖AI铲子的人，在自己的发布会上拆穿了买铲子的公司（这场面挺难得）。这是2026年最有黑色幽默感的一幕。</p>
+
+    <p>更打脸的是Anthropic自己3月发的报告。理论上AI能干94%的电脑类工作。听上去要颠覆世界。报告往下翻一页：在真实业务环境里，AI实际能搞定的只有33%。剩下61个百分点的差距，就是公关稿的潜力。</p>
+
+    <p>钛媒体4月初统计了一组数据更直接：23万被AI"替代"的大厂员工里，约一半的公司在裁员之后又把人请回来了。原因很朴素——AI写的代码跑不通、AI客服把客户骂跑、AI做的合同律师不敢签。</p>
+
+    <p>裁员的时候是AI驱动效率，重新招人的时候叫"业务调整需求"。同一批岗位，进出门的措辞完全不同。</p>
+
+    <p>这不是AI的问题。AI没说过自己能干这些活，AI说的话都是公司公关写在公告里的。</p>
+
+    <h2>老板需要的不是AI，是一个体面的理由</h2>
+
+    <p>如果一家公司发公告说"我们去年招多了，今年经济不行，所以砍人"，市场会怎么读？过度扩张、管理混乱、周期承压。</p>
+
+    <p>同一件事换个写法："基于AI驱动的效率提升，组织优化向高价值方向倾斜。"市场读到的是：技术领先、降本增效、未来在握。</p>
+
+    <p>中间没有任何业务变化，只有一组形容词的替换。Block一组形容词换出股价跳一天，按市值算几十亿美金。这是AI在2026年最赚钱的应用，不在产品里，在公告稿里。</p>
+
+    <p>打工人这边的反应通常是焦虑：我会不会被AI替代，要不要赶快学AI。这恰好是公司想要的反应——焦虑驱动你去自我升级，自我升级的人不会去问公司财报为什么不好看。</p>
+
+    <p>更应该问的三件事：第一，公司毛利率是不是在掉，AI建得越快、AI算力越贵、利润越被啃，这种砍人是给基建账单凑钱，跟你的岗位价值没关系。第二，公告里的AI到底落地在哪个岗位，能说出具体业务流程的，是真AI；只能说"组织优化"的，是修辞。第三，裁完之后那个团队有没有偷偷又开始招人，招回来的是不是同一批工种——这是过去半年很多公司都在演的剧本。</p>
+
+    <p>AI能不能替代你，是一个长期的、专业的、要看具体岗位和具体模型能力的问题。但AI能不能替代"经营不善"四个字，是一个已经被证明的、立等可取的、上市公司股东都买账的修辞服务。</p>
+
+    <p>前者还在研发中。后者已经全面铺开。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>AI能不能替代你，是一个长期的、专业的、要看具体岗位和具体模型能力的问题。但AI能不能替代'经营不善'四个字，是一个已经被证明的、立等可取的、上市公司股东都买账的修辞服务。</p>
+    <p>前者还在研发中。后者已经全面铺开。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.axios.com/2026/04/23/meta-layoffs-ai-efficiency-push" target="_blank" rel="noopener">Meta to lay off 8000 as part of AI efficiency push（Axios, 2026-04-23）</a></div>
+      <div class="footer-source-item"><a href="https://edition.cnn.com/2026/04/23/tech/meta-layoffs-10-percent-staff-ai" target="_blank" rel="noopener">Meta to cut 10% of staff as it pours billions into AI（CNN Business, 2026-04-23）</a></div>
+      <div class="footer-source-item"><a href="https://finance.yahoo.com/markets/stocks/articles/oracle-fired-30-000-workers-174000364.html" target="_blank" rel="noopener">Oracle fired up to 30000 workers via email after a 95% （Yahoo Finance, 2026-04）</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/04/24/20k-job-cuts-at-meta-microsoft-raise-concern-of-ai-labor-crisis-.html" target="_blank" rel="noopener">20000 job cuts at Meta, Microsoft raise concern that AI-driven labor crisis is here（CNBC, 2026-04-24）</a></div>
+      <div class="footer-source-item"><a href="https://www.tomshardware.com/tech-industry/tech-industry-lays-off-nearly-80-000-employees-in-the-first-quarter-of-2026-almost-50-percent-of-affected-positions-cut-due-to-ai" target="_blank" rel="noopener">Tech industry lays off nearly 80,000 employees in Q1 2026（Tom's Hardware）</a></div>
+      <div class="footer-source-item"><a href="https://www.tomshardware.com/tech-industry/artificial-intelligence/openais-sam-altman-warns-that-firms-are-using-ai-washing-to-mask-layoffs-across-the-globe-ai-boss-calls-out-corporate-excuses-while-warning-of-palpable-job-disruption-ahead" target="_blank" rel="noopener">OpenAI's Sam Altman warns that firms are using AI washing（Tom's Hardware, 2026-02）</a></div>
+      <div class="footer-source-item"><a href="https://builtin.com/articles/ai-washing-layoffs" target="_blank" rel="noopener">Did AI Take Your Job? The Truth About AI Washing（Built In）</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com/2026/04/20/ai-layoff-trap-cutting-headcount-could-backfire/" target="_blank" rel="noopener">The problem with using AI as an excuse to cut jobs（Fortune, 2026-04-20）</a></div>
+      <div class="footer-source-item"><a href="https://www.tmtpost.com/7930199.html" target="_blank" rel="noopener">23万大厂员工被AI替代，为何一半公司又把人请回？（钛媒体, 2026-04）</a></div>
+      <div class="footer-source-item"><a href="https://pepperstone.com/en-gb/analysis/navigating-markets/meta-q1-2026-earnings-revenue-growth-through-accelerated-ai-training/" target="_blank" rel="noopener">Meta Q1 2026 Earnings: Revenue Growth Through Accelerated AI Training（Pepperstone）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
