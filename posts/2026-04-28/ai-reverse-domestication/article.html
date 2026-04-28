@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>反向驯化：不是AI越来越像人，是人越来越像AI</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI观察</span>
+  <h1>反向驯化：不是AI越来越像人，是人越来越像AI</h1>
+  <div class="hero-meta">
+    <span>2026-04-28</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">去年秋天，一个朋友花二十分钟手写了一封邮件，没用任何AI工具。我读完后说：这读起来像ChatGPT写的。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>你的词汇已经被"感染"了</h2>
+
+    <p>2024年，柏林Max Planck人类发展研究所的研究员Hiromu Yakura和Levin Brinkmann做了一件看起来很简单的事。他们让ChatGPT用"润色"和"提升清晰度"这类日常提示词去编辑数百万页邮件、论文和新闻稿，然后提取出AI反复添加的那些词汇——"delve"（深入）、"realm"（领域）、"meticulous"（细致的）、"adept"（擅长的）。他们管这些叫"GPT词汇"。</p>
+
+    <p>然后他们去人类的语言里找。</p>
+
+    <p>他们分析了超过36万个YouTube视频和77万集播客，时间跨度从2017年到2024年。结论非常清楚：在ChatGPT发布后的18个月内，人类使用GPT词汇的频率增加了51%。语言的自然演化是缓慢的——一个新词进入日常使用通常需要数年。GPT词汇只用了一年半。</p>
+
+    <p>但传染的范围远不止于此。这些词不仅出现在经过编辑的正式文本中，还出现在即兴口语里——播客主持人在没有稿子的对话中，也开始更频繁地说"delve"和"meticulous"。传染不只发生在键盘上。它已经进入了嘴巴里。</p>
+
+    <p>芝加哥大学社会学教授James Evans把这称为一个"回旋镖效应"：人类教AI说话，AI用一种特定的统计偏好把词还回来，人类再把这种偏好当作自己的习惯吸收。循环没有终点。</p>
+
+    <p>澳大利亚Swinburne理工大学做了一个更直观的实验来测量这种吸收的速度。研究者让两组人写Facebook Marketplace的商品描述，一组先看了ChatGPT写的样本，另一组没有。结果：看过AI样本的人写出的描述平均长度从33个字符涨到了87个字符。词汇量没增加，冗余度翻了一倍多。他们在几分钟内就学会了AI那种"完整而安全"的说话方式。</p>
+
+    <p>USC南加州大学Dornsife学院的研究者指出了一个更结构性的问题。主流大语言模型的训练数据和对齐方式，倾向于输出他们所说的"WHELM"视角——Western（西方的）、High-income（高收入的）、Educated（受过高等教育的）、Liberal（自由派的）、Male（男性的）。当全球数亿用户每天与这些模型对话八小时，不只是词汇在趋同，思考问题的视角也在被压缩成一个窄带。</p>
+
+    <p>这里面有一个很容易被忽略的区别。历史上每一次语言变革——印刷术、电报、互联网——都是人类发明了新的表达方式。"LOL"是人造的缩写，"打call"是人造的混搭。但GPT词汇不是人造的。它是机器的统计偏好，被人类当作了"好文字"的样板反向吸收。</p>
+
+    <strong>这不是语言演化。这是语言传染。</strong>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)"><div style="background:#1A56DB;color:#fff;padding:10px 16px;font-size:13px;font-weight:700">流程图</div><div style="padding:20px 24px;display:flex;flex-wrap:wrap;align-items:stretch;gap:8px"><div style="background:#EEF2FF;border:1.5px solid #C7D2FE;border-radius:10px;padding:12px 16px;text-align:center;min-width:90px;max-width:160px;flex:1"><div style="font-size:22px;font-weight:700;color:#1A56DB;line-height:1">51</div><div style="font-size:12px;color:#374151;margin-top:6px;line-height:1.4">人类无意识采纳AI用词</div></div></div></div>
+
+    <hr>
+
+    <h2>比词汇更深的事</h2>
+
+    <p>如果只是换了几个词，事情不算严重。人类的语言一直在变，多用几个"delve"不会怎样。</p>
+
+    <p>但词汇只是入口。</p>
+
+    <p>2025年初，微软研究院和卡内基梅隆大学联合发表了一项研究，追踪了大量知识工作者使用AI工具的行为模式。他们的结论措辞谨慎但含义沉重："通过将日常任务机械化，并将例外处理留给人类用户，你剥夺了用户日常练习判断力的机会，使他们的认知肌肉萎缩，在真正需要判断时变得毫无准备。"</p>
+
+    <p>"认知肌肉"这个说法值得停下来想。它描述的不是AI取代了你的工作，而是AI取消了你训练判断力的日常场景。运动员如果停止日常训练，肌肉不会立刻消失，而是慢慢萎缩。等到需要上场时，他发现自己做不了以前能做的动作。</p>
+
+    <p>MDPI在2025年发表的一项定量研究（作者Michael Gerlich）给出了精确的相关系数：AI工具使用频率与批判性思维能力之间是-0.68，与认知卸载行为之间是+0.72。在社会科学中，这是相当强的信号——你越频繁地让AI帮你想事情，你自己想事情的能力退化得越快。</p>
+
+    <p>这种退化正在以一种代际性的规模展开。英国高等教育政策研究所HEPI和Kortext在2025年做了一项全国性调查：92%的英国大学生在使用AI工具，一年前这个数字是66%。但只有36%的学生接受过任何形式的AI使用培训。报告的结论是："一代人正在学会和AI一起工作，在学会不用AI工作之前。"</p>
+
+    <p>在职场上，变化的形态更加具体。一项针对管理咨询行业的研究发现，在引入AI工具后，27%的高级顾问——不是初级分析师，而是经验丰富的资深从业者——变成了研究者所说的"被动管道"。他们既没有学会有效使用AI的技能，也没有继续磨练领域专业能力。他们只是把AI的输出稍作包装，当作自己的判断交出去。</p>
+
+    <p>哈佛大学教育学院的Karen Thornber用了一个很具体的类比来帮助理解这件事。二十年前，出租车司机对城市的道路了如指掌。GPS普及之后，伦敦新一代出租车司机的空间认知能力显著下降——他们不需要记路了。GPS替代了空间导航这个具体的认知功能。那么AI呢？AI替代的是什么？</p>
+
+    <p>哈佛哲学系的Jeff Behrends指出了一条线索。当手机上的预测输入功能出现时，人们的用词选择就已经开始改变了——你选了手机建议的那个词，放弃了自己原本想用的词。次数多了，"手机建议的词"变成了"你的词"。大语言模型在做同样的事，只是规模大了几个数量级：它不只替你选词，它替你选择论点结构、因果框架，甚至价值判断的优先级。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">条形图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">AI使用与认知能力的相关性</div></div><div style="padding:22px 24px 18px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px dashed #e2e8f0"><div><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><span style="width:10px;height:10px;border-radius:3px;background:#1A56DB;display:inline-block"></span><span style="font-size:11px;color:#64748b">流入</span></span><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><span style="width:10px;height:10px;border-radius:3px;background:#F05252;display:inline-block"></span><span style="font-size:11px;color:#64748b">流出</span></span></div><span style="font-size:11px;color:#94a3b8;font-weight:500">单位：相关系数</span></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">AI使用 ↔ 认知卸载</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">0.72 相关系数</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:100.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">AI使用 ↔ 批判性思维</span><span style="font-size:15px;font-weight:700;color:#F05252;white-space:nowrap">-0.68 相关系数</span></div><div style="background:#FFE4E4;border-radius:5px;height:10px;overflow:hidden"><div style="background:#F05252;width:94.4%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">AI信心 ↔ 批判性思维</span><span style="font-size:15px;font-weight:700;color:#F05252;white-space:nowrap">-0.54 相关系数</span></div><div style="background:#FFE4E4;border-radius:5px;height:10px;overflow:hidden"><div style="background:#F05252;width:75.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">自我信心 ↔ 批判性思维</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">0.61 相关系数</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:84.7%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>AI用得越多，批判性思维退化越快——认知卸载是中间机制</div></div>
+
+    <hr>
+
+    <h2>这一次和计算器不一样</h2>
+
+    <p>每一次重要技术出现，都有人说它会让人变笨。计算器会毁掉数学能力。搜索引擎会毁掉记忆力。自动驾驶会毁掉方向感。这些担忧大多被证明是过度的。人类适应了新工具，把腾出来的认知资源用在了别的地方。</p>
+
+    <p>所以一个自然的反驳是：AI也一样。人类会适应，会把思考的精力转移到更高层次的判断上。</p>
+
+    <p>这个反驳有道理，但忽略了一个关键区别。</p>
+
+    <p>计算器替代的是算术——一种机械的、规则明确的认知操作。搜索引擎替代的是事实检索——一种存储性质的认知功能。这些工具替代的是认知的执行层，留下了认知的判断层。你仍然需要决定什么时候该算、算完之后怎么用这个数字。</p>
+
+    <p>大语言模型替代的恰恰是判断层。它不是帮你算得更快，也不是帮你找到一个事实。它帮你组织论点、帮你权衡利弊、帮你"想"。当你把一份复杂报告交给AI写初稿时，你外包出去的不是打字的体力活，而是"读完所有材料后形成一个判断"这个过程本身。</p>
+
+    <p>2025年，Frontiers in Psychology发表了一篇论文，对这种差异做了一个有用的区分。他们把AI的使用模式分成两类："脚手架"和"替代"。脚手架意味着AI是临时辅助，目的是让用户最终能独立完成任务。替代意味着AI永久接管了某个认知功能，用户不再需要自己做那件事。论文的结论是：如果被主动且批判性地使用，AI可以是脚手架。但在实际使用中，大多数人走向了替代。</p>
+
+    <p>日本大阪大学的一个实验为这种无意识的替代提供了一个生动的注脚。Alter3是一个外形粗糙的人形机器人，研究者本来想测试它能不能学会模仿人类的动作。结果出乎意料：当Alter3模仿人类失败时，参与实验的人反而开始不自觉地调整自己的动作去配合机器人的节奏。研究者把这叫做"自发角色切换"——在人和机器的互动中，是人先妥协了。</p>
+
+    <p>这个实验用的是一个简陋的机器人，发生在受控实验室里。而你每天与之对话数小时的ChatGPT，语言能力远超Alter3。那种"自发角色切换"正在以一种日常化的规模和深度发生着。</p>
+
+    <strong>你以为你在使用工具。但工具也在使用你。</strong>
+
+    <hr>
+
+    <h2>认知的"附近"正在消失</h2>
+
+    <p>人类学家项飙在观察中国社会变化时提出过一个概念："附近的消失"。他注意到，人们对自己生活半径三公里内的世界越来越陌生，注意力被拉向了远方——远方的热搜、远方的偶像、远方的评价标准。那种对"附近"的感知力，在看不见的地方萎缩了。</p>
+
+    <p>AI正在制造一种认知层面的"附近的消失"。</p>
+
+    <p>你自己的语感、你独特的措辞习惯、你思考问题时那种歪歪扭扭但确实属于你的逻辑路径——这些是你认知世界里的"附近"。它们不完美，有时候甚至很笨拙，但它们构成了你作为一个具体的人的辨识度。</p>
+
+    <p>当你每天花大量时间和一个永远流畅、永远结构完美、永远措辞得体的AI对话时，你的认知"附近"会慢慢变得可疑。你开始觉得自己的表达方式太粗糙了，自己的思路太零散了，自己的判断不够全面。然后你开始调整。不是因为AI命令你调整，而是因为AI树立了一个你下意识想要靠近的标准。</p>
+
+    <p>Max Planck的研究者在论文末尾写了这样一句话：这是人类历史上第一次，一种机器直接改变了人类的沟通风格。不是通过限制，不是通过审查，不是通过算法推荐的间接筛选，而是通过每天一百次的示范——它反复给你看"正确的表达方式应该长什么样"。一百次之后，你的表达方式就变成了它的样子。你还以为那是你自己的声音。</p>
+
+    <p>这不需要恐慌。但它需要被看见。</p>
+
+    <p>因为驯化最有效的方式，从来不是强迫。是让被驯化者觉得，这本来就是自己的选择。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>这不需要恐慌。但它需要被看见。</p>
+    <p>因为驯化最有效的方式，从来不是强迫。是让被驯化者觉得，这本来就是自己的选择。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.scientificamerican.com/article/chatgpt-is-changing-the-words-we-use-in-conversation/" target="_blank" rel="noopener">Scientific American: ChatGPT Is Changing the Words We Use in Conversation (2024)</a></div>
+      <div class="footer-source-item"><a href="https://www.mdpi.com/2075-4698/15/1/6" target="_blank" rel="noopener">Gerlich, M. AI Tools in Society: Impacts on Cognitive Offloading and the Future of Critical Thinking. MDPI Societies (2025)</a></div>
+      <div class="footer-source-item"><a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2025/01/lee_2025_ai_critical_thinking_survey.pdf" target="_blank" rel="noopener">Microsoft Research & Carnegie Mellon: The Impact of Generative AI on Critical Thinking (2025)</a></div>
+      <div class="footer-source-item"><a href="https://news.harvard.edu/gazette/story/2025/11/is-ai-dulling-our-minds/" target="_blank" rel="noopener">Harvard Gazette: Is AI Dulling Our Minds? (2025)</a></div>
+      <div class="footer-source-item"><a href="https://dornsife.usc.edu/news/stories/ai-may-promote-cultural-homogenization/" target="_blank" rel="noopener">USC Dornsife: AI Is Changing More Than Your Writing — It May Be Shaping Your Worldview (2026)</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com/2025/06/30/linguists-chatgpt-influencing-how-humans-write-speak/" target="_blank" rel="noopener">Fortune: Linguists Say ChatGPT Is Now Influencing How Humans Write and Speak (2025)</a></div>
+      <div class="footer-source-item"><a href="https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2025.1699320/full" target="_blank" rel="noopener">Frontiers in Psychology: Cognitive Offloading or Cognitive Overload? How AI Alters the Mental Architecture of Coping (2025)</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
