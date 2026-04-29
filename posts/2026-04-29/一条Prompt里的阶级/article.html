@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>一条Prompt里的阶级</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI观察</span>
+  <h1>一条Prompt里的阶级</h1>
+  <div class="hero-meta">
+    <span>2026-04-29</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">当所有人都拥有了同一个AI工具，决定你能从中提取多少价值的，不再是有没有，而是你在打开工具之前就已经拥有的一切。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>同一个入口，两个出口</h2>
+
+    <p>2023年秋天，哈佛商学院和沃顿商学院的研究者做了一个精心设计的实验。他们说服了波士顿咨询公司，让758名真正在职的咨询顾问参加一场随机对照测试：一部分人用GPT-4完成一系列咨询任务，另一部分人不用。</p>
+
+    <p>结果的第一层很漂亮，漂亮到可以直接写进AI公司的宣传册。使用AI的顾问平均多完成了12.2%的任务，速度快了25.1%，产出质量高了40%。更让人振奋的是：在AI能力范围内的任务上，原本表现最差的那批顾问提升了43%——几乎追上了顶尖同事的水平。</p>
+
+    <p>如果故事到这里就结束了，那它就是又一篇"AI让所有人变得更好"的标准叙事。但研究者设计了一个陷阱。他们在任务中混入了一类"边界外任务"——看起来跟其他任务很像，但实际上超出了GPT-4的可靠处理范围。在这些任务上，不用AI的顾问表现正常。而使用AI的顾问，准确率反而低了19个百分点。</p>
+
+    <p>研究者发现了两种截然不同的使用模式。一种他们叫"半人马模式"：顾问把任务拆开，有些交给AI，有些自己做，在两者之间灵活切换。另一种可以叫"全托模式"：顾问把整个任务丢给AI，然后在AI输出上做微调。</p>
+
+    <p>用半人马模式的人，几乎都是本来就表现好的顾问。他们知道哪些地方AI靠得住，哪些地方靠不住。用全托模式的人，更多是本来表现一般的顾问。他们确实从AI那里获得了巨大的提升——但在AI翻车的地方，他们也一起翻了，而且翻得比不用AI的人还重。</p>
+
+    <p>这个实验最有穿透力的发现不是"AI让谁提升更多"，而是一件更微妙的事：判断AI的边界在哪里，这件事本身就需要你已经具备不用AI也能判断的能力。你需要先知道正确答案大概长什么样，才能判断AI给你的答案靠不靠谱。你需要先对问题有自己的框架，才能在AI输出一堆看起来合理的文字时发现其中的漏洞。</p>
+
+    <p>这跟我那个医生朋友看到的是同一件事。那个患者不是不会打字，不是没有ChatGPT，不是付不起20美元的订阅费。他缺少的是进入对话之前就需要拥有的东西——对问题本身的理解。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">条形图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">Harvard/BCG实验：AI对不同水平顾问的影响</div></div><div style="padding:22px 24px 18px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px dashed #e2e8f0"><div><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><span style="width:10px;height:10px;border-radius:3px;background:#94A3B8;display:inline-block"></span><span style="font-size:11px;color:#64748b">参照</span></span><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><span style="width:10px;height:10px;border-radius:3px;background:#0E9F6E;display:inline-block"></span><span style="font-size:11px;color:#64748b">正</span></span><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><span style="width:10px;height:10px;border-radius:3px;background:#F59E0B;display:inline-block"></span><span style="font-size:11px;color:#64748b">负</span></span></div><span style="font-size:11px;color:#94a3b8;font-weight:500">单位：%</span></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">低技能顾问（边界内）</span><span style="font-size:15px;font-weight:700;color:#0E9F6E;white-space:nowrap">43 %</span></div><div style="background:#DEF7EC;border-radius:5px;height:10px;overflow:hidden"><div style="background:#0E9F6E;width:100.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">高技能顾问（边界内）</span><span style="font-size:15px;font-weight:700;color:#0E9F6E;white-space:nowrap">17 %</span></div><div style="background:#DEF7EC;border-radius:5px;height:10px;overflow:hidden"><div style="background:#0E9F6E;width:39.5%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">全员平均提升</span><span style="font-size:15px;font-weight:700;color:#94A3B8;white-space:nowrap">40 %</span></div><div style="background:#F1F5F9;border-radius:5px;height:10px;overflow:hidden"><div style="background:#94A3B8;width:93.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">边界外任务准确率变化</span><span style="font-size:15px;font-weight:700;color:#F59E0B;white-space:nowrap">-19 %</span></div><div style="background:#FEF3C7;border-radius:5px;height:10px;overflow:hidden"><div style="background:#F59E0B;width:44.2%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>AI在边界内缩小差距，在边界外反而放大差距</div></div>
+
+    <hr>
+
+    <h2>提问是一种需要训练的能力</h2>
+
+    <p>有一种很常见的误解，认为"问对问题"是一种技巧——学一些prompt模板，记几个格式，效果就能上来。过去两年互联网上最不缺的就是"10个让ChatGPT效率翻倍的prompt"这类教程。但如果你仔细看那个BCG实验和类似的研究，你会发现prompt质量的差异不在于格式，而在于三样更深层的东西。</p>
+
+    <p>第一是问题定义能力。一个好的prompt，前提是你知道你面对的是什么问题。我那个医生朋友能写出"45岁男性，干咳三周，无发热，胸部CT示磨玻璃影，CEA轻度升高"，不是因为他读了prompt工程手册，而是因为他在呼吸科干了十五年。他给AI的不是一个问题，是一个已经被专业训练框定过的问题空间。一个在律所做了十年的合伙人让AI帮他审一份股权协议，他会写："请检查这份协议中关于优先清算权的条款是否存在与对赌条款的冲突，特别关注控制权变更触发条件的定义差异。"一个第一次创业的人让AI做同样的事，他可能会写："帮我看看这个合同有没有坑。"AI对两个人都会认真回答。但第一个人给AI划定了精确的搜索空间，第二个人给AI的是一片大海。</p>
+
+    <p>第二是知识距离感。这是一个说起来有些悖论的能力：你需要先大致知道答案是什么样的，才能判断AI给你的答案离正确答案有多远。Frontiers in Education期刊上的一篇研究把这称为"元认知意识"——对自己认知状态的认知。研究发现，prompt能力与批判性推理和数字素养强相关，但更值得注意的是它与"模糊容忍度"相关——你要能容忍AI回答中的不确定性，同时判断哪些不确定性是可以接受的，哪些不行。一个有临床经验的医生看到AI给出的鉴别诊断，能立刻判断"机化性肺炎排在第二位不对，这个影像学特征更像腺癌"。一个患者看到同样的列表，只能逐条去搜索。</p>
+
+    <p>第三是迭代判断力。好的AI使用者不是一次提问就结束。他们会读AI的回答，发现回答中的薄弱环节，然后针对薄弱环节追问。这种对话往往要三到五轮才能逼出真正有价值的内容。但追问本身需要判断力——你要能识别AI的回答在哪个地方滑过去了，在哪个地方给了正确但不够深的东西。一个做了五年投资研究的分析师跟AI讨论一家公司的估值，他可能会在AI给出DCF模型后追问："你的WACC假设用了8.5%，但这家公司的债务成本最近因为信用评级下调应该更高，用6.2%的无风险利率和调整后的beta重新算一下。"一个刚入行的实习生可能看到那个DCF模型就觉得很完美了。</p>
+
+    <p>这三种能力——问题定义、知识距离感、迭代判断力——有一个共同特征：它们都不是可以通过学习AI工具来获得的。它们是你在使用AI之前就需要拥有的东西，是你在一个领域里日复一日积累的产物。AI不是能力均衡器，是能力放大器。你原来的思维方式、知识结构、表达能力，会被它成倍放大。如果你原来有一百分的底子，AI可能帮你做到两百分的产出。如果你原来只有三十分，AI帮你做到六十分——提升比例更大，但绝对差距从七十分扩大到了一百四十分。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_01.jpg" alt="Abstract visualization amplification effect small" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <hr>
+
+    <h2>数字平等的幻觉</h2>
+
+    <p>如果上面的分析还停留在"能力不同的人用AI效果不同"这个层面，那它只是一个关于个体差异的观察。但数据显示的东西让人更不舒服：这种差异的分布方式，跟社会的既有结构高度重合。</p>
+
+    <p>Pew Research Center在2025年对5123名美国成年人做了一项调查。结果很直白：研究生学历的人中有52%使用过ChatGPT，高中及以下学历的人中只有18%。差了近三倍。如果看工作场景，差距更大——研究生在工作中使用AI的比例是45%，高中学历者是17%。Brookings Institution的全国调查加入了收入维度：家庭年收入超过10万美元的人在工作中使用AI的比例是34%，年收入低于3万美元的人是9%。差了3.8倍。</p>
+
+    <p>你可能会说，这是采用率的问题，随着时间推移会拉平。确实有证据支持这种乐观。一份分析了150万条ChatGPT对话的NBER论文发现，中等收入国家的增长速度超过了富裕国家，巴西和韩国的使用率正在接近美国。但采用率跟使用质量是两回事。所有人都有谷歌，但并非所有人都能用谷歌找到同样质量的信息。</p>
+
+    <p>MIT和Stanford的研究者跟踪了5179名客服人员的300万条对话记录。他们发现AI平均提升生产力14%，其中新手和低技能工人的提升高达34%，而最高技能的工人提升接近零，质量甚至略有下降。这看起来像是个好消息——AI在缩小差距。但有一个很容易被忽略的前提：客服是高度标准化的工作。正确的回答是有限的、已知的、可以被模板化的。AI做的事情，本质上是把最佳实践复制给了每一个新手。把同样的逻辑放到BCG实验的创意策略任务上，方向就反转了：在需要判断力的任务中，高技能者获益更多，低技能者在边界外翻车。</p>
+
+    <p>GitHub Copilot的一项涉及4000多名开发者的实验揭示了同样的分裂。初级开发者使用Copilot后编码速度提升了27%到39%，高级开发者只提升了8%到13%。数字上看，初级开发者获益更多。但研究者追踪了他们省下的时间用来干什么：初级开发者用省下的时间写更多代码，高级开发者用省下的时间做架构设计和代码审查。一边在加速执行，另一边在升级决策。差距没有缩小，只是换了一种存在方式。</p>
+
+    <p>在美国，只有2%的家庭订阅了付费AI服务——作为对比，25%的家庭订阅了流媒体。GPT-5.5每百万tokens的价格是210元人民币，而DeepSeek Flash只要2元，差距105倍。AI的世界正在形成一个清晰的阶梯：免费层的用户被限制在较弱的模型上，每5小时只能发10条消息；月付20美元的用户得到更强的模型和5倍的用量；月付200美元的用户获得无限制访问最先进的模型。这个阶梯的形状，跟AI以外的世界的阶梯形状，几乎一模一样。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">对账图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">谁在用AI工作？教育和收入的双重分裂</div></div><div style="padding:22px 24px 18px"><div style="display:flex;align-items:center;gap:24px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px dashed #e2e8f0"><div style="flex:1;text-align:right;font-size:12px;font-weight:700;color:#1A56DB;letter-spacing:1px">← 流入 / INFLOW</div><div style="width:20px"></div><div style="flex:1;text-align:left;font-size:12px;font-weight:700;color:#F05252;letter-spacing:1px">OUTFLOW / 流出 →</div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">研究生学历使用ChatGPT</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:100.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">52 %</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">高中及以下学历使用</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:34.6%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">18 %</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">收入$100K+工作中用AI</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:65.4%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">34 %</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">收入<$30K工作中用AI</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:17.3%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">9 %</div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>同一个工具，使用率按学历和收入精确分层——AI平权是幻觉</div></div>
+
+    <hr>
+
+    <h2>一种新的文化资本</h2>
+
+    <p>法国社会学家布迪厄在1970年代提出了一个让很多人不舒服的概念：文化资本。他的意思是，不平等不仅仅通过经济手段传递——一个中产家庭的孩子就算没有继承一分钱，也继承了阅读习惯、表达方式、对世界的好奇心框架，以及最重要的：知道什么问题值得问。布迪厄当年讨论的是法国的教育系统。他发现大学入学考试看起来对所有人开放，但考试本身测量的东西——对文学典故的熟悉、论辩的结构感、学术写作的风格——恰好是中上阶层家庭在餐桌上就能习得的能力。考试形式上平等，但内容上编码了阶级。</p>
+
+    <p>如果你把这个分析框架搬到今天的AI交互上，会发现一种不安的相似性。</p>
+
+    <p>ChatGPT对所有人开放。它不查你的学历，不看你的收入。但它回应你的方式，取决于你跟它说话的方式。而你跟它说话的方式，取决于你此前全部的知识积累、思维训练和表达能力——这些东西的分布，跟布迪厄说的文化资本的分布，几乎完全重叠。一个从小被鼓励提问的孩子，长大后面对AI也更可能提出精确的、有层次的问题。一个在学术环境里训练过结构化思维的人，天然就会把需求拆解成AI能处理的子问题。一个在专业领域浸泡了多年的人，能在AI输出中识别出只有专家才会注意到的错误。</p>
+
+    <p>更让人不安的是再生产机制。布迪厄讨论文化资本时最核心的论点不是"不平等存在"，而是"不平等会自我复制"。教育资源更好的家庭培养出更会学习的孩子，这些孩子在教育系统中获得更好的成绩，进入更好的职业，获得更多收入，然后为下一代提供更好的教育资源。循环闭合。在AI的场景中，这个循环可能转得更快。一个已经拥有深厚领域知识的人，用AI产出更高质量的工作成果，这些成果帮他获得更好的职业回报和更多的学习机会，他的能力继续增长，他跟AI的交互质量也继续提升。而一个起点较低的人，虽然也从AI中获益——这一点必须承认——但获益的速度和幅度可能始终追不上前者拉开的距离。</p>
+
+    <p>中国学术界已经注意到了这个趋势。一篇发表在核心期刊上的论文引用Jan van Dijk的循环因果理论，提出了"智能鸿沟"的三层递进模型：第一层是接入鸿沟，你有没有设备和网络；第二层是素养鸿沟，你有没有使用数字工具的能力；第三层是智能鸿沟，你能不能"构建和迭代提示词"来获取高质量的AI输出。我们花了二十年基本解决了第一层——智能手机的普及率已经很高。正在解决第二层——数字素养教育在推广。但第三层——提问能力的差距——可能是最难解决的一层。因为它不是一个可以用基础设施投资解决的问题，不是教会一个人如何点开某个App的问题。它是你的知识积累到了什么程度、你的思维被训练到了什么水平的问题。</p>
+
+    <div style="background:#f8f9ff;border:1px solid #e2e8f0;border-radius:12px;padding:20px 24px;margin:32px 0;font-size:13px;color:#4a4a6a;white-space:pre-wrap">【图类型】：流程图
+【副标题】：AI时代的文化资本再生产链条
+【核心判断】：教育资源→知识积累→提问能力→AI产出→职业回报→下一代教育，循环闭合
+【核心内容】：
+  - 教育资源与家庭背景 [参照]：起点
+  - 领域知识与批判性思维 [参照]：积累
+  - Prompt质量与AI交互能力 [正]：转化
+  - 高质量AI辅助产出 [正]：放大
+  - 职业回报与收入增长 [正]：回报
+  - 下一代教育资源投入 [参照]：循环</div>
+
+    <hr>
+
+    <h2>不要急着得出结论</h2>
+
+    <p>到目前为止，这篇文章呈现的图景可能让人觉得悲观。但我想在这里停一下，因为事情并不只有一面。</p>
+
+    <p>在那个MIT/Stanford的客服实验中，AI确实做了一件了不起的事：它让一个只干了两个月的新手，达到了无AI环境下干了六个月的老手的水平。对于那些每天在重复性岗位上工作的人来说，这不是一个可以轻视的改善。这些人的工作效率提高了，被投诉的次数减少了，每天面对的挫败感也少了一些。</p>
+
+    <p>Khan Academy的AI辅导系统Khanmigo，从2023-24学年的6.8万学生增长到了2024-25学年的超过70万学生。在那些没有一对一辅导资源的社区——城市边缘、乡村、收入不高的家庭——一个能24小时回答问题的AI家教，确实在做一件传统教育系统做不到的事。印度的Bhashini项目正在为22种官方语言构建开源AI模型。非洲的AiAfrica项目已经在54个国家培训了超过25万人的AI技能。尼日利亚和肯尼亚正在用AI驱动的信用评分系统，为四亿没有银行账户的人群提供金融服务入口。</p>
+
+    <p>在就业市场上，AI相关岗位要求正式学位的比例从2019年的66%降到了2024年的59%。AI技能溢价正在某些领域取代学历溢价。哈佛大学经济学家David Deming在分析了150万条ChatGPT对话后说了一句诚实的话："这并不一定意味着AI将成为社会的平等力量，但我在这个问题上的判断已经发生了实质性更新。"</p>
+
+    <p>这些反方证据是真实的，不能被轻视。</p>
+
+    <p>但这里面有一个结构性的区分需要被看到。AI在标准化任务中的均衡效应和在复杂判断任务中的放大效应，不是此消彼长的关系，而是同时在发生。一个更准确的描述可能是：AI正在抬高地板——那些原本做简单重复工作的人，确实因为AI得到了改善。但同时，天花板也在升高——那些原本就具备深度知识和判断力的人，从AI中提取的价值增长得更快。</p>
+
+    <p>哈佛/BCG实验的研究者用了一个概念来描述这种状况：锯齿前沿。AI的能力边界不是一条平滑的线，而是一条参差不齐的锯齿线——有些地方AI出奇地强，有些地方AI出奇地弱，而这条线每个月都在变。能看到这条锯齿线在哪里，能在锯齿的凸出部分放手使用AI、在凹陷部分靠自己判断——这种能力本身，就是不平等分布的。</p>
+
+    <p>所以这不是一个"AI让世界更平等还是更不平等"的二选一问题。更准确的说法是：AI在底部制造平等，在顶部制造分化。你站在哪个位置，决定了你看到的是哪一面。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_02.jpg" alt="Abstract representation jagged frontier line" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <hr>
+
+    <p>回到开头那两张截图。</p>
+
+    <p>我后来问那个医生朋友：你觉得那个患者如果学了prompt工程，情况会改善吗？</p>
+
+    <p>他想了想说：改善一些吧。他如果知道要提供年龄、症状持续时间、检查结果这些信息，AI的回答肯定会好一些。但他又说了一句：问题是，他不知道该做什么检查。他不知道CEA是什么。他不知道磨玻璃影意味着什么。这些不是prompt技巧能教的。这是我读了五年医学院、做了三年住院医、又干了十年临床之后才有的东西。</p>
+
+    <p>这大概就是这个问题的核心所在。</p>
+
+    <p>过去每一次技术平权的叙事，后来都被证明过于简单。印刷术让知识不再被教会垄断，但识字率的差距让这种"解放"用了几百年才真正铺开。互联网让所有人都能获取信息，但"信息过载"又制造了一种新的不平等——谁能在噪音中找到信号。AI正在重复这个模式，但速度更快。它把"谁能获取答案"这个已经被基本解决的问题，升级成了"谁会提问"这个更难解决的问题。而提问的能力——真正意义上的、能从AI中提取最大价值的提问能力——它不是一种可以速成的技术技能。它是领域知识、批判性思维和元认知能力的综合体，是你在一个领域里浸泡多年后才慢慢长出来的东西。</p>
+
+    <p>这不是说AI没有价值，也不是说它不能帮助起点较低的人——证据清楚地表明它确实在帮。但我们也许应该对"AI让所有人变得平等"这个叙事保持更多的审慎。因为当所有人都拥有了同一个工具之后，决定你能从这个工具中提取多少价值的，不再是"有没有这个工具"，而是你在打开这个工具之前就已经拥有的一切。</p>
+
+    <p>这不是一种新的不平等。这是旧的不平等，在一种新的介质里的投影。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>我们也许应该对AI让所有人变得平等这个叙事保持更多的审慎。因为当所有人都拥有了同一个工具之后，决定你能从这个工具中提取多少价值的，不再是有没有这个工具，而是你在打开这个工具之前就已经拥有的一切。</p>
+    <p>这不是一种新的不平等。这是旧的不平等，在一种新的介质里的投影。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.pewresearch.org/short-reads/2025/06/25/34-of-us-adults-have-used-chatgpt-about-double-the-share-in-2023/" target="_blank" rel="noopener">Pew Research Center: ChatGPT使用调查（2025）</a></div>
+      <div class="footer-source-item"><a href="https://www.brookings.edu/articles/how-are-americans-using-ai-evidence-from-a-nationwide-survey/" target="_blank" rel="noopener">Brookings Institution: 美国人如何使用AI全国调查</a></div>
+      <div class="footer-source-item"><a href="https://www.hbs.edu/faculty/Pages/item.aspx?num=64700" target="_blank" rel="noopener">Harvard/BCG: 锯齿前沿实验（Dell'Acqua, Mollick等）</a></div>
+      <div class="footer-source-item"><a href="https://www.nber.org/papers/w31161" target="_blank" rel="noopener">MIT/Stanford: 生成式AI在工作中的影响（Brynjolfsson等）</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2302.06590" target="_blank" rel="noopener">GitHub Copilot生产力研究（Microsoft/MIT/Wharton）</a></div>
+      <div class="footer-source-item"><a href="https://www.nber.org/papers/w34255" target="_blank" rel="noopener">NBER: 人们如何使用ChatGPT（Chatterji, Deming等）</a></div>
+      <div class="footer-source-item"><a href="https://www.frontiersin.org/journals/education/articles/10.3389/feduc.2024.1366434/full" target="_blank" rel="noopener">Frontiers in Education: Prompt Engineering作为21世纪技能</a></div>
+      <div class="footer-source-item"><a href="https://www.unesco.org/ethics-ai/en/articles/ai-literacy-and-new-digital-divide-global-call-action" target="_blank" rel="noopener">UNESCO: AI素养与新数字鸿沟</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
