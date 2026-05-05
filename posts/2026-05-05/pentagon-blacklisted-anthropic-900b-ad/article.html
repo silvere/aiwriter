@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pentagon 拉黑了 Anthropic，然后给它打了一个 9000 亿的广告</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI深度</span>
+  <h1>Pentagon 拉黑了 Anthropic，然后给它打了一个 9000 亿的广告</h1>
+  <div class="hero-meta">
+    <span>2026-05-05</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">整整八家 AI 厂商签了 Pentagon 机密网络合同，独缺 Anthropic。然后你打开 Anthropic 的最新融资文件——9000 亿美金估值，比 OpenAI 还高 50 亿。剧本好像写错了。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、八家全员到齐，独缺一家</h2>
+
+    <p>5 月 1 日，Pentagon——它现在的官方名字已经叫 Department of War，不过暂时按旧名字理解——发了一份公告。它跟八家 AI 厂商签了机密网络（IL6 + IL7）的部署协议。</p>
+
+    <p>IL6 是机密级，IL7 是绝密级。这里面跑的是美军最敏感的数据：情报判断、作战决策、卫星侦察。一家 AI 公司能拿到 IL7 资格，相当于在政府赛道的最终决赛圈拿到了入场券。</p>
+
+    <p>这八家是：SpaceX、OpenAI、Google、Microsoft、NVIDIA、AWS、Oracle、Reflection。</p>
+
+    <p>前七家都是熟脸。最后一家 Reflection 是 NVIDIA 撑腰的开源模型新势力，2024 年才成立，这是它头一回被点进决赛名单。</p>
+
+    <p>Anthropic 不在。</p>
+
+    <p>行业今年估值最高的 AI 公司、Mythos Preview 上线后已经找出几千个零日漏洞的公司、跨国 500 强企业 AI 采购名单里都有的公司——它不在。</p>
+
+    <p>更怪的是，Pentagon CTO Emil Michael 还在公告里专门点了它的名字：Anthropic 仍是 supply chain risk，但它的 Mythos 模型是 "separate national security moment"。</p>
+
+    <p>翻译过来就是：你被拉黑这件事我们是认真的；但你那个最强的模型，我们另说。</p>
+
+    <p>Pentagon 没必要在签下八家厂商的庆功公告里专门点一家没签的。但它点了。这本身就是消息——Pentagon 在用一份采购公告重申一遍"我们没在用 Anthropic"。</p>
+
+    <p>不只是没签 Anthropic，是要所有人知道它没签 Anthropic。</p>
+
+    <p>而 Anthropic 在干什么？它正在跟投资人谈 9000 亿美金估值的融资轮。比 OpenAI 三月底完成那一轮 8520 亿的估值，还高 50 亿。</p>
+
+    <p>故事不是"被拉黑的 AI 公司"那么简单。</p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>Eight identical corporate badges arranged in a neat row on a wall, with one badge clearly missing from the lineup leaving an empty silhouette outline, flat design, minimalist illustration, tech style, blue and white color palette, no text, no labels, clean white background</pre></details>
+</div>
+
+    <hr>
+
+    <h2>二、被拉黑的两个月，估值翻了一倍</h2>
+
+    <p>时间倒回 2 月 27 日。</p>
+
+    <p>那天 Trump 签了行政令，命令所有联邦机构"立即"停用 Anthropic 的 AI 技术。Defense Secretary Pete Hegseth 紧跟着把 Anthropic 定为 "Supply-Chain Risk to National Security"——这个标签在 Pentagon 内部历史上只贴过外国敌对企业。</p>
+
+    <p>Hegseth 当天的声明是这么说的：</p>
+
+    <blockquote><p>"America's warfighters will never be held hostage by the ideological whims of Big Tech. This decision is final."</p></blockquote>
+
+    <p>美国战士永远不会被大科技公司的意识形态偏好挟持。这个决定是最终的。</p>
+
+    <p>最终的。我们看看"最终"之后的两个月发生了什么。</p>
+
+    <ul><li><strong>2 月底</strong>：拉黑生效。Anthropic 估值约 3500 亿美金（参考 Google 当月领投的那轮）。年化收入 90 亿美金量级。月百万级付费企业客户 500 家。</li>
+<li><strong>3 月 9 日</strong>：Anthropic 起诉 Trump 政府。</li>
+<li><strong>3 月 26 日</strong>：加州联邦法院发布禁令，认定 Pentagon 把 Anthropic 列为供应链风险站不住脚，blocked the government's effort to "punish" Anthropic。</li>
+<li><strong>4 月 7 日</strong>：Anthropic 发布 Claude Mythos Preview——一个新层级 Copybara，能力高于 Opus。同日宣布年化收入 300 亿美金。每年付百万美金以上的企业客户从 500 翻到 1000+，两个月翻一倍。</li>
+<li><strong>4 月 29 日</strong>：Anthropic 跟投资人谈 500 亿融资轮，估值 8500 至 9000 亿美金区间。</li>
+</ul>
+从被定为"国家安全供应链风险"那天起到 4 月底——Anthropic 估值从 3500 亿涨到 9000 亿，年化收入从 90 亿涨到 300 亿，每年付百万美金以上的企业客户翻一倍。
+
+    <p>这是惩罚？</p>
+
+    <p>你怎么不让我惩罚一下，我也想被这么惩罚。</p>
+
+    <p>更微妙的是数据形状。这条曲线不是 Mythos 砸出来的——Mythos 4 月 7 日才发布，曲线在那之前就已经拐头向上。让 Anthropic 估值起飞的是另一件事：所有关注 AI 安全的企业客户、所有合规重要的跨国机构，都在这两个月里看到了同一个画面——</p>
+
+    <p>这家公司，对美军都说不。</p>
+
+    <p>被拉黑成了一份商业人设。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">对账图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">Pentagon 拉黑两个月里 Anthropic 的"账单"</div></div><div style="padding:22px 24px 18px"><div style="display:flex;align-items:center;gap:24px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px dashed #e2e8f0"><div style="flex:1;text-align:right;font-size:12px;font-weight:700;color:#1A56DB;letter-spacing:1px">← 流入 / INFLOW</div><div style="width:20px"></div><div style="flex:1;text-align:left;font-size:12px;font-weight:700;color:#F05252;letter-spacing:1px">OUTFLOW / 流出 →</div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">2月底估值（拉黑生效）</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:38.9%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">3500 亿美元</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1"></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">4月底估值（在谈融资轮）</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:100.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">9000 亿美元</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1"></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">2月年化收入</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:8.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">90 亿美元</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1"></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">4月年化收入</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:8.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">300 亿美元</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1"></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>Pentagon 拉黑期间，Anthropic 估值翻 2.6 倍，年化收入翻 3.3 倍——这是惩罚，还是定价</div></div>
+
+    <hr>
+
+    <h2>三、公开继续拉黑，私下重新喝咖啡</h2>
+
+    <p>法庭怎么说不重要，Pentagon 演给谁看才重要。</p>
+
+    <p>3 月 26 日，加州联邦法院已经发了禁令，认定 Pentagon 的 supply chain risk 标签站不住脚。换句话说，从那天起，Anthropic 在法律意义上不应该再被排除在政府采购之外。</p>
+
+    <p>Pentagon 5 月 1 日的八家公告里，依然把它点名——还是故意点名。</p>
+
+    <p>为什么？因为这份名单的真正受众不是承包商，是公众和市场。</p>
+
+    <p>Pentagon 要的不是"我们跟谁合作"，是"我们没跟谁合作"。</p>
+
+    <p>而与此同时——</p>
+
+    <p>4 月 19 日，Axios 爆料：NSA 正在使用 Anthropic 的 Mythos 模型。</p>
+
+    <p>是的，那个被 Hegseth 公开拉黑的公司，那个 supply chain risk，那个"决定是最终的"——它的最强模型，正在被国安局每天打开使用。</p>
+
+    <p>你以为这是矛盾。这正是设计。</p>
+
+    <p>国安局是绝密单位，它用什么工具不会上公告。所以 Pentagon 可以一边在公开公告里把 Anthropic 列成全民公敌，一边让 NSA 拿到 Mythos 钥匙。两边互不矛盾，因为前者面向 PR，后者面向操作。</p>
+
+    <p>4 月里白宫又发生了另一件事。白宫幕僚长 Susie Wiles 和财政部长 Scott Bessent，一起约了 Dario Amodei 喝咖啡。两边对外的口径是 "productive introductory meeting"——"建设性的初次会面"。</p>
+
+    <p>修辞值得停下来看一秒。Hegseth 说"决定是最终的"那句话讲完不到两个月，白宫高层重新跟 Anthropic 启动新对话框架，从零开始算——所谓"初次会面"。</p>
+
+    <p>公开继续拉黑，私下重设关系。这就是 Emil Michael 那句"Anthropic 仍是 supply chain risk，但 Mythos 是 separate national security moment"的真正意思——演的归演，用的归用。</p>
+
+    <p>Anthropic 全程没有一次公开抗议、没有道歉、没有妥协退让。它就让你拉它的黑、让你点它的名、让 Axios 爆 NSA 在偷用。它什么都不需要做，估值就翻了一倍。</p>
+
+    <p>谁在惩罚谁，我们再问一次。</p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>A theater stage seen from a dual angle: front stage shows a closed door with a no-entry sign, while the same door from backstage shows it slightly ajar with figures shaking hands behind, flat design, minimalist illustration, tech style, blue and white color palette, no text, no labels, clean white background</pre></details>
+</div>
+
+    <hr>
+
+    <h2>四、伦理是产品，不是立场</h2>
+
+    <p>把整件事拆开看。</p>
+
+    <p>Anthropic 名义上是一家做大模型的公司。它真正在卖的，是同一份能力的两个版本。</p>
+
+    <p>第一个版本卖给商业市场。这个市场买的不是模型本身——OpenAI 模型一样能用，Gemini 一样能用——买的是"我们用了一个对美军都说不的 AI"这件事。</p>
+
+    <p>它有一个具体名字叫做：道德溢价。</p>
+
+    <p>谁愿意付这份溢价？欧盟监管下的金融、医疗、政府机构。日韩澳新对美军合作高度敏感的国有客户。任何一家想在自家 ESG 报告里写"我们采购的 AI 是注重伦理的那家"的跨国公司。它们可以选 OpenAI、可以选 Gemini，但它们偏偏选 Anthropic。原因不在 benchmark，原因在 Hegseth 那句"决定是最终的"。</p>
+
+    <p>那一句话，是 Anthropic 这两个月收到的最贵的一笔免费广告。</p>
+
+    <p>第二个版本卖给政府市场——准确说是政府里那些不能不用的部门。NSA 用 Mythos 不是因为 Anthropic 有道德，是因为找零日漏洞这件事，全行业只有这一家做到了能批量上千发的级别。这是能力溢价，跟道德无关。</p>
+
+    <p>Anthropic 在两个互不相认的市场，卖同一份能力。每个市场愿意付的钱不一样，原因也不一样，但它都收下了。</p>
+
+    <p>这套买卖本质就是一个东西：期权定价。</p>
+
+    <p>道德姿态是一份看跌期权——AI 出问题、AI 被滥用、客户被监管层提问的时候，"我们用的是有原则的那家"是可以直接拿出来当免责答案的东西。这份期权之前没有价格。Anthropic 给它定了一个，定到 9000 亿美金估值。</p>
+
+    <p>结论很简单。</p>
+
+    <p>Anthropic 不是输了。是其他七家赢了 IL6 / IL7，Anthropic 赢了 IL∞——那个不在 Pentagon 供应链里的市场，那个比 Pentagon 大很多倍的市场。</p>
+
+    <p>至于"AI 公司有伦理"还是"AI 公司没伦理"——这个问题已经被这两个月给回答了：AI 公司的伦理本身就是产品。</p>
+
+    <p>伦理的形状刚好长成了估值最高的那种形状（笑）。</p>
+
+    <p>Pentagon 不是在惩罚 Anthropic。Pentagon 是在帮它做产品发布会。</p>
+
+    <p>就这。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>Anthropic 不是输了。是其他七家赢了 IL6 / IL7，Anthropic 赢了 IL∞——那个不在 Pentagon 供应链里的市场，那个比 Pentagon 大很多倍的市场。</p>
+    <p>AI 公司的伦理本身就是产品。伦理的形状刚好长成了估值最高的那种形状（笑）。Pentagon 不是在惩罚 Anthropic，Pentagon 是在帮它做产品发布会。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.cnn.com/2026/05/01/tech/pentagon-ai-anthropic" target="_blank" rel="noopener">Pentagon strikes deals with 8 Big Tech companies after shunning Anthropic — CNN Business (2026-05-01)</a></div>
+      <div class="footer-source-item"><a href="https://defensescoop.com/2026/05/01/dod-expands-classified-ai-work-with-8-companies-excluding-anthropic/" target="_blank" rel="noopener">DOD expands its classified AI work with 8 companies — excluding Anthropic — DefenseScoop (2026-05-01)</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/05/01/pentagon-anthropic-blacklist-mythos-michael.html" target="_blank" rel="noopener">Pentagon tech chief says Anthropic is still blacklisted, but Mythos is a separate issue — CNBC (2026-05-01)</a></div>
+      <div class="footer-source-item"><a href="https://www.cbsnews.com/news/hegseth-declares-anthropic-supply-chain-risk/" target="_blank" rel="noopener">Hegseth declares Anthropic a supply chain risk — CBS News (2026-02-27)</a></div>
+      <div class="footer-source-item"><a href="https://www.cnn.com/2026/03/26/business/anthropic-pentagon-injunction-supply-chain-risk" target="_blank" rel="noopener">Judge blocks Pentagon's effort to "punish" Anthropic — CNN Business (2026-03-26)</a></div>
+      <div class="footer-source-item"><a href="https://www.axios.com/2026/04/19/nsa-anthropic-mythos-pentagon" target="_blank" rel="noopener">Scoop: NSA using Anthropic's Mythos despite Defense Department blacklist — Axios (2026-04-19)</a></div>
+      <div class="footer-source-item"><a href="https://www.axios.com/2026/04/29/trump-anthropic-pentagon-ai-executive-order-gov" target="_blank" rel="noopener">Trump officials draft plan to bring Anthropic back amid Pentagon fight — Axios (2026-04-29)</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/04/29/anthropic-weighs-raising-funds-at-900b-valuation-topping-openai.html" target="_blank" rel="noopener">Anthropic in talks to raise funds at $900 billion valuation, higher than OpenAI — CNBC (2026-04-29)</a></div>
+      <div class="footer-source-item"><a href="https://red.anthropic.com/2026/mythos-preview/" target="_blank" rel="noopener">Claude Mythos Preview — Anthropic Red (2026-04-07)</a></div>
+      <div class="footer-source-item"><a href="https://techcrunch.com/2026/04/28/google-expands-pentagons-access-to-its-ai-after-anthropics-refusal/" target="_blank" rel="noopener">Google expands Pentagon's access to its AI after Anthropic's refusal — TechCrunch (2026-04-28)</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
