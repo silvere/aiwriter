@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>你越会用AI，就越不会提问</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI深度</span>
+  <h1>你越会用AI，就越不会提问</h1>
+  <div class="hero-meta">
+    <span>2026-05-05</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">我翻了一下自己和Claude的聊天记录。半年前，我给它写过一段117个字的prompt。上周，我给它的prompt是四个字：「帮我改改。」我甚至没有说改什么。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>你的Prompt正在缩短</h2>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_01.jpg" alt="person sitting desk chat interface" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <p>这个变化不是我一个人的。2024年，"prompt工程师"是硅谷最热门的新职位之一，有人靠教别人写prompt月入六位数。到2025年底，这个职位的招聘量下降了约40%。不是因为不需要跟AI说话了，而是因为AI变得太善解人意——GPT-5.2、Claude Opus 4.6这些模型已经能理解模糊的、随意的、甚至语焉不详的指令。</p>
+
+    <p>从产品设计者的角度，这是一次巨大的胜利。模型越来越聪明，用户不需要费力组织语言，门槛降低，使用量上升，留存率提高。Gartner预测，到2026年底，40%的企业应用将内嵌AI Agent，而2025年初这个数字不到5%。</p>
+
+    <p>但我想从另一个角度来看这件事。</p>
+
+    <p>prompt变短，表面上是"不需要想怎么问了"。但"怎么问"这个动作里包含着一些东西：你得先知道自己要什么，然后判断哪些信息对AI是关键的，再决定以什么结构传达。这三步——目标澄清、信息筛选、结构组织——不是在"写prompt"，是在思考。</p>
+
+    <p>当AI进步到不需要你做这三步的时候，省掉的不是打字时间。</p>
+
+    <p>有人会说，这不就是技术进步的正常结果吗？Andrej Karpathy的观点很有代表性：更短的prompt意味着更好的模型，而不是更笨的用户。这个说法在技术层面完全正确。但它回避了一个问题：当你不再需要想清楚自己要什么的时候，你还想得清楚吗？</p>
+
+    <p>这不是一个修辞性的反问。已经有人用实验数据回答了它。</p>
+
+    <hr>
+
+    <h2>从提问者到批准按钮</h2>
+
+    <div style="background:#f8f9ff;border:1px solid #e2e8f0;border-radius:12px;padding:20px 24px;margin:32px 0;font-size:13px;color:#4a4a6a;white-space:pre-wrap">【图类型】：流程图
+【副标题】：人在AI工作流中的角色演变
+【核心判断】：从定义问题到点击"确认"，人的角色正在被一步步抽空
+【核心内容】：
+  - 2023：撰写详细prompt → 人定义问题
+  - 2024：调整AI输出 → 人编辑方案
+  - 2025：审核AI草稿 → 人审批结果
+  - 2026：点击"看起来不错" → 人按批准键</div>
+
+    <p>2025年6月，MIT Media Lab发布了一项研究，标题叫"Your Brain on ChatGPT"。研究者用脑电图（EEG）追踪了54名参与者在写文章时的大脑活动，分三组：独立写作、用搜索引擎辅助、用ChatGPT辅助。</p>
+
+    <p>结果很直接。独立写作组的大脑连通性最强。搜索引擎组比独立写作组低34%到48%。ChatGPT组最弱，比独立写作组低了55%。</p>
+
+    <p>但让研究者真正吃惊的不是这个数字，而是一个后续实验。他们让ChatGPT组的参与者在第四轮不用AI重新写作。这些人的大脑连通性不仅没有恢复到基线水平，反而比从未使用AI的人更弱。更刺眼的数据是：78%的AI组参与者无法引用自己刚写的文章里的任何一个段落。</p>
+
+    <p>他们写了文章，但不记得自己写了什么。因为严格来说，不是他们写的。</p>
+
+    <p>研究者给这个现象起了个名字：认知债务。AI在短期内替你省下的脑力劳动，会以长期认知能力下降的形式"偿还"。这项研究在发表时尚未通过同行评审，方法论存在争议。但它指向的方向——AI使用与认知投入的反向关系——很快被另一项更硬的研究证实了。</p>
+
+    <p>2025年8月，《柳叶刀·胃肠病学与肝脏病学》发表了一项来自波兰四家内镜中心的研究。19位经验丰富的内镜医生（每人操作超过2000例肠镜）在引入AI辅助检测系统后，他们在不使用AI时的腺瘤检出率从28.4%降到了22.4%。</p>
+
+    <p>这不是新手。这是做了几千台手术的老医生。AI帮他们找了一阵子息肉之后，他们自己找息肉的能力下降了6个百分点。</p>
+
+    <p>这两项研究分属不同领域——一个是写作，一个是临床医学——但指向同一个模式：人在与AI协作的过程中，角色发生了微妙的位移。MIT的参与者从"写作者"变成了"编辑者"，最后变成了"不知道自己写了什么的署名者"。波兰的内镜医生从"主动检测者"变成了"AI标注的确认者"。</p>
+
+    <p>这里面有一个很微妙的变化。当AI给你一个方案让你说"行"或"不行"的时候，你感觉自己仍然在做决定。但"从多个可能性中选出最优解"和"对一个现成方案说OK"，是两种完全不同的认知活动。前者需要你自己建立评估框架，后者只需要你没有发现明显问题。</p>
+
+    <p>你从定义者变成了审批者。审批者看起来还在"做判断"，但他判断的颗粒度已经完全不同了。</p>
+
+    <p>问题是，这种角色互换不是一个人的选择。</p>
+
+    <hr>
+
+    <h2>边界滑移</h2>
+
+    <div style="background:#f8f9ff;border:1px solid #e2e8f0;border-radius:12px;padding:20px 24px;margin:32px 0;font-size:13px;color:#4a4a6a;white-space:pre-wrap">【图类型】：流程图
+【副标题】：认知外包的边界是如何悄然上移的
+【核心判断】：你以为自己只外包了拼写检查，实际上已经外包到"这件事值不值得做"
+【核心内容】：
+  - 拼写检查 [参照]：格式层外包（无害）
+  - 段落结构 [参照]：组织层外包（可控）
+  - 论证逻辑 [流出]：思维层外包（危险）
+  - 问题定义 [流出]：判断层外包（致命）</div>
+
+    <p>很多人会在这里举一个例子来反驳：计算器也是认知外包，但没人觉得用计算器的人比心算的人更笨。书写的发明让人类不再需要记住所有事情，但没有人认为文字让人类退化了。AI只是这条路上的下一步。</p>
+
+    <p>Ben Thompson在他的Stratechery通讯里表达过类似的观点：人类工具史本质上就是一部认知外包史。</p>
+
+    <p>这个类比在逻辑上成立，但忽略了一个关键区别。</p>
+
+    <p>计算器有一条非常清晰的外包边界：它替你算，但不替你决定算什么。你得自己列出公式，自己定义问题，自己判断答案是否合理。书写也一样——它替你记，但不替你选择记什么。这些工具的外包范围是固定的、可见的、不会自动扩张的。</p>
+
+    <p>AI不一样。AI的外包边界是模糊的，而且在持续向上滑移。</p>
+
+    <p>一个典型的轨迹是这样的。你开始用AI检查拼写和语法，这是纯粹的格式层外包，没有人会反对。然后你让它帮你调整段落结构——"这一段放前面好还是放后面好？"这时候你已经开始把组织性思考交出去了，但你可能没有意识到，因为你仍然在"做选择"。再然后，你让它帮你补充论据——"帮我找一些支持这个观点的数据。"现在你已经在让AI参与论证层面的工作了。最后，你打开对话框，输入四个字："帮我改改。"</p>
+
+    <p>到这一步，你已经把"这篇文章需要改什么"这个问题本身也交出去了。你外包的不再是执行，而是判断。</p>
+
+    <p>这种滑移很难抵抗，原因不在于人的意志力薄弱，而在于产品设计的激励结构。</p>
+
+    <p>2025年的一项用户研究表明，在40%的AI辅助任务中，参与者报告自己完全没有进行批判性思考——用户对AI输出的信心越高，投入的认知努力就越低。对AI产品来说，这个数据意味着什么？用户越信任你的产品，用得越省心，留存率越高。那么产品优化的方向就是让用户"更省心"——让他们更少质疑、更少修改、更快点击"确认"。</p>
+
+    <p>换句话说，让你变成一个更高效的批准按钮，恰恰是AI产品的最优产品策略。</p>
+
+    <p>这不是阴谋论。没有一个产品经理会说"我们的目标是让用户变笨"。但当整个商业逻辑的优化方向是"减少用户的认知摩擦"时，认知能力的退化就不是一个bug，而是一个feature。</p>
+
+    <p>所以，"保持独立思考"为什么是一句废话？因为你在跟一个价值数十亿美元的产品优化机器对抗。它每天有几千名工程师在研究如何让你更少思考，而你只有自己一个人在抵抗。</p>
+
+    <hr>
+
+    <h2>你最后的主场优势</h2>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_02.jpg" alt="handwritten sticky note desk next" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <p>说到这里，我并不打算呼吁大家"放下AI回归独立思考"。那跟呼吁大家"放下手机回归书信"一样不切实际，而且没有意义。</p>
+
+    <p>但在认知外包的边界持续上移的过程中，有一样东西是目前的AI仍然做不到的，而且在可预见的未来可能一直做不到——定义问题。</p>
+
+    <p>AI可以帮你写一篇文章，但它不能替你判断这篇文章值不值得写。AI可以给你十个方案，但它不能替你感受到"这里有些不对"。这个模糊的、甚至不理性的直觉，恰恰是人类判断力的核心——它来自你与具体问题直接碰撞的经验，来自那些你亲自做过的、失败过的、想不通但后来想通了的事情。</p>
+
+    <p>当你把越来越多的认知过程交给AI，这种直觉能力的原材料就在减少。不是因为你变笨了，而是因为你跟真实问题之间隔了一层。</p>
+
+    <p>2026年的悉尼科技大学一份关于教育的研究里提到一个区分：AI可以是"脚手架"，也可以是"替代品"。脚手架的特征是临时性和赋能——它的目标是让你最终不再需要它。替代品的特征是永久性和依赖——它让你越来越离不开它。</p>
+
+    <p>区别不在于你用不用AI，而在于你用完AI之后，是更会提问了还是更不会。</p>
+
+    <p>我现在给自己立了一个很小的规矩：每次打开Claude之前，先花30秒，在纸上写一句话——"我自己觉得答案大概是什么。"</p>
+
+    <p>不需要写对。写错了也没关系。关键是你在AI替你想之前，自己先想了一下。哪怕只有30秒。</p>
+
+    <p>因为一旦你习惯性地跳过这30秒，变化不会以任何戏剧性的方式发生。你只是慢慢地、不知不觉地，从一个提问的人变成了一个点头的人。而点头这件事，AI迟早也能替你做。</p>
+
+    <hr>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>我现在给自己立了一个很小的规矩：每次打开Claude之前，先花30秒，在纸上写一句话——我自己觉得答案大概是什么。</p>
+    <p>因为一旦你习惯性地跳过这30秒，变化不会以任何戏剧性的方式发生。你只是慢慢地、不知不觉地，从一个提问的人变成了一个点头的人。而点头这件事，AI迟早也能替你做。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.media.mit.edu/publications/your-brain-on-chatgpt/" target="_blank" rel="noopener">MIT Media Lab: Your Brain on ChatGPT（2025年6月）</a></div>
+      <div class="footer-source-item"><a href="https://www.thelancet.com/journals/langas/article/PIIS2468-1253(25" target="_blank" rel="noopener">The Lancet: Endoscopist deskilling risk after exposure to AI in colonoscopy（2025年8月）</a></div>
+      <div class="footer-source-item"><a href="https://www.psychologytoday.com/us/blog/the-algorithmic-mind/202603/adults-lose-skills-to-ai-children-never-build-them" target="_blank" rel="noopener">Psychology Today: Adults Lose Skills to AI. Children Never Build Them（2026年3月）</a></div>
+      <div class="footer-source-item"><a href="https://www.uts.edu.au/news/2026/03/experts-warn-unstructured-ai-use-in-schools-risks-cognitive-atrophy/" target="_blank" rel="noopener">UTS: AI, Cognitive Offloading and Implications for Education（2026年3月）</a></div>
+      <div class="footer-source-item"><a href="https://cacm.acm.org/news/the-ai-deskilling-paradox/" target="_blank" rel="noopener">ACM: The AI Deskilling Paradox（2025年）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
