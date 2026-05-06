@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>你用的开源库，正在 Anthropic 的库存里</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI深度</span>
+  <h1>你用的开源库，正在 Anthropic 的库存里</h1>
+  <div class="hero-meta">
+    <span>2026-05-06</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">Mozilla 修了 271 个 Mythos 找到的 Firefox 漏洞，Anthropic 自己说还有 99% 没修——这 99% 不是研究 backlog，是公司资产。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、271 是个尾数</h2>
+
+    <p>271 这个数字本身已经够吓人。</p>
+
+    <p>参考一下规模。Project Zero——Google 顶级 0day 团队，全行业最公开的 vulnerability research 机构——一年公开披露的漏洞大约 100 出头。这是 ~20 个全职顶级研究员一年的总产出。</p>
+
+    <p>Mythos 在 Firefox 一次评估里，挖出 271 个。</p>
+
+    <p>Mozilla 三个月前用 Claude Opus 4.6 在自家代码库里跑过一轮，结果是 22 个 confirmed bugs，patch 进了 Firefox 148。从 22 到 271，Mozilla 用的不是更多人，是更新的模型。中间唯一变量是 Anthropic 给了它一份 Mythos Preview。</p>
+
+    <p>但这是水面上的部分。</p>
+
+    <p>Anthropic 自己的描述是这样的：thousands of high-severity vulnerabilities, including some in <strong>every major operating system and every major web browser</strong>——上千个高危漏洞，在每个主流操作系统、每个主流浏览器里都有。</p>
+
+    <p>他们没说"几千"是 2 千、5 千还是 1 万。他们说的是一个范围词。</p>
+
+    <p>但他们说了 271 是"过去几周内 Mozilla 这一份 collaboration 的产出"。</p>
+
+    <p>然后他们又说，已经披露并修补的占比，"Over 99% have not yet been patched"——意思是已修补的不到 1%。</p>
+
+    <p>如果 271 就是那个 1%，那剩下的 99% 对应大约 26800 个。</p>
+
+    <p>如果 271 只是 Firefox 这一家的份额，剩下的 99% 还要乘上"every major OS and browser"——Chrome、Safari、Edge、Windows、macOS、Linux 内核、Android、iOS——的所有码量。</p>
+
+    <p>具体数字 Anthropic 自己也算不清。但他们清楚一件事：他们手上的库存比已经公开的多两个数量级。</p>
+
+    <p>271 不是顶，是尾数。</p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>An iceberg seen from a side view, only a tiny tip visible above the waterline labeled with binary code, a massive deep underwater portion glowing with thousands of small code fragments, flat design, minimalist illustration, tech style, blue and white color palette, no text, no labels, clean white background</pre></details>
+</div>
+
+    <hr>
+
+    <h2>二、那 99% 在哪里</h2>
+
+    <p>99% 是个挺神秘的数字。</p>
+
+    <p>它不在公开的漏洞数据库里——CVE 没收，NVD 没收，Bugzilla 没贴。</p>
+
+    <p>它不在维护者的桌上——大多数 OSS 项目今天都没收到 Anthropic 的私人邮件说"嘿你们这有个洞"。</p>
+
+    <p>它不在攻方手上——按 Anthropic 自己的口径，Mythos Preview 不对外发售，没有人能调它的 API 拿这份能力。</p>
+
+    <p>那它在哪。</p>
+
+    <p>它在 Anthropic 公司治理结构里。一种叫"已经发现但未披露的漏洞"的资产，按"coordinated vulnerability disclosure"的行业流程合法存在。CVD 这个流程是 1990 年代为人类研究员设计的——一个研究员发现一个漏洞，给厂商 90 天补丁窗口，到点公开。这套流程的设计假设是：漏洞是稀缺的，研究员是分散的，每一个漏洞值得单独处理。</p>
+
+    <p>Mythos 把这三条假设全部踩掉了。漏洞不再稀缺，发现源不再分散，单独处理也跟不上速度。所以 CVD 在 Mythos 这里变成了一个新东西——一份可以无限期延长的"未披露状态"。</p>
+
+    <p>这份"未披露状态"有读者。</p>
+
+    <p>它的读者是 Project Glasswing 的 12 家 launch partners：AWS、Apple、Broadcom、Cisco、CrowdStrike、Google、JPMorgan Chase、Linux Foundation、Microsoft、NVIDIA、Palo Alto Networks，加上 Anthropic 自己。</p>
+
+    <p>它还有 40 多个延伸读者——Anthropic 公开说的"organizations that build or maintain critical software infrastructure"，但具体名单不公开。</p>
+
+    <p>它还有一个公开但不公告的读者——NSA。Axios 4 月 19 日的报道证实了这一点。</p>
+
+    <p>把这些读者放在一起看：12 + 40 + 国安局 + Anthropic 自己——这是一份能看见 99% 的名单。</p>
+
+    <p>剩下的人只能看见 1%。</p>
+
+    <p>271 是 1% 那一栏的当期产出。</p>
+
+    <p>以前的 0day 有两个市场——Project Zero 这种公开市场，Zerodium 和 NSO 这种黑市。两个市场都不大：公开市场流量按年计百级，黑市按公开估算单家年成交也是几十到一百出头。两边的总量还不够 Mythos 一个 Firefox eval。</p>
+
+    <p>现在多出第三个。一家上市预备公司的资产负债表。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)"><div style="background:#1A56DB;color:#fff;padding:10px 16px;font-size:13px;font-weight:700">饼图</div><div style="padding:20px 24px;display:flex;align-items:center;gap:24px;flex-wrap:wrap"><svg width="160" height="160" viewBox="0 0 160 160" style="flex-shrink:0"><path d="M 80.00 10.00 A 70 70 0 0 1 84.40 10.14 L 82.64 38.08 A 42 42 0 0 0 80.00 38.00 Z" fill="#1A56DB" stroke="#fff" stroke-width="2"/><path d="M 84.40 10.14 A 70 70 0 1 1 80.00 10.00 L 80.00 38.00 A 42 42 0 1 0 82.64 38.08 Z" fill="#F05252" stroke="#fff" stroke-width="2"/></svg><div style="flex:1;min-width:160px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="width:12px;height:12px;border-radius:3px;background:#1A56DB;flex-shrink:0"></div><span style="font-size:12px;color:#374151;flex:1">公开披露（Firefox 150 等）</span><span style="font-size:12px;font-weight:700;color:#1A56DB">1%</span></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="width:12px;height:12px;border-radius:3px;background:#F05252;flex-shrink:0"></div><span style="font-size:12px;color:#374151;flex:1">Glasswing 内部可见但未公开</span><span style="font-size:12px;font-weight:700;color:#F05252">99%</span></div></div></div></div>
+
+    <hr>
+
+    <h2>三、库存这个词不是比喻</h2>
+
+    <p>讨论"漏洞作为资产"这件事的时候，行业里有人会说：研究员个人也持有过 0day 啊，没什么新鲜的。</p>
+
+    <p>不对。</p>
+
+    <p>研究员个人持有 0day 是一种流动性极差的资产。这个研究员退休、转行、跳槽到防御方、或者哪天意识到这件事不舒服——库存就归零了。这份漏洞跟着这个人一起走、一起退、一起死。它没法记账。</p>
+
+    <p>公司持有 0day 是另一种东西。它写在某种数据库里、某种工单系统里、某种漏洞跟踪流水线里。员工 A 离职了员工 B 接着用，董事会换届了流程不变，公司被收购了资产打包过户。公司持有的漏洞可以继承、可以估值、可以在并购时被尽职调查算到对价里。</p>
+
+    <p>Anthropic 的法律性质从这件事上变了一次。</p>
+
+    <p>它不再只是一家训练大模型卖月费的 SaaS 公司。它是一家持有未公开关键软件漏洞库存的有限责任公司。这两个法律身份在 IPO 招股书里要分开写。</p>
+
+    <p>Anthropic 现在的估值数字是 9000 亿美金。年化收入按上个月公告 300 亿。我们做一道行业标准的算术题。</p>
+
+    <p>成熟 SaaS 公司估值倍数在 8-12 倍 ARR，对应 2400-3600 亿。AI 类高速增长 SaaS 给到 15-20 倍，对应 4500-6000 亿。即使按 AI 行业可见过的最激进倍数 25 倍算，也就是 7500 亿。</p>
+
+    <p>9000 亿减去 7500 亿，剩 1500 亿。这是 SaaS 估值模型解释不了的部分。</p>
+
+    <p>如果再考虑 Anthropic 的 ARR 是从 2 月 90 亿涨到 4 月 300 亿——两个月 3.3 倍，这种增速不可能持续 12 个月——那"极激进倍数"本身也站不住。剩下需要解释的口径只会更大。</p>
+
+    <p>这部分溢价对应什么？三件事：政府订单（NSA 已确认在用 Mythos）、Glasswing 类别的特许许可、那笔 99% 没修的库存。</p>
+
+    <p>前两件好理解，是收入项，能写到 Pricing 那一栏。第三件没法直接定价，因为 Anthropic 自己也没说库存怎么变现——但市场愿意为这种"不知道怎么变现但显然有用"的东西付钱。这种付钱方式有个名字叫期权溢价。</p>
+
+    <p>普通 SaaS 公司没有这种期权可以卖。Anthropic 有。</p>
+
+    <p>这就是 0day 库存第一次进入估值模型。</p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>A bank vault door wide open showing rows of safety deposit boxes, but instead of money or documents, each box contains glowing lines of source code and binary digits, flat design, minimalist illustration, tech style, blue and white color palette, no text, no labels, clean white background</pre></details>
+</div>
+
+    <hr>
+
+    <h2>四、你装的那个 npm 包，在哪一栏</h2>
+
+    <p>回到具体一点的视角。</p>
+
+    <p>你打开自己电脑上的某个项目，看一眼 package.json，里面 dependencies 列了几十个包。再点开 node_modules，里面是 1500 个间接依赖。这 1500 个里，至少有 100 个是 5 年没更新过的，至少有 30 个是单人维护的，至少有 5 个的 GitHub repo 已经 archived 了。</p>
+
+    <p>这是 2026 年绝大部分项目的真实形状。npm 上注册了大约 300 万个 package，PyPI 上 60 万，Maven Central 80 万。这些是软件世界的真正长尾。</p>
+
+    <p>Glasswing 名单上没有它们。</p>
+
+    <p>名单上有 Linux Foundation——但 LF 是个组织，不是分发渠道。LF 收 Anthropic 给的 100 万 / 400 万捐款（Anthropic 公告里是 $100M usage credits 给 partners + $4M donations 给 OSS security 组织），它能资助一些核心 OSS 项目。Linux 内核能被覆盖到。Curl 这种基础库可能被覆盖到。但你 package.json 里那个 `is-odd@1.0.0` 包，没人覆盖。</p>
+
+    <p>那 Mythos 会扫它吗？</p>
+
+    <p>会。Mythos 不挑食，扫到哪算哪。</p>
+
+    <p>那扫到的漏洞会被披露给那个 npm 包的维护者吗？</p>
+
+    <p>按 Anthropic 的口径，会进入 coordinated disclosure 流程。CVD 流程里，第一步是联系 maintainer。但这个 maintainer 可能 2019 年就停止响应邮件了。CVD 流程的下一步是"如果 maintainer 不响应，公开披露"——但这是个 90 天的钟。在那 90 天里，这个漏洞躺在 Anthropic 库存里。</p>
+
+    <p>90 天到了之后呢？</p>
+
+    <p>如果这个包还有人在用——典型情况是有的，npm 上的休眠包用得是真的多——那么"公开披露"就变成"公开告诉所有攻击者：这个包有这个漏洞，没人会修"。CVD 流程在 maintainer 缺席的时候，结果是把漏洞从 Anthropic 库存搬到 attacker 手上。</p>
+
+    <p>这是 CVD 设计的副作用，不是 Mythos 制造的。但 Mythos 把这个副作用从"偶发现象"变成"工业化产出"。</p>
+
+    <p>按 Anthropic 自己的说法，受波及的范围是"every major operating system and every major web browser"。再加上无数它没特别提到的中间件、运行时、库。这些里面有名单的会进入 Glasswing 流程被快速 patch，没名单的进入"披露但无人修"的状态。</p>
+
+    <p>你用的开源库，要么在前者，要么在后者。</p>
+
+    <p>绝大多数在后者。</p>
+
+    <p>不是说现在已经发生了大规模的"披露但无人修"事件——Anthropic 还在按部就班地走 CVD 流程，目前看到的是 Mozilla 这种有人有钱有团队的项目接住了 271 个 patch。但 Mozilla 是名单上的浮标。沉在水底的是 GitHub 上几千万个不响应邮件的 repo。</p>
+
+    <p>这些 repo 不是 Anthropic 的客户，也不是 Glasswing 的合作伙伴，也不会进入估值模型——但它们承载了今天软件世界一半以上的实际运行代码。它们被扫到一个漏洞之后，能做的事只有一件：等。</p>
+
+    <p>等什么？等 90 天的钟走完。然后从 Anthropic 库存的"未披露"变成 GitHub 公开 issue 上的"已披露但无人修"。</p>
+
+    <p>这是 Mythos 这套设计在 OSS 长尾上的真实形状。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">对账图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">Glasswing 名单内外的软件世界</div></div><div style="padding:22px 24px 18px"><div style="display:flex;align-items:center;gap:24px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px dashed #e2e8f0"><div style="flex:1;text-align:right;font-size:12px;font-weight:700;color:#1A56DB;letter-spacing:1px">← 流入 / INFLOW</div><div style="width:20px"></div><div style="flex:1;text-align:left;font-size:12px;font-weight:700;color:#F05252;letter-spacing:1px">OUTFLOW / 流出 →</div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Glasswing launch partners</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:8.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">12 个</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">npm 注册 packages</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:100.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">3000000 个</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">延伸 critical infra orgs</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:8.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">40 个</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">PyPI 注册 packages</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:20.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">600000 个</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1"></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Maven Central</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:26.7%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">800000 个</div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>12 + 40 个组织能拿到 Mythos 的"提前披露"待遇，npm/PyPI 长尾上几百万个包不在名单上</div></div>
+
+    <hr>
+
+    <h2>五、招股书里这一行字怎么写</h2>
+
+    <p>Anthropic 的 IPO 时间窗口 CNBC 的报道里写了一句"as early as October 2026"——10 月，5 个月后。</p>
+
+    <p>S-1 招股书是个有意思的文件。它有一节叫 Risk Factors，公司必须在里面列出可能影响经营的风险。这个章节的写法行业里有惯例——把所有可能被 SEC 抓的、可能被原告律师抓的事情都写一遍，写得越保守越好。</p>
+
+    <p>Anthropic 的 Risk Factors 这一节会写什么。</p>
+
+    <p>肯定会写"AI 模型可能产生偏见或错误内容，可能被恶意使用"——这是 OpenAI、Microsoft、Google 招股书里都有的标准条款。</p>
+
+    <p>肯定会写"AI 训练涉及版权争议"——这是 NYT 诉 OpenAI 之后所有 AI 公司都要写的。</p>
+
+    <p>肯定会写"Mythos 等高级模型的能力可能被用于网络攻击"——他们已经在 red.anthropic.com 这种半官方页面上写了，IPO 时改写成法律语言。</p>
+
+    <p>会写"我们当前持有约数千个未公开披露的高危漏洞，相关披露时间表受 coordinated disclosure 流程约束，期间任何意外泄露可能引发全球关键基础设施的安全事故"吗？</p>
+
+    <p>不知道。</p>
+
+    <p>但这件事是真实存在的。Anthropic 自己的官网上写了"Over 99% of the vulnerabilities Mythos has found have not yet been patched"。这一行字在 IPO 之前是 marketing copy，在 IPO 之后会被 SEC 审计师抓出来要求重新表述。重新表述的版本可能会出现在 Risk Factors 里，也可能被律师团队压成更柔软的措辞。但不管怎么写，那笔库存的存在不会消失。</p>
+
+    <p>进了 S&P 500 之后还有别的东西要发生。</p>
+
+    <p>被动指数基金会被动持有 Anthropic 股票。Vanguard、BlackRock、State Street 三家加起来管 20 多万亿美金资产，规则要求它们按指数权重买入所有成分股。一旦 Anthropic 入选，每一只追踪 S&P 500 的 ETF 都要被动持有它。</p>
+
+    <p>这意味着每一只美国 401k 退休计划的默认配置里，都会按比例持有"那家持有未披露 0day 库存的 AI 公司"。</p>
+
+    <p>你的退休金会变成这家公司的股东。你不需要同意，你的雇主选了 default fund 就够了。</p>
+
+    <p>回头看 Mythos Preview 4 月 7 日那次发布。当时的口径是"我们暂不开放给公众使用"。这听起来像是负责任的姿态——能力太强先压一压。但今天看，它不是压一压，是把使用权切给了一份名单内的客户、把发现物入库给了一家公司。</p>
+
+    <p>公众这个角色，从"客户"被请出去之后，没有进任何角色。</p>
+
+    <p>不是观众，因为公开披露的内容是 1%。</p>
+
+    <p>不是受益人，因为修复路径要走 CVD，长尾 OSS 接不住。</p>
+
+    <p>不是股东，因为还没 IPO；IPO 之后是被动持有，不是主动持有。</p>
+
+    <p>不是知情者，因为 99% 的库存按定义是 undisclosed。</p>
+
+    <p>这个角色的名字叫<strong>库存的标的</strong>。</p>
+
+    <p>你的浏览器、你的操作系统、你的 npm 包、你的银行 app、你的医院信息系统——它们里面如果有 Mythos 找到的漏洞，你不知道这个漏洞存在，你不知道它什么时候被修，你不知道在它被修之前谁能看到它。</p>
+
+    <p>你只知道一件事：它有个价格。这个价格被打包进了 Anthropic 9000 亿美金估值里。</p>
+
+    <p>至于这个价格折现回来对应到你头上是多少风险——招股书会用律师的语言告诉你，写在 Risk Factors 第十几条上。</p>
+
+    <p>但 271 这个数字，已经把那一行字预演了一遍。</p>
+
+    <p>就这。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>9000 亿估值里有几千亿，对应的不是 SaaS 收入，是一笔在等 IPO 招股书定义的 0day 库存。</p>
+    <p>你的浏览器、你的 npm 包、你的银行 app——它们在 Mythos 库存里的位置，决定你接住这件事的姿势。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://red.anthropic.com/2026/mythos-preview/" target="_blank" rel="noopener">Claude Mythos Preview — red.anthropic.com (2026-04-07)</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/glasswing" target="_blank" rel="noopener">Project Glasswing — Anthropic (2026-04-07)</a></div>
+      <div class="footer-source-item"><a href="https://blog.mozilla.org/en/privacy-security/ai-security-zero-day-vulnerabilities/" target="_blank" rel="noopener">The zero-days are numbered — Mozilla Blog (2026-04)</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/04/29/anthropic-weighs-raising-funds-at-900b-valuation-topping-openai.html" target="_blank" rel="noopener">Anthropic in talks to raise funds at $900 billion valuation, higher than OpenAI — CNBC (2026-04-29)</a></div>
+      <div class="footer-source-item"><a href="https://techcrunch.com/2026/04/30/anthropic-potential-900b-valuation-round-could-happen-within-two-weeks/" target="_blank" rel="noopener">Sources: Anthropic potential $900B+ valuation round could happen within 2 weeks — TechCrunch (2026-04-30)</a></div>
+      <div class="footer-source-item"><a href="https://www.axios.com/2026/04/19/nsa-anthropic-mythos-pentagon" target="_blank" rel="noopener">NSA using Anthropic's Mythos despite Defense Department blacklist — Axios (2026-04-19)</a></div>
+      <div class="footer-source-item"><a href="https://venturebeat.com/security/mythos-detection-ceiling-security-teams-new-playbook" target="_blank" rel="noopener">Mythos autonomously exploited vulnerabilities that survived 27 years of human review — VentureBeat (2026-04)</a></div>
+      <div class="footer-source-item"><a href="https://www.tomshardware.com/tech-industry/artificial-intelligence/anthropics-latest-ai-model-identifies-thousands-of-zero-day-vulnerabilities-in-every-major-operating-system-and-every-major-web-browser-claude-mythos-preview-sparks-race-to-fix-critical-bugs-some-unpatched-for-decades" target="_blank" rel="noopener">Anthropic's latest AI model identifies thousands of zero-day vulnerabilities — Tom's Hardware (2026-04)</a></div>
+      <div class="footer-source-item"><a href="https://www.schneier.com/blog/archives/2026/04/what-anthropics-mythos-means-for-the-future-of-cybersecurity.html" target="_blank" rel="noopener">What Anthropic's Mythos Means for the Future of Cybersecurity — Schneier on Security (2026-04)</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/05/01/pentagon-anthropic-blacklist-mythos-michael.html" target="_blank" rel="noopener">Pentagon tech chief says Anthropic is still blacklisted, but Mythos is a separate issue — CNBC (2026-05-01)</a></div>
+      <div class="footer-source-item"><a href="https://www.axios.com/2026/05/05/trump-anthropic-ai-regulation-mythos-cyber" target="_blank" rel="noopener">New frontier of AI forces Trump's heavy hand — Axios (2026-05-05)</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
