@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>所有 AI 公司都在变成同一家公司</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 行业</span>
+  <h1>所有 AI 公司都在变成同一家公司</h1>
+  <div class="hero-meta">
+    <span>2026-05-07</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">2026 年 4 月，Anthropic 的年化营收达到 300 亿美元，超过了 OpenAI 的 240 亿。但如果你同时打开 Claude 和 ChatGPT 的界面，你几乎分不清自己在用哪一个。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、同一张脸</h2>
+
+    <p>打开五家 AI 公司的产品页面，做一个简单的功能清单比对：</p>
+
+    <p>聊天对话——五家都有。文件上传和长文档分析——五家都有。代码生成和执行——ChatGPT 有 Codex，Claude 有 Claude Code，Gemini 有 Agent Designer，DeepSeek 有 Coder。实时搜索——四家已上线，第五家在内测。画布/侧边栏编辑——ChatGPT 叫 Canvas，Claude 叫 Artifacts（用户已创建超过 5 亿个），Gemini 叫 Workspace Studio。Agent 自主执行——OpenAI 有 Operator，Anthropic 有 Computer Use，Google 有 Agent Garden。</p>
+
+    <p>每一项功能的发布间隔越来越短。2024 年，Claude 推出 Artifacts 后，ChatGPT 用了四个月推出 Canvas。到 2025 年底，这个间隔缩短到了几周。到 2026 年，几乎是同步发布。</p>
+
+    <p>当底层都是大语言模型时，能做的事情就那么多。聊天是最自然的交互方式。代码生成是最容易变现的场景。搜索是用户留存的关键。Agent 是下一个增长故事。每家公司都看到了同一张地图，于是走了同一条路。</p>
+
+    <p>更微妙的变化发生在模型能力本身。2023 年，GPT-4 和其他模型之间存在肉眼可见的能力断层。到 2026 年，Grok 4 和 Claude Opus 4.6 在编程基准测试中并列领先，Gemini 3.1 Pro 在推理任务中拔得头筹，而 DeepSeek V4 在多数日常任务中的表现与前三者相差不超过 10%。差距仍然存在，但已经小到普通用户无法感知。</p>
+
+    <p>这就是问题所在。当用户分不清产品之间的差异时，他们开始用另一个标准来选择。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">条形图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">五大 AI 产品功能重叠度</div></div><div style="padding:22px 24px 18px"><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">聊天对话</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">5</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:100.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">代码助手</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">5</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:100.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">实时搜索</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">4</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:80.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">Canvas/Artifacts</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">4</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:80.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">Agent 执行</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">4</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:80.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">图片生成</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">3</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:60.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>2024 年功能重叠率 40%，2026 年升至 90%——差异正在消失</div></div>
+
+    <hr>
+
+    <h2>二、价格悬崖</h2>
+
+    <p>2026 年 4 月 24 日，DeepSeek 发布 V4 模型。输出价格：每百万 token 3.48 美元（Pro 版），0.28 美元（Flash 版）。</p>
+
+    <p>同一时期，OpenAI 的 GPT-5.4 输出价格是每百万 token 30 美元。Anthropic 的 Claude Opus 4.6 是 25 美元。</p>
+
+    <p>DeepSeek Flash 的价格是 GPT-5.4 的 1/107。不是便宜一半，不是便宜十倍——便宜了两个数量级。</p>
+
+    <p>如果这是任何其他行业，故事到这里就结束了。但 AI 行业的特殊之处在于，DeepSeek 不只是便宜。它的模型权重是开放的，任何企业都可以下载、部署在自己的服务器上，彻底绕开 API 付费。有分析师估算，企业自建 DeepSeek V4 实例后，AI 运营支出下降了 85%-95%。</p>
+
+    <p>这不是一个价格战的故事。价格战意味着双方都有利润空间可以压缩。DeepSeek 做的事情更接近于：把水龙头接到了每个人的厨房里。</p>
+
+    <p>闭源模型的回应是降价。过去一年，GPT 系列 API 价格累计下降超过 60%。Claude 的 Haiku 模型定价已经进入"几乎免费"区间。但这解决不了根本问题——你无法在价格上赢过一个免费的对手。</p>
+
+    <p>Menlo Ventures 的一份报告指出，到 2025 年底，Google、OpenAI 和 Anthropic 三家控制了企业 AI 市场 370 亿美元中的近 90%。但控制市场份额和赚到钱是两件事。OpenAI 2026 年的预计亏损是 140 亿美元。它正在以人类商业史上最快的速度烧钱，同时寻求 1000 亿美元的新一轮融资，估值目标 8300 亿。</p>
+
+    <p>一家年亏 140 亿的公司值 8300 亿——这个等式成立的前提是：大模型不会变成水电煤。但 DeepSeek V4 的发布被一位分析师称为"当前 AI 经济模型的灭绝级事件"。当一个开源模型用 1/100 的价格提供 90% 的能力，闭源 API 的利润率就像一块正在融化的冰。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">对账图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">每百万 token 输出价格对比（美元）</div></div><div style="padding:22px 24px 18px"><div style="display:flex;align-items:center;gap:24px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px dashed #e2e8f0"><div style="flex:1;text-align:right;font-size:12px;font-weight:700;color:#1A56DB;letter-spacing:1px">← 流入 / INFLOW</div><div style="width:20px"></div><div style="flex:1;text-align:left;font-size:12px;font-weight:700;color:#F05252;letter-spacing:1px">OUTFLOW / 流出 →</div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">DeepSeek V4-Pro</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:11.6%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">3.48 美元</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">GPT-5.4</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:100.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">30 美元</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">DeepSeek V4-Flash</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:8.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">0.28 美元</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Claude Opus 4.6</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:83.3%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">25 美元</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1"></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Gemini 3.1 Pro</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:50.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">15 美元</div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>DeepSeek Flash 的价格是 GPT-5.4 的 1/107——这不是竞争，这是降维</div></div>
+
+    <hr>
+
+    <h2>三、应用层陷阱</h2>
+
+    <p>面对模型能力趋同和价格塌方，大模型公司的集体回应是：向上走。做应用。</p>
+
+    <p>如果底层模型赚不到钱，就在模型之上建产品。于是 OpenAI 做了搜索（直接对标 Google），做了 Operator（一个能帮你在浏览器里订机票填表格的 Agent），做了 Codex（独立的代码工程 Agent）。Anthropic 做了 Claude Code（一个终端里运行的编程助手，已经是公司增长最快的产品，年化收入 25 亿美元），做了 Computer Use（让 AI 直接操控你的电脑屏幕）。Google 做了 Agent Garden、Agent Designer、Workspace Studio。</p>
+
+    <p>每家公司都在讲同一个故事：我们不只是一个模型，我们是一个平台。</p>
+
+    <p>但这里有一个悖论：大模型公司每做一个新应用，就多证明了一次底层模型是可替换的。</p>
+
+    <p>当 Anthropic 把 Claude Code 做成一个出色的编程工具时，它证明了什么？证明了"好的编程体验"取决于产品设计、上下文管理、工具集成——而不是哪个模型在底层运行。如果明天把 Claude Code 的底层换成 DeepSeek V4（假设能力足够），用户体验会有多大变化？可能比大多数人想象的要小得多。</p>
+
+    <p>OpenAI 的 Operator 更能说明问题。它本质上是一个浏览器自动化工具，恰好用了 GPT 作为决策引擎。但浏览器自动化的核心技术——DOM 解析、动作序列规划、错误恢复——和具体是哪个大模型关系不大。任何足够好的模型都能做决策引擎。</p>
+
+    <p>这就是应用层陷阱：你越是在模型之上构建精巧的产品，你就越是在向世界展示——模型本身只是一个可替换的零件。</p>
+
+    <p>Brookings 研究所今年初的一篇分析直接点出了这个问题："当 AI 公司与自己的客户竞争时会发生什么？"大模型公司做搜索，就是在和 Google 竞争。做代码助手，就是在和 GitHub Copilot、Cursor 竞争。做办公协作，就是在和 Notion、飞书竞争。但这些应用公司有一个大模型公司没有的东西：用户数据和行业 know-how。</p>
+
+    <p>Notion 知道你的笔记习惯，Salesforce 知道你的客户关系。这些数据构成的护城河，不是换一个更聪明的模型就能跨越的。而大模型公司做的通用应用——聊天、搜索、代码——恰恰是最没有数据壁垒的品类。</p>
+
+    <hr>
+
+    <h2>四、电信公司的镜子</h2>
+
+    <p>1995 年，AT&T 是美国市值最高的公司之一。它拥有最先进的通信基础设施、最大的用户基数、最强的技术研发能力（贝尔实验室）。没人怀疑通信行业的未来属于它。</p>
+
+    <p>接下来的十五年里发生了什么：通信技术越来越强（从 2G 到 3G 到 4G），网络容量越来越大，覆盖越来越广——而电信公司的利润率持续下滑。用户不愿意为"更快的网速"额外付费，因为"够用的网速"已经很便宜了。真正赚到钱的是在通信基础设施之上建应用的人——Google、Facebook、Netflix、Uber。</p>
+
+    <p>AT&T 也试过"向上走"。它收购了时代华纳，做流媒体，试图从管道公司变成内容公司。结果三年后亏损数百亿，剥离了所有媒体资产，重新缩回管道。</p>
+
+    <p>历史的教训很一致：基础设施提供商做应用，几乎从未成功过。电力公司没有发明电冰箱。电信公司没有做出社交网络。云计算厂商没有长出 SaaS 巨头。原因不是它们缺乏技术或资金——AT&T 什么都不缺——而是基础设施思维和应用思维是两种根本不同的组织能力。</p>
+
+    <p>现在看看大模型公司在做什么。OpenAI 在做消费应用（ChatGPT 的 5 亿月活是它最大的资产）。Anthropic 在做开发者工具。Google 在做企业 Agent 平台。它们都在试图证明自己不只是一个模型提供商。</p>
+
+    <p>但市场已经开始给出答案。Anthropic 的营收超过 OpenAI 的消息传出后，华尔街最关注的不是"谁的模型更好"，而是"谁烧钱更少"。Anthropic 训练模型的开销大约是 OpenAI 的四分之一。在一个利润率正在归零的行业里，这才是真正的竞争优势——不是更聪明，而是更便宜。</p>
+
+    <p>四家科技巨头（Microsoft、Amazon、Alphabet、Meta）今年在 AI 基础设施上的预算总计 7250 亿美元，相当于全球 GDP 的 1%。这个规模已经超出了"技术竞赛"的范畴——这是一场资本竞赛。而资本竞赛的终局，从来都是寡头垄断加微薄利润。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_01.jpg" alt="abstract multiple identical pipes converging" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <hr>
+
+    <h2>五、赢家不在牌桌上</h2>
+
+    <p>如果大模型注定变成水电煤，那么谁在这场变局中获益？</p>
+
+    <p>答案藏在一组对比里。2026 年第一季度，AI 相关并购交易总额达到 1.2 万亿美元的历史新高。但被收购的不是大模型公司——没有人买得起 8000 亿估值的 OpenAI。被收购的是垂直应用公司：法律 AI、医疗影像 AI、工业质检 AI、金融合规 AI。这些公司的共同特点是：它们的核心资产不是模型，而是数据和行业流程。</p>
+
+    <p>Morningstar 最近评估了 27 家"不会被 AI 吞噬"的宽护城河公司。名单里没有任何一家大模型公司。入选的是软件巨头、数据垄断者、网络效应平台——它们使用 AI 作为后端能力，但从不把"我们有 AI"当成卖点。</p>
+
+    <p>这指向一个简单但常被忽略的逻辑：当电变得便宜到不值一提的时候，赢家不是发电厂，而是任何用电的人。GE 靠电冰箱赚的钱，远远超过它靠卖电赚的钱。</p>
+
+    <p>对 AI 行业而言，这意味着价值正在从模型层向两个方向迁移。往下走，流向芯片和基础设施——Nvidia 单季度营收 670 亿美元，比所有大模型公司加起来都多。往上走，流向拥有场景和数据的应用公司。"AI Wrapper"（用 AI API 包一层壳的创业公司）正在大规模死亡，因为大模型公司自己就在做同样的事。但那些把 AI 嵌入到自己无法替代的业务流程中的公司，反而因为 AI 成本下降而获得了更大的利润空间。</p>
+
+    <p>现实已经在给这个判断标价：模型提供商的推理利润率正在趋近于零，价值在向应用层或芯片层集中，而不是留在模型提供商手里。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)"><div style="background:#1A56DB;color:#fff;padding:10px 16px;font-size:13px;font-weight:700">流程图</div><div style="padding:20px 24px;display:flex;flex-wrap:wrap;align-items:stretch;gap:8px"><div style="background:#EEF2FF;border:1.5px solid #C7D2FE;border-radius:10px;padding:12px 16px;text-align:center;min-width:90px;max-width:160px;flex:1"><div style="font-size:22px;font-weight:700;color:#1A56DB;line-height:1">670</div><div style="font-size:12px;color:#374151;margin-top:6px;line-height:1.4">芯片层（Nvidia）</div></div><div style="font-size:22px;color:#93C5FD;margin:0 4px;align-self:center">→</div><div style="background:#EEF2FF;border:1.5px solid #C7D2FE;border-radius:10px;padding:12px 16px;text-align:center;min-width:90px;max-width:160px;flex:1"><div style="font-size:22px;font-weight:700;color:#1A56DB;line-height:1">7250</div><div style="font-size:12px;color:#374151;margin-top:6px;line-height:1.4">云基础设施（4巨头）</div></div><div style="font-size:22px;color:#93C5FD;margin:0 4px;align-self:center">→</div><div style="background:#EEF2FF;border:1.5px solid #C7D2FE;border-radius:10px;padding:12px 16px;text-align:center;min-width:90px;max-width:160px;flex:1"><div style="font-size:22px;font-weight:700;color:#1A56DB;line-height:1">3</div><div style="font-size:12px;color:#374151;margin-top:6px;line-height:1.4">应用层（垂直AI公司）</div></div></div></div>
+
+    <hr>
+
+    <h2>六、尾声</h2>
+
+    <p>回到开头的那个场景。你打开 Claude，打开 ChatGPT，分不清谁是谁。</p>
+
+    <p>这个小小的困惑里藏着整个行业的命运。当产品长得一样，模型能力差不多，价格在 DeepSeek 的压力下持续崩塌——那些花了数百亿美元训练模型的公司，最终卖的到底是什么？</p>
+
+    <p>不是智能。智能已经或即将变成大宗商品。</p>
+
+    <p>不是品牌。没有人会对自来水公司产生品牌忠诚。</p>
+
+    <p>也许是信任，也许是合规，也许是"足够好加足够方便"的那个交叉点。但这些听起来更像是公用事业公司的竞争策略，而不是科技公司的。</p>
+
+    <p>OpenAI 2026 年亏了 140 亿美元，但它正在以 8300 亿的估值融资。这笔赌注押的不是今天的 ChatGPT，而是一个假设：总有一天，模型能力会出现质的飞跃，重新拉开差距，让"谁的 AI 更聪明"重新变得重要。</p>
+
+    <p>也许它是对的。也许 AGI 真的会在 2027 年出现，让一切推导失效。</p>
+
+    <p>但如果它没有出现呢？</p>
+
+    <p>那么我们正在目睹的，就是人类历史上最昂贵的一次基础设施化：几千亿美元的投入，最终生产出一种每个人都用得起、没人愿意多付钱的东西。就像电。就像宽带。就像自来水。</p>
+
+    <p>对于那些想从 AI 中获益的人，这其实是个好消息。你不需要发明电，你只需要想清楚用电做什么。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>我们正在目睹人类历史上最昂贵的一次基础设施化：几千亿美元的投入，最终生产出一种每个人都用得起、没人愿意多付钱的东西。</p>
+    <p>你不需要发明电，你只需要想清楚用电做什么。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.saastr.com/anthropic-just-passed-openai-in-revenue-while-spending-4x-less-to-train-their-models/" target="_blank" rel="noopener">SaaStr: Anthropic Just Passed OpenAI in Revenue（2026年4月）</a></div>
+      <div class="footer-source-item"><a href="https://www.rdworldonline.com/facing-14b-losses-in-2026-openai-is-now-seeking-100b-in-funding-but-can-it-ever-turn-a-profit/" target="_blank" rel="noopener">R&D World: OpenAI Facing $14B Losses in 2026（2026年）</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com/2026/04/24/deepseek-v4-ai-model-price-performance-china-open-source/" target="_blank" rel="noopener">Fortune: DeepSeek Unveils V4 Model（2026年4月）</a></div>
+      <div class="footer-source-item"><a href="https://fourweekmba.com/ai-725-billion-the-4-companies-spending-1-of-global-gdp-on-ai/" target="_blank" rel="noopener">FourWeekMBA: $725 Billion on AI Infrastructure（2026年）</a></div>
+      <div class="footer-source-item"><a href="https://www.informationweek.com/machine-learning-ai/2026-enterprise-ai-predictions-fragmentation-commodification-and-the-agent-push-facing-cios" target="_blank" rel="noopener">InformationWeek: Enterprise AI Predictions 2026</a></div>
+      <div class="footer-source-item"><a href="https://www.brookings.edu/articles/what-happens-when-ai-companies-compete-with-their-customers/" target="_blank" rel="noopener">Brookings: What Happens When AI Companies Compete With Their Customers</a></div>
+      <div class="footer-source-item"><a href="https://www.epsilla.com/blogs/2026-04-26-the-deepseek-disruption-how-open-source-commoditization-forc" target="_blank" rel="noopener">Epsilla: The DeepSeek Disruption（2026年4月）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
