@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>8000 个 Meta 员工，被换成了 1450 亿美元的电费</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 行业观察</span>
+  <h1>8000 个 Meta 员工，被换成了 1450 亿美元的电费</h1>
+  <div class="hero-meta">
+    <span>2026-05-07</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">媒体起标题：AI 取代了人。扎克伯格本人当场否认：不是 AI 取代了你们。那是什么？是 1450 亿美元的电费。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、史上最赚钱的一季度，附赠 8000 人裁员名单</h2>
+
+    <p>这场财报里的每个数字，单独拿出来看都漂亮到不太像 2026 年的现实。</p>
+
+    <p>营收 563.1 亿，同比增 33%。净利 268 亿，去年同期是 166 亿——翻了大半。每股收益 10.44 美元，远超分析师共识的 8.15（其中确实有 80 亿是一次性的税收红利，扣掉以后还有大约 188 亿净利润，也是个史上前列的数字）。CFO Susan Li 在电话会上还顺手报了一个 41% 的运营利润率。</p>
+
+    <p>所有这些数字摞在一起，按照 2024 年那种叙事，股价应该当场起飞。</p>
+
+    <p>4 月 30 日开盘 Meta 股票跌了大约 10%，当日收盘跌 9%。这是 2025 年 10 月以来 Meta 单日最大跌幅。</p>
+
+    <p>发生了什么？</p>
+
+    <p>发生的是同一份财报里另一个数字：Meta 把 2026 年的 capex 指引从原来的 1150-1350 亿美元，往上调到了 1250-1450 亿美元。光 Q1 一个季度的资本开支已经花掉了 198 亿。</p>
+
+    <p>华尔街当场算了一道很朴素的算术题：</p>
+
+    <p>营收涨 33%（不错）。净利涨 60%（其中一次性税收红利占了一截，但勉强算还行）。但是公司一年要花 1450 亿美元买芯片、买电、买机房，这个洞按当前增速三年填不平。</p>
+
+    <p>属于是赚钱速度再快也快不过烧钱速度（笑）。</p>
+
+    <p>而扎克伯格给员工算出来的，是同一道算术题的反面。</p>
+
+    <p>要花的 1450 亿已经定了，营收增长再快也补不上这个洞——那员工成本就得再省一道。5 月 20 日，8000 人离场。10% 的员工被砍，公司本身在 3 月底还有 77,986 人，按说同比还涨了 1%。</p>
+
+    <p>时间安排得也挺紧凑：4 月 29 日发财报，4 月 30 日股票跌完，紧接着的 town hall 上扎克伯格宣裁员。中间一秒都没浪费。</p>
+
+    <p>这就是那种"史上最赚财报"的标准格式：财报当天给投资者，裁员名单第二天给员工。两边都得罪了，钱却没省下多少。</p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>A giant glowing dollar bill on a corporate stage labeled with the number 56 billion, while a smaller side door shows tiny silhouettes of people walking out one by one with cardboard boxes, a stock chart in the background going downward sharply, flat design, minimalist illustration, tech style, blue and white color palette, no text, no labels, clean white background</pre></details>
+</div>
+
+    <hr>
+
+    <h2>二、扎克伯格亲口说漏嘴：不是 AI 太能干，是 AI 太贵</h2>
+
+    <p>如果不是因为扎克伯格自己手贱（口贱）在 town hall 上把话说穿了，这一波 Meta 裁员还可以包装成一个非常符合 2026 年时代精神的故事——AI 干活比人快，所以人没用了，所以裁员。</p>
+
+    <p>这个故事从去年开始已经被讲过几百遍。每次 Big Tech 裁员，配套通稿里一定有"AI productivity"、"organizational efficiency"、"flatter structure"几个关键词。媒体抄通稿，员工自我反省，舆论说"看，AI 真的来了"。</p>
+
+    <p>这一次扎克伯格本来也可以照着剧本念，事实上他几乎念了。</p>
+
+    <p>但 Reuters 引用的 town hall 现场录音里，他多说了一句：</p>
+
+    <blockquote><p>"Getting everyone internally to use AI tools and getting to do the work more efficiently is not the thing that's driving layoffs."</p></blockquote>
+>
+<blockquote><p>（让大家内部用上 AI 工具、让工作更高效——不是这次裁员的原因。）</p></blockquote>
+
+    <p>这一句把整个 2026 年的科技通稿模板拆穿了。</p>
+
+    <p>如果连扎克伯格亲自下场推 Llama、亲自 all-in AI agent、亲自把"用 AI 改造一切"当成 OKR 的 Meta，自己都不敢说"AI 替代了人"，那别家通稿里那些"AI productivity 驱动结构优化"，是个什么东西呢？</p>
+
+    <p>是个故事。</p>
+
+    <p>那真实原因是什么呢？扎克伯格紧接着说了——</p>
+
+    <blockquote><p>"We basically have two major cost centers in the company: compute infrastructure and people-oriented things. If we're investing more in one area to serve our community, then that means we have less capital to allocate to the other. So that means we do need to take down the size of the company somewhat."</p></blockquote>
+>
+<blockquote><p>（我们公司本质上就两个大成本中心：算力基建和人。在一边投得多了，另一边能分到的就少了。所以我们确实得把公司规模降一降。）</p></blockquote>
+
+    <p>翻译成不阴阳怪气的人话：算力涨价了，人就得便宜点。</p>
+
+    <p>翻译成阴阳怪气的人话：员工和 GPU 现在在同一张资产负债表上互为减项，谁贵就砍谁，今年 GPU 不打折，所以是你。</p>
+
+    <p>这个原因和"AI 替代了你"听起来好像差不多，其实是两个完全不同的故事。</p>
+
+    <p>"AI 替代你"是技术故事——AI 学会了做你的工作，所以你不用来了。这是 2024 年的剧本，是 Sam Altman 们站在台上画的饼，前提是 AI 真的能干你的活。</p>
+
+    <p>"AI 太贵所以你得走"是会计故事——AI 现在没办法替代你，但训练 AI 的机器已经太贵了，公司账上没钱同时养你和 GPU，所以选 GPU。这是 2026 年扎克伯格亲口承认的现实。</p>
+
+    <p>第一个故事里，你是被技术淘汰的；第二个故事里，你是被采购单挤掉的。前者好歹还有点悲壮，后者纯粹是"对不起这个月预算紧张"。就这。</p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>A modern corporate balance scale, on the left side a stack of human silhouettes, on the right side a stack of GPU computer chips and server racks, the right side is much heavier and tipping the scale, a businessman in a suit watching from below, flat design, minimalist illustration, tech style, blue and white color palette, no text, no labels, clean white background</pre></details>
+</div>
+
+    <hr>
+
+    <h2>三、1070 亿美元的合同承诺，把这事在会计上说清楚了</h2>
+
+    <p>如果你觉得"AI 太贵"是个抽象的说法，CFO Susan Li 在同一场电话会里给出了一个非常具体的数字：</p>
+
+    <blockquote><p>"These multiyear cloud deals and our infrastructure purchase agreements drove a $107 billion step up in our contractual commitments this quarter."</p></blockquote>
+>
+<blockquote><p>（这一个季度，我们多年期云服务合同加上基础设施采购协议，让公司合同承诺总额一下子多了 1070 亿美元。）</p></blockquote>
+
+    <p>1070 亿美元，是 Meta 公司一个季度新签下去的、未来必须付出去的钱。这数字大约是 Meta 全年员工薪酬成本的 4-5 倍——Meta 现在 77,986 名员工，按照大科技公司平均 30 万美元综合薪酬算，全年人力总成本大概在 230 亿美元上下。</p>
+
+    <p>也就是说，扎克伯格的"两个成本中心"不是一句修辞——是一个量级悬殊的事实：</p>
+
+    <p>一边是"人"，一年总共值 230 亿。<br>另一边是"算力"，今年要花 1450 亿，下个季度还会再叠加几百亿合同承诺。</p>
+
+    <p>砍 8000 人能省多少呢？按 30 万美元/人算，一年也就 24 亿美元。这笔钱在 1450 亿 capex 的预算单里，连一周的电费都不到。</p>
+
+    <p>但公司还是要砍。</p>
+
+    <p>为什么？因为在公司财务结构里，员工是 OpEx（运营开支），机器是 CapEx（资本开支）。这两个不是同一种钱。OpEx 直接吃掉当期利润，每一块都让财报数字难看一点；CapEx 摊销在十年里，今年花一百亿，账上每年只显示十亿，剩下的全是"未来产能"。</p>
+
+    <p>你的工资让财报今天难看；GPU 让财报十年好看。</p>
+
+    <p>所以你被换成 GPU 不是因为 GPU 比你能干，是因为 GPU 的会计处理比你更"长期主义"。</p>
+
+    <p>这套逻辑放在 Reality Labs 部门身上更刺眼。Reality Labs Q1 收入 4.02 亿美元，亏了 40.28 亿——亏损是收入的 10 倍。这种部门按理是任何一家公司最先开刀的对象，但它没被砍。因为 Reality Labs 烧的钱大部分被算成"对元宇宙基础设施的资本投入"，跟员工成本不在同一张审计表上。</p>
+
+    <p>也就是说，Meta 的逻辑不是"哪个业务亏钱就砍哪个"，而是"哪种支出科目影响财报最直接就压哪种"。员工是 OpEx，所以最先压。Reality Labs 主体是 CapEx，所以保留。AI 算力全是 CapEx，所以加码。</p>
+
+    <p>这套排序里没有"贡献"、"潜力"、"战略"这些词——这些词都是给员工大会用的。真正起作用的是会计科目。</p>
+
+    <p>属于是"打工人是可见成本，资本支出是不可见成本，砍可见的总比砍不可见的更让股东高兴"——这话讲得直白点，就是：你的工资显眼，所以你显眼，所以你倒霉。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">对账图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">Meta 2026 年的钱都花到哪了</div></div><div style="padding:22px 24px 18px"><div style="display:flex;align-items:center;gap:24px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px dashed #e2e8f0"><div style="flex:1;text-align:right;font-size:12px;font-weight:700;color:#1A56DB;letter-spacing:1px">← 流入 / INFLOW</div><div style="width:20px"></div><div style="flex:1;text-align:left;font-size:12px;font-weight:700;color:#F05252;letter-spacing:1px">OUTFLOW / 流出 →</div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">全员年薪酬总成本估算</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:15.9%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">230 亿美元</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">2026 年 AI Capex 上限</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:100.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">1450 亿美元</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">砍 8000 人年节省估算</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:8.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">24 亿美元</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">单季度新增合同承诺</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:73.8%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">1070 亿美元</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1"></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Q1 单季度 Capex</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:13.7%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">198 亿美元</div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>算力一年要花 1450 亿，砍 8000 人最多省 24 亿——预算单上人和 GPU 根本不在一个数量级</div></div>
+
+    <hr>
+
+    <h2>四、所以你应该担心 AI，还是应该担心 NVIDIA？</h2>
+
+    <p>最后再回头看 town hall 上扎克伯格说的另一句话——他说不排除后续还会有更多裁员。</p>
+
+    <p>把这句话和"算力是另一个成本中心"、"两边在抢一份预算"放在一起，得到的就是 2026 年大科技员工最新的裁员定价公式：</p>
+
+    <blockquote><p>你的岗位安全程度 = 公司年度营收增速 − 公司年度算力开支增速</p></blockquote>
+
+    <p>这个公式过去十年是无效的，因为 capex 占比小到可以忽略。但 2026 年 Meta 的 capex 已经是 2025 年的 2 倍（2025 年 722 亿，2026 年最高 1450 亿），单独这一项的增长率就吃掉了营收 33% 增速里的一大半。剩下的差额，就是要从你身上找回来的钱。</p>
+
+    <p>这意味着——</p>
+
+    <p>担心"AI 取代我"是错的，至少现阶段是错的。AI 现在的能力还不足以让扎克伯格在自己内部讲话里承认"AI 替代了员工"，连他都不敢这么说，那别人就更没底气说。这一点你可以从他的话里直接读出来。</p>
+
+    <p>值得担心的是 NVIDIA 的提价节奏，台积电的产能瓶颈，以及电费上涨的速度。这三件事你可能从来没在简历上想过它们，但它们现在替代了"AI 模型能力"，成为决定你岗位是否安全的真正变量。</p>
+
+    <p>你的工资条，本质上挂钩的是 H200/B200 的价格曲线。</p>
+
+    <p>更狠一点：Susan Li 说 Q1 capex 调高的原因之一是"higher component pricing"——就是芯片涨价了。芯片价格涨一点，公司预算就要补一点，员工成本就要再压一点。这是一条在 PPT 里看不到、但在你工资单上必然反映出来的传导链。</p>
+
+    <p>你以为你在跟一个"未来 AI"竞争。</p>
+
+    <p>实际上你在跟一块物理意义上比你贵、但在会计上比你优雅的硅。</p>
+
+    <p>这事 2026 年才刚刚开始。Meta 是第一个把这层窗户纸撕开的公司，但它绝对不是最后一个——Google、Microsoft、Amazon 在 Q1 的财报里也都给了类似的 capex 上修，2026 年合计 7250 亿美元的 AI 资本开支已经是写在公开文件上的事实。这个数字是 2025 年（4100 亿）的 1.77 倍。</p>
+
+    <p>所以下一份裁员通稿你再看到"AI productivity drives organizational efficiency"那种话，可以直接跳过——通稿用的是 2024 年的剧本。</p>
+
+    <p>新剧本扎克伯格已经替整个行业念过了：</p>
+
+    <p>不是 AI 替代你，是 AI 比你贵。</p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>A close-up view of a paycheck or salary slip with the dollar amount transforming into the silicon pattern of a computer chip, a faint chart line connecting them in the background showing a rising NVIDIA chip price curve, flat design, minimalist illustration, tech style, blue and white color palette, no text, no labels, clean white background</pre></details>
+</div>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>你以为你在跟一个未来 AI 竞争。实际上你在跟一块物理意义上比你贵、但在会计上比你优雅的硅。</p>
+    <p>下一份裁员通稿里再看到 "AI productivity drives organizational efficiency" 那种话，可以直接跳过——通稿用的是 2024 年的剧本。新剧本扎克伯格已经替整个行业念过了：不是 AI 替代你，是 AI 比你贵。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.prnewswire.com/news-releases/meta-reports-first-quarter-2026-results-302757852.html" target="_blank" rel="noopener">Meta 官方 Q1 2026 财报新闻稿（PR Newswire）</a></div>
+      <div class="footer-source-item"><a href="https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-First-Quarter-2026-Results/default.aspx" target="_blank" rel="noopener">Meta Investor Relations Q1 2026 Press Release</a></div>
+      <div class="footer-source-item"><a href="https://www.tomshardware.com/tech-industry/big-tech/mark-zuckerberg-says-meta-is-cutting-8000-jobs-to-pay-for-ai-infrastructure" target="_blank" rel="noopener">Tom's Hardware：Zuckerberg town hall 引语</a></div>
+      <div class="footer-source-item"><a href="https://thenextweb.com/news/meta-q1-2026-user-decline-ai-capex" target="_blank" rel="noopener">TheNextWeb：Q1 财报与 capex 上调全貌</a></div>
+      <div class="footer-source-item"><a href="https://thenextweb.com/news/zuckerberg-town-hall-meta-layoffs-capex-cost-centres" target="_blank" rel="noopener">TheNextWeb：Zuckerberg 内部讲话原文</a></div>
+      <div class="footer-source-item"><a href="https://finance.yahoo.com/sectors/technology/article/meta-stock-sinks-after-q1-earnings-as-company-raises-2026-ai-spending-forecast-to-125-billion-145-billion-160136308.html" target="_blank" rel="noopener">Yahoo Finance：财报与股价反应</a></div>
+      <div class="footer-source-item"><a href="https://www.sahmcapital.com/news/content/meta-publishes-transcript-of-q1-2026-earnings-call-2026-04-30" target="_blank" rel="noopener">Sahm Capital：Meta Q1 2026 电话会议 transcript（含 Susan Li 原话）</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/04/29/metas-reality-labs-lost-over-4-billion-in-first-quarter.html" target="_blank" rel="noopener">CNBC：Reality Labs Q1 2026 亏损细节</a></div>
+      <div class="footer-source-item"><a href="https://stocktwits.com/news-articles/markets/equity/microsoft-meta-and-google-just-silenced-ai-spending-critics-in-one-earnings-night-as-big-tech-capex-swells-to-725-b/cZBtCIgReEx" target="_blank" rel="noopener">Stocktwits：2026 年大科技 7250 亿美元合计 capex</a></div>
+      <div class="footer-source-item"><a href="https://invezz.com/news/2026/05/04/is-big-techs-725b-ai-splurge-being-funded-by-mass-layoffs/" target="_blank" rel="noopener">Invezz：大科技裁员 vs AI capex 全景</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
