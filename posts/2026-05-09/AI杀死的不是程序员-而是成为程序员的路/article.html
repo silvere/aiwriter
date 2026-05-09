@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI杀死的不是程序员，而是成为程序员的路</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI深度</span>
+  <h1>AI杀死的不是程序员，而是成为程序员的路</h1>
+  <div class="hero-meta">
+    <span>2026-05-09</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">所有人都在争论AI能不能替代程序员。没人注意到一个更隐蔽的危机：当初级岗位消失、CS入学暴跌59%，那条把新手变成专家的学徒通道正在坍塌。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一个"代理人"的工作日</h2>
+
+    <p>旧金山South of Market区，某科技公司的开放式办公室里，一个24岁的初级工程师坐在两块屏幕前。左边是Slack，经理发来一段需求描述；右边是终端窗口，Claude Code的光标在闪烁。</p>
+
+    <p>他的工作流程是这样的：读需求，把需求翻译成一段Prompt，回车，等待，审查生成的代码，提交Pull Request。全程不超过40分钟。两年前，同样的任务需要他花大半天写代码、查文档、debug、再重构。</p>
+
+    <p>他管自己叫"代理人"——经理告诉他做什么，他告诉Claude去做。接受《旧金山标准报》匿名采访时，他说了一句让记者停笔的话："我大概只理解自己产出的一半。"</p>
+
+    <p>这不是个例。Anthropic的CEO Dario Amodei在2026年1月的达沃斯论坛上说，他自己公司的工程师已经不再从零写代码了——他们生成、审查、修补。Meta的扎克伯格预测，到2026年年中，AI将编写Meta的大部分代码。工程师的工作正从"写代码"变成"指挥AI写代码"。</p>
+
+    <p>过去，程序员花80%的时间写代码，20%的时间做设计。现在翻过来了：几乎没人手写代码。</p>
+
+    <p>这听起来像是效率革命。但问题在别处。</p>
+
+    <p>美国15家最大科技公司的应届生招聘自2019年以来下降了55%。初级开发者的岗位发布量自2024年初减少了40%到50%。一份针对1000名美国企业高管的调查显示，六成公司计划在2026年裁员，四成计划用AI替代被裁的人。Anthropic自己的研究也承认，AI可以覆盖程序员74.5%的工作任务，初级岗位的替代率超过85%。</p>
+
+    <p>那个24岁的"代理人"暂时还有工作。但他周围的空位越来越多。他入职时的同期校招生有8人，现在只剩3人。另外5人的岗位没有被回填——被砍掉了。</p>
+
+    <p>他不太担心被AI替代。他担心的是另一件事：自己越用AI越快，却越来越不懂自己到底在做什么。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_01.jpg" alt="lone young programmer sitting desk" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <hr>
+
+    <h2>断梯</h2>
+
+    <p>讨论AI对程序员的影响时，绝大多数声音在争论同一个问题：AI能不能替代程序员？</p>
+
+    <p>乐观派说不能——AI写不了架构，做不了产品决策，不懂业务。悲观派说能——给它足够的上下文，它什么都能写。双方吵得热闹，但都盯着同一扇门。</p>
+
+    <p>没人注意到旁边还有一道正在关闭的门：通往"高级工程师"的那条路。</p>
+
+    <p>高级工程师不是从天上掉下来的。他们是从前的初级工程师，花了5到10年，在生产环境里踩坑、改bug、被Code Review骂、自己重构三遍才勉强及格，一点一点磨出来的。软件工程有一个不成文的规律：这种判断力——业内叫"系统品味"——只能在实战中习得，不能通过阅读文档或审查别人的代码替代。</p>
+
+    <p>现在这条路正在坍塌。</p>
+
+    <p>数字说得最直接。哈佛大学的一项研究发现，GPT-4发布后，22至25岁人群在AI敏感岗位（包括软件开发）的就业下降了约13%。更细分的数据更惊人：自2022年以来，美国初级开发者岗位的招聘量下降了67%。</p>
+
+    <p>UC Berkeley的情况是一面镜子。这所全球排名前列的计算机科学院系，2026-27学年的CS专业入学人数预计比上一年暴跌59%。系主任Jelani Nelson透露，到2027年，预计毕业的CS学生只有约350人——2024-25学年是1029人。整个加州大学系统的CS专业注册人数在2025年出现了21世纪以来的首次下降，同比减少6%。</p>
+
+    <p>不是因为计算机科学变得不重要了。是因为年轻人看到了前方的路断了。</p>
+
+    <p>AI工具能写代码，企业不需要雇人来写。代码训练营的就业率暴跌。CS毕业生找到第一份工程师工作的时间显著延长，越来越多人转向了产品经理、QA或技术写作岗位。那条从"写第一行Hello World"到"设计一个承载百万用户的系统"的阶梯，正在一级一级消失。</p>
+
+    <p>行业研究者把这叫做"人才管道死亡螺旋"。它有五个阶段：企业停止招聘初级工程师→3到5年后中层人才稀缺→高级工程师退休或倦怠离开→剩余高级工程师薪资暴涨→无人理解遗留系统。</p>
+
+    <p>每个阶段都很安静。到最后一步暴露的时候，前面四步已经不可逆了。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)"><div style="background:#1A56DB;color:#fff;padding:10px 16px;font-size:13px;font-weight:700">流程图</div><div style="padding:20px 24px;display:flex;flex-wrap:wrap;align-items:stretch;gap:8px"><div style="background:#EEF2FF;border:1.5px solid #C7D2FE;border-radius:10px;padding:12px 16px;text-align:center;min-width:90px;max-width:160px;flex:1"><div style="font-size:22px;font-weight:700;color:#1A56DB;line-height:1">3</div><div style="font-size:12px;color:#374151;margin-top:6px;line-height:1.4">阶段2</div></div></div></div>
+
+    <hr>
+
+    <h2>飞行员已经走过这条路</h2>
+
+    <p>软件行业不是第一个面对这种困境的行业。航空业三十年前就开始经历类似的事情，结果不太好看。</p>
+
+    <p>现代民航客机的自动化程度极高。自动驾驶仪可以处理从起飞到降落的绝大多数操作，飞行员的日常工作越来越像"系统监控员"——读仪表、盯屏幕、在极少数情况下按一下按钮。</p>
+
+    <p>问题暴露在意外发生的时刻。当自动驾驶失灵、需要飞行员手动接管时，很多人发现自己的能力已经不够了。美国航空航天局（NASA）2014年的一项研究发现了一个出人意料的细节：飞行员的手动操纵能力——扫描仪表、控制飞行姿态——其实还在。退化最严重的是认知能力：在没有地图显示的情况下追踪飞机位置、决定下一步导航步骤、识别仪器故障。换句话说，不是手生了，是脑子不转了。</p>
+
+    <p>这和MIT关于ChatGPT使用者的研究结论高度吻合。MIT早期的一项研究发现，在写作任务中使用ChatGPT辅助的成年人，脑活动水平降低，事后回忆能力更差。研究者称之为"认知债务"——工具代替了思考过程，大脑放弃了那部分功能。</p>
+
+    <p>FAA的反应很说明问题。它没有说"自动化很好，飞行员以后就监控就行"。它发布了新的航空通告，明确要求航空公司在正常运营中让飞行员尽可能多地进行手动飞行。不是因为自动驾驶不好用，而是因为认知能力一旦退化，到需要它的时候就来不及了。</p>
+
+    <p>软件行业面对着同一道选择题。微软Azure CTO Mark Russinovich和副总裁Scott Hanselman发出了一个具体的警告：AI给高级工程师带来了巨大的生产力提升，但对初级工程师施加了一种"AI阻力"——因为他们缺乏判断力来引导、验证和整合AI的输出。</p>
+
+    <p>Amodei在达沃斯说AI将在12个月内编写所有代码时，他在推销一个产品。Russinovich在管理一支工程队伍时，看到的是另一面：AI让已经会飞的人飞得更快，同时让正在学飞的人失去了学会飞行的机会。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_02.jpg" alt="Split image showing commercial airplane" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <hr>
+
+    <h2>也许我们不需要旧的梯子？</h2>
+
+    <p>有一种反驳是认真的，不能绕过去。</p>
+
+    <p>前特斯拉AI总监Andrej Karpathy一直在推广一种叫"Vibe Coding"的理念——你不需要理解每一行代码，只需要描述你想要什么，AI来实现。他认为这不是降低门槛，而是重新定义编程。在这种理解里，和AI协作写代码本身就是一种新的学习方式，相当于有一个永远在线的高级工程师在旁边做结对编程。</p>
+
+    <p>也许成为好工程师的路径不再是"先写烂代码再改好"，而是"先审好代码再理解为什么好"。也许学徒制不是被消灭了，只是形态变了。</p>
+
+    <p>这个逻辑在概念上说得通。但现有的证据不太支持。</p>
+
+    <p>回到那个旧金山的"代理人"。如果AI真的在教他，为什么他越用越不懂自己的产出？为什么是"理解一半"而不是"理解越来越多"？</p>
+
+    <p>Vibe Coding的安全数据也不乐观。网络安全公司Wiz的研究显示，20%的Vibe Coding产出的应用存在严重漏洞或配置错误。BaxBench基准测试和纽约大学的研究则发现，40%到62%的AI生成代码包含安全缺陷。这些代码通过了初步测试——它们"能跑"。但它们脆弱、混乱，在底层埋着跨站脚本攻击和SQL注入的种子。</p>
+
+    <p>问题的核心不是AI写的代码好不好。是审查这些代码需要的能力，恰恰是不写代码就培养不出来的那种能力。</p>
+
+    <p>但人类学家项飙可能会问一个不同方向的问题：你讨论的是谁的梯子？硅谷的精英工程师的成长路径，和班加罗尔、北京回龙观、武汉光谷的程序员的路径，是同一条吗？对于全球绝大多数程序员来说，AI编程工具可能是他们见过的最好的"师父"——一个不嫌你笨、不收学费、永远有耐心的导师。从这个角度看，"断梯"的叙事有可能变成精英守门人的话语。</p>
+
+    <p>这种张力是真实的。AI确实在降低编程的入门门槛，让更多人能"写"代码。但"能写代码"和"能构建不会在凌晨三点崩溃的系统"是两件事。UC Berkeley CS专业暴跌59%不是印度或中国的数据——它发生在全球科技金字塔的塔尖。当塔尖都在坍塌的时候，底部的"AI平民化"补得上吗？</p>
+
+    <p>这不是一个有标准答案的问题。但它是一个不能假装不存在的问题。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">对账图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">AI编程工具的两面性</div></div><div style="padding:22px 24px 18px"><div style="display:flex;align-items:center;gap:24px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px dashed #e2e8f0"><div style="flex:1;text-align:right;font-size:12px;font-weight:700;color:#1A56DB;letter-spacing:1px">← 流入 / INFLOW</div><div style="width:20px"></div><div style="flex:1;text-align:left;font-size:12px;font-weight:700;color:#F05252;letter-spacing:1px">OUTFLOW / 流出 →</div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">代码生成效率提升</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:100.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">300 %</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">初级岗位招聘下降</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:22.3%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">67 %</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">AI代码安全缺陷率</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:20.7%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">62 %</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">工程师手写代码占比</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:8.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">20 %</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">CS专业入学变化</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:19.7%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">59 %</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1"></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>AI在降低编程门槛的同时，也在侵蚀编程的深度</div></div>
+
+    <hr>
+
+    <h2>谁来修这条路</h2>
+
+    <p>微软至少意识到了问题。Russinovich和Hanselman提出了一个叫"Preceptor制度"的方案——名字借自护理行业，意思是让初级工程师在真实的产品团队中与资深工程师配对，把学习变成一个明确的组织目标，而非附带产出。Hanselman说了一句话："就像护士需要证明临床能力，工程师也需要证明同样的东西。"</p>
+
+    <p>少数公司在尝试类似的事情。有团队开始设立"无AI编码日"，让年轻工程师定期在没有Copilot、没有Claude Code的环境下独立完成任务——不是因为怀旧，而是因为认知能力和肌肉记忆一样，不练就会丢。有些团队重新设计了Code Review流程，不再让初级工程师只看AI生成的diff，而是要求他们先手写一个方案，再和AI的版本比较——目的不是选哪个更好，而是让他们知道差距在哪里。</p>
+
+    <p>但这些是例外。绝大多数公司的选择是简单、理性、即时有效的：砍掉初级岗位，用省下来的钱买更多的AI工具许可证。9万美元的年薪换一个年费10美元的Copilot订阅。从季度报表来看，这是完美的决策。</p>
+
+    <p>研究者用一个短语概括了这种局面："个体理性，集体毁灭"。每家公司单独做的决定都说得通。但当所有公司同时做同一个决定时，整个行业的人才蓄水池就在悄悄干涸。没有哪家公司会因为"行业人才管道坍塌"来负责。这是一个典型的公地悲剧，只不过这片公地是全球软件工程师的培养体系。</p>
+
+    <p>有人会说，也许AI自己就能填上这个缺口。也许五年后的AI强到不需要人类工程师来做那些高难度的系统设计。也许"断梯"问题根本不会发生，因为梯子的另一端已经不需要人上去了。</p>
+
+    <p>也许。但航空业没有这样赌。FAA没有说"既然自动驾驶这么好，飞行员以后就不用练手动飞行了"。它做了相反的事：越是自动化，越要确保人类能在关键时刻接管。因为自动化系统会失败——不是"如果"，而是"什么时候"。</p>
+
+    <p>AI也会。它会在最关键的时刻生成看起来正确但实际上是错的代码。那时候需要有人能看出来。那个人从哪里来？他需要花5到10年磨出来。那条路不能断。</p>
+
+    <strong>AI时代最稀缺的不是会用AI的人。是不用AI也行的人。</strong>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_03.jpg" alt="broken ladder floating digital void" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>AI时代最稀缺的不是会用AI的人。是不用AI也行的人。</p>
+    <p>那条从Hello World到百万用户系统架构师的路，不能断。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.infoq.com/news/2026/04/junior-developer-pipeline-crisis/" target="_blank" rel="noopener">InfoQ - Microsoft's Russinovich and Hanselman Warn AI Is Hollowing out the Junior Developer Pipeline (2026年4月)</a></div>
+      <div class="footer-source-item"><a href="https://sfstandard.com/2026/02/19/ai-writes-code-now-s-left-software-engineers/" target="_blank" rel="noopener">SF Standard - AI writes the code now. What's left for software engineers? (2026年2月)</a></div>
+      <div class="footer-source-item"><a href="https://www.dailycal.org/news/campus/academics/uc-berkeley-cs-major-enrollment-on-pace-to-drop-by-59-as-part-of-nationwide/article_8ceded3c-d939-4f60-8aa4-110be003c4e3.html" target="_blank" rel="noopener">UC Berkeley Daily Californian - CS major enrollment on pace to drop by 59% (2026)</a></div>
+      <div class="footer-source-item"><a href="https://www.entrepreneur.com/business-news/ai-ceo-says-software-engineers-could-be-replaced-in-months/502087" target="_blank" rel="noopener">Entrepreneur - Anthropic CEO Says AI Could Replace Software Engineers in 6 to 12 Months (2026年1月)</a></div>
+      <div class="footer-source-item"><a href="https://journals.sagepub.com/doi/abs/10.1177/0018720814535628" target="_blank" rel="noopener">NASA/Human Factors - The Retention of Manual Flying Skills in the Automated Cockpit (2014)</a></div>
+      <div class="footer-source-item"><a href="https://getbeam.dev/blog/junior-developer-crisis-ai-2026.html" target="_blank" rel="noopener">Beam - The Junior Developer Crisis: How AI Agents Are Reshaping the Talent Pipeline (2026)</a></div>
+      <div class="footer-source-item"><a href="https://retool.com/blog/vibe-coding-risks" target="_blank" rel="noopener">Retool Blog - The Risks of Vibe Coding: Security Vulnerabilities and Enterprise Pitfalls (2026)</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
