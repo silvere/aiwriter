@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>年营收30亿，承诺账单3300亿：Anthropic 在帮云厂商打工</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 商业拆解</span>
+  <h1>年营收30亿，承诺账单3300亿：Anthropic 在帮云厂商打工</h1>
+  <div class="hero-meta">
+    <span>2026-05-10</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">5 月 5 日 Anthropic 跟 Google 签 200 亿，5 月 7 日租下 Elon Musk 的 Colossus 1，5 月 8 日 Dario 出来说一个季度年化营收涨了 80 倍。三天三笔大单一句豪言，闻起来不是 AI 时代来了的味儿，是接力棒的味儿。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、把 Anthropic 这个月的账单摊开</h2>
+
+    <p>先做一道小学算术。</p>
+
+    <p>Anthropic 现在签出去的、白纸黑字的云算力承诺，按三家来算：</p>
+
+    <strong>Amazon AWS</strong>：未来 10 年承诺花 1000 亿美金。这单是 4 月 20 号签的，紧跟着 Amazon 宣布最高再投 250 亿到 Anthropic。
+
+    <strong>Google Cloud</strong>：未来 5 年承诺花 2000 亿美金。这单 5 月 5 号曝光，配套是 Google 现在掏 100 亿现金，根据业绩里程碑最高加到 400 亿。包含一百万颗 TPU。
+
+    <strong>Microsoft Azure</strong>：300 亿美金算力承诺。Microsoft 同步投 50 亿。
+
+    <p>加起来，<strong>3300 亿美金</strong>。</p>
+
+    <p>我再说一遍，三千三百亿美金。</p>
+
+    <p>这是 Anthropic 自己签字、加盖公章、摁过手印的应付账款。</p>
+
+    <p>那 Anthropic 自己一年能挣多少？</p>
+
+    <p>公司 4 月份对外说，年化营收(ARR)冲到 300 亿了。这数还是 Q1 一个季度的"超级窗口期"年化出来的，按月的话——1 月 87 亿、2 月 140 亿、3 月 190 亿、4 月 300 亿。</p>
+
+    <p>收入年化 300 亿，账单 3300 亿。</p>
+
+    <p>比例是 <strong>1 比 11</strong>。</p>
+
+    <p>你要是个普通打工人，月薪 1 万，跑去签了一份 11 万的房贷月供，银行不会笑你大胆，会直接把你合同撕了——你这不是借贷，你这是行为艺术。</p>
+
+    <p>但 Anthropic 把这事儿干成了。</p>
+
+    <p>而且签得三家云厂商抢着送钱进来。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">对账图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">Anthropic 的账单 vs 营收，一个普通人理解不了的金融现实</div></div><div style="padding:22px 24px 18px"><div style="display:flex;align-items:center;gap:24px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px dashed #e2e8f0"><div style="flex:1;text-align:right;font-size:12px;font-weight:700;color:#1A56DB;letter-spacing:1px">← 流入 / INFLOW</div><div style="width:20px"></div><div style="flex:1;text-align:left;font-size:12px;font-weight:700;color:#F05252;letter-spacing:1px">OUTFLOW / 流出 →</div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Anthropic 年化营收</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:15.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">300 亿美元</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">AWS 算力承诺</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:50.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">1000 亿美元</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1"></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Google Cloud 承诺</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:100.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">2000 亿美元</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1"></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Azure 算力承诺</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:15.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">300 亿美元</div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>年化营收 300 亿，承诺账单 3300 亿，11 倍杠杆是 AI 时代的新常识</div></div>
+
+    <hr>
+
+    <h2>二、那 3000 亿的差额，谁出？</h2>
+
+    <p>来看钱怎么进来的。</p>
+
+    <p>三家云厂商各自捏一份投资协议进 Anthropic 公司：</p>
+
+    <p>Amazon 这次说要再投 250 亿，加上之前已经投的 80 亿，AWS 累计能进 330 亿。</p>
+
+    <p>Google 这次答应进 100 亿，业绩达标的话加到 400 亿。算最大值就是 400 亿。</p>
+
+    <p>Microsoft 这次进 50 亿。</p>
+
+    <p>总计<strong>最大值 780 亿</strong>。</p>
+
+    <p>中间那笔 2500 亿的差额怎么补？</p>
+
+    <p>Anthropic 4 月底刚谈一轮新融资，500 亿美金估值打到 9000 亿——比上一轮 1830 亿翻了快 5 倍。这 500 亿要是拿到了，加上前面云厂商的 780 亿，大概 1300 亿。</p>
+
+    <p>还差 2000 亿。</p>
+
+    <p>这 2000 亿，按照公司自己给投资人的财务规划，靠"未来营收"补——Dario 说 2027 年开始正现金流，2028 年营收 700 亿，2029 年继续翻倍。</p>
+
+    <p>翻译一下：</p>
+
+    <p>这 3300 亿账单，本质上是 Anthropic 拿"我未来一定爆发"作为质押品，跟三家云厂商签的远期算力期货。</p>
+
+    <p>云厂商这边，表面上是给 Anthropic 投钱，实际上在做一件更精明的事——</p>
+
+    <strong>把自家未来 5 到 10 年的云收入，提前以"backlog 确认"的方式锁定，再把这笔确认收入挂上自家财报。</strong>
+
+    <p>不信你看 Google 4 月 29 号公布的 Q1 财报，云业务 backlog 一夜从 2400 亿干到 4620 亿，几乎翻倍。Anthropic 这一单 2000 亿，占了 backlog 的 43%。</p>
+
+    <p>Sundar Pichai 在电话会上一句话点透：「我们短期内是算力不足的（compute constrained）」。</p>
+
+    <p>翻译过来就是：<strong>我家的云不愁卖，连 Anthropic 这种没爹的孩子都抢着排队签 5 年长约</strong>。</p>
+
+    <p>资本市场看到这个数字，Alphabet 股价当天冲到历史高点 399 美金。</p>
+
+    <p>老铁们，这就是商业的本质。</p>
+
+    <p>云厂商投 Anthropic 的钱，最终通过算力账单又流回云厂商的财报。</p>
+
+    <p>中间这一圈，叫"循环交易"——英文术语 Circular Financing，更贴切的中文翻译叫<strong>"左手倒右手，倒一圈估值翻三倍"</strong>。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">对账图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">钱从云厂商流入 Anthropic，再以云账单流回云厂商</div></div><div style="padding:22px 24px 18px"><div style="display:flex;align-items:center;gap:24px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px dashed #e2e8f0"><div style="flex:1;text-align:right;font-size:12px;font-weight:700;color:#1A56DB;letter-spacing:1px">← 流入 / INFLOW</div><div style="width:20px"></div><div style="flex:1;text-align:left;font-size:12px;font-weight:700;color:#F05252;letter-spacing:1px">OUTFLOW / 流出 →</div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">AWS 投资 Anthropic</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:16.5%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">330 亿美元</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Anthropic 承诺 AWS 算力</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:50.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">1000 亿美元</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Google 投资 Anthropic</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:20.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">400 亿美元</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Anthropic 承诺 Google 算力</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:100.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">2000 亿美元</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Microsoft 投资 Anthropic</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:8.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">50 亿美元</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Anthropic 承诺 Azure 算力</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:15.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">300 亿美元</div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>投资人投出去的 780 亿，最终化作云厂商账面上的 3300 亿 backlog</div></div>
+
+    <hr>
+
+    <h2>三、Anthropic 的客户是谁，撑得起这账单吗</h2>
+
+    <p>怀疑论者会站起来反驳：</p>
+
+    <p>「兄弟你别瞎说，AI 是真有需求的。Anthropic 营收一年涨 80 倍，那是真有人在掏钱用。」</p>
+
+    <p>对，这话半对半错。</p>
+
+    <p>营收 300 亿是真的——但你要是把这 300 亿拆开来看，会看到一件让所有 SaaS 风控经理头皮发麻的事。</p>
+
+    <p>公开数据：Anthropic 的 API 业务里，<strong>Cursor 一家加 GitHub Copilot 一家，两家加起来贡献 14 亿美金 ARR，占整个 API 收入的近一半</strong>。</p>
+
+    <p>什么概念？</p>
+
+    <p>任何一家正经 SaaS 公司去美股 IPO，承销商问的第一个问题就是「客户集中度」。一般规则是：<strong>前 5 大客户占比超过 30%，路演就会被反复拷问；超过 40%，估值得砍 20% 起步；超过 50%，多半上不了市</strong>。</p>
+
+    <p>Anthropic 这边，前 2 家客户就接近 50% 了。</p>
+
+    <p>更要命的是，Cursor 自己也是个嗷嗷烧钱的代码补全工具，它收用户的钱，转手就交给 Anthropic 当 API 费用。它一家 ARR 大概 5 亿美金水平——意思是它收用户 5 亿，给 Anthropic 大概 8-10 亿，自己倒贴。</p>
+
+    <p>GitHub Copilot 是 Microsoft 旗下的，Microsoft 早就把它当成战略亏损项目在跑——用户付一个月 10 美金的会员费，Microsoft 后台调用 Anthropic 的 API 成本经常超过 30 美金。</p>
+
+    <p>所以这条链子完整画下来是这样的：</p>
+
+    <strong>云厂商 →（投资）→ Anthropic →（API 调用费）→ 云厂商账单 backlog</strong>
+
+    <strong>普通用户 → Cursor / Copilot → Anthropic → 云厂商账单 backlog</strong>
+
+    <p>第一条循环是封闭的，账面上左手倒右手。</p>
+
+    <p>第二条循环是开放的，但 Cursor 和 Copilot 自己也在亏损，本质上是用 VC 的钱、Microsoft 的钱，替终端用户支付了一部分账单。</p>
+
+    <strong>真正能从用户钱包里直接抽到现金、不需要任何中转的部分，估计连 30% 都不到。</strong>
+
+    <p>这就是为什么我说，Anthropic 不是 AI 公司，是云厂商之间的资金通道。</p>
+
+    <p>它不是恶意的，它甚至不是故意的——它是这个生态系统里所有玩家把它推到这个位置上的。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)"><div style="background:#1A56DB;color:#fff;padding:10px 16px;font-size:13px;font-weight:700">饼图</div><div style="padding:20px 24px;display:flex;align-items:center;gap:24px;flex-wrap:wrap"><svg width="160" height="160" viewBox="0 0 160 160" style="flex-shrink:0"><path d="M 80.00 10.00 A 70 70 0 0 1 149.62 87.32 L 121.77 84.39 A 42 42 0 0 0 80.00 38.00 Z" fill="#1A56DB" stroke="#fff" stroke-width="2"/><path d="M 149.62 87.32 A 70 70 0 0 1 94.55 148.47 L 88.73 121.08 A 42 42 0 0 0 121.77 84.39 Z" fill="#F05252" stroke="#fff" stroke-width="2"/><path d="M 94.55 148.47 A 70 70 0 0 1 13.43 58.37 L 40.06 67.02 A 42 42 0 0 0 88.73 121.08 Z" fill="#0E9F6E" stroke="#fff" stroke-width="2"/><path d="M 13.43 58.37 A 70 70 0 0 1 80.00 10.00 L 80.00 38.00 A 42 42 0 0 0 40.06 67.02 Z" fill="#FBBF24" stroke="#fff" stroke-width="2"/></svg><div style="flex:1;min-width:160px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="width:12px;height:12px;border-radius:3px;background:#1A56DB;flex-shrink:0"></div><span style="font-size:12px;color:#374151;flex:1">Cursor</span><span style="font-size:12px;font-weight:700;color:#1A56DB">27%</span></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="width:12px;height:12px;border-radius:3px;background:#F05252;flex-shrink:0"></div><span style="font-size:12px;color:#374151;flex:1">GitHub Copilot</span><span style="font-size:12px;font-weight:700;color:#F05252">20%</span></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="width:12px;height:12px;border-radius:3px;background:#0E9F6E;flex-shrink:0"></div><span style="font-size:12px;color:#374151;flex:1">其他企业客户</span><span style="font-size:12px;font-weight:700;color:#0E9F6E">33%</span></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="width:12px;height:12px;border-radius:3px;background:#FBBF24;flex-shrink:0"></div><span style="font-size:12px;color:#374151;flex:1">长尾开发者与 API</span><span style="font-size:12px;font-weight:700;color:#FBBF24">20%</span></div></div></div></div>
+
+    <hr>
+
+    <h2>四、那 5 月 7 号租 Elon Musk 数据中心又是什么操作</h2>
+
+    <p>可能有同学会问：</p>
+
+    <p>「那 5 月 7 号 Anthropic 又跑去租 SpaceX 名下的 Colossus 1，签的是 22 万张 H100，这事儿怎么解释？」</p>
+
+    <p>这事儿才是这篇文章的高潮。</p>
+
+    <p>老铁们注意，<strong>Anthropic 跟三大云厂商签的所有长期合同，全是 5 年起步、10 年封顶</strong>。</p>
+
+    <p>但模型训练等不了 10 年。</p>
+
+    <p>Claude 4.5 训练的时候用 Trainium，4.6 用 TPU，5.0 用 H100——每一代模型对算力的需求是阶跃的，今年要的卡明年可能就过时。</p>
+
+    <p>三家云厂商的"算力承诺"，在合同上写得是一笔总数，但<strong>真正交付的节奏跟不上 Anthropic 训练的节奏</strong>。</p>
+
+    <p>Sundar Pichai 自己都说了「我们 compute constrained」——意思是 Google 自家的客户都嗷嗷待哺，Anthropic 排队也得排着。</p>
+
+    <p>这时候市场上还有一个人捏着 22 万张 H100 没地方用——</p>
+
+    <strong>Elon Musk</strong>。
+
+    <p>他 1 月份新搞了 Colossus 2，把 xAI 自己的训练任务都迁过去了，<strong>Colossus 1 这套 22 万张 H100、300 兆瓦的家伙，正闲着</strong>。</p>
+
+    <p>Anthropic 直接包圆。</p>
+
+    <p>我请你品一下这个画面：</p>
+
+    <p>Anthropic 的 CEO 说"我跟 Google 签了 2000 亿的算力大单"，转头第二天就跑去租 Elon Musk——这位整天起诉 OpenAI、跟 Sam Altman 互喷、自己搞 xAI 跟 Anthropic 抢生意的男人——的数据中心，<strong>还要把人家的算力全包</strong>。</p>
+
+    <p>Musk 自己出来说话，原话是：「No one set off my evil detector（没人触发我的邪恶探测器）」。</p>
+
+    <p>翻译一下：<strong>这单生意我也想不通有什么阴谋，所以我就先收钱了</strong>。</p>
+
+    <p>这事儿告诉我们一个非常残酷的真相——</p>
+
+    <strong>3300 亿的云算力承诺，是签给三家云厂商的财报看的；眼前训练 Claude 5 缺卡的事儿，得另外找一个对手家先租</strong>。
+
+    <p>合同是给资本市场看的故事，租赁是真金白银的现实。</p>
+
+    <p>而真金白银的现实，是 Anthropic 现在缺卡缺到要跟 Elon Musk 这样八字不合的人合作。</p>
+
+    <p>这就好比某地产公司一边对外宣传"未来五年累计开工 3000 万平方米"，一边偷偷去找隔壁同行租水泥搅拌机——大单是给股价看的，搅拌机是给工地用的。</p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>A vast data center with thousands of glowing GPU server racks, two figures shaking hands in front, dramatic lighting from screens displaying financial dashboards, cinematic composition with cool blue and warm orange contrast, no text, no labels, photorealistic style</pre></details>
+</div>
+
+    <hr>
+
+    <h2>五、为什么所有人都得继续转下去</h2>
+
+    <p>这一局牌，最迷人的地方在于：<strong>没有任何一方有动机停下来</strong>。</p>
+
+    <p>我把每一方的真实诉求摊开来看：</p>
+
+    <strong>云厂商需要 backlog 故事</strong>。
+Google Q1 财报为什么涨那么猛？因为 backlog 翻倍。Wall Street 看 SaaS 公司从来不只看当期收入，看的是"未来已锁定的合同金额"——这玩意儿涨，估值就涨。Anthropic 这一笔 2000 亿，相当于直接给 Alphabet 估值添了几千亿燃料。AWS 拿 1000 亿、Azure 拿 300 亿，逻辑一样。所以三家云厂商抢着签，价格都不带还的。
+
+    <strong>Anthropic 需要算力训练下一代模型</strong>。
+没有算力，没有 Claude 5、Claude 6。没有更强的模型，竞争里就没位置。所以 Anthropic 必须把所有能拿到的卡都签上。哪怕是 Elon Musk 的卡。
+
+    <strong>投资人需要"AI 是真需求"的故事</strong>。
+Anthropic 估值从 1 月份的 1830 亿到 4 月份谈到 9000 亿，半年涨 5 倍。投资人手里持有的份额每涨一次估值，账面浮盈一次。账面浮盈又能被打包成基金业绩，去筹下一只更大的基金。基金管理费 2%，超额收益分成 20%——这一连串的财务魔术，靠的就是估值不停往上跑。
+
+    <strong>美国监管层（理论上）应该有动机停</strong>。
+但是没有。5 月 5 号同一天，美国政府宣布跟 Google、Microsoft、xAI 达成协议，让政府机构在模型上线前预先评估——表面上是"AI 安全监管"，实际上是把美国的 AI 公司绑得更紧，因为非美国的对手（中国、欧洲）现在被定义成"安全威胁"。监管不是要阻止这事儿，而是要确保这事儿留在美国境内继续转。
+
+    <strong>终端用户呢</strong>？
+这是这个故事里唯一的悬念。
+
+    <p>到现在为止，3300 亿账单背后，真正掏钱的终端用户付费规模有多大？不知道。Anthropic 不公开。但根据其披露的 1000 多家"百万美金以上年支出"客户，按平均 200-300 万一家算，这部分加起来大概 30 亿——只占公司声称的 ARR 的 10%。</p>
+
+    <strong>剩下 90% 的 ARR，靠的是 Cursor 这种烧钱中间商，靠的是云厂商内部账面流转，靠的是 Anthropic 自己烧投资人的钱再变成 API 调用——那不是营收，那是流水</strong>。
+
+    <p>整个链条最薄的那一环，是终端用户的钱包。</p>
+
+    <p>只要这个钱包里掏不出足够的现金来填那个 2000 亿到 3000 亿的差额，循环就要靠"下一轮融资"或"下一笔投资"来续命。</p>
+
+    <p>只要任何一个环节——某家云厂商决定不投了、某轮融资没到位、某个客户跑路了——这条传送带就会卡住。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">条形图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">Google Cloud Q1 2026 backlog 中 Anthropic 单家占比</div></div><div style="padding:22px 24px 18px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px dashed #e2e8f0"><div><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><span style="width:10px;height:10px;border-radius:3px;background:#F05252;display:inline-block"></span><span style="font-size:11px;color:#64748b">流出</span></span><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><span style="width:10px;height:10px;border-radius:3px;background:#94A3B8;display:inline-block"></span><span style="font-size:11px;color:#64748b">参照</span></span></div><span style="font-size:11px;color:#94a3b8;font-weight:500">单位：亿美元</span></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">Anthropic 单家承诺</span><span style="font-size:15px;font-weight:700;color:#F05252;white-space:nowrap">2000 亿美元</span></div><div style="background:#FFE4E4;border-radius:5px;height:10px;overflow:hidden"><div style="background:#F05252;width:76.3%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">其他所有客户合计</span><span style="font-size:15px;font-weight:700;color:#94A3B8;white-space:nowrap">2620 亿美元</span></div><div style="background:#F1F5F9;border-radius:5px;height:10px;overflow:hidden"><div style="background:#94A3B8;width:100.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>一家创业公司的承诺，撑起一家万亿市值上市公司 backlog 的 43%</div></div>
+
+    <hr>
+
+    <h2>六、那这事儿啥时候出问题</h2>
+
+    <p>核心问题来了：<strong>这个"接力棒"游戏，到底什么时候停？</strong></p>
+
+    <p>我的判断里有三个观察点。</p>
+
+    <strong>第一个观察点：某家云厂商先扛不住</strong>。
+
+    <p>3300 亿的算力承诺，意味着每年 Anthropic 要从云上消耗 660 亿美金——这数字大于 Google 整个 Cloud 业务 Q1 营收的 3 倍。如果 Anthropic 真的按这个节奏花，三家云厂商必须建出对应规模的数据中心。</p>
+
+    <p>但建数据中心要钱、要电、要地、要 GPU。前不久 Oracle 宣布跟 OpenAI 签了 3000 亿大单，市场反应是 Oracle 股价<strong>两个月跌了 45%</strong>——投资人一算账，建这么多数据中心，资本开支会吞掉 Oracle 接下来几年的全部自由现金流。</p>
+
+    <p>Google、Amazon、Microsoft 当下还撑得住，因为他们家底厚。但 5 大云厂商 2026 年合计资本开支已经飙到 6900 亿美金，同比翻倍。这速度撑不了三年。</p>
+
+    <strong>第二个观察点：终端用户付费疲软</strong>。
+
+    <p>OpenAI 今年公开了一组数据，9 亿月活用户里<strong>只有 5% 付费</strong>。换句话说，绝大部分人用 AI 用得很爽，但不愿意掏钱。</p>
+
+    <p>企业端付费的天花板也在显现——Anthropic 上周公布的 B2B Signals 报告里说，"前沿企业（frontier companies）的人均 AI 用量是普通公司的 3.5 倍"——这话翻过来就是「普通公司根本没那么多 AI 需求」。</p>
+
+    <p>如果 2027 年还看不到 Anthropic 端到端用户付费的爆发，循环就要靠继续烧投资人的钱来维持。</p>
+
+    <strong>第三个观察点：监管态度变化</strong>。
+
+    <p>美国政府现在的逻辑是"留在境内随便转"，但这个逻辑能维持多久？</p>
+
+    <p>如果哪天某个州检察长（比如纽约或加州）盯上 Nvidia + 云厂商 + AI 创业公司这种三方循环，按照 SEC 历史上对 round-tripping（虚增交易）的判例标准来审视，<strong>这条链条里至少 30% 的"营收"是经不起严格审计的</strong>。</p>
+
+    <p>不是说 Anthropic 在做假账——它的合同都是真的，钱也是真的转过去的。但是这种"我投资你、你买我服务、我把买我服务的钱算成 backlog"的结构，<strong>SEC 在 2000 年互联网泡沫破灭后追究过一连串案例，被点名的包括 Lucent、Nortel、Qwest</strong>——每一次都是先赞美"循环效应是新经济的伟大创新"，然后大潮退去，对账。</p>
+
+    <p>历史不一定重演，但财务魔术的剧本不变。</p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>A massive elaborate domino chain of glowing servers and money stacks arranged in a circular loop, dramatic dim lighting, photorealistic high detail, sense of anticipation and impending collapse, dark background with neon highlights, no text, no labels</pre></details>
+</div>
+
+    <hr>
+
+    <h2>七、收束：别看模型，看金主名单</h2>
+
+    <p>最后说回开头那个判断。</p>
+
+    <p>Anthropic 真正在卖的不是 Claude，是云厂商之间的资金接力棒。</p>
+
+    <p>这话听起来刻薄，但它不是在批评 Anthropic——Anthropic 团队是这个行业里最严肃做研究的一批人，模型质量也确实不错。</p>
+
+    <p>这话是在说，<strong>当你看到一家 AI 公司估值 9000 亿、营收 80 倍增长、合同 3300 亿的时候，你不能只看这些数字</strong>。</p>
+
+    <p>你要看：</p>
+
+    <p>第一，<strong>它的金主名单里有没有云厂商</strong>。如果有，且持股比例排前 5，那它的"营收"很可能有相当一部分是从金主那儿借的——金主借给它，再让它买金主的服务。</p>
+
+    <p>第二，<strong>它的合同条款里有没有 cloud commitment（必须使用某家云）</strong>。如果有，这家公司的算力供应链就被锁死了，所谓的"自由议价"就是个笑话。</p>
+
+    <p>第三，<strong>它的客户集中度</strong>。前 2 大客户超过 30%、且这两个客户自己也是亏损的——这家公司的现金流其实是被绑在另外两家公司身上，绑得越紧风险越大。</p>
+
+    <p>这三条用下来，你能筛掉市面上 90% 看着光鲜的 AI 公司。</p>
+
+    <p>剩下那 10%，才是真正的技术公司。</p>
+
+    <p>至于 Anthropic 这一局牌怎么收尾——</p>
+
+    <p>我赌不了哪一年破，但我能告诉你它怎么破：</p>
+
+    <strong>某一天，某家云厂商在某次财报会上轻描淡写地说一句「我们调整了对 Anthropic 的承诺规模」</strong>。
+
+    <p>那一天，整条传送带就停了。</p>
+
+    <p>到时候 Dario Amodei 不会站出来道歉，他会说"我们一直在说，AI 的发展需要长期视角"。</p>
+
+    <p>投资人不会承认看走眼，他们会说"AGI 是十年后的事，短期波动正常"。</p>
+
+    <p>监管不会问责，监管会发新一轮"AI 治理框架"。</p>
+
+    <p>而真正接盘的，是那些拿养老金 401(k) 把钱被动配置到 Alphabet、Amazon、Microsoft 这些云厂商股票的普通人。</p>
+
+    <p>老铁们，到那天再回头看这篇文章。</p>
+
+    <p>我现在能给你的唯一建议是——</p>
+
+    <strong>当一家公司的应付账款是它营收的 11 倍，无论它叫 AI 还是叫别的什么，先看看是谁在给它兜底</strong>。
+
+    <p>兜底的人，永远比模型本身更重要。</p>
+
+    <p>完。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>当一家公司的应付账款是它营收的 11 倍，无论它叫 AI 还是叫别的什么，先看看是谁在给它兜底。</p>
+    <p>兜底的人，永远比模型本身更重要。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://ca.finance.yahoo.com/news/anthropic-commits-spending-200-billion-204952202.html" target="_blank" rel="noopener">Anthropic Commits to Spending $200 Billion on Google's Cloud and Chips（The Information / Yahoo, 2026-05-05）</a></div>
+      <div class="footer-source-item"><a href="https://www.datacenterdynamics.com/en/news/anthropic-to-use-all-of-spacex-xais-colossus-1-data-center-compute/" target="_blank" rel="noopener">Anthropic to use all of SpaceX-xAI's Colossus 1 data center compute（DCD, 2026-05-07）</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com/2026/05/08/anthropic-80fold-growth-quarter-renting-elon-musk-data-center/" target="_blank" rel="noopener">Anthropic grew 80-fold in a single quarter. Now it's renting Elon Musk's data center to cope（Fortune, 2026-05-08）</a></div>
+      <div class="footer-source-item"><a href="https://techcrunch.com/2026/04/20/anthropic-takes-5b-from-amazon-and-pledges-100b-in-cloud-spending-in-return/" target="_blank" rel="noopener">Anthropic takes $5B from Amazon and pledges $100B in cloud spending in return（TechCrunch, 2026-04-20）</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/04/24/google-to-invest-up-to-40-billion-in-anthropic-as-search-giant-spreads-its-ai-bets.html" target="_blank" rel="noopener">Google to invest up to $40 billion in Anthropic as search giant spreads its AI bets（CNBC, 2026-04-24）</a></div>
+      <div class="footer-source-item"><a href="https://blog.google/company-news/inside-google/message-ceo/alphabet-earnings-q1-2026/" target="_blank" rel="noopener">Alphabet earnings call, Q1 2026: Sundar Pichai's remarks（Google Blog）</a></div>
+      <div class="footer-source-item"><a href="https://techcrunch.com/2026/04/29/google-cloud-surpasses-20b-but-says-growth-was-capacity-constrained/" target="_blank" rel="noopener">Google Cloud surpasses $20B, but says growth was capacity-constrained（TechCrunch, 2026-04-29）</a></div>
+      <div class="footer-source-item"><a href="https://venturebeat.com/ai/anthropic-revenue-tied-to-two-customers-as-ai-pricing-war-threatens-margins" target="_blank" rel="noopener">Anthropic revenue tied to two customers as AI pricing war threatens margins（VentureBeat）</a></div>
+      <div class="footer-source-item"><a href="https://futurumgroup.com/insights/ai-capex-2026-the-690b-infrastructure-sprint/" target="_blank" rel="noopener">AI Capex 2026: The $690B Infrastructure Sprint（Futurum）</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/05/05/ai-oversight-trump-google-microsoft-xai.html" target="_blank" rel="noopener">Trump admin moves further into AI oversight, will test Google, Microsoft and xAI models（CNBC, 2026-05-05）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
