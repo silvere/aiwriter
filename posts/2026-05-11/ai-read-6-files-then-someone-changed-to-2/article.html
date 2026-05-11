@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI读了6个文件才动手，直到有人把这个数字改成了2</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI深度</span>
+  <h1>AI读了6个文件才动手，直到有人把这个数字改成了2</h1>
+  <div class="hero-meta">
+    <span>2026-05-11</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">2026年3月4日，Anthropic的一个工程师把推理强度从高调到中。六周后，开发者用6852个session的数据证明：AI原来读6.6个文件才动手，现在只读2个就下刀了。但真正可怕的是——在这六周里，没有任何监控系统报过警。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、三个好意，一场静默崩塌</h2>
+
+    <p>这件事的全貌比表面看到的更荒诞。</p>
+
+    <p>3月4日，推理强度从高调到中。理由是用户体验——界面不再"假死"了。这不是一个拍脑袋的决定，有AB测试数据支持："中等强度的智能略有下降，但延迟显著减少。"</p>
+
+    <p>3月26日，第二个变更上线——一个缓存优化。原本的设计是清理闲置超过一小时的session中过旧的思考记录。但实现有bug：它不是只清理一次，而是每一轮对话都在清。AI在持续丢失自己之前思考过的内容。</p>
+
+    <p>4月16日，第三个变更：为了准备Opus 4.7的发布，给系统提示词加了一条规则——两次工具调用之间，回复不超过25个词。独立测试显示编码质量下降3%。</p>
+
+    <p>三个变更，各自合理，各自微小，在不同时间由不同团队上线。Anthropic的复盘报告原话："因为每个变更影响不同的流量切片、在不同时间生效，叠加后的效果看起来像是广泛的、不一致的退化。"</p>
+
+    <p>这里有一个细节值得停下来想想：Anthropic的内部eval（评测系统）在这六周内没有报警。他们自己说："内部使用和eval最初都没有复现用户反馈的问题。"用Opus 4.7做Code Review时才发现了Opus 4.6漏掉的东西。</p>
+
+    <p>也就是说，评测AI质量的AI——也没发现AI变蠢了。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">对账图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">Claude Code六周退化时间线</div></div><div style="padding:22px 24px 18px"><div style="display:flex;align-items:center;gap:24px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px dashed #e2e8f0"><div style="flex:1;text-align:right;font-size:12px;font-weight:700;color:#1A56DB;letter-spacing:1px">← 流入 / INFLOW</div><div style="width:20px"></div><div style="flex:1;text-align:left;font-size:12px;font-weight:700;color:#F05252;letter-spacing:1px">OUTFLOW / 流出 →</div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Anthropic确认问题</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:100.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">50 天</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">推理降级（3月4日）</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:68.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">34 天</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1"></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">缓存bug（3月26日）</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:30.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">15 天</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1"></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">冗余限制（4月16日）</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:8.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">4 天</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1"></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">用户最早报告异常</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:14.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">7 天</div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>三个微小优化叠加，eval全部失灵，用户直觉是唯一信号</div></div>
+
+    <hr>
+
+    <h2>二、推理越强，幻觉越多——一篇让人不安的论文</h2>
+
+    <p>如果Claude Code事件只是一个工程事故，它值不了一篇文章。让这件事从"事故"升级为"征兆"的，是2026年ICLR上的一篇论文。</p>
+
+    <p>论文标题叫"The Reasoning Trap"（推理陷阱），核心发现只有一句话：<strong>用强化学习让模型推理能力变强时，工具调用的幻觉率会同步上升。</strong></p>
+
+    <p>不是"有时候会"，是"必然会"。两条曲线绑在一起往上走。</p>
+
+    <p>OpenAI的数据验证了这一点：o3模型的幻觉率是33%，是前代o1的16%的两倍多。更小的o4-mini达到了48%。越"聪明"的模型，在使用工具时越会编造不存在的API、虚构不存在的函数调用。</p>
+
+    <p>论文揭示了原因：强化学习训练推理能力时，"不当地压缩了与工具可靠性相关的内部表征"。退化发生在网络的后期层——恰好是本该阻止错误工具调用的那一层。</p>
+
+    <p>用更朴素的话说：模型学会了"怎么想得更深"，代价是忘了"什么时候该住手"。</p>
+
+    <p>Claude Code事件里的read-to-edit ratio暴跌，本质上是同一件事的另一个切面：AI不是不能读更多文件——而是"更快"的优化目标，训练出了"不读就动手"的行为模式。</p>
+
+    <p>这不是个案。这是一个规律：<strong>每次你优化AI在某个维度变强，它就会在另一个维度——通常是你没有设监控的维度——变弱。</strong></p>
+
+    <p>研究者测试了缓解方案。结论让人沮丧："缓解策略有效，但代价是用能力换可靠性——你只能要一个。"</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">条形图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">推理能力越强，工具幻觉率越高</div></div><div style="padding:22px 24px 18px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px dashed #e2e8f0"><div><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><span style="width:10px;height:10px;border-radius:3px;background:#F05252;display:inline-block"></span><span style="font-size:11px;color:#64748b">流出</span></span><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><span style="width:10px;height:10px;border-radius:3px;background:#94A3B8;display:inline-block"></span><span style="font-size:11px;color:#64748b">参照</span></span></div><span style="font-size:11px;color:#94a3b8;font-weight:500">单位：%</span></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">o1 幻觉率</span><span style="font-size:15px;font-weight:700;color:#94A3B8;white-space:nowrap">16 %</span></div><div style="background:#F1F5F9;border-radius:5px;height:10px;overflow:hidden"><div style="background:#94A3B8;width:33.3%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">o3 幻觉率</span><span style="font-size:15px;font-weight:700;color:#F05252;white-space:nowrap">33 %</span></div><div style="background:#FFE4E4;border-radius:5px;height:10px;overflow:hidden"><div style="background:#F05252;width:68.8%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">o4-mini 幻觉率</span><span style="font-size:15px;font-weight:700;color:#F05252;white-space:nowrap">48 %</span></div><div style="background:#FFE4E4;border-radius:5px;height:10px;overflow:hidden"><div style="background:#F05252;width:100.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>模型越"聪明"，在使用工具时越会编造不存在的调用</div></div>
+
+    <hr>
+
+    <h2>三、47%的决策基于幻觉，但没人知道是哪47%</h2>
+
+    <p>德勤2026年的调查数据：47%的企业AI用户承认，至少有一个重大商业决策是基于AI的幻觉内容做出的。38%的企业高管报告因AI幻觉输出做出过错误决策。</p>
+
+    <p>但这里有一个比数字本身更恐怖的事实：<strong>这些人是事后才知道的。</strong> 做决策的时候，没人能分辨哪些AI输出是可靠的，哪些是幻觉。</p>
+
+    <p>这和Claude Code事件呈现了完全相同的结构：退化是真实的，但在发生的当下不可感知。</p>
+
+    <p>96%的企业已经在生产环境运行AI Agent。94%担心Agent蔓延带来的复杂性和风险。但只有12%有一个集中平台来管理它们。</p>
+
+    <p>2026年AI可观测性市场爆发了——17家以上的专业工具涌现，Arize、Braintrust、Confident AI争相提供"AI质量监控"。但这个行业面临一个先天缺陷：<strong>你只能监控你知道的维度。</strong></p>
+
+    <p>Claude Code的read-to-edit ratio在事件发生前不是任何监控仪表盘上的指标。它是事后复盘时才被发明出来的度量方式。在那六周里，它不存在于任何人的认知中。</p>
+
+    <p>多Agent系统放大了这个问题。普林斯顿的研究发现：在共享记忆的多Agent系统中，一个Agent的幻觉会传播给所有下游Agent。一个早期的错误工具调用，变成了所有Agent的共享"事实"。</p>
+
+    <p>这意味着：退化不仅不可测量，还会自我扩散、自我强化。一个小错误不会停留在它发生的地方——它会穿过整个系统，在每个节点留下一层薄薄的、几乎不可察觉的偏差。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_01.jpg" alt="network interconnected AI nodes where" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <hr>
+
+    <h2>四、为什么"变蠢"比"出错"更难被发现</h2>
+
+    <p>传统软件有一个特性：它要么work，要么不work。服务器宕机，你立刻知道。数据库损坏，查询直接报错。</p>
+
+    <p>AI Agent不一样。它变蠢之后，不会停止工作。它会继续产出——只是质量下降了。而且是那种只有深度使用者才能凭直觉感受到、但很难用数据证明的下降。</p>
+
+    <p>Anthropic在复盘中承认了这一点：用户的报告"最初很难与正常的反馈波动区分开来"。用户说"感觉变差了"，和用户说"今天心情不好觉得AI不好用"，在数据端看起来一模一样。</p>
+
+    <p>这就是为什么Claude Code的问题持续了六周。不是Anthropic不在乎——他们一直在调查。但"AI变蠢"不像"AI宕机"，它没有一个清晰的阈值可以触发警报。</p>
+
+    <p>MIT 2026年4月发表的RLCR（校准奖励强化学习）研究揭示了问题的根源：标准训练方法"给模型表达不确定性没有任何激励"。模型自然学会了不管确不确定都给出同样自信的答案。一个正确率只有50%但永远表示"我95%确信"的系统，比一个会直接答错的系统更危险——因为用户没有任何信号去寻求第二意见。</p>
+
+    <p>问题的根子比技术更深：<strong>我们对"智能"的度量方式本身就是功能主义的。</strong></p>
+
+    <p>Benchmark测的是什么？是输出的正确率——给一个输入，输出是否正确。这是一个黑箱评估：只看结果，不看过程。</p>
+
+    <p>Claude Code的read-to-edit ratio衡量的恰恰是"过程"：AI在动手之前读了多少。但没有任何主流benchmark包含这类"过程性"指标。我们的评测体系天然看不见"AI是否在认真思考"——它只能看见"AI是否输出了正确答案"。</p>
+
+    <p>当一个AI系统从"仔细思考后给出答案"退化为"快速猜测后给出答案"，如果答案的正确率只下降了3%，我们的评测系统会说：没什么问题。但所有用那个AI写代码的人都会感到：什么地方不对劲。</p>
+
+    <p>这3%在benchmark上是噪声。在六千个开发者的日常工作中，是灾难。</p>
+
+    <hr>
+
+    <h2>五、按下葫芦浮起瓢</h2>
+
+    <p>6.6降到2.0。</p>
+
+    <p>一个工程师出于好意，把推理强度调低了一档。目的是让界面不再"假死"。这在用户体验的维度上是一个改进。在思考深度的维度上，是一场静默的崩塌。</p>
+
+    <p>ICLR论文的作者们出于好意，用强化学习让模型推理更深。这在推理benchmark上是一个进步。在工具调用可靠性的维度上，是一场同步的倒退。</p>
+
+    <p>17家AI可观测性公司出于好意，提供了各种监控工具。但它们只能监控已知维度——而退化总是发生在未知维度。</p>
+
+    <p>AI不是一个"越优化越好"的系统。它是一个"按下葫芦浮起瓢"的系统。每一次按下去的葫芦都是可测量的、可报告的进步。每一个浮起来的瓢都在盲区里，等着被六千个用户的模糊直觉在六周后发现。</p>
+
+    <p>这才是AI行业藏得最深的bug——不在任何一行代码里，在"进步"的定义里。</p>
+
+    <p>我们用什么来衡量AI进步？更高的benchmark分数、更快的推理速度、更低的延迟、更多的工具调用能力。这些指标有一个共同的盲区：它们全部指向输出端。没有一个指标衡量AI在动手之前犹豫了多久、放弃了几次、选择不做什么。</p>
+
+    <p>当整个行业都用这套指标来赛跑时，Claude Code事件不会是最后一次。它是第一次被发现的。在它之前和之后，一定还有更多的"6.6到2.0"正在发生——在其他公司的其他产品里，在你正在使用的某个AI工具里——只是还没有人把read-to-edit ratio算出来而已。</p>
+
+    <p>面对这个现实，有且只有一个诚实的建议：当你的AI助手开始变得更快、更流畅、更"高效"的时候——警惕。那可能恰好是它变蠢的时刻。</p>
+
+    <hr>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>AI行业藏得最深的bug不在任何一行代码里，在'进步'的定义里。</p>
+    <p>当你的AI助手开始变得更快、更流畅、更高效的时候——警惕。那可能恰好是它变蠢的时刻。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/engineering/april-23-postmortem" target="_blank" rel="noopener">Anthropic Engineering: Claude Code Quality Postmortem (April 23, 2026)</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2505.24630" target="_blank" rel="noopener">ICLR 2026: The Reasoning Trap — Reasoning Models Hallucinate More</a></div>
+      <div class="footer-source-item"><a href="https://news.mit.edu/2026/teaching-ai-models-to-say-im-not-sure-0422" target="_blank" rel="noopener">MIT News: Teaching AI Models to Say "I'm Not Sure" (April 2026)</a></div>
+      <div class="footer-source-item"><a href="https://www.deloitte.com/" target="_blank" rel="noopener">Deloitte 2026 Enterprise AI Survey</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com/2026/04/24/anthropic-engineering-missteps-claude-code-performance-decline-user-backlash/" target="_blank" rel="noopener">Fortune: Anthropic engineering missteps behind Claude Code's monthlong decline</a></div>
+      <div class="footer-source-item"><a href="https://princetonits.com/blog/artificial-intelligence-ai/ai-hallucination-in-multi-agent-systems-the-hidden-risk-in-enterprise-workflows/" target="_blank" rel="noopener">Princeton IT: AI Hallucination in Multi-Agent Systems</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
