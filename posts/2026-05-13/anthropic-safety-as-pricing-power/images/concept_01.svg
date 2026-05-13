@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" role="img" aria-label="数据中心一边被拒绝一边敞开大门">
+  <defs>
+    <linearGradient id="bg-left" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="bg-right" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0c4a6e"/>
+      <stop offset="100%" stop-color="#0369a1"/>
+    </linearGradient>
+    <linearGradient id="flow" x1="0" y1="0.5" x2="1" y2="0.5">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0"/>
+      <stop offset="40%" stop-color="#38bdf8" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#bae6fd"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#bae6fd" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#0369a1" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- 背景 -->
+  <rect x="0" y="0" width="600" height="600" fill="url(#bg-left)"/>
+  <rect x="600" y="0" width="600" height="600" fill="url(#bg-right)"/>
+
+  <!-- 中线 -->
+  <line x1="600" y1="0" x2="600" y2="600" stroke="#1e293b" stroke-width="2" stroke-dasharray="6,8" opacity="0.6"/>
+
+  <!-- 左侧：闭锁 -->
+  <g opacity="0.95">
+    <!-- 数据中心轮廓 (灰暗) -->
+    <rect x="120" y="200" width="360" height="280" rx="6" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+    <!-- 内部机柜列 -->
+    <g fill="#334155" stroke="#475569" stroke-width="1">
+      <rect x="150" y="230" width="40" height="220"/>
+      <rect x="210" y="230" width="40" height="220"/>
+      <rect x="270" y="230" width="40" height="220"/>
+      <rect x="330" y="230" width="40" height="220"/>
+      <rect x="390" y="230" width="40" height="220"/>
+    </g>
+    <!-- 闭门 -->
+    <rect x="230" y="320" width="140" height="160" fill="#0f172a" stroke="#64748b" stroke-width="2"/>
+    <circle cx="350" cy="400" r="4" fill="#94a3b8"/>
+    <!-- 大锁 -->
+    <g transform="translate(300,140)">
+      <rect x="-32" y="0" width="64" height="48" rx="6" fill="#475569" stroke="#94a3b8" stroke-width="2"/>
+      <path d="M -20 0 v -16 a 20 20 0 0 1 40 0 v 16" fill="none" stroke="#94a3b8" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="0" cy="24" r="5" fill="#0f172a"/>
+      <rect x="-2" y="24" width="4" height="14" fill="#0f172a"/>
+    </g>
+    <!-- 大 X -->
+    <g stroke="#dc2626" stroke-width="10" stroke-linecap="round" opacity="0.85">
+      <line x1="180" y1="500" x2="240" y2="560"/>
+      <line x1="240" y1="500" x2="180" y2="560"/>
+    </g>
+    <text x="300" y="540" text-anchor="middle" fill="#94a3b8" font-family="ui-monospace, monospace" font-size="14" letter-spacing="3">ACCESS DENIED</text>
+  </g>
+
+  <!-- 右侧：敞开 + 算力涌入 -->
+  <g>
+    <!-- 数据中心 (明亮) -->
+    <rect x="720" y="200" width="360" height="280" rx="6" fill="#0c4a6e" stroke="#7dd3fc" stroke-width="2"/>
+    <g fill="#0369a1" stroke="#38bdf8" stroke-width="1.5">
+      <rect x="750" y="230" width="40" height="220"/>
+      <rect x="810" y="230" width="40" height="220"/>
+      <rect x="870" y="230" width="40" height="220"/>
+      <rect x="930" y="230" width="40" height="220"/>
+      <rect x="990" y="230" width="40" height="220"/>
+    </g>
+    <!-- 机柜上的亮点 -->
+    <g fill="#bae6fd">
+      <circle cx="770" cy="260" r="3"/><circle cx="770" cy="290" r="3"/><circle cx="770" cy="320" r="3"/>
+      <circle cx="830" cy="270" r="3"/><circle cx="830" cy="300" r="3"/><circle cx="830" cy="340" r="3"/>
+      <circle cx="890" cy="265" r="3"/><circle cx="890" cy="305" r="3"/><circle cx="890" cy="345" r="3"/>
+      <circle cx="950" cy="280" r="3"/><circle cx="950" cy="320" r="3"/><circle cx="950" cy="360" r="3"/>
+      <circle cx="1010" cy="270" r="3"/><circle cx="1010" cy="310" r="3"/><circle cx="1010" cy="350" r="3"/>
+    </g>
+    <!-- 入口大开 -->
+    <rect x="840" y="350" width="120" height="130" fill="#082f49" stroke="#7dd3fc" stroke-width="2"/>
+    <rect x="845" y="355" width="55" height="120" fill="#0c4a6e" opacity="0.8"/>
+    <rect x="900" y="355" width="55" height="120" fill="#0c4a6e" opacity="0.4"/>
+    <!-- 算力河流入 -->
+    <g>
+      <path d="M 600 240 Q 660 240 720 250" fill="none" stroke="url(#flow)" stroke-width="6" stroke-linecap="round"/>
+      <path d="M 600 300 Q 660 305 720 310" fill="none" stroke="url(#flow)" stroke-width="10" stroke-linecap="round"/>
+      <path d="M 600 360 Q 660 360 720 365" fill="none" stroke="url(#flow)" stroke-width="8" stroke-linecap="round"/>
+      <path d="M 600 420 Q 660 420 720 425" fill="none" stroke="url(#flow)" stroke-width="4" stroke-linecap="round"/>
+    </g>
+    <!-- 光晕 -->
+    <ellipse cx="900" cy="420" rx="180" ry="100" fill="url(#glow)" opacity="0.6"/>
+    <!-- 标签 -->
+    <text x="900" y="540" text-anchor="middle" fill="#bae6fd" font-family="ui-monospace, monospace" font-size="14" letter-spacing="3">300 MW · 220K GPU</text>
+  </g>
+
+  <!-- 标题 -->
+  <text x="300" y="80" text-anchor="middle" fill="#cbd5e1" font-family="system-ui, sans-serif" font-size="22" font-weight="600">Pentagon</text>
+  <text x="300" y="110" text-anchor="middle" fill="#64748b" font-family="system-ui, sans-serif" font-size="14">$200M 合同被撤</text>
+
+  <text x="900" y="80" text-anchor="middle" fill="#e0f2fe" font-family="system-ui, sans-serif" font-size="22" font-weight="600">SpaceX Colossus 1</text>
+  <text x="900" y="110" text-anchor="middle" fill="#7dd3fc" font-family="system-ui, sans-serif" font-size="14">$5–6B 年化收入</text>
+</svg>
