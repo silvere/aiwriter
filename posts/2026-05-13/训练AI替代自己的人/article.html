@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>训练AI替代自己的人</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI深度</span>
+  <h1>训练AI替代自己的人</h1>
+  <div class="hero-meta">
+    <span>2026-05-13</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">2026年4月，一个26岁的北京产品经理在GitHub上传了一段代码。这个工具的功能是：当公司让你记录工作流程来训练AI时，它帮你在文档里悄悄植入噪音。视频演示获得了500万个赞。同一个月，Oracle裁掉了3万名员工——其中很多人刚刚花了几周时间，认真地把自己知道的一切教给了公司的AI系统。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一个工具</h2>
+
+    <p>2026年4月的一个工作日，Xu坐在北京望京的一间共享办公室里，往GitHub上传了一段代码。</p>
+
+    <p>他26岁，在一家AI产品公司做产品经理，毕业刚三年。这段代码不是工作项目。它叫"反蒸馏"——一个开源工具，专门用来干扰那些让员工记录工作流程的AI训练系统。</p>
+
+    <p>原理不复杂。当公司的AI系统要求你演示日常操作、写下决策依据、整理内部知识时，"反蒸馏"会在你提交的文档中嵌入细微的噪音：调换某些步骤的顺序，在关键判断点插入看似合理但会导致低效的操作路径。程度分三档——轻度、中度、重度——用户自选。</p>
+
+    <p>Xu最初想写一篇评论文章，后来改了主意。"我本来想写一篇观点稿，但后来觉得不如做一个能真正反击的东西，"他对MIT Technology Review说。他把演示视频发在社交媒体上。500万人点了赞。</p>
+
+    <p>他不是唯一感受到这种压力的人。2026年春天，一种新的日常正在中国科技行业扩散：老板要求员工把工作方式"教给"AI。录屏操作过程，记录决策逻辑，把散落在脑子里的经验整理成结构化文档。在飞书和钉钉上，"AI同事"已经是标准功能。每个人都在一边完成KPI，一边为一个可能替代自己的系统提供训练数据。</p>
+
+    <p>上海的Amber Li，27岁，尝试用一款AI技能工具重建了一位前同事的工作画像。"效果出奇地好，"她说，"连那个人的小习惯都捕捉到了。"她用了一个词来形容这种体验：诡异的逼真。</p>
+
+    <p>这种感觉有一个更具体的名字。在大洋彼岸，它刚刚从"不太对"升级成了一场诉讼。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_01.jpg" alt="young programmer sitting alone modern" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <hr>
+
+    <h2>三万封邮件</h2>
+
+    <p>2026年3月31日，Oracle在同一天向全球数千名员工发送了解雇邮件。没有事先通知。总数约三万人，分布在美国、印度、加拿大、墨西哥和乌拉圭。</p>
+
+    <p>其中一位化名"Jill"的员工接受了Time杂志的采访。她在Oracle工作了多年，手上持有价值30万美元的限制性股票。解雇邮件到达的那一刻，这些股票全部作废。</p>
+
+    <p>让她愤怒的不只是失去工作。几周之前，Oracle要求她和团队成员详细记录各自的工作流程——操作步骤、决策逻辑、处理异常情况的经验。公司说这是为了"优化流程"。Jill照做了。她认真地把自己知道的一切写成了文档。</p>
+
+    <p>"他们让你做一件事，录下来，然后用你刚刚做出来的那个东西替代你，"她对Time说。</p>
+
+    <p>Oracle的动机写在财务数字里。这轮裁员产生的21亿美元重组费用，预计每年带来80到100亿美元的现金流节省。省下的钱将直接流入数据中心建设和GPU采购。TD Cowen的分析师给了一个精确的换算：三万个人的薪酬，换成了一排排运转的服务器。</p>
+
+    <p>Meta在同一时期做了一件类似但更安静的事。据Bloomberg报道，公司开始记录员工的键盘输入、鼠标轨迹和定期的屏幕截图，用这些数据训练内部AI代理。被记录的员工没有获得额外补偿，也没有退出机制。Meta随后宣布裁员8000人。</p>
+
+    <p>一种模式开始浮现。它不是"AI替代了你的工作"这么简单。它分三步：让你把自己知道的东西全部记录下来；用你的记录训练AI系统；通知你不再需要来上班了。在这个过程中，最认真、最配合的员工——那些详尽记录了每一个操作细节的人——提供了最高质量的训练数据，也让自己变得最容易被替代。</p>
+
+    <p>配合，成了一种精确的自我淘汰。</p>
+
+    <p>Oracle的14名前员工随后提出了一项法律挑战，质疑公司违反了联邦WARN法案——该法案要求雇主在大规模裁员前给出60天通知。这些前员工声称，Oracle将他们的身份标记为"远程员工"，以规避法案对单一工作地点裁员人数的触发条件。</p>
+
+    <p>这是一个技术性的法律细节。但它揭示了一个更根本的问题：当一家公司决定以AI的名义裁员时，它获得的不仅是成本节省，还有一个在公众舆论中不容易被攻击的理由。"AI转型"听起来是进步、是效率、是未来。不像"削减成本"那样赤裸。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">对账图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">Oracle 的算盘：人换机器</div></div><div style="padding:22px 24px 18px"><div style="display:flex;align-items:center;gap:24px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px dashed #e2e8f0"><div style="flex:1;text-align:right;font-size:12px;font-weight:700;color:#1A56DB;letter-spacing:1px">← 流入 / INFLOW</div><div style="width:20px"></div><div style="flex:1;text-align:left;font-size:12px;font-weight:700;color:#F05252;letter-spacing:1px">OUTFLOW / 流出 →</div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">预计年度现金流节省</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:100.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">90 亿美元</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">重组费用（一次性）</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:23.3%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">21 亿美元</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1"></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">数据中心建设投入</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:66.7%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">60 亿美元</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1"></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">AI基础设施采购</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:33.3%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">30 亿美元</div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>21 亿美元重组费，换每年 80-100 亿现金流——三万人的薪酬变成了服务器</div></div>
+
+    <hr>
+
+    <h2>63%</h2>
+
+    <p>如果AI真的能做这些被裁掉的人的工作，这个故事会简单得多。裁员痛苦但合理，就像自动提款机替代银行柜员——技术进步的代价。</p>
+
+    <p>但2026年1月，Harvard Business Review发表了一项基于1006名全球高管的调查。结论写在标题里：公司在基于AI的潜力裁员，而不是AI的表现。</p>
+
+    <p>Thomas H. Davenport和Laks Srinivasan——两位作者——发现，几乎所有受访公司都在"预期"AI将带来效率提升，但绝大多数的裁员发生在AI真正部署和证明其效果之前。员工不是被机器替代的，是被一个关于机器的故事替代的。</p>
+
+    <p>这个故事有多大力量？美国国家经济研究局的一份工作论文给出了一个数字：2026年，全球因AI驱动的裁员预计达到502,000个岗位。2025年是55,000个。九倍。在2026年第一季度的美国科技裁员中，63%的公司明确以AI为由——2025年是38%，2024年是12%。</p>
+
+    <p>增长曲线的形状不像是技术能力在爬升。它更像是一种信念在扩散。</p>
+
+    <p>2026年5月11日——距本文发布仅两天——Fortune刊载了基于Gartner最新研究的报道。Gartner调查了350家年营收超过10亿美元的全球企业，发现了一个几乎没被公开讨论的事实：那些因AI进行了人员缩减的公司，与没有缩减的公司相比，在投资回报率上没有显著差异。</p>
+
+    <p>Gartner的副总裁分析师Helen Poitevin说了一句值得记住的话：仅通过裁员来追求AI价值，很可能让大多数组织走上一条回报有限的路。</p>
+
+    <p>这些数字指向一个令人不安的可能性：在相当一部分案例中，AI裁员不是基于数据的商业决策，而是一种基于叙事的信仰行为。CEO们在财报电话会议上说"AI正在改变我们的运营"，股价上涨。分析师给出"AI受益股"的标签，估值再涨。以"AI转型"为由的裁员，成了向资本市场发出的信号。</p>
+
+    <p>Sam Altman自己在公开场合用了"AI washing"这个词——指公司将裁员归因于AI，但真正的动机是其他东西：预算重分配、组织扁平化，或者仅仅是需要一个不那么难听的说法来削减成本。</p>
+
+    <p>一项尚未完全证明自身的技术，正在产生完全真实的失业。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">条形图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">以 AI 为由的科技裁员占比</div></div><div style="padding:22px 24px 18px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px dashed #e2e8f0"><div><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><span style="width:10px;height:10px;border-radius:3px;background:#94A3B8;display:inline-block"></span><span style="font-size:11px;color:#64748b">参照</span></span><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><span style="width:10px;height:10px;border-radius:3px;background:#F59E0B;display:inline-block"></span><span style="font-size:11px;color:#64748b">负</span></span></div><span style="font-size:11px;color:#94a3b8;font-weight:500">单位：%</span></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">2024年</span><span style="font-size:15px;font-weight:700;color:#94A3B8;white-space:nowrap">12 %</span></div><div style="background:#F1F5F9;border-radius:5px;height:10px;overflow:hidden"><div style="background:#94A3B8;width:19.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">2025年</span><span style="font-size:15px;font-weight:700;color:#94A3B8;white-space:nowrap">38 %</span></div><div style="background:#F1F5F9;border-radius:5px;height:10px;overflow:hidden"><div style="background:#94A3B8;width:60.3%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">2026年Q1</span><span style="font-size:15px;font-weight:700;color:#F59E0B;white-space:nowrap">63 %</span></div><div style="background:#FEF3C7;border-radius:5px;height:10px;overflow:hidden"><div style="background:#F59E0B;width:100.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>三年间，AI 从裁员的借口变成了裁员的主因——但 ROI 没有跟上</div></div>
+
+    <hr>
+
+    <h2>回旋镖</h2>
+
+    <p>2024年底，Klarna的CEO Sebastian Siemiatkowski宣布了一个让整个科技行业兴奋的消息：公司的AI客服助手——与OpenAI合作开发——已经能够承担相当于700名客服人员的工作量。Klarna随后裁减了这些岗位。AI在第一个月处理了230万次对话。</p>
+
+    <p>六个月后，数据变了方向。客户满意度在复杂服务场景中明显下滑。客户形容与AI客服的交互是一种卡夫卡式的体验——反复向机器人解释同一个问题，最终被转接给人工客服后，需要从头再说一遍。</p>
+
+    <p>Siemiatkowski后来承认Klarna高估了AI的能力，低估了服务中人的因素。公司开始重新招聘客服人员。</p>
+
+    <p>Klarna不是孤例。Block——Jack Dorsey的支付公司——在2026年2月裁掉了4000人，占员工总数的40%。Dorsey的解释很直接：AI工具能让6000人干完原来10000人的活。不到一个月，部分被裁员工收到了回调通知。据报道，其中一些人是因为"文书错误"被裁错了。</p>
+
+    <p>这些故事拼在一起，描绘出一种正在扩散的现象。Gartner的预测报告给出了一个数字：到2027年，50%因AI进行人员裁减的公司将重新招聘同类岗位。Forrester的数据更直接：55%的雇主已经对AI驱动的裁员表示后悔。</p>
+
+    <p>后悔的原因并不抽象。AI能做什么和不能做什么之间的差距，在部署后迅速变得具体。Forrester的数据显示，AI理论上可以处理94%的计算机相关工作任务，实际能可靠完成的是33%。</p>
+
+    <p>在软件开发——AI渗透最快的领域——问题更加量化。一项发表在arXiv上的大规模实证研究追踪了AI生成代码的长期质量。到2026年2月，AI引入的未解决技术问题累计超过110,000个。AI提交的代码平均每次合并请求包含10.83个问题，人类是6.45个。逻辑错误多出1.75倍，可读性问题多3倍，因过度I/O导致的性能问题多近8倍。到第二年，不加管理的AI生成代码的维护成本是传统代码的四倍。</p>
+
+    <p>一个诡异的循环在形成：公司裁掉程序员以节省成本，用AI替代他们写代码，AI代码制造更多bug和技术债务，公司需要更多人来修这些问题。DevProJournal在5月的一篇分析中用了一个精确的说法：你的AI人头成本节省，正在消失在技术债务里。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">对账图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">AI 代码 vs 人类代码：质量差距</div></div><div style="padding:22px 24px 18px"><div style="display:flex;align-items:center;gap:24px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px dashed #e2e8f0"><div style="flex:1;text-align:right;font-size:12px;font-weight:700;color:#1A56DB;letter-spacing:1px">← 流入 / INFLOW</div><div style="width:20px"></div><div style="flex:1;text-align:left;font-size:12px;font-weight:700;color:#F05252;letter-spacing:1px">OUTFLOW / 流出 →</div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">人类代码问题数</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:59.6%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">6.45 个/次</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">AI代码问题数</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:100.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">10.83 个/次</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">AI逻辑错误（相对倍数）</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:16.2%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">1.75 个/次</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">AI可读性问题（相对倍数）</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:27.7%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">3.0 个/次</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">AI性能问题（相对倍数）</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:73.9%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">8.0 个/次</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1"></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>AI 写代码快了，但每次合并请求多出 68% 的问题——速度换来的是未来的修复成本</div></div>
+
+    <hr>
+
+    <h2>不均匀的重力</h2>
+
+    <p>讨论AI裁员时，最容易被忽略的一件事是：不是所有人承受的重力相同。</p>
+
+    <p>Oracle裁掉的三万人中，Jill的故事上了Time杂志。她在美国，有律师可以援引WARN法案，有媒体愿意报道她的遭遇。但同一轮裁员中，还有大量在印度、乌拉圭和墨西哥的员工。Oracle选择在同一天通过邮件完成全球裁员，部分原因是跨国裁员可以绕过不同国家的劳动保护法规。在印度——Oracle的第二大员工基地——没有WARN法案。有些人在收到邮件前几小时还在正常工作。</p>
+
+    <p>全球化的劳动分工意味着，同一家公司的同一次裁员，在不同国家产生完全不同的后果。AI给这个旧结构加了一个新维度：在发展中国家承担数据标注、文档化和流程记录的员工——通常薪酬最低、保护最少——恰恰是"训练AI替代自己"链条上最脆弱的环节。他们做了最多的训练工作，获得了最少的关注。</p>
+
+    <p>中国的情况有微妙的不同。中国科技企业没有像美国同行那样进行大规模AI驱动裁员，而是走了一条"增效稳岗"的路径——将员工转向AI训练、流程优化和客户运营。政策层面，2026年政府工作报告明确提出AI推动就业结构重组，而非简单减岗。</p>
+
+    <p>但不裁员不等于不焦虑。Xu的"反蒸馏"工具获得500万赞，说明压力是真实的。中国的科技工作者没有被裁掉，但他们每天都在看着自己的工作被系统性地记录、量化、打包——在为一个不确定的未来做准备。</p>
+
+    <p>这种不确定感跨越了国界。2026年2月，数百人经过伦敦的OpenAI、Google DeepMind和Meta总部，组织了针对AI的最大规模抗议之一。在美国，MAGA共和党人、民主社会主义者、劳工活动家和教会领袖签署了一份《亲人类AI宣言》。密苏里州的选民罢免了半数市议会成员，原因是他们批准了一个AI数据中心项目。皮尤研究中心2025年秋季的调查显示，50%的美国人对AI的增加使用感到担忧。2021年这个数字是37%。</p>
+
+    <p>不到四年，担忧率上升了13个百分点。在科技行业，乐观曾经是默认情绪。现在它需要理由。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_02.jpg" alt="diverse crowd workers from different" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <hr>
+
+    <h2>三年</h2>
+
+    <p>2026年4月底，InvestorPlace发表了一篇标题直白的文章：《"训练你的替代者"反抗开始了》。文章预测，限制AI裁员的立法——包括AI税、劳动条款和数据中心建设限制——可能在2029年前后到来。</p>
+
+    <p>三年。</p>
+
+    <p>在这三年里，至少有两件事同时成立。AI确实在变强。Freshworks的CEO在2026年5月宣布裁员500人时说，公司超过一半的代码已经由AI编写。这不是幻觉。Cursor、Claude Code、GitHub Copilot正在改变软件工程师的日常。88%的开发者报告AI至少在一个维度上带来了可衡量的效率提升。</p>
+
+    <p>同时，围绕AI的裁员决策，在相当程度上脱离了AI的实际能力。公司在押注一个尚未完全兑现的承诺，用真实的失业承担风险，而风险的分配并不均匀——美国有WARN法案和Time杂志，印度的外包员工连一个化名都没有。</p>
+
+    <p>Xu的"反蒸馏"工具不是反AI的。在MIT Technology Review的采访中，他没有说AI不好，没有说技术应该停下来。他提出了一个更具体的问题：当雇主让你记录自己的工作时，你有权知道这些记录会被用来做什么。</p>
+
+    <p>这是一个极其朴素的诉求。它的朴素程度，让人几乎忘记了它在2026年还需要被说出来。</p>
+
+    <p>Gartner说50%的公司会反悔，把人请回来。这意味着另外50%不会。对于那些不被请回来的人，"AI替代了你的工作"不是一个关于未来的预测，而是一个已经发生的事实——无论替代他们的那个AI是否真的能干。</p>
+
+    <p>当我们谈论AI的时候，最容易忽略的一件事是：技术的能力和围绕技术做出的决策之间，存在一个巨大的空隙。在那个空隙里，站着真实的人。</p>
+
+    <hr>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>Gartner说50%的公司会反悔，把人请回来。这意味着另外50%不会。对于那些不被请回来的人，AI替代了你的工作不是一个关于未来的预测，而是一个已经发生的事实——无论替代他们的那个AI是否真的能干。</p>
+    <p>当我们谈论AI的时候，最容易忽略的一件事是：技术的能力和围绕技术做出的决策之间，存在一个巨大的空隙。在那个空隙里，站着真实的人。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://time.com/article/2026/04/30/oracle-layoffs-ai-tech-jobs/" target="_blank" rel="noopener">Time: Oracle Workers Say They Were Fired After Training AI to Replace Them (2026-04-30)</a></div>
+      <div class="footer-source-item"><a href="https://hbr.org/2026/01/companies-are-laying-off-workers-because-of-ais-potential-not-its-performance" target="_blank" rel="noopener">Harvard Business Review: Companies Are Laying Off Workers Because of AI's Potential—Not Its Performance (2026-01)</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com/2026/05/11/ai-automation-layoffs-gartner-study-roi/" target="_blank" rel="noopener">Fortune: AI isn't paying off in the way companies think (2026-05-11)</a></div>
+      <div class="footer-source-item"><a href="https://www.technologyreview.com/2026/04/20/1136149/chinese-tech-workers-ai-colleagues/" target="_blank" rel="noopener">MIT Technology Review: Chinese tech workers are starting to train their AI doubles (2026-04-20)</a></div>
+      <div class="footer-source-item"><a href="https://investorplace.com/2026/05/backlash-train-replacement-begins/" target="_blank" rel="noopener">InvestorPlace: The Backlash to "Train Your Replacement" Begins (2026-05)</a></div>
+      <div class="footer-source-item"><a href="https://www.bloomberg.com/opinion/articles/2026-04-21/meta-is-making-workers-train-their-ai-replacements" target="_blank" rel="noopener">Bloomberg: Meta Is Making Workers Train Their AI Replacements (2026-04-21)</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/html/2603.28592v1" target="_blank" rel="noopener">arXiv: Debt Behind the AI Boom (2026)</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/03/31/oracle-layoffs-ai-spending.html" target="_blank" rel="noopener">CNBC: Oracle cutting thousands in latest layoff round (2026-03-31)</a></div>
+      <div class="footer-source-item"><a href="https://www.tmtpost.com/7930199.html" target="_blank" rel="noopener">钛媒体: 23万大厂员工被AI替代，为何一半公司又把人请回？(2026)</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com/2026/03/24/cfo-survey-ai-job-cuts-productivity-paradox-2026/" target="_blank" rel="noopener">Fortune: CFOs admit privately that AI layoffs will be 9x higher (2026-03-24)</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
