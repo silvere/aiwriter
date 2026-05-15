@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DeepSeek 收钱了：本子是国家递的</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 商业拆解</span>
+  <h1>DeepSeek 收钱了：本子是国家递的</h1>
+  <div class="hero-meta">
+    <span>2026-05-15</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">梁文锋 2023 年说『钱不是问题』是真的，他现在收 500 亿也是真的——这两件事不矛盾，因为他这次卖的不是股权，是身份。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>〇、三年</h2>
+
+    <p>2023 年的梁文锋是这么说的：</p>
+
+    <blockquote><p>"Money has never been the problem for us; bans on shipments of advanced chips are the problem."</p></blockquote>
+
+    <p>翻译过来，钱不是问题，禁运是问题。</p>
+
+    <p>那时候 DeepSeek 还没融资，84% 的股权握在梁文锋一个人手里，剩下 16% 散在 High-Flyer 那一票量化同事手上。没有 VC，没有 LP，没有外部资本——梁文锋本人对此态度强硬到《TechCrunch》专门写了一篇报道，标题大意是"DeepSeek 暂不接受 VC 钱的三个原因"，文里原话引梁文锋"particularly against government investors"（特别反对政府投资人，2025 年 3 月）。</p>
+
+    <p>到了 2026 年 5 月 11 日。</p>
+
+    <p>《金融时报》《彭博》《南华早报》三家在同一天放出同一条消息：DeepSeek 正在敲定首轮外部融资，规模 500 亿人民币（约 73.5 亿美金），估值最高 500 亿美金，领投方是国家集成电路产业投资基金第三期——业内简称"大基金三期"。</p>
+
+    <p>三年。</p>
+
+    <p>三年时间，梁文锋从"特别反对政府投资人"，变成"由国家牵头投资"。</p>
+
+    <p>兄弟们，这中间发生了什么？</p>
+
+    <p>不是嘴硬塌方（那玩意儿不值得写一篇文章），不是被市场教做人（市场没机会教他），更不是估值挡不住诱惑（估值是他自己用来挡别人的）。</p>
+
+    <p>是这件事的性质，已经不是融资了。</p>
+
+    <figure style="margin:28px 0;text-align:center">
+      <img src="images/concept_01.svg" alt="国家从红色帷幕后伸手递出文件夹给小机器人" style="width:100%;max-width:720px;height:auto;border-radius:12px;box-shadow:0 4px 20px rgba(15,23,42,.08)"/>
+      <figcaption style="font-size:13px;color:#64748b;margin-top:10px;font-style:italic">国家队入场：递的不是钱，是身份</figcaption>
+    </figure>
+
+    <hr>
+
+    <h2>一、四个月，估值翻五倍</h2>
+
+    <p>把时间线摆出来：</p>
+
+    <ul><li>2025 年 12 月：DeepSeek V3 发布，业界震动，公司估值口头说法 100 亿美金左右</li>
+<li>2026 年 1 月：DeepSeek V4 发布，性能对位 Claude Opus 4.6 和 GPT-5</li>
+<li>2026 年 4 月 22 日：《The Information》披露，腾讯、阿里在接触 DeepSeek，估值"超 200 亿"</li>
+<li>2026 年 5 月 6 日：彭博 + TechCrunch 报道，大基金牵头，估值已经走到 450 亿</li>
+<li>2026 年 5 月 11 日：南华早报独家，整轮接近 500 亿，腾讯单家拟拿 20%</li>
+</ul>
+四个月，估值从 100 亿到 500 亿，翻五倍。
+
+    <p>你做过任何融资就知道，估值能在四个月里翻五倍只有两种情况。一种是公司在这四个月里赚了五倍的钱；一种是这个估值不是市场定的，是会议室定的。</p>
+
+    <p>DeepSeek 的 ARR 四个月里没翻五倍——它甚至到今天都没有清晰的商业化收入披露（V4 至今对个人用户免费，企业 API 价格压到 GPT-5 的几分之一，钱压根没准备好好赚）。</p>
+
+    <p>那只剩第二种。会议室在哪？大基金三期的那张桌子。</p>
+
+    <p>桌子另一头坐着腾讯、阿里、高瓴、还有一票政府引导基金。这张桌子上不存在"开价"这个动作——这桌上只存在"领头的人写一个数字，其他人 round 到这个数字往里塞钱"。</p>
+
+    <p>这种估值不叫估价，叫定价。</p>
+
+    <p>所以你会看到 The Information 写 200 亿+、TechCrunch 写 450 亿、南华早报写 500 亿——不是三家媒体看到不同版本，是这轮谈判每过两周就有人往数字后面再加一个零。</p>
+
+    <p>数字本身没有意义。重要的是数字一直在涨，且没有任何外部市场能挡。</p>
+
+    <p>这种状态在融资圈有个专用说法：国家队已经进了门，外面的人还在猜估值是多少。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">条形图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">四个月，从 100 亿到 500 亿</div></div><div style="padding:22px 24px 18px"><div style="text-align:right;margin-bottom:12px"><span style="font-size:11px;color:#94a3b8">单位：亿美元</span></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">2025年12月 V3发布</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">100 亿美元</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:20.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">2026年4月22 The Information</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">200 亿美元</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:40.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">2026年5月6 TechCrunch</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">450 亿美元</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:90.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">2026年5月11 南华早报</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">500 亿美元</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:100.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>估值不是市场定的，是会议室定的</div></div>
+
+    <hr>
+
+    <h2>二、本子谁递的：大基金 III 是哪号人物</h2>
+
+    <p>很多人看到"大基金"以为是一个普通的国资 LP。</p>
+
+    <p>不是。</p>
+
+    <p>大基金全名"国家集成电路产业投资基金"，2014 年第一期 1387 亿人民币，2019 年第二期 2041 亿，2024 年 5 月 24 日成立第三期——3440 亿人民币（约 475 亿美金），比前两期加起来还多。</p>
+
+    <p>3440 亿是什么概念？</p>
+
+    <p>美国《芯片法案》给本土半导体产业的全部补贴预算，是 527 亿美金。大基金三期一只基金的子弹，跟美国一个国会法案差不多。</p>
+
+    <p>股东结构：</p>
+
+    <ul><li>中国财政部：17%</li>
+<li>国家开发银行：10%</li>
+<li>上海国盛集团：8%</li>
+<li>其他 16 家全部是央企、地方国资、政策性金融机构</li>
+</ul>
+民营资本占多少？
+
+    <p>零。</p>
+
+    <p>这是一只 100% 的国家队基金。</p>
+
+    <p>这次牵头领投 DeepSeek 的，是大基金三期下面新设的一支 AI 子基金——"国家人工智能产业投资基金"，2025 年初成立，规模 88 亿美金。专门干一件事：投中国 AI 产业链上"国家认为需要重点扶持的环节"。</p>
+
+    <p>跟着大基金一起进的：</p>
+
+    <ul><li>腾讯（拟拿 20%）</li>
+<li>阿里（在谈）</li>
+<li>高瓴（Hillhouse）</li>
+</ul>
+腾讯和阿里在这张桌子上不是"民营巨头"，是"陪跑央企"。这两家在过去三年所有大基金牵头的 deal 里都是同样的位置——名义上独立 LP，实际上跟份额。
+
+    <p>所以这桌子的坐法是：</p>
+
+    <p>国家定数字、国家出大头、民营巨头跟份额、外部 VC 一个都没有。</p>
+
+    <p>这不是 Series A。这是国资委过会。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)"><div style="background:#1A56DB;color:#fff;padding:10px 16px;font-size:13px;font-weight:700">饼图</div><div style="padding:20px 24px;display:flex;align-items:center;gap:24px;flex-wrap:wrap"><svg width="160" height="160" viewBox="0 0 160 160" style="flex-shrink:0"><path d="M 80.00 10.00 A 70 70 0 0 1 141.34 46.28 L 116.80 59.77 A 42 42 0 0 0 80.00 38.00 Z" fill="#1A56DB" stroke="#fff" stroke-width="2"/><path d="M 141.34 46.28 A 70 70 0 0 1 149.45 88.77 L 121.67 85.26 A 42 42 0 0 0 116.80 59.77 Z" fill="#F05252" stroke="#fff" stroke-width="2"/><path d="M 149.45 88.77 A 70 70 0 0 1 136.63 121.14 L 113.98 104.69 A 42 42 0 0 0 121.67 85.26 Z" fill="#0E9F6E" stroke="#fff" stroke-width="2"/><path d="M 136.63 121.14 A 70 70 0 1 1 80.00 10.00 L 80.00 38.00 A 42 42 0 1 0 113.98 104.69 Z" fill="#FBBF24" stroke="#fff" stroke-width="2"/></svg><div style="flex:1;min-width:160px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="width:12px;height:12px;border-radius:3px;background:#1A56DB;flex-shrink:0"></div><span style="font-size:12px;color:#374151;flex:1">中国财政部</span><span style="font-size:12px;font-weight:700;color:#1A56DB">17%</span></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="width:12px;height:12px;border-radius:3px;background:#F05252;flex-shrink:0"></div><span style="font-size:12px;color:#374151;flex:1">国家开发银行</span><span style="font-size:12px;font-weight:700;color:#F05252">10%</span></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="width:12px;height:12px;border-radius:3px;background:#0E9F6E;flex-shrink:0"></div><span style="font-size:12px;color:#374151;flex:1">上海国盛集团</span><span style="font-size:12px;font-weight:700;color:#0E9F6E">8%</span></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="width:12px;height:12px;border-radius:3px;background:#FBBF24;flex-shrink:0"></div><span style="font-size:12px;color:#374151;flex:1">其他 16 家国资 LP</span><span style="font-size:12px;font-weight:700;color:#FBBF24">65%</span></div></div></div></div>
+
+    <hr>
+
+    <h2>三、嘴硬扛得过市场，扛不过员工辞职</h2>
+
+    <p>那为什么这次接了？</p>
+
+    <p>梁文锋自己给出的官方说法（路透社、彭博转引内部人士）：用于扩张算力 + 给员工股权。</p>
+
+    <p>前半句是话术，后半句才是真原因。</p>
+
+    <p>时间线再列一遍：</p>
+
+    <ul><li>2025 年 11 月：DeepSeek V3 核心作者<strong>罗福莉</strong>，跳槽小米带 MiMo 团队，雷军开价"千万级人民币"（《南华早报》原文）</li>
+<li>2026 年初：DeepSeek V3 + R1 双料核心作者<strong>郭达雅</strong>，去字节跳动 Seed 实验室</li>
+<li>2026 年 Q1：DeepSeek 内部至少有 4 位核心研究员收到字节、腾讯、阿里、智谱的 offer，价码全在数百万到千万美金区间</li>
+</ul>
+梁文锋的"反对外部融资"主义有一个隐含前提：公司里这群天才不要钱。这条假设在 2023 年成立——那时候 High-Flyer 的奖金池足够养活一只 80 人的研究团队，DeepSeek 还没出圈，外面也没人知道罗福莉是谁。
+
+    <p>到 2025 年下半年，假设崩了。</p>
+
+    <p>罗福莉出去那一刻，整个圈子瞬间明白两件事：第一，DeepSeek 内部的研究员有市场价；第二，这个市场价是雷军开的，而且很高。</p>
+
+    <p>之后字节、阿里、腾讯排队来挖人，每挖走一个，DeepSeek 留下的人就多算一笔账——我留在这儿，公司估值再高跟我没关系，因为公司股权 84% 在老板手里，0% 在我手里。</p>
+
+    <p>这账一算，老板嘴再硬也没用。</p>
+
+    <p>唯一的解法是给员工股权。</p>
+
+    <p>但 DeepSeek 是一个 84% 持股的"独资+亲友"结构，给员工股权要么老板自己稀释，要么引入新股东让所有老股东等比例稀释，新股东进来的钱再顺便做员工 ESOP 池子。</p>
+
+    <p>听起来是不是很合理？</p>
+
+    <p>是很合理。</p>
+
+    <p>合理到当你需要做这件事时，全世界没有第二桌子会同意把一只 100 亿估值的中国 AI 公司在四个月内涨到 500 亿、让你做完 ESOP——除了那张大基金三期的桌子。</p>
+
+    <p>所以这一轮接的不是"投资人"。</p>
+
+    <p>接的是"唯一愿意按你需要的估值进场的那张桌子"。</p>
+
+    <figure style="margin:28px 0;text-align:center">
+      <img src="images/concept_02.svg" alt="罗福莉离职后的空办公桌，铭牌已撤" style="width:100%;max-width:720px;height:auto;border-radius:12px;box-shadow:0 4px 20px rgba(15,23,42,.08)"/>
+      <figcaption style="font-size:13px;color:#64748b;margin-top:10px;font-style:italic">嘴硬扛得过市场，扛不过名牌从办公桌上消失</figcaption>
+    </figure>
+
+    <hr>
+
+    <h2>四、所以这次卖的到底是什么</h2>
+
+    <p>把整件事捋一遍。</p>
+
+    <p>梁文锋 2023 年说"钱不是问题"，这句话从来没错——问题从来都不是钱，是身份。</p>
+
+    <p>DeepSeek 2024 到 2025 年最大的隐患不是没钱，是身份不清。</p>
+
+    <p>身份不清的意思：</p>
+
+    <ul><li>出口管制级别上，DeepSeek 没有明确"国家重点扶持"标签，进口先进芯片走灰色通道，每次都赌一次能不能进</li>
+<li>政策红线上，没有国资股东背书，一旦中美博弈升级，监管要查谁都是 DeepSeek 排第一个</li>
+<li>国际合规上，公司性质是一家私人持股 84% 的杭州民营企业，在美方眼里跟字节、华为没有本质区别</li>
+</ul>
+这种"身份不清"，过去两年靠"低调 + 不商业化"挡着。
+
+    <p>V4 发出来之后挡不住了。</p>
+
+    <p>V4 直接对标 Claude Opus 4.6 和 GPT-5——DeepSeek 已经不是"那家搞低成本训练的有意思的中国小公司"了，是"中美 AI 战略竞争里中国一方的最前排选手"。最前排选手的身份不能空着。</p>
+
+    <p>国家队入场，就是来填这个空。</p>
+
+    <p>大基金牵头意味着三件事：</p>
+
+    <ul><li>出口管制：DeepSeek 从此是"国家产业重点企业"，进口管制走"产业政策通道"</li>
+<li>政策红线：股东里 17% 中国财政部，所有监管必须先内部协调</li>
+<li>国际合规：从私人企业升级为"国家战略平台"，对美方反而是一种身份明牌</li>
+</ul>
+这就是身份证。
+
+    <p>梁文锋拿到的 73.5 亿美金里，钱是一部分功能，剩下的功能是：从今天起，DeepSeek 名片上多一个抬头——"国家 AI 产业重点企业"。</p>
+
+    <p>这个抬头，High-Flyer 给不了，罗福莉的辞职给不了，腾讯阿里单独给不了。</p>
+
+    <p>只有大基金能给。</p>
+
+    <p>而国家队一旦递了本子，这个本子不存在"我不要"这个选项——你拒绝的不是一笔投资，是一份政治信号：你不想做"国家产业重点"。</p>
+
+    <p>2026 年的中国 AI 圈，没有任何一家公司敢发这个信号。</p>
+
+    <p>DeepSeek 这一轮做的不是 Series A，是户口本登记。</p>
+
+    <p>收的不是钱，是户籍。</p>
+
+    <p>钱从来不是问题。梁文锋三年前是对的。</p>
+
+    <p>只是身份证到了该发的时候。</p>
+
+    <hr>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>DeepSeek 这一轮做的不是 Series A，是户口本登记。收的不是钱，是户籍。</p>
+    <p>钱从来不是问题。梁文锋三年前是对的。只是身份证到了该发的时候。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.scmp.com/tech/tech-trends/article/3352945/deepseek-soon-close-first-external-fundraising-us50b-valuation-sources" target="_blank" rel="noopener">DeepSeek nears US$50B valuation in first external fundraising</a></div>
+      <div class="footer-source-item"><a href="https://techcrunch.com/2026/05/06/deepseek-could-hit-45b-valuation-from-its-first-investment-round/" target="_blank" rel="noopener">DeepSeek could hit $45B valuation from its first investment round</a></div>
+      <div class="footer-source-item"><a href="https://dataconomy.com/2026/05/11/deepseek-record-funding-735b-china/" target="_blank" rel="noopener">DeepSeek Seeks Record $7.3 Billion AI Funding Round</a></div>
+      <div class="footer-source-item"><a href="https://techcrunch.com/2025/03/10/deepseek-isnt-taking-vc-money-yet-here-are-3-reasons-why/" target="_blank" rel="noopener">DeepSeek isn't taking VC money yet — here are 3 reasons why</a></div>
+      <div class="footer-source-item"><a href="https://en.wikipedia.org/wiki/China_Integrated_Circuit_Industry_Investment_Fund" target="_blank" rel="noopener">China Integrated Circuit Industry Investment Fund - Wikipedia</a></div>
+      <div class="footer-source-item"><a href="https://www.scmp.com/tech/tech-war/article/3264612/tech-war-chinas-big-fund-iii-brings-us475-billion-fresh-outlay-nations-semiconductor-supply-chain" target="_blank" rel="noopener">China's Big Fund III brings US$47.5 billion fresh outlay for nation's semiconductor supply chain</a></div>
+      <div class="footer-source-item"><a href="https://www.scmp.com/tech/big-tech/article/3332502/chinese-ai-prodigy-luo-fuli-joins-xiaomi-industry-competition-talent-heats" target="_blank" rel="noopener">Chinese AI prodigy Luo Fuli joins Xiaomi as industry competition for talent heats up</a></div>
+      <div class="footer-source-item"><a href="https://www.bloomberg.com/news/articles/2026-04-22/deepseek-in-talks-to-raise-at-20-billion-value-the-information" target="_blank" rel="noopener">Tencent, Alibaba in Talks to Join DeepSeek's First Funding Round (Bloomberg)</a></div>
+      <div class="footer-source-item"><a href="https://techbriefly.com/2026/05/11/deepseek-china-funding-735-billion/" target="_blank" rel="noopener">DeepSeek nears record $7.35 billion funding led by China state fund</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
