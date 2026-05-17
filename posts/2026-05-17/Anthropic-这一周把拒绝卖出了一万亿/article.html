@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anthropic 这一周把"拒绝"卖出了一万亿</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 商业拆解</span>
+  <h1>Anthropic 这一周把"拒绝"卖出了一万亿</h1>
+  <div class="hero-meta">
+    <span>2026-05-17</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">5月14日早上9点给Gates基金会签2亿美金支票，早上10点给PwC 3万员工发Claude认证，晚上8点10分给最忠诚的Max 20x用户加价——同一天，三件方向相反的事，没人骂。这才是加冕。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、加冕日不是 5 月 12 日，是 5 月 14 日</h2>
+
+    <p>5 月 12 日 Bloomberg 放出一条独家：Anthropic 在洽谈一轮 300 亿到 500 亿美金的新融资，投前估值挂在 9000 亿到 9500 亿美金之间——这个数字超过 OpenAI 上一轮 8520 亿美金的估值。</p>
+
+    <p>中文媒体当天全部跟进，标题都差不多："Anthropic 反超 OpenAI"、"奥特曼急了"、"一万亿"。</p>
+
+    <p>这是错的加冕日。</p>
+
+    <p>加冕日是 5 月 14 日。</p>
+
+    <p>5 月 14 日早上，Anthropic 官网发了第一条公告：和盖茨基金会签 2 亿美金、4 年期合作，钱用于全球健康、生命科学、教育、经济流动——首批病种是脊髓灰质炎、HPV、子痫前期，覆盖 4.6 亿"得不到基本医疗服务的人"。</p>
+
+    <p>同一天上午，Anthropic 官网发了第二条公告：和 PwC 把现有联盟扩展。3 万名 PwC 专业人员要拿到 Claude 认证，Claude Code 和 Cowork 从全美推到全球，其中一个客户案例说"保险核保从 10 周降到 10 天"。</p>
+
+    <p>同一天晚上 8 点 10 分太平洋时间，Anthropic 给所有 Claude Max 20x 订阅用户发了一封邮件：从 6 月 15 日起，第三方 Agent 调用——Agent SDK、`claude -p` 命令、GitHub Actions、OpenClaw——全部从你的订阅额度里剥离出去，按 API 标价独立计费。Pro 用户每月送 20 美金的 Agent 信用额度，Max 5x 送 100，Max 20x 送 200。不滚存。</p>
+
+    <p>兄弟们，加冕的不是估值，是这三件事可以同一天发生。</p>
+
+    <p>早上 9 点给道德背书。早上 10 点给机构信用。晚上 8 点 10 分对最忠实的开发者用户加价。一家公司能在 12 小时之内做这三个完全相反的动作——同时还能让所有这三个动作的当事人都觉得"我赚了"——这才是加冕。</p>
+
+    <p>Bloomberg 那条估值是结果。5 月 14 日那一天才是因。</p>
+
+    <figure style="margin: 32px 0; text-align: center;">
+      <svg viewBox="0 0 600 360" xmlns="http://www.w3.org/2000/svg" style="max-width: 100%; height: auto; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 16px rgba(26,86,219,0.08);">
+        <rect x="120" y="40" width="360" height="280" rx="14" fill="#ffffff" stroke="#1A56DB" stroke-width="2.5"/>
+        <rect x="120" y="40" width="360" height="56" rx="14" fill="#1A56DB"/>
+        <text x="300" y="78" text-anchor="middle" font-family="ui-monospace, monospace" font-size="22" fill="#fff" font-weight="700">May 14, 2026</text>
+        <g transform="translate(160, 130)">
+          <rect width="280" height="44" rx="8" fill="#FEF3C7" stroke="#D97706" stroke-width="1.8"/>
+          <text x="14" y="28" font-family="ui-monospace, monospace" font-size="15" fill="#92400E" font-weight="700">09:00</text>
+          <text x="80" y="28" font-family="system-ui, sans-serif" font-size="14" fill="#1a1a2e">Gates Foundation · $200M</text>
+        </g>
+        <g transform="translate(160, 190)">
+          <rect width="280" height="44" rx="8" fill="#DBEAFE" stroke="#1A56DB" stroke-width="1.8"/>
+          <text x="14" y="28" font-family="ui-monospace, monospace" font-size="15" fill="#1240a8" font-weight="700">10:00</text>
+          <text x="80" y="28" font-family="system-ui, sans-serif" font-size="14" fill="#1a1a2e">PwC · 30,000 人 Claude 认证</text>
+        </g>
+        <g transform="translate(160, 250)">
+          <rect width="280" height="44" rx="8" fill="#FEE2E2" stroke="#DC2626" stroke-width="1.8"/>
+          <text x="14" y="28" font-family="ui-monospace, monospace" font-size="15" fill="#991B1B" font-weight="700">20:10</text>
+          <text x="80" y="28" font-family="system-ui, sans-serif" font-size="14" fill="#1a1a2e">Max 20x · Agent 调用加价</text>
+        </g>
+      </svg>
+      <figcaption style="margin-top: 12px; color: #6b7280; font-size: 13px;">同一天三件方向相反的事 · Anthropic 加冕日</figcaption>
+    </figure>
+
+    <hr>
+
+    <h2>二、Ramp 那张 34.4% vs 32.3% 的图，刷的是企业卡，不是市场</h2>
+
+    <p>回到 5 月 12 日，那天真正动了估值的不是 Bloomberg，是 Ramp。Ramp 是一家美国企业卡 + 报销 + 票据 SaaS，5 月 12 日他们发了五月份的 AI Index：Anthropic 在采用率上从 4 月的 30.6% 涨到 34.4%，OpenAI 从 35.2% 跌到 32.3%。</p>
+
+    <p>中文媒体的标题翻译成一句话就是——Anthropic 反超 OpenAI，王朝交替了。</p>
+
+    <p>但 Ramp 自家在解释这套指数怎么做的页面上，是这么写的：</p>
+
+    <blockquote><p>"We analyze line-item data from the corporate cards and Bill Pay invoices of more than 50,000 Ramp customers."</p></blockquote>
+
+    <p>翻成中文：我们扫描 5 万多家 Ramp 客户的企业卡刷卡和 Bill Pay 票据，做发票 line-item 级别的 OCR。</p>
+
+    <p>这一段话有三层意思。第一层：样本只来自 Ramp 的客户。Ramp 主打中小企业财务管理，不是面向《财富》500 强大企业的 ERP。5 万家"用 Ramp"的公司，跟"用 Anthropic 或 OpenAI"的全美企业池子不是一回事。</p>
+
+    <p>第二层：只看通过企业卡和 Bill Pay 处理的支出。OpenAI 自己在 2025 年下半年的多份公开材料里说过，他们最大的几张企业合同——和摩根大通、和德勤、和美国国务院——走的不是企业卡，是合同账单和年度采购协议。Anthropic 同样有类似的大合同，但 Anthropic 的 SMB 端订阅、个人开发者的信用卡支付、Pro/Max 月费——全部都进 Ramp 的可见域。</p>
+
+    <p>第三层：line-item OCR。这套抓取是按笔抓的，每多一笔订阅、每多一个开发者刷卡试用一周，都会被算进采用率，不管那笔订阅一个月之后是不是续费。</p>
+
+    <p>所以 Ramp 34.4% 真正的口径是：在愿意通过企业卡试 AI 的中型公司里，Anthropic 占了 34.4%。</p>
+
+    <p>这个数字是真的，趋势是真的，反超也是真的。但它说的不是"AI 市场份额"，它说的是"中腰部企业的渗透率"。</p>
+
+    <p>OpenAI 真正没说出口的反驳应该是：我们最贵的客户从来不刷卡。</p>
+
+    <p>但 OpenAI 不会说，因为说了等于承认自己的真实订阅基数被中腰部稀释了。Anthropic 也不会说，因为不说，34.4% 这个数字就可以被一切媒体翻译成"市场份额"。</p>
+
+    <p>两边都不说话，市场就默认它是市场份额。Bloomberg 当天放估值，逻辑通了。</p>
+
+    <p>这件事的本质是：<strong>Anthropic 是从中腰部攻顶的，OpenAI 是被顶部和底部两头夹的。</strong></p>
+
+    <p>顶部 Pentagon 上周把 Anthropic 拉黑了，OpenAI 拿走 2 亿美金合同。底部消费者 ChatGPT 还在烧补贴。中间一层——那些 50 到 500 人、用 Ramp 卡刷 Claude Code 月费的公司——是 Anthropic 一年时间里安静拿下的盘子。</p>
+
+    <p>Ramp 那张图本质上是一张中腰部企业的体检报告。Anthropic 这一年悄悄把这张体检报告给做透了。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">双柱对比 + 注释</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">Ramp AI Index 五月数据：刷的是企业卡，不是市场份额</div></div><div style="padding:22px 24px 18px"><div style="text-align:right;margin-bottom:12px"><span style="font-size:11px;color:#94a3b8">单位：百分比（Ramp 客户中使用某 AI 的比例）</span></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">样本</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">5 百分比（Ramp 客户中使用某 AI 的比例）</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:100.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>34.4% 不是 AI 市场份额，是中腰部企业渗透率</div></div>
+
+    <hr>
+
+    <h2>三、万亿估值的算盘：$44B 年化收入，inference 毛利 70%+</h2>
+
+    <p>把估值这条线拆开看。Bloomberg 那条独家说，新一轮融资规模 300 亿到 500 亿美金，投前估值 9000 亿到 9500 亿。这是匿名信源的口风，Bloomberg 自己写明"尚未签署 term sheet"。</p>
+
+    <p>但估值不是凭空报的，它必须挂在一个收入数字上。</p>
+
+    <p>5 月初 Anthropic 自家的开发者大会上，Dario Amodei 公开说过两个数字：年化收入"超过 440 亿美金"，inference 毛利从过去的 38% 升到了"70% 以上"。</p>
+
+    <p>把这两个数字塞进估值模型：</p>
+
+    <ul><li>9500 亿 / 440 亿 ≈ 21.6 倍年化收入</li>
+<li>估值假设三年达到稳态、稳态自由现金流率取 25%（70%+ 毛利下不算激进），意味着投资人认 Anthropic 三年后每年烧得起 110 亿美金做研发还能不亏</li>
+</ul>
+OpenAI 上一轮 8520 亿美金估值挂的是大约 250 亿年化收入——倍数差不多 34 倍。
+
+    <p>听起来 OpenAI 更贵。但 OpenAI 那 250 亿里有大约 60% 来自 ChatGPT 消费者订阅，毛利率公认低（Sam Altman 2024 年那句"我们每个 Pro 用户都在亏钱"的梗到现在还没洗掉）。Anthropic 那 440 亿里面来自 API 调用和企业订阅的比例公认更高，毛利更厚。</p>
+
+    <p>这里 21.6 倍和 34 倍的差距，市场给出来的解读不是"Anthropic 更便宜"，是"Anthropic 那 440 亿是真钱，OpenAI 那 250 亿是流量"。</p>
+
+    <p>所以 9500 亿估值的真正定价锚不是模型，是每一美金收入背后的毛利结构。</p>
+
+    <p>这件事的反常识在哪？行业默认 AI 公司估值靠的是技术领先和用户规模——所谓 talent density 和 daily active users。但 Anthropic 这一轮的估值锚是单位收入的赚钱能力。这是已经成熟的 SaaS 公司的估值逻辑，不是早期赛道公司的逻辑。</p>
+
+    <p>换句话说，资本市场已经默认 Anthropic 不是一家"AI 创业公司"，是一家"SaaS 公司"。</p>
+
+    <p>万亿估值的另一面是这个：从此 Anthropic 必须按 SaaS 的标准答卷——每一个季度毛利、续费率、净留存——不再有早期赛道的容错空间。</p>
+
+    <p>5 月 13 日晚上那封给 Max 20x 用户加价的邮件，本质就是 SaaS 公司在做 ARPU 优化。SaaS 公司要保毛利，不是要保用户体验。</p>
+
+    <p>资本市场吃这一套。开发者社区不一定吃。</p>
+
+    <div style="background:#f8f9ff;border:1px solid #e2e8f0;border-radius:12px;padding:20px 24px;margin:32px 0;font-size:13px;color:#4a4a6a;white-space:pre-wrap">【图类型】：估值锚对比表
+【副标题】：Anthropic 9500亿 vs OpenAI 8520亿 估值拆解
+【单位】：美元 / 倍数 / 百分比
+【核心判断】：Anthropic 估值锚是单位收入毛利，OpenAI 估值锚是用户规模
+【核心内容】：
+  | 指标 | Anthropic | OpenAI |
+  | 估值 | $950B | $852B |
+  | 年化收入 | $44B | ~$25B |
+  | 估值/收入倍数 | 21.6x | 34.1x |
+  | 收入构成主体 | API + 企业订阅 | ChatGPT 消费者订阅 |
+  | Inference 毛利 | 70%+ | 未公开 |
+【配色】：Anthropic 暖橙，OpenAI 深绿
+【备注】：底部加 "Source: Amodei 公开发言 + Bloomberg 5/12 报道，未签 term sheet"</div>
+
+    <hr>
+
+    <h2>四、Mythos：Anthropic 给整个网络安全行业出了张反常识定价表</h2>
+
+    <p>5 月 11 日 CNBC 那篇报道里有一句话被中文媒体完全跳过了：欧盟委员会发言人公开说，Anthropic 在 Mythos 的访问问题上"还没到 OpenAI 那个阶段——OpenAI 已经把 GPT-5.5-Cyber 给 EU 的网络安全团队做了限定预览"。</p>
+
+    <p>Anthropic 自己的红队博客上 Mythos 的描述是这样的：</p>
+
+    <blockquote><p>"capable of identifying and then exploiting zero-day vulnerabilities in every major operating system and every major web browser"</p></blockquote>
+
+    <p>翻成中文：能在每一个主流操作系统和每一个主流浏览器里识别并利用零日漏洞。</p>
+
+    <p>红队博客同时给出了三个具体的数字：</p>
+
+    <ul><li>在 Firefox 中发现了"近 300 个"零日漏洞</li>
+<li>在 OpenBSD 中找到一个存在了 27 年的 bug</li>
+<li>单次模型运行成本"低于 50 美金"，单次发现项目成本"大约 20,000 美金"</li>
+</ul>
+这三个数字单独看是 Anthropic 自夸。合在一起看是一张定价表。
+
+    <p>行业惯例：一个有商业价值的 0day 在地下市场报价 5 万到 50 万美金不等，重点取决于操作系统和触发条件。一个 bug bounty 项目里挖一个 0day 的悬赏均价在 5,000 到 50,000 美金之间，重大漏洞悬赏可以到 100 万。</p>
+
+    <p>Mythos 把这个数字直接打到 20,000 美金，而且这是模型自己挖的，不是雇人挖的。</p>
+
+    <p>把这个数字往 Project Glasswing 的预算里塞：1 亿美金的使用额度，按 20,000 美金一个 0day 算，是 5,000 个可发现漏洞。</p>
+
+    <p>5,000 个 0day 是什么概念？</p>
+
+    <p>美国 NIST 国家漏洞数据库 2025 全年收录的所有"严重等级 (Critical)"漏洞总数大约是 4,500 个。也就是说，Anthropic 给 Project Glasswing 的预算，理论上能用机器复刻整个 NIST 一年的"严重漏洞"目录。</p>
+
+    <p>到这一步，"Mythos 是什么"才说得清楚——Mythos 不是 AI 安全研究产品，是一个可被估值的国家战略物资。</p>
+
+    <p>Project Glasswing 的 12 个创始成员名单是这样的：AWS、Apple、Broadcom、Cisco、CrowdStrike、Google、JPMorganChase、Linux Foundation、Microsoft、NVIDIA、Palo Alto Networks。这里面 6 家是美国前 10 大企业，3 家是美国国家网络安全防御体系的基础设施，1 家（Apache Software Foundation 拿了 150 万美金捐赠）是全球开源代码的最关键节点之一。</p>
+
+    <p>整个名单一个欧洲公司都没有。</p>
+
+    <p>不是巧合。Anthropic 一边给 Glasswing 联盟的成员开放 Mythos Preview，一边给欧盟监管者关门。这两件事是同一件事的两面。</p>
+
+    <p>"安全" 这个词在 Anthropic 这里，意思是"我替美国管，不替欧盟管"。</p>
+
+    <p>欧盟想要的是"独立第三方监管者的访问权"。Anthropic 给出的回答是"在 CAISI（美国 AI 安全机构）的监管下我们可以做"，但 CAISI 不是中立的第三方，是美国商务部下属机构。</p>
+
+    <p>这件事用 Anthropic 内部自己的话翻译过来是这样的：<strong>我们不是不接受监管，我们只接受美国的监管。</strong></p>
+
+    <p>Mythos $20,000 的单位成本是个铺垫。真正的产品是"对谁开放、对谁关门"这套权限分级。</p>
+
+    <figure style="margin: 32px 0; text-align: center;">
+      <svg viewBox="0 0 600 360" xmlns="http://www.w3.org/2000/svg" style="max-width: 100%; height: auto; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 16px rgba(26,86,219,0.08);">
+        <circle cx="300" cy="180" r="110" fill="#FEF3C7" stroke="#D97706" stroke-width="2.5"/>
+        <text x="300" y="170" text-anchor="middle" font-family="system-ui, sans-serif" font-size="18" fill="#92400E" font-weight="800">MYTHOS</text>
+        <text x="300" y="195" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" fill="#92400E">Project Glasswing</text>
+        <g font-family="system-ui, sans-serif" font-size="10" fill="#1240a8" font-weight="600">
+          <g transform="translate(300, 30)"><circle r="16" fill="#DBEAFE" stroke="#1A56DB" stroke-width="1.5"/><text text-anchor="middle" y="4">AWS</text></g>
+          <g transform="translate(390, 50)"><circle r="16" fill="#DBEAFE" stroke="#1A56DB" stroke-width="1.5"/><text text-anchor="middle" y="4">Apple</text></g>
+          <g transform="translate(460, 105)"><circle r="16" fill="#DBEAFE" stroke="#1A56DB" stroke-width="1.5"/><text text-anchor="middle" y="4">Cisco</text></g>
+          <g transform="translate(490, 180)"><circle r="16" fill="#DBEAFE" stroke="#1A56DB" stroke-width="1.5"/><text text-anchor="middle" y="4">Google</text></g>
+          <g transform="translate(460, 255)"><circle r="16" fill="#DBEAFE" stroke="#1A56DB" stroke-width="1.5"/><text text-anchor="middle" y="4">JPM</text></g>
+          <g transform="translate(390, 310)"><circle r="16" fill="#DBEAFE" stroke="#1A56DB" stroke-width="1.5"/><text text-anchor="middle" y="4">MSFT</text></g>
+          <g transform="translate(300, 330)"><circle r="16" fill="#DBEAFE" stroke="#1A56DB" stroke-width="1.5"/><text text-anchor="middle" y="4">NVDA</text></g>
+          <g transform="translate(210, 310)"><circle r="16" fill="#DBEAFE" stroke="#1A56DB" stroke-width="1.5"/><text text-anchor="middle" y="4">PAN</text></g>
+          <g transform="translate(140, 255)"><circle r="16" fill="#DBEAFE" stroke="#1A56DB" stroke-width="1.5"/><text text-anchor="middle" y="4">Linux</text></g>
+          <g transform="translate(110, 180)"><circle r="16" fill="#DBEAFE" stroke="#1A56DB" stroke-width="1.5"/><text text-anchor="middle" y="4">Strike</text></g>
+          <g transform="translate(140, 105)"><circle r="16" fill="#DBEAFE" stroke="#1A56DB" stroke-width="1.5"/><text text-anchor="middle" y="4">BCM</text></g>
+          <g transform="translate(210, 50)"><circle r="16" fill="#DBEAFE" stroke="#1A56DB" stroke-width="1.5"/><text text-anchor="middle" y="4">Apache</text></g>
+        </g>
+        <g transform="translate(20, 160)">
+          <rect width="60" height="40" rx="6" fill="#FEE2E2" stroke="#DC2626" stroke-width="1.8" stroke-dasharray="4,3"/>
+          <text x="30" y="18" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#991B1B" font-weight="700">EU</text>
+          <text x="30" y="32" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#991B1B">denied</text>
+        </g>
+        <line x1="80" y1="180" x2="105" y2="180" stroke="#DC2626" stroke-width="2" stroke-dasharray="4,3"/>
+        <line x1="88" y1="172" x2="98" y2="188" stroke="#DC2626" stroke-width="2.2"/>
+        <line x1="98" y1="172" x2="88" y2="188" stroke="#DC2626" stroke-width="2.2"/>
+      </svg>
+      <figcaption style="margin-top: 12px; color: #6b7280; font-size: 13px;">12 家创始成员入场 · 欧盟监管者闭门</figcaption>
+    </figure>
+
+    <hr>
+
+    <h2>五、SMB 与 Max 加价：同一套定价心理学的两面</h2>
+
+    <p>回到 5 月 13 日。那天 Anthropic 同时做了两件事，方向看起来完全相反。</p>
+
+    <p>第一件事：Claude for Small Business 发布。QuickBooks、PayPal、HubSpot、Canva、DocuSign、Google Workspace、Microsoft 365 七个连接器，15 个预制工作流，15 个 Skills。Anthropic 自己出 10 城路演——芝加哥、底特律、亚特兰大、达拉斯、丹佛等等——每站给 100 名 SMB 主免费培训。</p>
+
+    <p>Anthropic 公告里有一段话原文是这样的：</p>
+
+    <blockquote><p>"Small and medium-sized businesses contribute approximately 44% of U.S. GDP and employ nearly half of the private workforce."</p></blockquote>
+
+    <p>翻成中文：中小企业贡献了美国 44% 的 GDP，雇佣了近一半的私营部门员工。这一段是用来支撑 SMB 套件的市场体量。</p>
+
+    <p>第二件事：当晚 8 点 10 分太平洋时间那封邮件。前面提过——Pro / Max 5x / Max 20x 用户从 6 月 15 日起，所有第三方 Agent 调用从订阅额度里剥离。Pro 用户每月送 20 美金独立 Agent 信用额度，Max 5x 送 100，Max 20x 送 200。</p>
+
+    <p>InfoWorld 当天有跟进，提到一批做 Coding Agent 的小公司（OpenClaw、Continue 等）当晚客户支持渠道直接被开发者打爆——很多人订阅 Max 20x 月费 200 美金的核心理由就是无限制跑 Coding Agent。</p>
+
+    <p>这两件事放在一起，方向完全相反：一头是把门栏拉低让 SMB 进来，一头是把已经进门的开发者重新分箱收费。</p>
+
+    <p>但仔细看，这两件事其实是同一回事。</p>
+
+    <p>Anthropic 在做用户分级。</p>
+
+    <p>层级从上到下大概是这样：<br><li>美国大企业 + 政府 + 国家级网络安全联盟（Project Glasswing 成员）——拿 Mythos Preview，定价不公开</li><br><li>华尔街金融机构（5 月 5 日的 Wall Street 发布会上展示的那批 Agent 模板）——拿 Claude Opus 4.7 + 金融 Agent</li><br><li>大型咨询机构（PwC 那 3 万人）——拿 Claude Code + Cowork 认证</li><br><li>中型企业（Ramp 数据池里的那 5 万家）——刷企业卡用月费版</li><br><li>小型企业（5 月 13 日的 Claude for SMB）——七大连接器 + Skills 模板</li><br><li>个人开发者（5 月 13 日邮件加价的那批人）——订阅额度 + 单独购买 Agent 信用</li><br><li>欧盟监管者（5 月 11 日 CNBC 那段）——闭门</li></p>
+
+    <p>每一层都有自己的定价和访问权限。这是一套完整的分级产品矩阵。</p>
+
+    <p>行业一直觉得 AI 公司只能两条路：要么做 to C 走平台规模（OpenAI 路线），要么做 to B 走单一企业大单（Cohere 路线）。Anthropic 这一周用产品组合证明了第三条路：做"美国为中心、按地缘政治分级"的全产品堆栈。</p>
+
+    <p>这套堆栈的核心定价机制不是"功能差异"，是"访问权限差异"。</p>
+
+    <p>最顶上那一层之所以最贵，不是因为 Mythos 比 Claude Opus 4.7 强多少，是因为 Mythos 拒绝了 EU 监管者、拒绝了所有非 Glasswing 成员。"被拒绝"这件事本身在定价。</p>
+
+    <p>最下面那一层（个人开发者）之所以可以加价，不是因为 Agent SDK 多了什么新功能，是因为 Anthropic 已经验证了开发者社区会咽下这口气——你已经把 Claude Code 集成进你日常工作流了，每月 200 美金的迁移成本远高于 Anthropic 加价的边际幅度。</p>
+
+    <p>这是典型的"先免费后加价"的 SaaS 套路，但 Anthropic 的版本是"先深度集成后加价"。深度集成是免费的，但只是一次性免费。</p>
+
+    <p>5 月 13 日同一天的两个动作，对外的话术不一样（SMB 那边是"赋能中小企业的繁荣"，Max 那边是"让定价更公平"），但底层动作是同一个：<strong>用户分级、按分级定价、按分级管访问。</strong></p>
+
+    <div style="background:#f8f9ff;border:1px solid #e2e8f0;border-radius:12px;padding:20px 24px;margin:32px 0;font-size:13px;color:#4a4a6a;white-space:pre-wrap">【图类型】：金字塔分层图
+【副标题】：Anthropic 的七层产品矩阵：从 Mythos 到欧盟
+【单位】：用户层级
+【核心判断】：定价不是按功能，是按"被允许访问"的程度
+【核心内容】：
+  顶层 → 底层（每层标注典型客户 + 访问权限）：
+  1. Mythos / Glasswing（AWS/Apple/Google/Microsoft/JPMorgan 等 12 家）
+  2. Wall Street Tier（Moody's/JPMorgan + 金融 Agent 模板）
+  3. PwC Tier（3 万认证专业人员）
+  4. 中型企业（Ramp 池子里 5 万家）
+  5. Claude for SMB（10 城路演 SMB 主）
+  6. 个人开发者（Pro/Max，6/15 起 Agent 单独计费）
+  ——— 围墙 ———
+  7. 欧盟监管者：拒绝访问
+【配色】：从深橙到浅橙渐变，最底层（欧盟）用灰色，与上方分割
+【备注】：底部加一行 "每一层的访问权限本身就是产品的一部分"</div>
+
+    <hr>
+
+    <h2>六、"拒绝"是 Anthropic 唯一不可复制的产品</h2>
+
+    <p>回到那个最大的问题：为什么是 Anthropic？</p>
+
+    <p>不是模型。Claude Opus 4.7 在公开 benchmark 上没有压倒性优势，GPT-5.5 在多个评测里仍然领先。</p>
+
+    <p>不是安全研究能力。OpenAI 也有 Cyber 模型，Google 也有 DeepMind 的安全团队，Microsoft Security Copilot 上线两年了。</p>
+
+    <p>不是企业销售能力。OpenAI 的企业销售团队规模更大，渠道覆盖更广。</p>
+
+    <p>是 Anthropic 这一周表演了一种别人复制不了的姿态——它可以同一天给最受尊敬的慈善基金会签支票、给最大的咨询公司发认证、给最忠诚的开发者用户加价，而不被骂。</p>
+
+    <p>OpenAI 试一次同样的组合动作，市场和媒体会问"你赚钱赚得这么急吗"。<br>Google 试一次，反垄断诉讼当天会多出三条新指控。<br>Microsoft 试一次，Windows 用户社区一周就能让股价跌 5%。</p>
+
+    <p>Anthropic 试了，没事。</p>
+
+    <p>为什么？因为 Anthropic 这五年时间里把"我们更在乎安全"的人设打得太透。透到这家公司的每一个商业动作，都会被默认是"在为更深远的安全目标做权衡"。</p>
+
+    <p>拒绝 Pentagon 是为安全。<br>拒绝 EU 是为安全。<br>给 SMB 开门是为"让更多人用上安全的 AI"。<br>给老用户加价是为"让基础设施的可持续性匹配安全研究的投入"。</p>
+
+    <p>每一句话都说得通。每一句话都站得住脚。每一句话都让对手攻不进来。</p>
+
+    <p>这就是"安全"作为品牌的最大商业价值——它是一个永远可以挡刀的话术。</p>
+
+    <p>但话术挡刀只是表层。深层是这套话术构成了一个不可复制的护城河。任何 AI 公司想做"安全 AI"作为差异化，会立刻被市场问："那你和 Anthropic 比有什么不一样？"——而 Anthropic 用了五年时间、上百篇可解释性论文、Constitutional AI 这套对外披露的训练框架，给"我们更在乎安全"这件事砌了一道无法被一夜超越的墙。</p>
+
+    <p>这道墙的存在本身，就是一个产品。</p>
+
+    <p>OpenAI 这一周也在做安全 AI（GPT-5.5-Cyber 给 EU），但媒体在写它的时候只会用"OpenAI 也跟进了"。Google 这一周也在发布安全工具，但行业读出来的是"防御性动作"。Anthropic 做的是同一件事，行业读出来的是"原教旨主义"。</p>
+
+    <p>原教旨主义是可以收溢价的。原教旨主义可以拒绝。原教旨主义可以加价。原教旨主义可以同一天做三件方向相反的事而不被质疑动机。</p>
+
+    <p>5 月 14 日那一天，Anthropic 真正加冕的，不是它的估值，是它的话语权。它已经成了 AI 行业唯一一家可以用"我们出于安全考虑"作为任何商业决策的最终解释的公司。</p>
+
+    <p>这种权利按市场口径定价，确实值 9500 亿美金。</p>
+
+    <p>加冕完了之后，Anthropic 的下一道关，是怎么把"我们更在乎安全"这件事用得既不让市场厌倦也不让自己破功。</p>
+
+    <p>Pentagon 上周已经试过怎么破这个功了——Hegseth 在国防部那场新闻发布会上当着记者面骂 Amodei 是"骗子，有上帝情结"。骂得很难听，但市场没接，企业客户没流失。</p>
+
+    <p>为什么？因为骂 Anthropic 这件事在叙事上太对称——你越骂它"原教旨"，它的"原教旨"溢价反而越高。</p>
+
+    <p>但下一次可能就没那么容易了。EU 那边正在酝酿真正的反制——5 月初已经有传言说 EU 在考虑把 Anthropic 的 Mythos 拒绝写入 AI Act 第二轮修订作为执法案例。如果 EU 真的把 Anthropic 列入"高风险供应商"清单，市场对"原教旨溢价"的反应可能就要变了。</p>
+
+    <p>万亿估值到那时候，挡的是另一种刀。</p>
+
+    <p>但这是另一篇文章的事了。</p>
+
+    <p>这一篇要说的是，这一周已经发生的事——Anthropic 教所有 AI 公司怎么靠"拒绝"挣钱，怎么把"安全"两个字做成一道无法被复制的护城河，怎么在加冕日那天同时完成道德、机构、定价权三件套。</p>
+
+    <p>教学完毕。</p>
+
+    <p>学不学得会，要看下一家公司有没有 Anthropic 这五年时间和这套话语耐心。</p>
+
+    <p>短期内，看不到。</p>
+
+    <p>就这？就这。</p>
+
+    <hr>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>Anthropic 的加冕日不是 5 月 12 日 Bloomberg 爆估值的那天，是 5 月 14 日。一天之内给最受尊敬的慈善基金会签支票、给最大咨询公司发认证、给最忠诚开发者加价，而没人质疑动机——这种话语权，按市场价定到 9500 亿美金。</p>
+    <p>下一次买 AI 服务的时候，先看它拒绝过谁。能拒绝的就是有定价权的，什么都答应的就是没有差异化的。Anthropic 这一周教给所有 AI 公司的，就是这件事。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/news" target="_blank" rel="noopener">Anthropic Newsroom</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/news/claude-for-small-business" target="_blank" rel="noopener">Anthropic - Claude for Small Business</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/news/gates-foundation-partnership" target="_blank" rel="noopener">Anthropic - Gates Foundation Partnership</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/news/pwc-expanded-partnership" target="_blank" rel="noopener">Anthropic - PwC Expanded Partnership</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/project/glasswing" target="_blank" rel="noopener">Anthropic - Project Glasswing</a></div>
+      <div class="footer-source-item"><a href="https://red.anthropic.com/2026/mythos-preview/" target="_blank" rel="noopener">Anthropic Red Team - Mythos Preview</a></div>
+      <div class="footer-source-item"><a href="https://ramp.com/leading-indicators/ai-index-may-2026" target="_blank" rel="noopener">Ramp AI Index - May 2026</a></div>
+      <div class="footer-source-item"><a href="https://ramp.com/velocity/how-we-built-the-ramp-ai-index" target="_blank" rel="noopener">Ramp - How We Built the AI Index</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/05/11/openai-eu-cyber-model-anthropic-mythos-gpt.html" target="_blank" rel="noopener">CNBC - OpenAI to give EU access to new cyber model but Anthropic still holding out on Mythos (2026-05-11)</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com/2026/05/13/behold-the-googlebook/" target="_blank" rel="noopener">Fortune - Behold the Googlebook (2026-05-13)</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com/2026/05/11/google-catches-hackers-cybersecurity-warning-ai-anthropic-mythos/" target="_blank" rel="noopener">Fortune - Google catches hackers cybersecurity warning (2026-05-11)</a></div>
+      <div class="footer-source-item"><a href="https://www.prnewswire.com/news-releases/pwc-and-anthropic-expand-alliance.html" target="_blank" rel="noopener">PwC PRNewswire - PwC and Anthropic Expand Partnership</a></div>
+      <div class="footer-source-item"><a href="https://www.gatesfoundation.org/ideas/media-center/press-releases/2026/05/anthropic-partnership" target="_blank" rel="noopener">Gates Foundation Press Release - Anthropic Partnership</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
