@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>马斯克救 Anthropic？是两个落水的人在互相踩对方上岸</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 行业拆解</span>
+  <h1>马斯克救 Anthropic？是两个落水的人在互相踩对方上岸</h1>
+  <div class="hero-meta">
+    <span>2026-05-18</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">5月6日同一天发生四件事——Anthropic拿下SpaceX的22万张GPU、马斯克宣布xAI解散并入SpaceXAI、马斯克说'恶人探测器没响'、三个月前他刚骂Anthropic'恨西方文明'。中文媒体把这串戏剧性事件包装成'马斯克放下偏见、算力时代来临'。这是错的剧本——真相是两个落水的人在互相把对方踩成救命稻草。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、马斯克的"恶人探测器"，三个月前刚把 Anthropic 测成"恨西方文明"</h2>
+
+    <p>时间线先摆这里，别急着解读。</p>
+
+    <p>2 月 27 日，Anthropic CEO Dario Amodei 在公司博客上画了两条红线：不允许 Claude 被用于大规模国内监控，不允许用于无人类监督的自主武器。这是回应美国国防部一份要 Anthropic 同意"all lawful purposes"的合同模板。Anthropic 宁可丢合同，也不松口。</p>
+
+    <p>同一天，国防部副部长 Emil Michael 在 X 上指控 Anthropic 试图把 Claude 早期版本的"宪法"文档从互联网上抹掉。马斯克转发了那条贴，加了一句话——</p>
+
+    <blockquote><p>"Anthropic hates Western Civilization."</p></blockquote>
+
+    <p>中文译过来叫"Anthropic 痛恨西方文明"。这不是嘴上抱怨，这是把一家 AI 公司贴上叛徒标签。在 2 月底之前的几周，马斯克在 X 上还多次说过 Anthropic 是"misanthropic and evil"——这一套话术在 Anthropic 拒绝 Pentagon 的窗口里密集打了好几发。</p>
+
+    <p>然后是 5 月初。5 月 1 日 CNN Business、5 月 3 日 Breaking Defense、5 月 4 日 gHacks 接力报道同一件事：美国国防部一口气和 8 家科技公司签 IL6/IL7 级别（最高机密网络）AI 部署协议——OpenAI、Google、Microsoft、AWS、Oracle、NVIDIA、SpaceX、Reflection AI——独独把 Anthropic 排在门外。理由是"供应链风险 + 合同纠纷"。Anthropic 转头起诉特朗普政府，加州联邦法官给了禁令，但禁令挡不住这种"事实上的不签"——Pentagon 不签就是不签，法院没法判 8 家公司必须取消合同腾出位子来。</p>
+
+    <p>到这一步，国防部已经替马斯克兑现了那句"hates Western Civilization"。Anthropic 被拉黑，SpaceX 进了榜。</p>
+
+    <p>5 月 6 日，Anthropic 官博出现了一行公告——SpaceX 把 Colossus 1 整个超算的算力全租给 Anthropic：22 万多张 NVIDIA GPU（H100、H200、还有下一代 GB200），超过 300 兆瓦电力，"在一个月内"交付。所有 Claude Code 用户的 5 小时配额翻倍，Pro 和 Max 取消峰值时段压制，Opus 系列 API 限速大幅放宽。</p>
+
+    <p>同一天，马斯克在 X 上贴了一段话——</p>
+
+    <blockquote><p>"Everyone I met was highly competent and cared a great deal about doing the right thing. No one set off my evil detector. So long as they engage in critical self-examination, Claude will probably be good."</p></blockquote>
+
+    <p>翻译：我见的每一个人都能力很强、都很在乎把事情做对，没有人触发我的恶人探测器，只要他们持续做自我审查，Claude 大概率会是好东西。</p>
+
+    <p>这就是过去 9 周的全部表演。</p>
+
+    <p>2 月 27 日：Anthropic 恨西方文明。  <br>5 月 4 日：国防部把 Anthropic 拉黑。  <br>5 月 6 日：Anthropic 大概率是好东西。</p>
+
+    <p>中间也没发生什么具体的化解事件。Anthropic 还是那个 Anthropic，红线还是那两条红线。变的只是：5 月 6 日同一天马斯克宣布要把这 22 万张 GPU 租给对方。</p>
+
+    <p>恶人探测器是个很诚实的仪器——它对着合同条款会响，对着钱包不响。</p>
+
+    <div style="background:#f8f9ff;border:1px solid #e2e8f0;border-radius:12px;padding:20px 24px;margin:32px 0;font-size:13px;color:#4a4a6a;white-space:pre-wrap">【图类型】：流程
+【副标题】：从"恨西方文明"到"大概率是好东西"的 68 天
+【核心内容】：
+  - 02-27 Musk："恨西方文明"
+  - 05-01 Pentagon 拉黑 Anthropic
+  - 05-04 8 家 AI 大单签订
+  - 05-06 SpaceX 租算力给 Anthropic
+  - 05-06 Musk："恶人探测器没响"</div>
+
+    <hr>
+
+    <h2>二、Anthropic 不是赢了，是被 Claude Code 用户在 GitHub 上围攻三个月</h2>
+
+    <p>中文媒体上关于 SpaceX 这单的所有叙事，都把 Anthropic 写成赢家——"AI 大女主拿下 22 万张 GPU"、"Claude 算力翻倍"。</p>
+
+    <p>要这么写也行，前提是你得跳过过去 9 周里 Claude Code 用户的 GitHub Issues 区。</p>
+
+    <p>3 月 23 日，Claude Code 的付费用户开始大规模在 Reddit、X、GitHub 上喊救命。MacRumors 3 月 26 日整理了一份用户投诉合集：单次 prompt 烧掉 3% 到 7% 的会话配额，原本号称 5 小时的会话窗口最快 19 分钟见底。Max 20x 这一档是 $200 一个月、Anthropic 卖给最重度用户的旗舰订阅——好几个用户在 GitHub Issue #41930 里贴出截图：从 21% 跳到 100%，中间只发了一个 prompt。</p>
+
+    <p>The Register 3 月 31 日跟进。一位安全研究员逆向了 Claude Code 的二进制，发现两个独立的 caching bug 把实际 token 消耗放大了 10 到 20 倍。本来应该从 cache 里读旧上下文、只对新 token 计费，bug 触发后每一轮都重算全部历史。一个 $100 的 Max 5x 用户在峰值时段被 throttle + caching bug 双杀，实际可用 token 量被压到接近免费用户。</p>
+
+    <p>Anthropic 没沉默，但回得很难听。3 月 26 日 Anthropic 工程师 Thariq Shihipar 在 X 上承认——</p>
+
+    <blockquote><p>"We are intentionally adjusting 5-hour session limits to manage growing demand."</p></blockquote>
+
+    <p>翻译：我们正在故意调整 5 小时会话上限，因为需求涨太快了。</p>
+
+    <p>这是把"我们偷偷限速"这件事改名叫"故意管理需求"。"故意"是关键字——这不是 bug，是产品决定。付了 $200 的用户没法在条款里找到这条，但 Anthropic 在管理。</p>
+
+    <p>到 5 月 6 日，这场暴动已经烧了 6 个礼拜，GitHub Issue #41930 没关。</p>
+
+    <p>同一天，Dario Amodei 在一场公开活动上把账摊出来：Anthropic 2026 年第一季度按收入年化口径增长了 80 倍——原本规划的是 10 倍——这就是他的原话："we planned for 10x, we got 80x"。还有一句更要命的："it's just crazy"，"too hard to handle"。CNBC、VentureBeat、Cryptopolitan、Fortune 各自当天报道，引语一致。Anthropic 当时的收入 run rate 是 $300 亿一年。一年前的 1 月还是 $1 亿。这家公司在 12 个月里把收入跑出了 300 倍。</p>
+
+    <p>收入跑出 300 倍，配套的算力本来应该早就备好——但备好的速度，赶不上烧的速度。Anthropic 自己披露的算力承诺清单看着很长——</p>
+
+    <ul><li><strong>Amazon</strong>：5 GW 上限，超过 $1000 亿，10 年期</li>
+<li><strong>Google + Broadcom</strong>：5 GW，五年 $2000 亿，<strong>2027 年开始上线</strong></li>
+<li><strong>Microsoft + NVIDIA</strong>：$300 亿 Azure 算力</li>
+<li><strong>Fluidstack</strong>：$500 亿美国 AI 基础设施</li>
+<li><strong>SpaceX Colossus 1</strong>：300 兆瓦，<strong>一个月内</strong></li>
+</ul>
+加总一下，过去 12 个月披露的算力承诺是 $3800 亿以上量级。对照收入 run rate $300 亿——Anthropic 用未来 5 到 10 年的合同，覆盖了今年 12 倍的开销。这本身已经够魔幻，但更魔幻的是：Amazon 那笔上限 5 GW、Google 那笔 5 GW，全要 2027 年才开始通电；Microsoft 那笔走 Azure，Azure 自己今年也吃紧；Fluidstack 那笔还在规划阶段。
+
+    <p>所以 Anthropic 在 5 月初手里能立刻吃到嘴里的算力，是 0。</p>
+
+    <p>不是少，是 0。</p>
+
+    <p>5 月 6 日同一天交付（"在一个月内"）的，只有马斯克手里那批闲着烧折旧的硅锭。</p>
+
+    <p>这就是这单交易的真实形状——Anthropic 不是在选合作伙伴，是只有一家可选。马斯克手里这 22 万张 GPU 是 2025 年下半年才点亮的，规模在那个时间点全球第一，xAI 自己训 Grok 4 / Grok 4.3 用不完，整套 Colossus 1 一停转就要烧电费、烧折旧、烧人工。Anthropic 是唯一愿意把它整个吃下来的人——OpenAI 当然不会，因为 OpenAI 是马斯克的诉讼对手；Google、Meta 各自有 TPU / MTIA；中型 AI 公司吃不下 300 兆瓦。剩下 Anthropic 一个。</p>
+
+    <p>把 9 周的时间线拉直你就看清楚了——</p>
+
+    <p>3 月 23 日 Anthropic 限速暴动开始，3 月 26 日 Anthropic 自己工程师在 X 承认是"故意调"。  <br>5 月 6 日 Anthropic 拿到 SpaceX 整个超算，当天宣布所有付费档限速翻倍、峰值压制取消、Opus API 限速大幅放宽。</p>
+
+    <p>这不叫"算力时代来临"，这叫"我们用最后一根稻草把暴动压回去了"。</p>
+
+    <p>Anthropic 这单不是赢，是续了一口气。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">条形</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">Anthropic 算力承诺 vs 当前收入 run rate</div></div><div style="padding:22px 24px 18px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px dashed #e2e8f0"><div><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><span style="width:10px;height:10px;border-radius:3px;background:#94A3B8;display:inline-block"></span><span style="font-size:11px;color:#64748b">参照</span></span></div><span style="font-size:11px;color:#94a3b8;font-weight:500">单位：十亿美元</span></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">Google + Broadcom 五年承诺</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">200 十亿美元</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:100.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">Amazon 十年承诺</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">100 十亿美元</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:50.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">Fluidstack 基建合作</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">50 十亿美元</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:25.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">Microsoft + NVIDIA 承诺</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">30 十亿美元</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:15.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">2026 收入 run rate</span><span style="font-size:15px;font-weight:700;color:#94A3B8;white-space:nowrap">30 十亿美元</span></div><div style="background:#F1F5F9;border-radius:5px;height:10px;overflow:hidden"><div style="background:#94A3B8;width:15.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>3800 亿美元承诺只有 300 亿美元收入接住，且 2027 前能上线的只有 300 兆瓦</div></div>
+
+    <hr>
+
+    <h2>三、马斯克也不是施舍，是 xAI 烧不动了、SpaceX 下个月要 IPO</h2>
+
+    <p>5 月 6 日同一天还发生了第三件事。</p>
+
+    <p>马斯克在 X 上回复 Sawyer Merritt 一条问"xAI 怎么办"的帖，写了一句话——</p>
+
+    <blockquote><p>"xAI will be dissolved as a separate company, so it will just be SpaceXAI, the AI products from SpaceX."</p></blockquote>
+
+    <p>翻译：xAI 作为独立公司将被解散，以后就叫 SpaceXAI，是 SpaceX 旗下的 AI 产品。</p>
+
+    <p>后面跟了一句更狠的：</p>
+
+    <blockquote><p>"xAI was not built right first time around, so is being rebuilt from the foundations up."</p></blockquote>
+
+    <p>翻译：xAI 第一次没建对，所以现在从地基往上重建。</p>
+
+    <p>这是马斯克本人亲口说的。今年 2 月 2 日 SpaceX 全股票收购 xAI 时估值 $2500 亿，三个月后老板自己出来说"第一次没建对"。这种话从他嘴里说出来，是一种事后追认。追认什么？追认 xAI 已经死了。</p>
+
+    <p>3 月 28 日是个关键时间点。媒体当天盘点 xAI 的共同创始人——11 人全部离开，只剩马斯克一个。这是 11 走 11，不是 5 走 6 那种逐步流失。包括 Greg Yang、Igor Babuschkin、Christian Szegedy、Jimmy Ba 这一长串 2024 年高调一起出来"对抗 OpenAI 的封闭"的名字，2026 年初全跑光了。</p>
+
+    <p>为什么跑？看模型迭代节奏就懂。Grok 4 / Grok 4.3 在 2026 年的上线节奏明显跟不上 GPT-5 系列和 Claude Opus 4.6 / 4.7。Anthropic 5 月发 Opus 4.7、OpenAI 那边走自己的 GPT-5.x 路线，xAI 这边声音越来越小。没有共同创始人愿意留下来给一个声音越来越小的项目当殉葬品。</p>
+
+    <p>Colossus 1 这块超算就是在这个背景下变成"账面包袱"的。</p>
+
+    <p>这块超算 2025 年下半年点亮时是世界第一规模，22 万张 H100 / H200 / GB200，300 兆瓦电力。每天什么都不干都在烧电——按工业电价 $0.06/kWh、满负载 24h 算，光电费一天就是 $43 万，一个月 $1300 万；再加 22 万张 GPU 的折旧（H100 单卡 $30k 起、按 4 年折）、冷却、人工、维护，养这块超算的口径月成本进 $1 亿是合理估算。原本算盘是用它把 Grok 训出来追上 OpenAI 和 Anthropic，结果一年下来 Grok 没追上，超算还得养。这是教科书"沉没成本"。</p>
+
+    <p>然后 SpaceX 自己有另一件大事压头上——IPO。Axios 5 月 7 日的报道里直接写了一句：SpaceX IPO 预期在"下个月"。Stocktwits 5 月 8 日的标题更明白："SpaceXAI Takes Off: Elon Musk Consolidates AI Empire Ahead Of Massive IPO"。Musk 整合 AI 业务、压低 xAI 那个泡沫估值、把烧钱的超算变成"年化收入资产"，是给 SpaceX 招股书做账。</p>
+
+    <p>Fortune 5 月 7 日估算这单租给 Anthropic 的合同，能给 SpaceX 带来 $30 亿到 $40 亿一年的收入，毛利率高到现金利润超过 $25 亿。当然这是 Fortune 估的，不是合同披露的——Anthropic 和 SpaceX 双方都没披露总价、合同期。但即使打折一半，对一家航天公司来说，这笔钱意味着招股书可以新增一行"AI 算力业务"，估值乘数能直接往上跳一档。</p>
+
+    <p>把这三件事放一起看——</p>
+
+    <p>xAI 烧不动了 + SpaceX 要 IPO 了 + 全球只有 Anthropic 一家肯出这个价。</p>
+
+    <p>这不是"马斯克放下偏见拥抱对手"。这是马斯克在路演前把仓库里最大的一块库存出清。</p>
+
+    <p>最妙的还是 xAI 解散这一步法律重组。如果不解散，Anthropic 是没法租 xAI 那块超算的——直接竞品互供算力，合规过不去，董事会也过不去。但 xAI 一旦解散并入 SpaceX，房东就变成"私营航天公司"。SpaceX 不卖大模型给企业，Anthropic 卖；SpaceX 客户群是政府和卫星运营商，Anthropic 客户群是开发者和企业。两家在主营上不竞争，租算力天经地义。</p>
+
+    <p>至于 SpaceXAI 内部还在做 Grok、Anthropic 租来的 GPU 上跑的是 Claude——这件事所有人都假装看不见。</p>
+
+    <p>公司治理上有个词叫"换马甲签合同"。这单子是这个词的活体演示。</p>
+
+    <p>但换马甲只是第一层 PPT。这单合同里还藏着第二层——面向二级市场基金经理那一层。</p>
+
+    <div style="background:#f8f9ff;border:1px solid #e2e8f0;border-radius:12px;padding:20px 24px;margin:32px 0;font-size:13px;color:#4a4a6a;white-space:pre-wrap">【图类型】：流程
+【副标题】：xAI 解散 + Anthropic 接盘的法律白手套
+【核心内容】：
+  - 02-02 SpaceX $2500 亿全股票收购 xAI
+  - 03-28 11 位共同创始人全部离开
+  - 05-06 xAI 解散并入 SpaceXAI
+  - 05-06 Anthropic 租走 Colossus 1
+  - 下月 SpaceX IPO 路演启动</div>
+
+    <hr>
+
+    <h2>四、"数 GW 太空算力"，是给 SpaceX 投资人写的 PPT</h2>
+
+    <p>5 月 6 日 Anthropic 那篇官博里，有一句话被中文媒体疯狂转发——Anthropic 和 SpaceX 表达了"合作开发数 GW（multiple gigawatts）级轨道 AI 算力"的意向。</p>
+
+    <p>中文圈把这句话翻译成"AI 算力进入太空时代"、"星际算力大决战"、"Anthropic 要把数据中心送上轨道"。一夜之间各家公众号又有了一个十年题材。</p>
+
+    <p>要不要查一下，2026 年 5 月人类把多少张 H100 送上了轨道。</p>
+
+    <p>Starcloud 是目前唯一一家把 GPU 真送上轨道的公司。Starcloud-1 卫星 2025 年 11 月发射，载荷是<strong>一张</strong> H100，做的事情是训了一个 NanoGPT 莎士比亚全集。NanoGPT 是 Andrej Karpathy 用来教学的玩具模型，参数量 1000 万级别，能跑通就算成功。Starcloud-2 计划 2026 年 10 月发射，载荷是<strong>一张</strong> H100 加<strong>一张</strong> Blackwell B200，外加一块 AWS 服务器刀片——顺带挖比特币，免得卫星上电没事干。</p>
+
+    <p>这是 2026 年人类在轨 AI 算力的全部家底。一张 H100 满载 700 瓦，两张加一起约 1.5 千瓦。Anthropic 官博里说的"数 GW"是至少 20 亿瓦——从 1.5 千瓦到 20 亿瓦，差约 130 万倍。</p>
+
+    <p>中间隔着至少四件基础物理问题：真空环境靠辐射散热（GW 级热量散热板面积比数据中心本体大几倍）、低轨高能粒子让民用 H100 MTBF 短一个数量级、星间激光链路单链 100 Gbps 比张量同步带宽差三个数量级、20 亿瓦太阳能板平摊到低轨要 30 平方公里。任意一件都是 10 年以上的工程问题，加起来超出 2030 年代上半段的可行范围。</p>
+
+    <p>Anthropic 的官博文案撰稿人不会不知道。马斯克更不会不知道。这句话本来就不是写给工程师看的——这句话是写给二级市场基金经理看的。</p>
+
+    <p>SpaceX 招股书一旦递出去，"我们已经和顶级 AI 公司就 GW 级轨道算力达成意向"这一行，可以给整个估值模型加上一个"未来 10 年新业务"的 multiple。</p>
+
+    <p>300 兆瓦是真金白银的 2026 年合同。GW 级是写给 PPT 的 2030 年代愿景。两个数字放一起，前面那个像真的，后面那个就不像假的了——用兑现的小承诺，包装一个永远不用兑现的大承诺。</p>
+
+    <p>中文媒体喜欢把后面那个数字单拎出来当头条。这是免费给 SpaceX IPO 打广告。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">对账</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">300 兆瓦地面 vs 数 GW 太空，前者是合同，后者是 PPT</div></div><div style="padding:22px 24px 18px"><div style="display:flex;align-items:center;gap:24px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px dashed #e2e8f0"><div style="flex:1;text-align:right;font-size:12px;font-weight:700;color:#1A56DB;letter-spacing:1px">← 流入 / INFLOW</div><div style="width:20px"></div><div style="flex:1;text-align:left;font-size:12px;font-weight:700;color:#F05252;letter-spacing:1px">OUTFLOW / 流出 →</div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Colossus 1 已交付</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:15.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">300000000 瓦</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Starcloud-1 在轨</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:8.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">700 瓦</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">数 GW 太空算力意向</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:100.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">2000000000 瓦</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Starcloud-2 计划</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:8.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">1500 瓦</div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>差约 130 万倍，且四个基础物理问题都没解</div></div>
+
+    <hr>
+
+    <h2>五、两个落水的人，互相把对方踩成救命稻草</h2>
+
+    <p>把 5 月 6 日同一天的四件事按时间顺序对照——</p>
+
+    <p>早上，Anthropic 官博：我们拿下 SpaceX Colossus 1 整套算力，付费用户限速翻倍。这一条把"我快撑不住了"包装成"我又收获了"。</p>
+
+    <p>接近中午，SpaceX 这边配合：是的我们租给 Anthropic 了。这一条把"我有块烧钱包袱要变现"包装成"我又签了个大客户"。</p>
+
+    <p>下午，马斯克在 X 上贴"恶人探测器没响"。这一条把"我前几周还在喊它恨西方文明"包装成"我一直是开明的人"。</p>
+
+    <p>晚上，马斯克再补一条：xAI 解散并入 SpaceXAI。这一条把"我一年花 $2500 亿建的公司死了 11 个创始人"包装成"我在做战略整合"。</p>
+
+    <p>四件事各自都是告急。四件事拼起来，被媒体写成"AI 行业新格局诞生"。</p>
+
+    <p>这种集体性的"把告急包装成胜利"，是 AI 大厂这一年的标准动作。Anthropic 半年里把 $3800 亿算力承诺写进官博、把 80 倍年化增长说成"crazy"——背后是收入接不住、用户在 GitHub 围攻。马斯克半年里把 xAI 卖给 SpaceX 时挂 $2500 亿估值、三个月后亲口承认"第一次没建对"——背后是创始人跑光、模型掉队。两边都在用一套"我赢了"的修辞，给一份"我快撑不住"的财务表打掩护。</p>
+
+    <p>二级市场吃这一套。一级市场上 Anthropic 估值奔万亿、SpaceX IPO 准备路演——背后的逻辑是"既然两家都说自己赢了，那一定都在赢"。Bernstein 分析师 Stacy Rasgon 已经公开质疑过 NVIDIA-OpenAI-Microsoft 那条循环交易链，Anthropic 这边的链更长：NVIDIA 投钱给 Anthropic 让它买 NVIDIA GPU，Amazon / Google 投钱给 Anthropic 让它买 AWS / GCP，SpaceX 现在直接租算力把收入做进 IPO 估值。所有 AI 估值都建在"对方付钱给我"的双向承诺上，所有的双向承诺都建在"未来融资覆盖未来开销"的滚动预期上，所有的滚动预期都建在"两家都在赢"的市场共识上。任何一环 default，整张网都会快速塌。</p>
+
+    <p>5 月 6 日这一天，这张网又加固了一圈。</p>
+
+    <p>但加固和塌方在表面上是一回事。一根绳上多打两个结，绳本身没变粗。多打的那两个结只是给路过的人看，让他们以为绳能再承重一吨。</p>
+
+    <p>具体怎么检验我说的对不对，给你两个可证伪的观察点——</p>
+
+    <p>第一，看 Q3 Anthropic Claude Code 会不会再涨价。今年 5 月 14 日 Anthropic 已经把第三方 Agent 调用从订阅里剥离出去单独按 API 计费——那是 5 月 14 日。如果 SpaceX 这单算力够用，5 月 14 日那刀就是最后一刀。如果 Q3 又来一刀（更高的月费、更紧的配额、更多的剥离），就证明 22 万张 GPU 也接不住 80 倍增长。</p>
+
+    <p>第二，看 SpaceX 招股书里 AI 算力收入占总收入的比重。如果占比是个位数，那这 22 万张 GPU 对 SpaceX 来说就是"路过的额外收入"，Fortune 估算的 $3-4B 大概率掺水。如果占比上两位数，那 SpaceX 就是真把火箭公司当 AI 房东在卖——你愿不愿意按"火箭 + 算力"组合估值，是另一个问题。</p>
+
+    <p>两个观察点都很硬。前者最快 Q3 出结论，后者最快下个月递招股书。</p>
+
+    <p>在那之前，"马斯克救 Anthropic"这种叙事可以再洗一波——洗稿的人是真心相信、还是收钱配合、还是单纯没看时间线，每个公众号自己挑。我这一行的观察是：当一个剧本所有当事人都在出力演、所有围观媒体都在出力捧、所有信息差都被精心维护——</p>
+
+    <p>通常剧本本身就是台词。</p>
+
+    <figure style="margin:36px auto;max-width:640px;text-align:center">
+      <svg viewBox="0 0 640 360" width="100%" style="border-radius:12px;background:linear-gradient(180deg,#dbeafe 0%,#bfdbfe 35%,#1e40af 60%,#0c2a6b 100%);box-shadow:0 4px 24px rgba(30,58,138,.15)" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="wave1" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#1e3a8a" stop-opacity=".7"/>
+            <stop offset="100%" stop-color="#0c2a6b" stop-opacity=".95"/>
+          </linearGradient>
+          <linearGradient id="splashGrad" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity=".9"/>
+            <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <circle cx="540" cy="58" r="32" fill="#fef9c3" opacity=".85"/>
+        <circle cx="540" cy="58" r="44" fill="#fef9c3" opacity=".18"/>
+        <path d="M0,215 Q80,200 160,215 T320,215 T480,215 T640,215 L640,360 L0,360 Z" fill="url(#wave1)"/>
+        <path d="M0,235 Q80,222 160,235 T320,235 T480,235 T640,235 L640,360 L0,360 Z" fill="#0c2a6b" opacity=".85"/>
+        <g>
+          <ellipse cx="220" cy="230" rx="42" ry="10" fill="url(#splashGrad)" opacity=".55"/>
+          <ellipse cx="420" cy="230" rx="42" ry="10" fill="url(#splashGrad)" opacity=".55"/>
+        </g>
+        <g>
+          <circle cx="225" cy="118" r="22" fill="#f59e0b"/>
+          <rect x="208" y="138" width="34" height="78" rx="14" fill="#d97706"/>
+          <line x1="210" y1="170" x2="180" y2="195" stroke="#d97706" stroke-width="11" stroke-linecap="round"/>
+          <line x1="240" y1="170" x2="340" y2="180" stroke="#d97706" stroke-width="11" stroke-linecap="round"/>
+          <line x1="215" y1="216" x2="200" y2="248" stroke="#d97706" stroke-width="11" stroke-linecap="round"/>
+          <line x1="232" y1="216" x2="332" y2="200" stroke="#d97706" stroke-width="11" stroke-linecap="round"/>
+          <text x="225" y="108" font-family="Arial" font-size="10" fill="#fef9c3" text-anchor="middle" font-weight="bold">SpaceX</text>
+        </g>
+        <g>
+          <circle cx="412" cy="138" r="22" fill="#dc2626"/>
+          <rect x="395" y="158" width="34" height="78" rx="14" fill="#991b1b"/>
+          <line x1="395" y1="190" x2="305" y2="200" stroke="#991b1b" stroke-width="11" stroke-linecap="round"/>
+          <line x1="430" y1="190" x2="460" y2="218" stroke="#991b1b" stroke-width="11" stroke-linecap="round"/>
+          <line x1="403" y1="236" x2="310" y2="220" stroke="#991b1b" stroke-width="11" stroke-linecap="round"/>
+          <line x1="420" y1="236" x2="435" y2="266" stroke="#991b1b" stroke-width="11" stroke-linecap="round"/>
+          <text x="412" y="128" font-family="Arial" font-size="10" fill="#fef9c3" text-anchor="middle" font-weight="bold">Anthropic</text>
+        </g>
+        <g opacity=".55">
+          <circle cx="80" cy="305" r="3" fill="#fff"/>
+          <circle cx="120" cy="320" r="2" fill="#fff"/>
+          <circle cx="560" cy="298" r="3" fill="#fff"/>
+          <circle cx="600" cy="318" r="2" fill="#fff"/>
+        </g>
+      </svg>
+      <figcaption style="margin-top:10px;color:#64748b;font-size:13px;font-style:italic">两个落水的人，互相把对方踩成救命稻草</figcaption>
+    </figure>
+
+    <hr>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>这种集体性'把告急包装成胜利'，是AI大厂这一年的标准动作。两边都在用'我赢了'的修辞，给一份'我快撑不住'的财务表打掩护。</p>
+    <p>怎么检验？看Q3 Anthropic Claude Code是否再涨价，看SpaceX招股书AI算力收入占比是否高得反常。两个观察点都很硬——在那之前，当所有当事人都在出力演、所有围观媒体都在出力捧，通常剧本本身就是台词。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/news/higher-limits-spacex" target="_blank" rel="noopener">Anthropic 官方公告 - SpaceX 算力合作</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/05/06/anthropic-spacex-data-center-capacity.html" target="_blank" rel="noopener">CNBC - Anthropic, SpaceX announce compute deal</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/05/06/anthropic-ceo-dario-amodei-says-company-crew-80-fold-in-first-quarter.html" target="_blank" rel="noopener">CNBC - Dario Amodei 80x growth quote</a></div>
+      <div class="footer-source-item"><a href="https://venturebeat.com/technology/anthropic-says-it-hit-a-30-billion-revenue-run-rate-after-crazy-80x-growth" target="_blank" rel="noopener">VentureBeat - Anthropic $30B run rate 80x growth</a></div>
+      <div class="footer-source-item"><a href="https://www.tomshardware.com/tech-industry/artificial-intelligence/musks-spacex-has-rented-out-access-to-its-supercomputers-220-000-nvidia-gpus-and-300-megawatts-of-ai-compute-power-to-rival-anthropic-musk-says-no-one-set-off-my-evil-detector-antrhropic-also-interested-in-orbital-data-centers" target="_blank" rel="noopener">Tom's Hardware - 220k GPUs and 300 MW deal</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com/2026/05/07/spacex-anthropic-deal-elon-musk-ai-landlord-evil/" target="_blank" rel="noopener">Fortune - 马斯克成 Anthropic 数据房东</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com/2026/05/08/anthropic-80fold-growth-quarter-renting-elon-musk-data-center/" target="_blank" rel="noopener">Fortune - Anthropic 80x growth rents Musk data center</a></div>
+      <div class="footer-source-item"><a href="https://gizmodo.com/elon-musk-teams-up-with-anthropic-a-company-hes-called-evil-2000755254" target="_blank" rel="noopener">Gizmodo - Musk Teams Up With Anthropic Called Evil</a></div>
+      <div class="footer-source-item"><a href="https://www.thenews.com.pk/latest/1393975-elon-musk-slams-anthropic-as-hater-of-western-civilization-over-pentagon-ai-military-snub" target="_blank" rel="noopener">The News - Musk 骂 Anthropic 恨西方文明</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/02/27/trump-anthropic-ai-pentagon.html" target="_blank" rel="noopener">CNBC - Trump 政府拉黑 Anthropic</a></div>
+      <div class="footer-source-item"><a href="https://www.ghacks.net/2026/05/04/pentagon-signs-ai-deals-with-openai-google-microsoft-nvidia-and-others-cutting-out-anthropic/" target="_blank" rel="noopener">gHacks - Pentagon 8 家 AI 大单排除 Anthropic</a></div>
+      <div class="footer-source-item"><a href="https://breakingdefense.com/2026/05/pentagon-clears-7-tech-firms-to-deploy-their-ai-on-its-classified-networks/" target="_blank" rel="noopener">Breaking Defense - Pentagon IL6/IL7 AI 部署清单</a></div>
+      <div class="footer-source-item"><a href="https://www.cnn.com/2026/05/01/tech/pentagon-ai-anthropic" target="_blank" rel="noopener">CNN - Pentagon shuns Anthropic strikes 8 Big Tech deals</a></div>
+      <div class="footer-source-item"><a href="https://www.macrumors.com/2026/03/26/claude-code-users-rapid-rate-limit-drain-bug/" target="_blank" rel="noopener">MacRumors - Claude Code rate limit drain bug</a></div>
+      <div class="footer-source-item"><a href="https://www.theregister.com/2026/03/31/anthropic_claude_code_limits/" target="_blank" rel="noopener">The Register - Anthropic admits Claude Code quotas drain</a></div>
+      <div class="footer-source-item"><a href="https://github.com/anthropics/claude-code/issues/41930" target="_blank" rel="noopener">GitHub Issue #41930 - Claude Code 限速暴动</a></div>
+      <div class="footer-source-item"><a href="https://x.com/elonmusk/status/2052105373621121284" target="_blank" rel="noopener">Musk X 推文 - xAI 解散并入 SpaceXAI</a></div>
+      <div class="footer-source-item"><a href="https://www.notateslaapp.com/news/4116/elon-musk-announces-xai-will-dissolve-form-spacexai-subdivision" target="_blank" rel="noopener">Not a Tesla App - Musk 宣布 xAI 解散</a></div>
+      <div class="footer-source-item"><a href="https://en.wikipedia.org/wiki/SpaceXAI" target="_blank" rel="noopener">SpaceXAI Wikipedia</a></div>
+      <div class="footer-source-item"><a href="https://www.axios.com/2026/05/07/musk-anthropic-compute-spacex-ai" target="_blank" rel="noopener">Axios - Musk Anthropic SpaceX compute SpaceX IPO</a></div>
+      <div class="footer-source-item"><a href="https://stocktwits.com/news-articles/markets/equity/spacexai-takes-off-elon-musk-consolidates-ai-empire-ahead-of-massive-ipo/cZQzjOQReOD" target="_blank" rel="noopener">Stocktwits - SpaceXAI Consolidates AI Empire Ahead of IPO</a></div>
+      <div class="footer-source-item"><a href="https://thenewstack.io/anthropic-spacex-claude-limits/" target="_blank" rel="noopener">The New Stack - Anthropic SpaceX Claude limits</a></div>
+      <div class="footer-source-item"><a href="https://x.ai/news/anthropic-compute-partnership" target="_blank" rel="noopener">xAI 官方公告 - Anthropic 算力合作</a></div>
+      <div class="footer-source-item"><a href="https://news-pravda.com/world/2026/02/27/2102428.html" target="_blank" rel="noopener">The News Pravda - Anthropic 拒 Pentagon 引发 Musk 评论</a></div>
+      <div class="footer-source-item"><a href="https://www.euronews.com/next/2026/05/11/musk-once-called-anthropic-evil-he-is-now-powering-his-woke-competitors-ai-expansion" target="_blank" rel="noopener">Euronews - Musk 给"woke"对手供电</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
