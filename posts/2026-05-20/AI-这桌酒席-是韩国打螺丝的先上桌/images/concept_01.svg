@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#eef2f7"/>
+    </linearGradient>
+    <linearGradient id="contractGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fef3c7"/>
+      <stop offset="1" stop-color="#fde68a"/>
+    </linearGradient>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#dc2626"/>
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#1A56DB"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#059669"/>
+    </marker>
+  </defs>
+
+  <rect width="800" height="520" fill="url(#bgGrad)"/>
+
+  <text x="400" y="38" text-anchor="middle" font-size="20" font-weight="800" fill="#1a1a2e">韩国 AI 利润分配 — 三方角力</text>
+  <text x="400" y="60" text-anchor="middle" font-size="13" fill="#4a4a6a">5/12 公民红利提议 → 5/13 总统降格 → 5/19 紧急仲裁威胁</text>
+
+  <!-- 政府 (top) -->
+  <g transform="translate(330,90)">
+    <rect x="0" y="0" width="140" height="70" rx="10" fill="#1A56DB"/>
+    <text x="70" y="30" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">韩国政府</text>
+    <text x="70" y="50" text-anchor="middle" font-size="11" fill="#cbd5e1">总统 / 政策室长 / 总理</text>
+  </g>
+
+  <!-- 资本 (bottom-left) -->
+  <g transform="translate(70,370)">
+    <rect x="0" y="0" width="160" height="80" rx="10" fill="#0f172a"/>
+    <text x="80" y="30" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">三星管理层</text>
+    <text x="80" y="50" text-anchor="middle" font-size="11" fill="#cbd5e1">李在镕家族 / 全永铉</text>
+    <text x="80" y="68" text-anchor="middle" font-size="11" fill="#fbbf24">13% 一次性 · 不写入合同</text>
+  </g>
+
+  <!-- 工会 (bottom-right) -->
+  <g transform="translate(570,370)">
+    <rect x="0" y="0" width="160" height="80" rx="10" fill="#dc2626"/>
+    <text x="80" y="30" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">NSEU 工会</text>
+    <text x="80" y="50" text-anchor="middle" font-size="11" fill="#fecaca">崔承浩 / 5 万人</text>
+    <text x="80" y="68" text-anchor="middle" font-size="11" fill="#fef3c7">15% 永久 · 写入合同</text>
+  </g>
+
+  <!-- 中央合同 -->
+  <g transform="translate(310,225)">
+    <rect x="0" y="0" width="180" height="90" rx="8" fill="url(#contractGrad)" stroke="#d97706" stroke-width="2"/>
+    <text x="90" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#78350f">SK 海力士 2024-09</text>
+    <text x="90" y="50" text-anchor="middle" font-size="12" fill="#78350f">10% 营业利润 → 奖金池</text>
+    <text x="90" y="68" text-anchor="middle" font-size="11" fill="#9a3412">人均预测 47.7 万美元</text>
+    <text x="90" y="82" text-anchor="middle" font-size="10" font-style="italic" fill="#9a3412">已签下的样本</text>
+  </g>
+
+  <!-- 力箭头：政府 → 资本 (5/18 强调管理权) -->
+  <path d="M 360 165 Q 280 250 200 370" stroke="#1A56DB" stroke-width="2.5" fill="none" marker-end="url(#arrowBlue)" stroke-dasharray="4 3"/>
+  <text x="222" y="278" font-size="10" fill="#1A56DB" transform="rotate(60 222 278)">5/18 管理权应被尊重</text>
+
+  <!-- 力箭头：政府 → 工会 (5/19 紧急仲裁威胁) -->
+  <path d="M 440 165 Q 530 250 610 370" stroke="#dc2626" stroke-width="2.5" fill="none" marker-end="url(#arrowRed)" stroke-dasharray="4 3"/>
+  <text x="540" y="278" font-size="10" fill="#dc2626" transform="rotate(-60 540 278)">5/19 紧急仲裁权威胁</text>
+
+  <!-- 力箭头：资本 ↔ 工会 (合同对决) -->
+  <line x1="240" y1="410" x2="560" y2="410" stroke="#0f172a" stroke-width="3" marker-end="url(#arrowGreen)" marker-start="url(#arrowGreen)"/>
+  <rect x="345" y="392" width="110" height="38" rx="6" fill="#fff" stroke="#059669" stroke-width="1.5"/>
+  <text x="400" y="407" text-anchor="middle" font-size="11" font-weight="700" fill="#059669">5/21 罢工窗口</text>
+  <text x="400" y="423" text-anchor="middle" font-size="10" fill="#059669">18 天 · 每天 20 亿美元</text>
+
+  <!-- 中央合同向资本+工会的影响 -->
+  <line x1="370" y1="320" x2="200" y2="370" stroke="#d97706" stroke-width="1.5" stroke-dasharray="2 3"/>
+  <line x1="430" y1="320" x2="610" y2="370" stroke="#d97706" stroke-width="1.5" stroke-dasharray="2 3"/>
+
+  <!-- 底部 punchline -->
+  <rect x="40" y="478" width="720" height="30" rx="6" fill="#0f172a"/>
+  <text x="400" y="498" text-anchor="middle" font-size="13" font-weight="700" fill="#fde68a">5/12 公民红利被否，5/19 紧急仲裁加码 — 政府选择保资本，但压不住已经签下的合同</text>
+</svg>
