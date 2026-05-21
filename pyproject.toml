@@ -27,6 +27,8 @@ dependencies = [
 [project.optional-dependencies]
 wechat = [
     "cairosvg>=2.7.0",  # SVG → PNG，微信不支持 SVG 时需要
+    "markdown>=3.5",    # Markdown → 微信 inline-style HTML
+    "pymdown-extensions>=10.0",  # 表格、删除线、代码高亮等扩展
 ]
 
 [project.scripts]

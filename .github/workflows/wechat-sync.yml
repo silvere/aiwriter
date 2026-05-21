@@ -62,6 +62,9 @@ jobs:
         env:
           WECHAT_APPID: ${{ secrets.WECHAT_APPID }}
           WECHAT_APPSECRET: ${{ secrets.WECHAT_APPSECRET }}
+          # cairosvg 需要 native libcairo（brew install cairo）
+          DYLD_LIBRARY_PATH: /opt/homebrew/lib
+          DYLD_FALLBACK_LIBRARY_PATH: /opt/homebrew/lib
         run: |
           set -e
 

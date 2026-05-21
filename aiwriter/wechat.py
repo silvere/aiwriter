@@ -182,6 +182,30 @@ def _extract_digest(html: str, max_chars: int) -> str:
     return text[:max_chars]
 
 
+def _digest_from_md(md_text: str, max_chars: int) -> str:
+    """从 markdown 抽摘要：剥掉标题、引用、列表标记、图片、链接装饰。"""
+    text = md_text
+    # 去 YAML frontmatter
+    text = re.sub(r"^---\n.*?\n---\n", "", text, count=1, flags=re.DOTALL)
+    # 去标题
+    text = re.sub(r"^#+\s+.*$", "", text, flags=re.MULTILINE)
+    # 去图片
+    text = re.sub(r"!\[[^\]]*\]\([^\)]+\)", "", text)
+    # 链接保留文字
+    text = re.sub(r"\[([^\]]+)\]\([^\)]+\)", r"\1", text)
+    # 引用前缀 / 列表前缀
+    text = re.sub(r"^[>\-\*\+]\s*", "", text, flags=re.MULTILINE)
+    # HTML 标签
+    text = re.sub(r"<[^>]+>", "", text)
+    # 加粗/斜体标记
+    text = re.sub(r"[\*_]{1,3}([^\*_]+)[\*_]{1,3}", r"\1", text)
+    # 代码反引号
+    text = re.sub(r"`+([^`]+)`+", r"\1", text)
+    # 压缩空白
+    text = re.sub(r"\s+", " ", text).strip()
+    return text[:max_chars]
+
+
 def _convert_svg_to_png(svg_path: Path) -> Optional[Path]:
     """SVG → PNG。按 cairosvg → rsvg-convert → inkscape 顺序尝试。"""
     import shutil
@@ -324,18 +348,42 @@ def sync_post_to_draft(
     log=lambda msg: None,
     source_url: str = "",
 ) -> SyncResult:
-    """把单个 post 目录下的 article.html 同步到微信草稿箱。"""
+    """把单个 post 目录同步到微信草稿箱。
+
+    输入源选择：
+    - 若存在 article.md → 用 markdown + 微信主题渲染（推荐）
+    - 否则 fallback 到 article.html（旧逻辑）
+    """
     if not config.has_wechat:
         raise WeChatError("未配置 WECHAT_APPID / WECHAT_APPSECRET")
 
     html_path = post_dir / "article.html"
-    if not html_path.exists():
-        raise WeChatError(f"找不到 article.html: {html_path}")
+    md_path = post_dir / "article.md"
 
-    raw_html = html_path.read_text(encoding="utf-8")
-    title = _extract_title(raw_html, fallback=post_dir.name)
-    body = _extract_body(raw_html)
-    digest = _extract_digest(raw_html, config.wechat.default_digest_chars)
+    if not html_path.exists() and not md_path.exists():
+        raise WeChatError(f"既没有 article.md 也没有 article.html: {post_dir}")
+
+    # 拿 html（用于抽 title 和图片回填）
+    raw_html = html_path.read_text(encoding="utf-8") if html_path.exists() else ""
+
+    # 优先 Markdown 路径
+    if md_path.exists():
+        from aiwriter.wechat_theme import render_markdown_to_wechat
+        md_text = md_path.read_text(encoding="utf-8")
+        # 从 md 第一个 # 标题抽 title，fallback 到 HTML 的 <title>
+        m = re.search(r"^#\s+(.+)$", md_text, re.MULTILINE)
+        if m:
+            title = m.group(1).strip()
+        else:
+            title = _extract_title(raw_html, fallback=post_dir.name)
+        body = render_markdown_to_wechat(md_text, html_for_images=raw_html)
+        digest = _digest_from_md(md_text, config.wechat.default_digest_chars)
+        log(f"  [dim]渲染源: article.md（{len(md_text)} 字）[/dim]")
+    else:
+        title = _extract_title(raw_html, fallback=post_dir.name)
+        body = _extract_body(raw_html)
+        digest = _extract_digest(raw_html, config.wechat.default_digest_chars)
+        log(f"  [dim]渲染源: article.html (fallback)[/dim]")
 
     with httpx.Client() as client:
         token = get_access_token(config.wechat_appid, config.wechat_appsecret, client=client)
