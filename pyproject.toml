@@ -24,6 +24,11 @@ dependencies = [
     "kaleido>=0.2.1",
 ]
 
+[project.optional-dependencies]
+wechat = [
+    "cairosvg>=2.7.0",  # SVG → PNG，微信不支持 SVG 时需要
+]
+
 [project.scripts]
 aiwriter = "aiwriter.cli:app"
 
