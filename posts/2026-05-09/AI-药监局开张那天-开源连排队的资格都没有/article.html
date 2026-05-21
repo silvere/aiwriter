@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 药监局开张那天，开源连排队的资格都没有</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI · 监管 · 行业格局</span>
+  <h1>AI 药监局开张那天，开源连排队的资格都没有</h1>
+  <div class="hero-meta">
+    <span>2026-05-09</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">四月七号，Anthropic 发了一个能在 Firefox 里挖出 271 个漏洞的模型。一个月后，白宫拿着这件事的灰，给 AI 行业糊了一座药监局。第一个进门的，正是当初点火的那家。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>1. 一个月的剧本</h2>
+
+    <p>事情得从四月七号说起。</p>
+
+    <p>那天 Anthropic 发了一个内部代号叫 Mythos 的模型。不是用来写小作文的，也不是用来做客服的——这玩意儿是用来挖洞的。在 Firefox 里挖出 271 个高危漏洞，自动写出 181 个能跑的 exploit；在 OpenBSD 里翻出一个躺了 27 年的安全 bug，没人发现；在 FFmpeg 里揪出一个埋了 16 年的雷。每一个，都是工业级速度。</p>
+
+    <p>Anthropic 不傻，发布的时候没一把撒到全网，搞了个项目叫 Glasswing，意思是"只发给守城的人"。听起来很美——把武器优先发给警察，匪徒就抢不到。</p>
+
+    <p>匪徒抢到了。</p>
+
+    <p>Anthropic 自己承认，发布后不久，Mythos 通过私有渠道被未授权访问。翻译过来就是：我们造了个工业级开锁工具，发给了一批我们认证的"防御者"，然后这工具被偷走了。具体被谁偷走、偷走之后做了什么，到现在没有公开答案。</p>
+
+    <p>四月底，副总统 Vance 开始给 CEO 们打电话，包括 Anthropic 的 Dario Amodei。五月二号，Pentagon 的 CTO 公开把 Mythos 称为更广义的"网络时刻"。五月五号，Commerce 部下属的 CAISI（AI 标准与创新中心）跟 Google DeepMind、Microsoft、xAI 签了发布前评估协议——OpenAI 和 Anthropic 早就签了，2024 年就在里面。第二天，国家经济委员会主任 Hassett 接受彭博采访，原话是："就像 FDA 管药一样，AI 也要在被证明安全之后再放进野外。"</p>
+
+    <p>一个月，五件事，一条直线：闯祸 → 失控 → 高层会议 → 拉拢同行 → FDA 比喻官方化。</p>
+
+    <p>你以为这是政府终于醒了。</p>
+
+    <p>不是。这是 Anthropic 赢了。</p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>A regulatory building with a fancy front door, line of corporate logos waiting outside, one figure already inside holding a key, abstract editorial illustration, flat design, minimalist, tech style, blue and white color palette, no text, no labels, clean white background</pre></details>
+</div>
+
+    <hr>
+
+    <h2>2. Mythos 不是模型，是导火索</h2>
+
+    <p>Mythos 不是 Anthropic 第一次发模型，但它是 Anthropic 第一次用一个模型把华盛顿吓到。</p>
+
+    <p>把数字摆在桌面上：271 个 Firefox 高危漏洞、181 个跑得起来的 exploit、一个躺了 27 年的 OpenBSD bug、一个埋了 16 年的 FFmpeg 雷。Anthropic 自己的红队在公开报告里写得很骄傲——"thousands of high-severity vulnerabilities, including some in every major operating system and web browser"。每一个主流操作系统、每一个主流浏览器，都被它扫过一遍，都留了血。</p>
+
+    <p>发布的时候，Anthropic 套了个项目叫 Glasswing。这个项目对外的宣传是：发给关键基础设施的防御者，让他们抢在攻击者之前把洞补上。听上去这是责任感，仔细一拆——它在结构上做了三件事。</p>
+
+    <p>第一，模型不开放权重，只给授权的合作伙伴用 API 访问。第二，参与方要签 NDA，签完才知道自己签的是什么。第三，所有"危险能力"的演示，最先看到的不是用户，是评估机构。</p>
+
+    <p>Anthropic 在 4 月 7 号把 Mythos Preview 文档发出来的时候，文档不是给开发者看的，是给政策官员看的。那份文档的副本，几乎同步出现在了 UK AISI 的评估博客里、出现在 Just Security 的政策分析里、出现在 Washington Post 4 月 24 号的头版。</p>
+
+    <p>然后 Mythos 被未授权访问了。</p>
+
+    <p>Anthropic 那边的措辞非常专业："正在调查潜在的未授权访问。"白宫的反应不专业——administration officials 直接要求 Anthropic 停止扩展 Mythos 的访问权限，把项目按住。国家网络主任 Sean Cairncross 被点名领头处理这事。</p>
+
+    <p>这个时间点上，Anthropic 失去了对自己造的工具的控制权。但它收获了别的东西。</p>
+
+    <p>Mythos 之前，AI 风险在华盛顿是个抽象命题——很多场会、很多份报告、没人真的怕。Mythos 之后，"AI 能在 60 秒内黑掉一个银行"成了一个可以放进国会听证会的具体威胁。Anthropic 没有写过这句话，但它发了一个能让这句话成立的模型。</p>
+
+    <p>四月底，VP Vance 打电话约谈 CEO 圈。会议没有公开纪要，但有公开结果——五月五号，CAISI 的协议清单上，从 OpenAI / Anthropic 两家，扩到了五家。</p>
+
+    <p>Mythos 在 Glasswing 里被关住没？没。在用户手里发挥了"防御者"作用没？暂时没有。但它替 Anthropic 完成了一件最贵的事：把"AI 风险"从空气变成了铁条。</p>
+
+    <p>铁条做出来之后，下一步是把别人也圈进去。</p>
+
+    <div style="background:#f8f9ff;border:1px solid #e2e8f0;border-radius:12px;padding:20px 24px;margin:32px 0;font-size:13px;color:#4a4a6a;white-space:pre-wrap"></div>
+
+    <hr>
+
+    <h2>3. CAISI 不是 FDA，是 VIP 通道</h2>
+
+    <p>外面在传 CAISI 是"AI 版 FDA"。这个定位害人。</p>
+
+    <p>CAISI 全名 Center for AI Standards and Innovation，挂在商务部下面，是 NIST AI Safety Institute 在 Trump 政府里的更名版。它在五月五号宣布的事是这样的——已经完成了 40 多次模型评估，包括对未公开的前沿系统的评估；现在跟 Google DeepMind、Microsoft、xAI 三家签了新协议，给政府发布前的访问权。</p>
+
+    <p>CAISI 内部之前是谁？OpenAI 和 Anthropic。2024 年就在里面了。</p>
+
+    <p>把这两件事放在一起看，你就会发现一个很有意思的细节：CAISI 不是被 Mythos 倒逼出来的。它早就存在。它一直在跑评估。它只是在 Mythos 之后，把会员名单从两家扩到了五家，然后给这件事配了一个 FDA 的故事。</p>
+
+    <p>这五家，全部是闭源前沿大厂。</p>
+
+    <p>CAISI 评估怎么跑？文件原文是这样写的：developers frequently hand over versions of their models with safety guardrails stripped back so the centre can probe for national security risks。翻译一下：开发者主动交出"卸了护栏"的模型，让中心去试它最危险的能力。</p>
+
+    <p>这件事本身就值得多看两眼。</p>
+
+    <p>一个普通公司不会把自家产品的"卸甲版"主动交给政府。一个汽车厂不会把刹车系统拆掉给监管员开。一个药厂不会主动把降低剂量的安全冗余拆掉，让 FDA 去试一下三倍剂量会不会死人。但 AI 公司会。为啥？</p>
+
+    <p>因为这件事的功能不是"让监管知道你危险"，而是"让监管确认只有你能让自己不危险"。</p>
+
+    <p>你卸下护栏给政府看一眼——看，没有我，这玩意儿能干这些坏事。然后你把护栏装回去——所以你需要我，我会负责任地把它装回去。这是一次反向广告。监管是观众，不是裁判。</p>
+
+    <p>CAISI 现在做了 40 多次评估。每一次评估的输出，是一份机密文件，是一次安全签证，是一张"这家公司有能力管住自己的模型"的盖章。这张章，在五月五号之前，只有两家有；五月五号之后，多了三家；总共五家。</p>
+
+    <p>这五家，加在一起，覆盖了美国前沿 AI 几乎全部的产业能力。</p>
+
+    <p>剩下的呢？开源社区——Mistral、DeepSeek、Llama 家族、Qwen 家族——他们不在名单里。不是被禁，是没接口。CAISI 的工作流是"开发者交模型 → 中心评估 → 出报告"。开源权重一旦发布到 Hugging Face，就没有"开发者交"这一步了。它在你那儿，也在所有人那儿，没有"提交"这个动作。</p>
+
+    <p>所以"CAISI 评估"这件事，对开源是个空概念。</p>
+
+    <p>监管框架默认你能交模型。开源默认你不需要交。两者直接错过。</p>
+
+    <p>错过的结果是：CAISI 评估这张章，开源拿不到。</p>
+
+    <div style="background:#f8f9ff;border:1px solid #e2e8f0;border-radius:12px;padding:20px 24px;margin:32px 0;font-size:13px;color:#4a4a6a;white-space:pre-wrap"></div>
+
+    <hr>
+
+    <h2>4. FDA 类比里那个永远不会被讨论的 bug</h2>
+
+    <p>把 Hassett 5 月 6 号的原话再贴一遍：</p>
+
+    <blockquote><p>"We're studying possibly an executive order to give a clear roadmap to everybody about how this is going to go and how future AIs that also potentially create vulnerabilities should go through a process so that they're released to the wild after they've been proven safe, just like an FDA drug."</p></blockquote>
+
+    <p>"like an FDA drug"。</p>
+
+    <p>很多人听到这话，第一反应是：这挺好啊，至少安全标准统一了。</p>
+
+    <p>把 FDA 拆开看一下。FDA 管药，靠的是三件具体的事——有一个固定的化合物分子式；有一个可量化的剂量；有一个明确的适应症。基于这三件事，你才能跑随机对照试验，你才能算副作用，你才能在事后召回——批号召回，因为药有批次，每一支药都有身份。</p>
+
+    <p>AI 模型有这三件事吗？</p>
+
+    <p>模型没有"分子式"。同一个 base model 上面叠几个微调，行为可以从写作家变成黑客。模型没有"剂量"。一个 prompt 跟另一个 prompt 之间，模型能力差几个数量级。模型没有"适应症"。Mythos 自己的官方定位是 general-purpose——通用模型，不是 cyber 模型。它做的事是"通用智能在 cyber 任务上的副作用"。</p>
+
+    <p>FDA 那一套审查方法论，套在 AI 上是个空架子。AEI（美国企业研究所）5 月 6 号的政策评论说得直白：白宫的 AI 审查提案是 bad policy，因为它假设了一个根本不存在的"通过/失败"的分界线。</p>
+
+    <p>但请注意，AEI 反对的是政策合理性。这跟我说的不是一件事。</p>
+
+    <p>这个类比的"bug"恰恰是它的功能。</p>
+
+    <p>第一，它好懂。FDA 是美国人最熟的监管机构之一。把 AI 套进 FDA，普通人立刻有了一个心智模型——"哦，就跟管药一样"。这是一个公关上的胜利，比写十份白皮书有效。</p>
+
+    <p>第二，它把焦点引向"模型本身安全不安全"，而不是"谁有权决定模型上市"。FDA 的争议永远在某种药要不要批；FDA 不会被讨论"为什么这家药厂能交申请、那家不能"——这部分被默认了。AI 套上 FDA 之后，公众讨论被同样地默认到了"评估流程"上，而把"谁有资格被评估"这个真正的市场结构问题，悄悄留在了门外。</p>
+
+    <p>第三，也是最关键的——FDA 有召回权，AI"FDA"没有。</p>
+
+    <p>一个药品出问题，FDA 可以批号召回，不许再卖。一个 AI 模型一旦权重开放出去，全世界已经下载到本地了，没有任何机构有"召回"权——下载发生的那一瞬间，模型就脱离了任何政府的物理触达范围。</p>
+
+    <p>这件事的政策含义是：AI"FDA"对开放权重模型不仅没接口，而且没意义。它评估完了也没法收回。</p>
+
+    <p>所以政策必然滑向另一个方向——把"未经评估的模型用于关键基础设施"定为责任标准。这不是禁止开源，是给开源的部署方算合规账。一个银行用 Llama 做内部 agent，律师就要算：万一出事，监管那边会问，你用的模型走 CAISI 流程没？没走？那就是疏忽。</p>
+
+    <p>到这一步，监管不需要明文禁开源，开源就在企业市场被定价定到关门。</p>
+
+    <p>AEI 说这是 bad policy。它说得对。但这个"坏"不是一个 bug，是商业上想要的 feature。</p>
+
+    <div style="background:#f8f9ff;border:1px solid #e2e8f0;border-radius:12px;padding:20px 24px;margin:32px 0;font-size:13px;color:#4a4a6a;white-space:pre-wrap"></div>
+
+    <hr>
+
+    <h2>5. 闯祸的人不会被罚，只会被发牌照</h2>
+
+    <p>回头看 Anthropic 在这一个月里的处境。</p>
+
+    <p>它造的 Mythos 跑了。它被白宫点名要求暂停扩展访问。它的 CEO 被 VP 约谈。它在 Pentagon 那边吃了闭门羹——Pentagon CTO 公开说 Mythos 是个"cyber moment"，明确不打算跟 Anthropic 和解。</p>
+
+    <p>按"出事"的标准看，这是一个完美的危机。</p>
+
+    <p>按结果看，它是一次升级。</p>
+
+    <p>CAISI 的协议清单从两家扩到五家——Anthropic 是那两家之一。FDA 类比是 Hassett 在彭博的采访里讲出来的——讲的时候 Anthropic 已经在那个体系里两年。EO 草案要做的事，是把"未经评估的模型"挡在关键基础设施之外——Anthropic 的所有模型，从 Mythos 到 Claude Code，都在评估之内。</p>
+
+    <p>它没被罚。它没被禁。它甚至没被收税。它得到的处罚是：被多发了一张其他人没有的会员卡。</p>
+
+    <p>新加入的三家是 Google DeepMind、Microsoft、xAI。看起来像是被拉进来分享荣誉，实际上是被拉进来一起举牌。这五家手里举着的牌写着同一个字——"合规"。这个字在 5 月 5 号之前是公司的内部口号，5 月 5 号之后会变成政府采购合同里的一行硬性要求。</p>
+
+    <p>开源社区不在这五家里面。开源社区也进不来——CAISI 的工作流默认你能交一个闭源版本，开源社区交不出来。它只能被这套监管框架包绕，绕到企业不敢买它，绕到关键基础设施不敢用它，绕到风投不敢投它。</p>
+
+    <p>监管的尽头不是约束，是发牌照。这件事，每一个被监管过的行业都见过——出租车牌、医生资格证、银行牌照、电视台执照。每一次套上一个"安全"的故事，最先受益的都是已经在里面的人。</p>
+
+    <p>Mythos 跑掉那天，Anthropic 失去了一个模型。Anthropic 拿回来的，是一张比对手更早办下来的牌照——而办这张牌照的衙门，是它自己出事那一天才被白宫想起来的那个。</p>
+
+    <p>写完 EO 那天，开源排在门外，连排队的资格都没有。</p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>An ornate license certificate with embossed seal lying on a desk under warm lamplight, an open empty doorway leading to a long line of figures in the dark outside, abstract editorial illustration, flat design, minimalist, tech style, blue and gold color palette, no text, no labels, clean white background</pre></details>
+</div>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>Mythos 跑掉那天，Anthropic 失去了一个模型。它换回来的，是一张比对手更早办下来的牌照——而这张牌照只有能'提交模型'的公司才能办。开源没有这个动作，所以连排队的资格都没有。</p>
+    <p>监管的尽头不是约束，是发牌照。每一次套上'安全'的故事，最先受益的都是已经在里面的人。这一次没有例外。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/05/05/ai-oversight-trump-google-microsoft-xai.html" target="_blank" rel="noopener">CNBC: Trump admin moves further into AI oversight (2026.5.5)</a></div>
+      <div class="footer-source-item"><a href="https://thehill.com/policy/technology/5866292-white-house-ai-evaluation-process/" target="_blank" rel="noopener">The Hill: White House may review AI models 'like an FDA drug' (2026.5.6)</a></div>
+      <div class="footer-source-item"><a href="https://www.bloomberg.com/news/articles/2026-05-06/white-house-preps-order-to-boost-ai-security-hassett-says" target="_blank" rel="noopener">Bloomberg: White House Preps Order to Boost AI Security, Hassett Says (2026.5.6)</a></div>
+      <div class="footer-source-item"><a href="https://red.anthropic.com/2026/mythos-preview/" target="_blank" rel="noopener">Anthropic Red: Claude Mythos Preview</a></div>
+      <div class="footer-source-item"><a href="https://www.aisi.gov.uk/blog/our-evaluation-of-claude-mythos-previews-cyber-capabilities" target="_blank" rel="noopener">UK AISI: Evaluation of Claude Mythos Preview's cyber capabilities</a></div>
+      <div class="footer-source-item"><a href="https://www.washingtonpost.com/technology/2026/04/24/anthropic-mythos-ai-washington-cybersecurity-hacking-risk/" target="_blank" rel="noopener">Washington Post: AI hacking fears jolt Washington as Anthropic unveils Mythos (2026.4.24)</a></div>
+      <div class="footer-source-item"><a href="https://thehill.com/policy/technology/5868214-pentagon-anthropic-mythos/" target="_blank" rel="noopener">The Hill: Pentagon CTO rules out resolution with Anthropic, calls Mythos a broader 'cyber moment'</a></div>
+      <div class="footer-source-item"><a href="https://www.cnn.com/2026/05/05/tech/microsoft-google-xai-government-test-ai-models" target="_blank" rel="noopener">CNN: Microsoft, Google and xAI will let the government test their AI models before launch (2026.5.5)</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/05/08/anthropic-mythos-ai-cybersecurity-banks.html" target="_blank" rel="noopener">CNBC: Anthropic's Mythos set off a cybersecurity 'hysteria' (2026.5.8)</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com/2026/05/06/trump-administration-embraces-ai-oversight-policies-it-once-rejected-anthropic-mythos-caisi/" target="_blank" rel="noopener">Fortune: Trump administration suddenly embraces AI oversight ideas it once rejected (2026.5.6)</a></div>
+      <div class="footer-source-item"><a href="https://www.aei.org/technology-and-innovation/white-house-ai-vetting-proposal-is-bad-policy/" target="_blank" rel="noopener">AEI: White House AI Vetting Proposal Is Bad Policy</a></div>
+      <div class="footer-source-item"><a href="https://www.theregister.com/ai-and-ml/2026/05/08/trump-jumps-from-anything-goes-to-strict-regulation-ai-policy/5234687" target="_blank" rel="noopener">The Register: Trump jumps from 'anything goes' to 'strict regulation' AI policy (2026.5.8)</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
