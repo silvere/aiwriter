@@ -29,10 +29,17 @@ jobs:
           ref: ${{ github.event.workflow_run.head_branch || github.ref_name }}
           fetch-depth: 10
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+      - name: Setup Python (use local 3.11, self-hosted runner)
+        run: |
+          # 在 self-hosted runner 上直接用本地 Python 3.11，避免 actions/setup-python 的 /Users/runner 权限问题
+          PYTHON_BIN="$HOME/.local/bin/python3.11"
+          if [ ! -x "$PYTHON_BIN" ]; then
+            echo "::error::$PYTHON_BIN 不存在"
+            exit 1
+          fi
+          # 用 venv 隔离依赖
+          "$PYTHON_BIN" -m venv .venv
+          echo "$PWD/.venv/bin" >> $GITHUB_PATH
 
       - name: Install AIWriter (含 wechat 可选依赖)
         run: |
