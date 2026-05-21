@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 大厂这次不卖模型了，凑 55 亿去抢麦肯锡的饭碗</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI产业·部署战争</span>
+  <h1>AI 大厂这次不卖模型了，凑 55 亿去抢麦肯锡的饭碗</h1>
+  <div class="hero-meta">
+    <span>2026-05-21</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">2026 年 5 月，AI 行业最贵的两条新闻一条都不是发新模型。Anthropic + 黑石、高盛、Hellman & Friedman 凑了 15 亿美金；7 天后 OpenAI + TPG、贝恩资本、麦肯锡、贝恩咨询、凯捷凑了 4 亿启动 / 140 亿估值的 Deployment Company。合计 55 亿美金，干的是同一件事——把 AI 公司变成咨询公司。最骚的反讽是给 OpenAI 出钱的，恰好是它即将端掉饭碗的那批咨询公司本人。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>A group of young engineers wearing white hoodies and backpacks walking into a glass corporate office building lobby, contrasted with a faded silhouette of consultants in black suits in the background, flat design, minimalist illustration, tech style, blue and white color palette, no text, no labels, clean white background</pre></details>
+</div>
+
+    <h2>一、五月，两家 AI 大厂干了一件不像 AI 公司的事</h2>
+
+    <p>5 月 4 日，Anthropic 宣布跟黑石（Blackstone）、Hellman & Friedman、高盛三家成立一家暂时还没名字的合资公司，规模 15 亿美元。其中 Anthropic、黑石、Hellman & Friedman 三家各掏 3 亿美元做锚定股东，高盛掏 1.5 亿做创始投资人，剩余资金来自 Apollo、General Atlantic、GIC、红杉、Leonard Green。</p>
+
+    <p>它要干什么？把 Claude 塞进黑石、Hellman & Friedman 旗下的 portfolio 公司，第一批锁定五个行业：医疗、制造、金融服务、零售、地产。</p>
+
+    <p>按 Anthropic 首席财务官 Krishna Rao 的原话——"企业对 Claude 的需求，远远跑赢了任何单一交付方式"。</p>
+
+    <p>翻译过来就是：API 卖不动，必须派人上门。</p>
+
+    <p>7 天后，OpenAI 跟上。</p>
+
+    <p>5 月 11 日发布"OpenAI Deployment Company"，由 OpenAI 首席运营官 Brad Lightcap 牵头。4 亿美元启动资金，19 家投资人，整体估值 140 亿美元。领投是 TPG，联合领投是 Advent、贝恩资本、Brookfield，加上软银、高盛、Warburg Pincus、BBVA 一长串名字。</p>
+
+    <p>但这份 19 家投资人名单里，最值得拎出来的是三家：</p>
+
+    <p>贝恩咨询（Bain & Company）、凯捷（Capgemini）、麦肯锡（McKinsey）。</p>
+
+    <p>这三家加起来，2024 年靠"帮企业搞 AI 转型"这件事就挣了大约 300 亿美元。今天它们一起掏钱给 OpenAI，让 OpenAI 去抢它们的饭碗。</p>
+
+    <p>同一天，OpenAI 还宣布收购一家叫 Tomoro 的伦敦 AI 工程公司。Tomoro 成立于 2023 年，本身就是跟 OpenAI 联盟起家，总部伦敦，办公室开在爱丁堡、曼彻斯特、新加坡，旗下 150 个工程师全是 Forward Deployed Engineer，客户名单里有 Mattel（芭比娃娃）、Tesco（英国超市）、Virgin Atlantic（维珍航空）、红牛、Supercell（手游）。</p>
+
+    <p>OpenAI 花钱买的不是 Tomoro 的模型——它根本没有自研模型。买的是这 150 个工程师的人头，和这一串客户合同。</p>
+
+    <p>这两家凑的 55 亿美金，没花一分钱在 GPU 上。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">条形图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">5月4日 Anthropic + 5月11日 OpenAI，两份"部署公司"剧本的关键数字</div></div><div style="padding:22px 24px 18px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px dashed #e2e8f0"><div><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><span style="width:10px;height:10px;border-radius:3px;background:#1A56DB;display:inline-block"></span><span style="font-size:11px;color:#64748b">流入</span></span><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><span style="width:10px;height:10px;border-radius:3px;background:#F05252;display:inline-block"></span><span style="font-size:11px;color:#64748b">流出</span></span><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><span style="width:10px;height:10px;border-radius:3px;background:#94A3B8;display:inline-block"></span><span style="font-size:11px;color:#64748b">参照</span></span></div><span style="font-size:11px;color:#94a3b8;font-weight:500">单位：亿美元</span></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">OpenAI Deployment Co 整体估值</span><span style="font-size:15px;font-weight:700;color:#94A3B8;white-space:nowrap">140 亿美元</span></div><div style="background:#F1F5F9;border-radius:5px;height:10px;overflow:hidden"><div style="background:#94A3B8;width:100.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">OpenAI Deployment Co 启动资金</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">40 亿美元</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:28.6%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">Anthropic 合资公司启动</span><span style="font-size:15px;font-weight:700;color:#1A56DB;white-space:nowrap">15 亿美元</span></div><div style="background:#EEF2FF;border-radius:5px;height:10px;overflow:hidden"><div style="background:#1A56DB;width:10.7%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">Anthropic、黑石、H&F 各自锚定出资</span><span style="font-size:15px;font-weight:700;color:#F05252;white-space:nowrap">3 亿美元</span></div><div style="background:#FFE4E4;border-radius:5px;height:10px;overflow:hidden"><div style="background:#F05252;width:8.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">高盛创始出资</span><span style="font-size:15px;font-weight:700;color:#F05252;white-space:nowrap">1.5 亿美元</span></div><div style="background:#FFE4E4;border-radius:5px;height:10px;overflow:hidden"><div style="background:#F05252;width:8.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>合计 55 亿美金启动资金，没有一分钱用在 GPU 上</div></div>
+
+    <h2>二、模型不挣钱，挣钱的是上门修电脑</h2>
+
+    <p>这两件事只看资本动作，看不出门道。</p>
+
+    <p>叠上一个数据，逻辑立刻清晰：Ramp 4 月企业 AI 渗透率统计——Anthropic 34.4%，环比 +3.8%；OpenAI 32.3%，环比 -2.9%。Anthropic 历史上第一次反超 OpenAI。</p>
+
+    <p>但更刺眼的不是谁第一，是 ChatGPT 上线快三年了，企业里真正在用的不到 35%。</p>
+
+    <p>MIT 今年早些时候的研究更扎心：追踪了几百个企业级 GenAI 试点项目，95% 没产生任何可衡量的财务影响。</p>
+
+    <p>模型够不够聪明？够。</p>
+
+    <p>GPT-5.5 在 Terminal-Bench 2.0 上拿 82.7%。Claude Opus 4.7 在 SWE-bench Pro 上拿 64.3%。Gemini 3.1 Pro 在 GPQA Diamond 上拿 94.3%。前沿榜单上互相杀红了眼，差距小到客户根本分不出来。</p>
+
+    <p>但企业用不起来。</p>
+
+    <p>不是模型不行。是企业内部那条管子断了。数据没整理，流程没改造，员工不会写 prompt，IT 部门不知道接哪。你给一家年收 70 亿美元的零售集团扔一个 API key，等于给一个不会开车的人一辆 F1。</p>
+
+    <p>这就是为什么 OpenAI 花真金白银收购 Tomoro。Tomoro 没有自研模型，它有的是 150 个会跑去客户现场写 Python、接数据库、改 ERP 的人。</p>
+
+    <p>这群人有个特别的称呼：Forward Deployed Engineer，简称 FDE。</p>
+
+    <p>这个词最早是 Palantir 发明的，Alex Karp 从 2005 年开始玩。玩到今天 Palantir 估值是 OpenAI 的三分之一，但毛利率是 OpenAI 的八倍。</p>
+
+    <p>OpenAI 这次做的事，本质就是把 Palantir 的剧本按 30 倍速重演一遍。Anthropic 那边做的也是同一件事——只不过它绕过工程公司，直接绑定 PE。</p>
+
+    <p>逻辑是一样的：模型是货架商品，部署是人头生意。货架商品边际利润 5%，人头生意 40% 起。</p>
+
+    <p>OpenAI 2024 年烧掉了几十亿美元、2025 年估算亏损还在扩大；Anthropic 估值飙到 3800 亿美元，营收却跟估值不在一个量级。两家心里都清楚一件事：靠卖 API 永远不可能挣回烧的钱，必须有人去客户公司里把这玩意儿装上、调通、运起来。</p>
+
+    <p>那个干活的人，过去三十年叫埃森哲。</p>
+
+    <p>现在叫"OpenAI Deployment Company"。</p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>An engineer in casual hoodie sitting at a client's office desk with multiple monitors showing code, surrounded by server racks and SAP ERP screens, flat design, minimalist illustration, tech consulting style, blue and gray color palette, no text, no labels, clean modern office background</pre></details>
+</div>
+
+    <h2>三、麦肯锡为什么愿意给自己挖坟</h2>
+
+    <p>回到 OpenAI Deployment Company 那 19 家投资人名单。</p>
+
+    <p>最值得抠的不是 TPG，是麦肯锡、贝恩咨询、凯捷三家。它们不是被动跟投，是主动找上门要进 cap table。</p>
+
+    <p>为什么？</p>
+
+    <p>答案很俗：打不过，就入股；入了股，至少分钱。</p>
+
+    <p>逻辑链条很短：客户的 CIO 看了一年 Claude 和 GPT，已经在追问"我能不能不通过你们直接对接 OpenAI"。麦肯锡卖 slide deck 的速度，跑不过 OpenAI 卖 API 的速度。与其等三年被截胡，不如现在掏钱进去当股东，拿一份保底。</p>
+
+    <p>而且这份保底相当硬：OpenAI Deployment Company 给投资人锁了 17.5% 的年化收益，5 年期，利润有上限封顶。</p>
+
+    <p>这是私募信贷产品的设计，不是科技公司的股权设计。</p>
+
+    <p>设计这种结构的人，恰好就是同坐 cap table 上的 TPG、贝恩资本、Brookfield——它们是干私募信贷出身的。</p>
+
+    <p>翻译过来就是：OpenAI 把自己包装成一只私募信贷基金，让 19 家钱多得没处花的机构买"AI 转型保底产品"，对赌的标的物是"OpenAI 能不能从咨询行业咬下一块肉"。</p>
+
+    <p>麦肯锡进来的逻辑很清晰：不用自研模型，不用养工程师，不用挑客户，出钱、等保底、分订单。OpenAI 赢了它跟着赢；OpenAI 输了，自己锁定的 17.5% 年化收益也没事。</p>
+
+    <p>更妙的是，这 19 家投资人加起来手里有 2000 多家 portfolio 公司。这些公司是 Deployco 未签合同就先到手的客户管道。</p>
+
+    <p>OpenAI 不是出来开公司，是出来抢一份已经成熟的客户名单。</p>
+
+    <p>Anthropic 那边玩得更隐蔽。它没去找咨询公司，直接找 PE 老板。黑石旗下 230 家 portfolio 公司，Hellman & Friedman 旗下 80 多家，加起来 300 多家中型企业，全部是这只 JV 的预设客户池。</p>
+
+    <p>Anthropic 掏 3 亿换的不是订阅费，是把 Claude 塞进这 300 家公司核心流程的特权。等这 300 家未来 PE 退出的时候，估值因为"AI 化"提了 30%，PE 多挣的 carried interest 里，本质上有 Anthropic 的一份功劳。</p>
+
+    <p>Anthropic 那 3 亿美金，挣的不是 SaaS 订阅费，挣的是 PE 退出溢价的一部分。</p>
+
+    <p>这玩法以前的名字叫 vendor financing。现在它有了个新名字，叫 deployment company。</p>
+
+    <p>本质没变，只是这次入场的是 AI。</p>
+
+    <h2>四、被替换的不是麦肯锡 partner，是写 deck 的 associate</h2>
+
+    <p>很多人把这件事误读成"麦肯锡要被 AI 干掉了"。</p>
+
+    <p>错。真正被干掉的，是麦肯锡的底层岗。</p>
+
+    <p>麦肯锡的合伙人不会失业。他们正在变成"AI Deployment Partner"——继续跟客户 CEO 喝咖啡，只不过身后跟着的不再是 5 个 MBA 出身的 associate，是 5 个会写 LangChain 的工程师。</p>
+
+    <p>失业的是：</p>
+
+    <p>通宵改 PPT 的 BA、跑 Excel 数据模型的 analyst、跟着 partner 飞客户做访谈的 EM、整理 benchmark 的实习生。</p>
+
+    <p>华尔街日报今年早些时候的报道：麦肯锡、贝恩、BCG（业内称 MBB）2024-2025 校招同比下降了 35%。不是行业不挣钱了，是中间这一层 associate 池子，被 GPT 和 Claude 蒸发掉了。</p>
+
+    <p>新岗位是 Forward Deployed Engineer。</p>
+
+    <p>这个职位的工作内容是什么？飞客户公司，住 Airbnb，每周 80 小时，写 Python 接 SAP 数据，配 prompt 让 Claude 跑财务对账，签 NDA。</p>
+
+    <p>听起来熟吗？跟 30 年前埃森哲的 ERP 顾问完全一样。</p>
+
+    <p>那时候大家叫他们"黑西装大军"——穿西装、出差、上门装 SAP 和 Oracle。</p>
+
+    <p>今天 OpenAI 派出去的人叫"白卫衣大军"——穿连帽衫、出差、上门装 GPT 和 Claude。</p>
+
+    <p>本质一样：卖确定性，按人头收钱。</p>
+
+    <p>区别只在于：黑西装大军干完一单是一锤子买卖，白卫衣大军干完一单留下的是一条上瘾的 API 调用曲线，每个月按 token 计费。</p>
+
+    <p>最黑色幽默的部分在 Tomoro 的客户名单上。Mattel 做芭比娃娃，Tesco 做超市，Virgin Atlantic 做航空，红牛做能量饮料，Supercell 做手游。</p>
+
+    <p>这五家公司的共同点是什么？全部是埃森哲和德勤的传统大客户。</p>
+
+    <p>OpenAI 花钱买 Tomoro，等于把这五家公司原本付给传统咨询公司的预算，转头流进了自己口袋。</p>
+
+    <p>而 Forward Deployed Engineer 自己的天花板有两条路：成为合伙人（变成新的 partner，重复 30 年前的故事），或者被自己部署的 agent 替换（自己写的 Claude 把自己的活儿干了）。</p>
+
+    <p>两条路有什么区别？没有。</p>
+
+    <p>都通向同一件事：人头生意，迟早自动化。只是迟。</p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>Split-screen illustration: left side shows 1990s consultants in black business suits carrying briefcases entering a corporate building labeled with old enterprise software boxes, right side shows 2026 young AI engineers in white hoodies and sneakers carrying laptops entering the same building with AI cloud icons, flat design, minimalist illustration, blue and gray color palette, no text, no labels, clean white background</pre></details>
+</div>
+
+    <h2>五、一刀收束</h2>
+
+    <p>回到最开始的两条新闻。</p>
+
+    <p>5 月 4 日，15 亿美元。5 月 11 日，4 亿美元启动、140 亿估值。合计 55 亿美金启动资金，目标只有一个：把 AI 公司变成咨询公司。</p>
+
+    <p>模型这条线，已经卷到尽头。GPT-5.5 和 Claude Opus 4.7 之间的差距，比可乐和百事可乐还小。</p>
+
+    <p>真正能挣到的钱，是模型怎么进客户公司，谁来把它接上 ERP，谁来训练员工，谁来负责出问题挨骂。</p>
+
+    <p>这一段路过去三十年是埃森哲、麦肯锡、德勤的。现在 OpenAI 和 Anthropic 决定自己干，要做的事跟"颠覆"无关，就是接管供应链。</p>
+
+    <p>连最讽刺的部分都不藏：把麦肯锡、贝恩咨询、凯捷拉进来当股东，让它们一起埋自己的旧业务。</p>
+
+    <p>如果你在咨询行业——学会用 Claude 当合伙人，否则你下一份合同的甲方可能不是企业 CIO，是 OpenAI Deployment Company 的项目经理。</p>
+
+    <p>如果你在企业 IT——下一个供应商不是"SAP + 德勤"，是 OpenAI 直接派一队 FDE 进驻。</p>
+
+    <p>如果你是 LP——别看模型估值，看部署毛利。</p>
+
+    <p>30 年前埃森哲卖确定性，叫"黑西装大军"。30 年后 OpenAI 卖确定性，叫"白卫衣大军"。中间那 30 年，叫"麦肯锡上车"。</p>
+
+    <p>就这。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>55 亿美金启动资金，0 美金用于 GPU。两家 AI 大厂不再卷模型，开始派人进客户公司——把 Claude 和 GPT 装进 ERP、装进财务流程、装进供应链。这件事过去三十年叫埃森哲和麦肯锡，现在叫 OpenAI Deployment Company 和 Anthropic 那只暂时还没起名字的 JV。</p>
+    <p>如果你在咨询行业，学会用 Claude 当合伙人；如果你在企业 IT，下一个供应商可能是 OpenAI 直接派的 FDE；如果你是 LP，别只看模型估值，看部署毛利。30 年前埃森哲叫'黑西装大军'，30 年后 OpenAI 叫'白卫衣大军'。中间那 30 年，叫'麦肯锡上车'。就这。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://openai.com/index/openai-launches-the-deployment-company/" target="_blank" rel="noopener">OpenAI launches the OpenAI Deployment Company</a></div>
+      <div class="footer-source-item"><a href="https://www.blackstone.com/news/press/anthropic-partners-with-blackstone-hellman-friedman-and-goldman-sachs-to-launch-enterprise-ai-services-firm/" target="_blank" rel="noopener">Anthropic Partners with Blackstone, Hellman & Friedman, and Goldman Sachs (Blackstone Press)</a></div>
+      <div class="footer-source-item"><a href="https://www.axios.com/2026/05/11/openai-deployco-private-equity" target="_blank" rel="noopener">OpenAI launches AI consulting arm valued at $14 billion (Axios)</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/05/04/anthropic-goldman-blackstone-ai-venture.html" target="_blank" rel="noopener">Anthropic teams with Goldman, Blackstone on $1.5 billion AI venture (CNBC)</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com/2026/05/04/anthropic-claude-consulting-industry-joint-venture-blackstone-goldman-sachs/" target="_blank" rel="noopener">Anthropic takes shot at consulting industry (Fortune)</a></div>
+      <div class="footer-source-item"><a href="https://siliconangle.com/2026/05/11/openai-launches-professional-services-business-4b-investment/" target="_blank" rel="noopener">OpenAI launches professional services business (SiliconANGLE)</a></div>
+      <div class="footer-source-item"><a href="https://ramp.com/leading-indicators/ai-index-may-2026" target="_blank" rel="noopener">Ramp AI Index May 2026</a></div>
+      <div class="footer-source-item"><a href="https://www.theregister.com/ai-ml/2026/05/11/openai-buys-ai-consultancy-to-sell-enterprises-on-its-models/" target="_blank" rel="noopener">OpenAI can't have incompetent AI consultants ruining the market (The Register)</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
