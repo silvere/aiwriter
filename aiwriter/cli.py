@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List, Optional
 
 import typer
@@ -65,6 +66,7 @@ def check() -> None:
     api_table.add_row("Tavily", _status(config.has_tavily), "联网搜索")
     api_table.add_row("Unsplash", _status(config.has_unsplash), "高质量图片")
     api_table.add_row("Pexels", _status(config.has_pexels), "高质量图片")
+    api_table.add_row("微信公众号", _status(config.has_wechat), "草稿同步")
 
     console.print(api_table)
 
@@ -73,6 +75,51 @@ def check() -> None:
             "\n[bold yellow]警告:[/bold yellow] 未配置任何写作 API Key（Anthropic 或 OpenAI），"
             "无法生成文章。\n请在 .env 中设置 ANTHROPIC_API_KEY 或 OPENAI_API_KEY。"
         )
+
+
+@app.command("wechat-sync")
+def wechat_sync(
+    post: str = typer.Argument(..., help="post 目录路径（包含 article.html），或 posts/ 下的子目录名"),
+    source_url: str = typer.Option("", "--source-url", help="原文链接，填入草稿的“原文链接”字段"),
+) -> None:
+    """把 post 目录里的 article.html 同步到微信公众号草稿箱。"""
+    from aiwriter.config import load_config
+    from aiwriter.wechat import WeChatError, sync_post_to_draft
+
+    config = load_config()
+
+    if not config.has_wechat:
+        console.print(
+            "[bold red]错误:[/bold red] 未配置微信公众号 API。\n"
+            "请在 .env 设置 [bold]WECHAT_APPID[/bold] 和 [bold]WECHAT_APPSECRET[/bold]。"
+        )
+        raise typer.Exit(code=1)
+
+    post_path = Path(post).expanduser()
+    if not post_path.is_absolute() and not post_path.exists():
+        candidate = Path.cwd() / "posts" / post
+        if candidate.exists():
+            post_path = candidate
+    post_path = post_path.resolve()
+
+    if not post_path.is_dir():
+        console.print(f"[bold red]错误:[/bold red] post 目录不存在: {post_path}")
+        raise typer.Exit(code=1)
+
+    try:
+        result = sync_post_to_draft(
+            post_path, config, log=lambda msg: console.print(msg), source_url=source_url
+        )
+    except WeChatError as e:
+        console.print(f"\n[bold red]同步失败:[/bold red] {e}")
+        raise typer.Exit(code=1) from e
+
+    console.print(
+        f"\n[bold green]✓ 同步完成[/bold green]: {result.title}\n"
+        f"  草稿 media_id: {result.media_id}\n"
+        f"  上传图片数: {result.uploaded_image_count}\n"
+        f"  到 [link]https://mp.weixin.qq.com[/link] 后台 → 草稿箱 → 预览并发布。"
+    )
 
 
 if __name__ == "__main__":

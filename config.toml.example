@@ -20,3 +20,10 @@ writing_model = "claude-sonnet-4-6"
 # Alternatives: "gpt-4o", "deepseek-chat"
 auxiliary_model = "claude-haiku-4-5-20251001"
 # Cheaper model for auxiliary tasks (chart data extraction, image prompts)
+
+[wechat]
+# 微信公众号草稿作者署名（最多 8 个字符）
+author = ""
+# 草稿摘要默认从正文截取的字符数（微信上限 120）
+default_digest_chars = 54
+# 注意：WECHAT_APPID / WECHAT_APPSECRET 走 .env 环境变量，不在这里

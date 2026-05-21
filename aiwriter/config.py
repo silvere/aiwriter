@@ -37,12 +37,19 @@ class LLMConfig:
 
 
 @dataclass
+class WeChatConfig:
+    author: str = ""
+    default_digest_chars: int = 54
+
+
+@dataclass
 class Config:
     vault: VaultConfig
     style: StyleConfig = field(default_factory=StyleConfig)
     images: ImagesConfig = field(default_factory=ImagesConfig)
     search: SearchConfig = field(default_factory=SearchConfig)
     llm: LLMConfig = field(default_factory=LLMConfig)
+    wechat: WeChatConfig = field(default_factory=WeChatConfig)
 
     # API keys (from env)
     anthropic_api_key: Optional[str] = None
@@ -50,6 +57,8 @@ class Config:
     tavily_api_key: Optional[str] = None
     unsplash_access_key: Optional[str] = None
     pexels_api_key: Optional[str] = None
+    wechat_appid: Optional[str] = None
+    wechat_appsecret: Optional[str] = None
 
     # Feature flags
     has_anthropic: bool = False
@@ -58,6 +67,7 @@ class Config:
     has_unsplash: bool = False
     has_pexels: bool = False
     has_ai_image: bool = False  # True if has_openai (for DALL-E)
+    has_wechat: bool = False
 
 
 def _find_file(filename: str) -> Optional[Path]:
@@ -166,12 +176,21 @@ def load_config() -> Config:
         auxiliary_model=llm_raw.get("auxiliary_model", "claude-haiku-4-5-20251001"),
     )
 
+    # --- WeChat ---
+    wechat_raw = raw.get("wechat", {})
+    wechat = WeChatConfig(
+        author=wechat_raw.get("author", ""),
+        default_digest_chars=wechat_raw.get("default_digest_chars", 54),
+    )
+
     # --- API keys from environment ---
     anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY") or None
     openai_api_key = os.environ.get("OPENAI_API_KEY") or None
     tavily_api_key = os.environ.get("TAVILY_API_KEY") or None
     unsplash_access_key = os.environ.get("UNSPLASH_ACCESS_KEY") or None
     pexels_api_key = os.environ.get("PEXELS_API_KEY") or None
+    wechat_appid = os.environ.get("WECHAT_APPID") or None
+    wechat_appsecret = os.environ.get("WECHAT_APPSECRET") or None
 
     has_anthropic = bool(anthropic_api_key)
     has_openai = bool(openai_api_key)
@@ -179,6 +198,7 @@ def load_config() -> Config:
     has_unsplash = bool(unsplash_access_key)
     has_pexels = bool(pexels_api_key)
     has_ai_image = has_openai  # DALL-E requires OpenAI
+    has_wechat = bool(wechat_appid and wechat_appsecret)
 
     return Config(
         vault=vault,
@@ -186,15 +206,19 @@ def load_config() -> Config:
         images=images,
         search=search,
         llm=llm,
+        wechat=wechat,
         anthropic_api_key=anthropic_api_key,
         openai_api_key=openai_api_key,
         tavily_api_key=tavily_api_key,
         unsplash_access_key=unsplash_access_key,
         pexels_api_key=pexels_api_key,
+        wechat_appid=wechat_appid,
+        wechat_appsecret=wechat_appsecret,
         has_anthropic=has_anthropic,
         has_openai=has_openai,
         has_tavily=has_tavily,
         has_unsplash=has_unsplash,
         has_pexels=has_pexels,
         has_ai_image=has_ai_image,
+        has_wechat=has_wechat,
     )
