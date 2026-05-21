@@ -151,9 +151,11 @@ THEME: dict[str, str] = {
     ),
 
     # —— 自定义：URL 展示 ——
+    # 注意：不能用 display:block，否则微信会把 <span> 当独立块解析，
+    # 在 <li> 里会冒出空 bullet。改用 inline 样式 + 前面插 <br/> 换行。
     "_link_url_line": (
-        f"display: block; margin: 4px 0 8px; font-size: 12px; "
-        f"color: {_MUTE}; line-height: 1.5; word-break: break-all; "
+        f"font-size: 12px; color: {_MUTE}; line-height: 1.5; "
+        "word-break: break-all; "
         "font-family: 'SFMono-Regular', Consolas, Menlo, monospace;"
     ),
 
@@ -326,7 +328,8 @@ def _append_url_to_external_links(html: str) -> str:
         text_stripped = text.strip()
         if text_stripped == url or text_stripped == url.rstrip("/"):
             return m.group(0)
-        return f'{full_open}{text}{close}<span style="{url_style}">{url}</span>'
+        # 用 <br/> 强制换行 + inline span 显示 URL，避免 <li> 内出现空 bullet
+        return f'{full_open}{text}{close}<br/><span style="{url_style}">{url}</span>'
 
     return _EXTERNAL_LINK_RE.sub(repl, html)
 
