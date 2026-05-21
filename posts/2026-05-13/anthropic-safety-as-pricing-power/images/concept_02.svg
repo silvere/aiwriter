@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" role="img" aria-label="天平：军章 vs 巨型钻石">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
+    </linearGradient>
+    <linearGradient id="diamond" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#bae6fd"/>
+      <stop offset="50%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <linearGradient id="diamond2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0ea5e9"/>
+      <stop offset="100%" stop-color="#075985"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#7dd3fc" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#0ea5e9" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="medal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 背景 -->
+  <rect x="0" y="0" width="1200" height="600" fill="url(#sky)"/>
+
+  <!-- 钻石光晕 -->
+  <ellipse cx="900" cy="380" rx="280" ry="180" fill="url(#halo)"/>
+
+  <!-- 中柱 -->
+  <rect x="588" y="180" width="24" height="360" fill="#475569"/>
+  <polygon points="568,540 632,540 612,580 588,580" fill="#334155"/>
+  <rect x="540" y="575" width="120" height="14" rx="2" fill="#1e293b"/>
+
+  <!-- 横梁（向右倾斜，因为右盘重） -->
+  <g transform="translate(600,200) rotate(8)">
+    <rect x="-360" y="-6" width="720" height="12" rx="3" fill="#475569"/>
+    <circle cx="0" cy="0" r="14" fill="#1e293b"/>
+  </g>
+
+  <!-- 左盘（高，轻） -->
+  <g transform="translate(245,148)">
+    <!-- 绳 -->
+    <line x1="0" y1="0" x2="-50" y2="80" stroke="#64748b" stroke-width="1.5"/>
+    <line x1="0" y1="0" x2="50" y2="80" stroke="#64748b" stroke-width="1.5"/>
+    <!-- 盘 -->
+    <path d="M -90 80 q 90 50 180 0 q -10 16 -90 16 q -80 0 -90 -16 z" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
+    <ellipse cx="0" cy="80" rx="90" ry="10" fill="#cbd5e1" stroke="#475569" stroke-width="1.5"/>
+    <!-- 军章 -->
+    <g transform="translate(0,62)">
+      <circle r="22" fill="url(#medal)" stroke="#7c2d12" stroke-width="2"/>
+      <polygon points="0,-12 4,-3 14,-2 6,5 8,15 0,10 -8,15 -6,5 -14,-2 -4,-3" fill="#fde68a" stroke="#7c2d12" stroke-width="1"/>
+      <rect x="-10" y="22" width="20" height="14" fill="#1e3a8a"/>
+      <rect x="-10" y="22" width="6" height="14" fill="#dc2626"/>
+      <rect x="4" y="22" width="6" height="14" fill="#dc2626"/>
+    </g>
+    <text x="0" y="130" text-anchor="middle" fill="#475569" font-family="system-ui, sans-serif" font-size="14">$200M Pentagon 合同</text>
+    <text x="0" y="150" text-anchor="middle" fill="#94a3b8" font-family="ui-monospace, monospace" font-size="12">= 0.67% ARR</text>
+  </g>
+
+  <!-- 右盘（低，重） -->
+  <g transform="translate(955,252)">
+    <line x1="0" y1="0" x2="-70" y2="110" stroke="#64748b" stroke-width="1.5"/>
+    <line x1="0" y1="0" x2="70" y2="110" stroke="#64748b" stroke-width="1.5"/>
+    <path d="M -130 110 q 130 70 260 0 q -15 22 -130 22 q -115 0 -130 -22 z" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
+    <ellipse cx="0" cy="110" rx="130" ry="14" fill="#cbd5e1" stroke="#475569" stroke-width="1.5"/>
+    <!-- 大钻石 -->
+    <g transform="translate(0,75)">
+      <!-- 上半 -->
+      <polygon points="-70,0 70,0 50,-30 -50,-30" fill="url(#diamond)" stroke="#0c4a6e" stroke-width="2"/>
+      <line x1="-50" y1="-30" x2="-30" y2="0" stroke="#0c4a6e" stroke-width="1" opacity="0.5"/>
+      <line x1="50" y1="-30" x2="30" y2="0" stroke="#0c4a6e" stroke-width="1" opacity="0.5"/>
+      <line x1="-30" y1="0" x2="-15" y2="-30" stroke="#0c4a6e" stroke-width="1" opacity="0.5"/>
+      <line x1="30" y1="0" x2="15" y2="-30" stroke="#0c4a6e" stroke-width="1" opacity="0.5"/>
+      <line x1="0" y1="0" x2="0" y2="-30" stroke="#0c4a6e" stroke-width="1" opacity="0.5"/>
+      <!-- 下半 -->
+      <polygon points="-70,0 70,0 0,85" fill="url(#diamond2)" stroke="#0c4a6e" stroke-width="2"/>
+      <line x1="-50" y1="0" x2="0" y2="85" stroke="#0c4a6e" stroke-width="1" opacity="0.4"/>
+      <line x1="50" y1="0" x2="0" y2="85" stroke="#0c4a6e" stroke-width="1" opacity="0.4"/>
+      <line x1="-30" y1="0" x2="0" y2="85" stroke="#0c4a6e" stroke-width="1" opacity="0.3"/>
+      <line x1="30" y1="0" x2="0" y2="85" stroke="#0c4a6e" stroke-width="1" opacity="0.3"/>
+      <!-- 闪光 -->
+      <polygon points="-50,-22 -45,-18 -55,-15 -52,-25" fill="#ffffff" opacity="0.9"/>
+      <polygon points="40,-25 48,-20 38,-15 30,-20" fill="#ffffff" opacity="0.6"/>
+    </g>
+    <text x="0" y="170" text-anchor="middle" fill="#0c4a6e" font-family="system-ui, sans-serif" font-size="14" font-weight="600">$900B 估值</text>
+    <text x="0" y="190" text-anchor="middle" fill="#0369a1" font-family="ui-monospace, monospace" font-size="12">PS 30x · 5x of OpenAI</text>
+  </g>
+
+  <!-- 顶部标题 -->
+  <text x="600" y="68" text-anchor="middle" fill="#1e293b" font-family="system-ui, sans-serif" font-size="20" font-weight="600">原则 vs 估值</text>
+  <text x="600" y="90" text-anchor="middle" fill="#64748b" font-family="system-ui, sans-serif" font-size="13">划掉一个合同，划出一个差异化</text>
+</svg>
