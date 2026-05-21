@@ -76,11 +76,11 @@ jobs:
             # 工作流由 fill-images 完成后触发：用原始 push 的 commit 找新增 article.html
             SHA="${{ github.event.workflow_run.head_sha }}"
             if [ -n "$SHA" ] && git cat-file -e "${SHA}^" 2>/dev/null; then
-              mapfile -t added < <(git diff --name-only --diff-filter=A "${SHA}^" "${SHA}" \
+              # 兼容 macOS bash 3（无 mapfile）：用 while read 喂数组
+              while IFS= read -r f; do
+                [ -n "$f" ] && targets+=("$(dirname "$f")")
+              done < <(git diff --name-only --diff-filter=A "${SHA}^" "${SHA}" \
                 | grep -E '^posts/.+/article\.html$' || true)
-              for f in "${added[@]}"; do
-                targets+=("$(dirname "$f")")
-              done
             else
               echo "无法计算 diff（仓库太浅或首个 commit），跳过"
             fi
