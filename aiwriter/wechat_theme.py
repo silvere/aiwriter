@@ -18,86 +18,97 @@ except ImportError as e:
     ) from e
 
 
-# ── 主题：所有微信支持的 inline style ───────────────────────────────────────
+# ── 主题：温润纸感（warm paper），对长文阅读舒适 ────────────────────────────
+#
+# 设计思路：
+# - 降饱和度：放弃 #1A56DB 这种鲜蓝，改用墨青 #2c4a6b（接近《纽约客》网页正文链接）
+# - 暖色锚点：引用、警示用米色 #f6f1e7（纸感）+ 暖棕勾边 #b89968
+# - 字体提层级：标题/正文颜色拉开梯度（黑 → 深炭 → 中灰）而非靠 hue
+# - 行距放大：line-height 2.0（中文长文阅读最佳）
 
-_BRAND = "#1A56DB"
-_BRAND_DARK = "#1240a8"
-_TEXT = "#3f3f3f"
-_HEADING = "#1a1a2e"
-_MUTE = "#666666"
-_BG_LIGHT = "#f8f9ff"
-_BORDER = "#e2e8f0"
+_INK = "#1c1c1c"           # 标题（接近黑，但更柔和）
+_TEXT = "#2c2c2c"          # 正文（炭灰）
+_MUTE = "#7a7a7a"           # 辅助文字
+_BRAND = "#3b5275"         # 墨青：低饱和稳重，眼睛不累
+_BRAND_SOFT = "#5d7494"    # 链接 hover/弱化
+_ACCENT_BG = "#f6f1e7"     # 纸色：引用 / 强调块背景
+_ACCENT_BORDER = "#b89968" # 暖棕：引用左缘
+_DIVIDER = "#d8d4cc"        # 暖灰：分隔线
+_CODE_BG = "#f4f1ec"       # 行内代码背景：浅米
+_CODE_INK = "#a04848"       # 行内代码：暖红
+_PRE_BG = "#252830"        # 块代码：深炭蓝
+_PRE_INK = "#e8e2d3"       # 块代码文字：暖象牙
 
 THEME: dict[str, str] = {
     # —— 标题 ——
     "h1": (
-        f"font-size: 22px; font-weight: 700; color: {_HEADING}; "
-        "text-align: center; margin: 24px 0 20px; line-height: 1.4; "
+        f"font-size: 22px; font-weight: 700; color: {_INK}; "
+        "text-align: center; margin: 24px 0 20px; line-height: 1.5; "
         "letter-spacing: 0.02em;"
     ),
     "h2": (
-        f"font-size: 18px; font-weight: 700; color: {_HEADING}; "
-        f"margin: 32px 0 16px; padding: 8px 0 8px 12px; "
-        f"border-left: 4px solid {_BRAND}; line-height: 1.5; "
-        f"background: linear-gradient(90deg, {_BG_LIGHT}, transparent);"
+        f"font-size: 19px; font-weight: 700; color: {_INK}; "
+        f"margin: 36px 0 18px; padding-left: 12px; "
+        f"border-left: 3px solid {_ACCENT_BORDER}; line-height: 1.5; "
+        "letter-spacing: 0.02em;"
     ),
     "h3": (
         f"font-size: 16px; font-weight: 700; color: {_BRAND}; "
-        "margin: 24px 0 12px; line-height: 1.5;"
+        "margin: 26px 0 12px; line-height: 1.5; letter-spacing: 0.02em;"
     ),
-    "h4": (
-        f"font-size: 15px; font-weight: 700; color: {_HEADING}; "
-        "margin: 18px 0 10px;"
-    ),
-    "h5": f"font-size: 14px; font-weight: 700; color: {_HEADING}; margin: 16px 0 8px;",
+    "h4": f"font-size: 15px; font-weight: 700; color: {_INK}; margin: 18px 0 10px;",
+    "h5": f"font-size: 14px; font-weight: 700; color: {_TEXT}; margin: 16px 0 8px;",
     "h6": f"font-size: 13px; font-weight: 700; color: {_MUTE}; margin: 16px 0 8px;",
 
     # —— 段落 ——
     "p": (
-        f"margin: 14px 0; line-height: 1.85; font-size: 15px; "
-        f"color: {_TEXT}; letter-spacing: 0.05em; text-align: justify; "
+        f"margin: 16px 0; line-height: 2.0; font-size: 15px; "
+        f"color: {_TEXT}; letter-spacing: 0.04em; text-align: justify; "
         "word-spacing: 0.05em;"
     ),
 
     # —— 强调 ——
-    "strong": f"font-weight: 700; color: {_HEADING};",
-    "em": "font-style: italic; color: #555;",
-    "del": "color: #999; text-decoration: line-through;",
+    "strong": f"font-weight: 700; color: {_INK};",
+    "em": f"font-style: italic; color: {_MUTE};",
+    "del": "color: #b0b0b0; text-decoration: line-through;",
 
     # —— 链接 ——
     "a": (
         f"color: {_BRAND}; text-decoration: none; "
-        f"border-bottom: 1px solid {_BRAND}; word-break: break-all;"
+        f"border-bottom: 1px solid {_BRAND_SOFT}; word-break: break-all;"
     ),
 
     # —— 引用 ——
     "blockquote": (
-        f"border-left: 4px solid {_BRAND}; padding: 12px 16px; "
-        f"margin: 18px 0; background: {_BG_LIGHT}; "
-        f"color: {_MUTE}; font-size: 14px; line-height: 1.75; "
-        "border-radius: 0 6px 6px 0;"
+        f"border-left: 3px solid {_ACCENT_BORDER}; padding: 14px 18px; "
+        f"margin: 20px 0; background: {_ACCENT_BG}; "
+        f"color: #594a32; font-size: 14px; line-height: 1.9; "
+        "border-radius: 0 4px 4px 0;"
     ),
-    "blockquote_p": "margin: 0; color: inherit; font-size: inherit; line-height: inherit;",
+    "blockquote_p": (
+        "margin: 0; color: inherit; font-size: inherit; "
+        "line-height: inherit; letter-spacing: 0.03em;"
+    ),
 
     # —— 列表 ——
-    "ul": "margin: 12px 0; padding-left: 1.5em;",
-    "ol": "margin: 12px 0; padding-left: 1.5em;",
+    "ul": "margin: 14px 0; padding-left: 1.5em;",
+    "ol": "margin: 14px 0; padding-left: 1.5em;",
     "li": (
-        f"margin: 6px 0; line-height: 1.75; color: {_TEXT}; "
-        "font-size: 15px; letter-spacing: 0.05em;"
+        f"margin: 8px 0; line-height: 1.9; color: {_TEXT}; "
+        "font-size: 15px; letter-spacing: 0.04em;"
     ),
 
     # —— 代码 ——
     "code": (
-        "background: #f3f4f6; color: #d6336c; padding: 2px 6px; "
-        "border-radius: 4px; font-family: 'SFMono-Regular', Consolas, "
+        f"background: {_CODE_BG}; color: {_CODE_INK}; padding: 2px 6px; "
+        "border-radius: 3px; font-family: 'SFMono-Regular', Consolas, "
         "'Liberation Mono', Menlo, monospace; font-size: 13px; "
         "word-break: break-all;"
     ),
     "pre": (
-        "background: #1e1e2e; color: #f8f8f2; padding: 16px; "
-        "border-radius: 8px; overflow-x: auto; font-size: 13px; "
-        "line-height: 1.6; margin: 18px 0;"
+        f"background: {_PRE_BG}; color: {_PRE_INK}; padding: 16px 18px; "
+        "border-radius: 6px; overflow-x: auto; font-size: 13px; "
+        "line-height: 1.7; margin: 20px 0;"
     ),
     "pre_code": (
         "background: transparent; color: inherit; padding: 0; "
@@ -108,35 +119,54 @@ THEME: dict[str, str] = {
     # —— 图片 ——
     "img": (
         "max-width: 100%; height: auto; display: block; "
-        "margin: 18px auto; border-radius: 6px;"
+        "margin: 20px auto; border-radius: 4px;"
     ),
 
     # —— 分隔线 ——
     "hr": (
-        "border: none; border-top: 1px dashed #ccc; margin: 32px 0; "
+        f"border: none; border-top: 1px solid {_DIVIDER}; margin: 36px 0; "
         "height: 0;"
     ),
 
     # —— 表格 ——
     "table": (
-        "border-collapse: collapse; width: 100%; margin: 18px 0; "
+        "border-collapse: collapse; width: 100%; margin: 20px 0; "
         "font-size: 14px;"
     ),
     "thead": "",
     "th": (
-        f"border: 1px solid {_BORDER}; padding: 8px 12px; "
-        f"background: {_BG_LIGHT}; font-weight: 700; text-align: left; "
-        f"color: {_HEADING};"
+        f"border: 1px solid {_DIVIDER}; padding: 10px 12px; "
+        f"background: {_ACCENT_BG}; font-weight: 700; text-align: left; "
+        f"color: {_INK};"
     ),
     "td": (
-        f"border: 1px solid {_BORDER}; padding: 8px 12px; "
-        f"color: {_TEXT}; line-height: 1.7;"
+        f"border: 1px solid {_DIVIDER}; padding: 10px 12px; "
+        f"color: {_TEXT}; line-height: 1.8;"
     ),
 
     # —— 容器（最外层 section）——
     "wrapper": (
-        f"font-size: 15px; color: {_TEXT}; line-height: 1.85; "
-        "letter-spacing: 0.05em; padding: 0 4px;"
+        f"font-size: 15px; color: {_TEXT}; line-height: 2.0; "
+        "letter-spacing: 0.04em; padding: 0 4px;"
+    ),
+
+    # —— 自定义：URL 展示 ——
+    "_link_url_line": (
+        f"display: block; margin: 4px 0 8px; font-size: 12px; "
+        f"color: {_MUTE}; line-height: 1.5; word-break: break-all; "
+        "font-family: 'SFMono-Regular', Consolas, Menlo, monospace;"
+    ),
+
+    # —— 自定义：未填充图片占位 ——
+    "_missing_image": (
+        f"margin: 20px 0; padding: 24px 20px; background: {_ACCENT_BG}; "
+        f"border: 1px dashed {_ACCENT_BORDER}; border-radius: 6px; "
+        f"color: {_MUTE}; font-size: 13px; line-height: 1.7; "
+        "text-align: center;"
+    ),
+    "_missing_image_label": (
+        f"display: block; font-weight: 700; color: #8b6f47; "
+        "margin-bottom: 8px; letter-spacing: 0.1em; font-size: 12px;"
     ),
 }
 
@@ -180,23 +210,125 @@ def _extract_images_from_html(html: str) -> list[str]:
     return srcs
 
 
-def _inject_images_into_md(md_text: str, html_srcs: list[str]) -> str:
-    """把 article.html 里的图片按顺序回填进 markdown 的占位符位置。"""
-    if not html_srcs:
-        return _strip_image_placeholders(md_text)
+# 识别 fill-images 产出的两种"视觉块"：
+#   1) <figure style="margin:32px 0..."><img.../></figure>
+#   2) <div style="margin:32px 0;background:#fff..."> 大段 chart </div>
+_VISUAL_BLOCK_RE = re.compile(
+    r'<figure\s+style="margin:32px 0[^"]*"[^>]*>.*?</figure>'
+    r'|<div\s+style="margin:32px 0;background:#fff[^"]*"[^>]*>.*?</div></div>',
+    re.DOTALL | re.IGNORECASE,
+)
 
+
+def _extract_charts_keyed_by_image(html: str) -> dict[str, list[str]]:
+    """构建 {img_src: [紧跟其后、下个 img 之前的 chart HTML 列表]}。
+
+    用于把 diagram（HTML 内联图表）按 article.html 中的相对顺序，
+    挂在对应的 concept 图片之后。fill-images 改写 article.md 时
+    不会把 chart 写回 markdown，必须从 HTML 抽取并位置注入。
+    """
+    result: dict[str, list[str]] = {}
+    current: str | None = None
+    for m in _VISUAL_BLOCK_RE.finditer(html):
+        block = m.group(0)
+        if block.startswith("<figure"):
+            src_m = re.search(r'src="([^"]+)"', block)
+            if src_m:
+                current = src_m.group(1)
+                result.setdefault(current, [])
+        else:
+            # chart div：归属到最近的前置 img；若文章开头就 chart，归到 _LEAD
+            key = current if current is not None else "_LEAD"
+            result.setdefault(key, []).append(block)
+    return result
+
+
+def _inject_charts_after_images(html: str, charts_by_src: dict[str, list[str]]) -> str:
+    """在每个 <img src=".."> 后追加对应的 chart HTML 块。"""
+    if not charts_by_src:
+        return html
+
+    # 处理"文章开头就有 chart"的少见情况
+    lead_charts = charts_by_src.get("_LEAD", [])
+
+    def repl(m: re.Match) -> str:
+        src = m.group(2)
+        charts = charts_by_src.get(src, [])
+        if not charts:
+            return m.group(0)
+        return m.group(0) + "\n" + "\n".join(charts)
+
+    out = re.sub(
+        r'(<img\b[^>]*\bsrc="([^"]+)"[^>]*/?>)',
+        repl,
+        html,
+    )
+    if lead_charts:
+        out = "\n".join(lead_charts) + "\n" + out
+    return out
+
+
+_PLACEHOLDER_TYPE_RE = re.compile(r'img-placeholder\s+([a-z]+)"')
+_PLACEHOLDER_LABEL_RE = re.compile(r'img-placeholder-label">([^<]+)</div>')
+
+
+def _inject_images_into_md(md_text: str, html_srcs: list[str]) -> str:
+    """把 article.html 里的图片按顺序回填进 markdown 的占位符位置。
+
+    未填充的占位符 → 降级为一个可见的"配图待补"提示块（HTML inline-style），
+    让发文的人在草稿里能一眼看到缺图位置，而不是静默吞掉。
+    """
     idx = [0]
 
     def replace_placeholder(match: re.Match) -> str:
-        if idx[0] >= len(html_srcs):
-            return ""
-        src = html_srcs[idx[0]]
-        idx[0] += 1
-        # 用标准 markdown 图片语法替换占位符
-        return f"\n![]({src})\n"
+        block = match.group(0)
 
-    md_text = _PLACEHOLDER_DIV.sub(replace_placeholder, md_text)
-    return md_text
+        # 还有图就按顺序填
+        if idx[0] < len(html_srcs):
+            src = html_srcs[idx[0]]
+            idx[0] += 1
+            return f"\n![]({src})\n"
+
+        # 否则：渲染成"配图占位"提示块（直接给 inline-style HTML，跳过 markdown）
+        kind_m = _PLACEHOLDER_TYPE_RE.search(block)
+        label_m = _PLACEHOLDER_LABEL_RE.search(block)
+        kind = kind_m.group(1) if kind_m else "concept"
+        label = label_m.group(1) if label_m else "配图"
+        icon = "📊" if kind == "diagram" else "🎨"
+        box_style = THEME["_missing_image"]
+        label_style = THEME["_missing_image_label"]
+        return (
+            f'\n<section style="{box_style}">'
+            f'<span style="{label_style}">{icon} {label}（待补）</span>'
+            f'<span>此处原计划放一张{label}，自动生成未成功，可在草稿箱手动插入。</span>'
+            f"</section>\n"
+        )
+
+    return _PLACEHOLDER_DIV.sub(replace_placeholder, md_text)
+
+
+_EXTERNAL_LINK_RE = re.compile(
+    r'(<a\b[^>]*\bhref="(https?://[^"]+)"[^>]*>)([^<]+)(</a>)',
+    re.IGNORECASE,
+)
+
+
+def _append_url_to_external_links(html: str) -> str:
+    """微信外链不可点击，在每个外链文本下方追加一行可读的 URL。
+
+    仅处理"链接文字 ≠ URL"的情况（避免重复显示）。
+    """
+    url_style = THEME["_link_url_line"]
+
+    def repl(m: re.Match) -> str:
+        full_open, url, text, close = m.group(1), m.group(2), m.group(3), m.group(4)
+        # 文字本身就是这个 URL → 不重复
+        text_stripped = text.strip()
+        if text_stripped == url or text_stripped == url.rstrip("/"):
+            return m.group(0)
+        return f'{full_open}{text}{close}<span style="{url_style}">{url}</span>'
+
+    return _EXTERNAL_LINK_RE.sub(repl, html)
 
 
 # ── inline-style 注入器 ───────────────────────────────────────────────────
@@ -363,6 +495,14 @@ def render_markdown_to_wechat(md_text: str, html_for_images: str = "") -> str:
     # 4) 注入 inline style
     styled = _inject_styles(raw_html)
 
-    # 5) 用一个最外层 <section> 套住，写死字号和行高，作为兜底
+    # 5) 外链下方追加可读 URL（微信外链不可点击）
+    styled = _append_url_to_external_links(styled)
+
+    # 6) 把 diagram（HTML 内联图表）按 article.html 相对位置注入到对应 img 之后
+    if html_for_images:
+        charts_by_src = _extract_charts_keyed_by_image(html_for_images)
+        styled = _inject_charts_after_images(styled, charts_by_src)
+
+    # 7) 用一个最外层 <section> 套住，写死字号和行高，作为兜底
     wrapper_style = THEME["wrapper"]
     return f'<section style="{wrapper_style}">{styled}</section>'
