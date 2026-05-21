@@ -10,6 +10,7 @@ import json
 import re
 import time
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Optional
@@ -182,15 +183,54 @@ def _extract_digest(html: str, max_chars: int) -> str:
 
 
 def _convert_svg_to_png(svg_path: Path) -> Optional[Path]:
-    """SVG → PNG。需要 cairosvg；不可用时返回 None。"""
+    """SVG → PNG。按 cairosvg → rsvg-convert → inkscape 顺序尝试。"""
+    import shutil
+    import subprocess
+
+    png_path = svg_path.with_suffix(".png")
+    if png_path.exists():
+        return png_path
+
+    # 1) cairosvg（Python 包，依赖 libcairo）
     try:
         import cairosvg  # type: ignore
-    except ImportError:
-        return None
-    png_path = svg_path.with_suffix(".png")
-    if not png_path.exists():
+
         cairosvg.svg2png(url=str(svg_path), write_to=str(png_path), output_width=1200)
-    return png_path
+        return png_path
+    except Exception:
+        pass
+
+    # 2) librsvg 的 rsvg-convert（Linux/Mac 常见）
+    if shutil.which("rsvg-convert"):
+        try:
+            subprocess.run(
+                ["rsvg-convert", "-w", "1200", "-f", "png", "-o", str(png_path), str(svg_path)],
+                check=True,
+                capture_output=True,
+            )
+            return png_path
+        except Exception:
+            pass
+
+    # 3) Inkscape CLI（mac/Win/Linux 都可装）
+    if shutil.which("inkscape"):
+        try:
+            subprocess.run(
+                [
+                    "inkscape",
+                    str(svg_path),
+                    "--export-type=png",
+                    "--export-width=1200",
+                    f"--export-filename={png_path}",
+                ],
+                check=True,
+                capture_output=True,
+            )
+            return png_path
+        except Exception:
+            pass
+
+    return None
 
 
 def _resolve_image(src: str, base_dir: Path) -> Optional[Path]:
@@ -326,6 +366,22 @@ def sync_post_to_draft(
             client=client,
         )
         log(f"  [green]✓[/green] 草稿已创建: media_id={media_id}")
+
+    marker = post_dir / ".wechat-sync.json"
+    marker.write_text(
+        json.dumps(
+            {
+                "media_id": media_id,
+                "title": title,
+                "cover_url": cover_url,
+                "uploaded_image_count": len(uploaded),
+                "synced_at": datetime.now(timezone.utc).isoformat(),
+            },
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
 
     return SyncResult(
         media_id=media_id,
