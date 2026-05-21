@@ -327,7 +327,19 @@ git commit -m "feat: 新文章《{标题}》"
 git push origin main
 ```
 
-### 7.6 （可选）保存 Markdown 到 Obsidian
+### 7.6 同步到微信公众号草稿箱
+
+```bash
+aiwriter wechat-sync "posts/{今日日期}/{slug}"
+```
+
+要求：本地或 ~/.config/aiwriter/.env 里已设置 `WECHAT_APPID` 和 `WECHAT_APPSECRET`，且当前出口 IP 已加入微信白名单。
+
+- 未配置 → 命令报错"未配置 WECHAT_APPID / WECHAT_APPSECRET"，跳过本步即可（GitHub Actions 自托管 runner 会兜底自动同步）
+- 同步成功后会写 `posts/{日期}/{slug}/.wechat-sync.json`，防止 CI 重复同步
+- 之后到 mp.weixin.qq.com 后台「草稿箱」预览/排版/群发
+
+### 7.7 （可选）保存 Markdown 到 Obsidian
 
 ```bash
 python3 skills/scripts/setup_vault.py "{vault_path}" "{slug}"
@@ -343,6 +355,7 @@ python3 skills/scripts/setup_vault.py "{vault_path}" "{slug}"
 🌐 网址：https://silvere.github.io/aiwriter/posts/{日期}/{slug}/article.html
 📊 字数：约 X,XXX 字
 🖼️ 配图：X 张已填充
+📬 微信草稿：{已同步 media_id=xxx | 未同步，等 CI 兜底}
 ```
 
 ---
