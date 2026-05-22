@@ -230,62 +230,108 @@ def _extract_images_from_html(html: str) -> list[str]:
     return srcs
 
 
-# 识别 fill-images 产出的两种"视觉块"：
-#   1) <figure style="margin:32px 0..."><img.../></figure>
-#   2) <div style="margin:32px 0;background:#fff..."> 大段 chart </div>
-_VISUAL_BLOCK_RE = re.compile(
-    r'<figure\s+style="margin:32px 0[^"]*"[^>]*>.*?</figure>'
-    r'|<div\s+style="margin:32px 0;background:#fff[^"]*"[^>]*>.*?</div></div>',
+# fill-images 产出的 chart 块特征：起头是 `<div style="margin:32px 0;background:#fff`
+# chart 内部嵌套多层 div，普通正则匹配不准，必须做 div 平衡计数
+_CHART_OPEN_MARKER = '<div style="margin:32px 0;background:#fff'
+
+# figure 块（concept 图片）正则
+_FIGURE_BLOCK_RE = re.compile(
+    r'<figure\s+style="margin:32px 0[^"]*"[^>]*>.*?</figure>',
     re.DOTALL | re.IGNORECASE,
 )
 
 
-def _extract_charts_keyed_by_image(html: str) -> dict[str, list[str]]:
-    """构建 {img_src: [紧跟其后、下个 img 之前的 chart HTML 列表]}。
-
-    用于把 diagram（HTML 内联图表）按 article.html 中的相对顺序，
-    挂在对应的 concept 图片之后。fill-images 改写 article.md 时
-    不会把 chart 写回 markdown，必须从 HTML 抽取并位置注入。
+def _extract_balanced_div(html: str, start: int) -> int | None:
+    """从 start 位置（指向 `<div`）开始，找到对应闭合 </div> 的位置（不含）。
+    返回闭合 </div> 之后的位置；找不到平衡返回 None。
     """
-    result: dict[str, list[str]] = {}
-    current: str | None = None
-    for m in _VISUAL_BLOCK_RE.finditer(html):
-        block = m.group(0)
-        if block.startswith("<figure"):
-            src_m = re.search(r'src="([^"]+)"', block)
-            if src_m:
-                current = src_m.group(1)
-                result.setdefault(current, [])
+    depth = 0
+    i = start
+    n = len(html)
+    open_re = re.compile(r"<div\b", re.IGNORECASE)
+    close_re = re.compile(r"</div>", re.IGNORECASE)
+    while i < n:
+        m_open = open_re.search(html, i)
+        m_close = close_re.search(html, i)
+        if m_close is None:
+            return None
+        if m_open is not None and m_open.start() < m_close.start():
+            depth += 1
+            i = m_open.end()
         else:
-            # chart div：归属到最近的前置 img；若文章开头就 chart，归到 _LEAD
-            key = current if current is not None else "_LEAD"
-            result.setdefault(key, []).append(block)
-    return result
+            depth -= 1
+            i = m_close.end()
+            if depth == 0:
+                return i
+    return None
 
 
-def _inject_charts_after_images(html: str, charts_by_src: dict[str, list[str]]) -> str:
-    """在每个 <img src=".."> 后追加对应的 chart HTML 块。"""
-    if not charts_by_src:
-        return html
+def _extract_charts_in_order(html: str) -> list[str]:
+    """按出现顺序抽出 article.html 里所有 diagram chart HTML 块（div 平衡）。"""
+    charts: list[str] = []
+    pos = 0
+    while True:
+        start = html.find(_CHART_OPEN_MARKER, pos)
+        if start == -1:
+            break
+        end = _extract_balanced_div(html, start)
+        if end is None:
+            break
+        charts.append(html[start:end])
+        pos = end
+    return charts
 
-    # 处理"文章开头就有 chart"的少见情况
-    lead_charts = charts_by_src.get("_LEAD", [])
 
-    def repl(m: re.Match) -> str:
-        src = m.group(2)
-        charts = charts_by_src.get(src, [])
-        if not charts:
-            return m.group(0)
-        return m.group(0) + "\n" + "\n".join(charts)
+def _iter_visual_blocks_in_order(html: str) -> list[tuple[int, str]]:
+    """按出现顺序返回所有视觉块的 (位置, HTML)；用于判断 chart 与 figure 顺序。"""
+    blocks: list[tuple[int, str]] = []
+    # figure 块用正则
+    for m in _FIGURE_BLOCK_RE.finditer(html):
+        blocks.append((m.start(), m.group(0)))
+    # chart 块走平衡计数
+    pos = 0
+    while True:
+        start = html.find(_CHART_OPEN_MARKER, pos)
+        if start == -1:
+            break
+        end = _extract_balanced_div(html, start)
+        if end is None:
+            break
+        blocks.append((start, html[start:end]))
+        pos = end
+    blocks.sort(key=lambda x: x[0])
+    return blocks
 
-    out = re.sub(
-        r'(<img\b[^>]*\bsrc="([^"]+)"[^>]*/?>)',
-        repl,
-        html,
+
+# fill-images 处理 diagram 时没改写 md，留下的孤立占位符
+_AIWRITER_RESIDUAL_PLACEHOLDER = "<<__AIWRITER_PLACEHOLDER__>>"
+
+
+def _replace_aiwriter_placeholders(md_text: str, charts: list[str]) -> str:
+    """把 article.md 里残留的 <<__AIWRITER_PLACEHOLDER__>> 按顺序换成 chart HTML。
+
+    fill-images 处理 concept 类时改写了 md（→ `![]()`），但 diagram 类
+    走 HTML inline chart 路径，没构造 md replacement，placeholder 留下。
+    本函数按 article.html 里 chart 出现顺序，把每个残留 placeholder 替换
+    为对应的 chart raw HTML 块（独立段落，前后空行，markdown 不解析内部）。
+    """
+    if _AIWRITER_RESIDUAL_PLACEHOLDER not in md_text:
+        return md_text
+
+    idx = [0]
+
+    def repl(_m: re.Match) -> str:
+        if idx[0] < len(charts):
+            block = charts[idx[0]]
+            idx[0] += 1
+            # 前后留空行让 markdown 把它识别为 HTML 块（不被加入段落）
+            return f"\n\n{block}\n\n"
+        # chart 不够：清掉残留 placeholder，避免变成难看的文本
+        return ""
+
+    return re.sub(
+        re.escape(_AIWRITER_RESIDUAL_PLACEHOLDER), repl, md_text
     )
-    if lead_charts:
-        out = "\n".join(lead_charts) + "\n" + out
-    return out
 
 
 _PLACEHOLDER_TYPE_RE = re.compile(r'img-placeholder\s+([a-z]+)"')
@@ -546,8 +592,13 @@ def render_markdown_to_wechat(md_text: str, html_for_images: str = "") -> str:
     if html_for_images:
         srcs = _extract_images_from_html(html_for_images)
         md_text = _inject_images_into_md(md_text, srcs)
+        # 1.5) 把 fill-images 残留的 <<__AIWRITER_PLACEHOLDER__>>（仅 diagram 类）
+        #      按顺序换成 article.html 里的 chart HTML 块 → 位置精确
+        charts = _extract_charts_in_order(html_for_images)
+        md_text = _replace_aiwriter_placeholders(md_text, charts)
     else:
         md_text = _strip_image_placeholders(md_text)
+        md_text = _replace_aiwriter_placeholders(md_text, [])
 
     # 2) 跳过首个 h1（微信会自动用标题），避免重复
     md_text = re.sub(r"^# .+\n", "", md_text, count=1, flags=re.MULTILINE)
@@ -583,10 +634,8 @@ def render_markdown_to_wechat(md_text: str, html_for_images: str = "") -> str:
     # 5) 外链下方追加可读 URL（微信外链不可点击）
     styled = _append_url_to_external_links(styled)
 
-    # 6) 把 diagram（HTML 内联图表）按 article.html 相对位置注入到对应 img 之后
-    if html_for_images:
-        charts_by_src = _extract_charts_keyed_by_image(html_for_images)
-        styled = _inject_charts_after_images(styled, charts_by_src)
+    # 6) （已移除：之前的"chart 跟在 img 后面"位置注入）
+    #     现在改用 _replace_aiwriter_placeholders 在 markdown 阶段精准位置插入
 
     # 7) 把参考文献 placeholder 替换为预渲染的卡片串
     if refs_html:
