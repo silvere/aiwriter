@@ -333,7 +333,11 @@ def _parse_spec(spec_text: str) -> dict:
 
 
 def _generate_chart(spec_text: str, dest: Path) -> bool:
-    """解析规格卡并生成 matplotlib 图表，返回是否成功。"""
+    """解析规格卡并生成 matplotlib 图表，返回是否成功。
+
+    输出格式由 dest 扩展名决定：.svg / .png（其他扩展名按 matplotlib 默认）。
+    SVG 优先（矢量、可被 cairosvg 转 PNG 再上传微信）。
+    """
     try:
         import matplotlib
         matplotlib.use("Agg")
@@ -347,16 +351,25 @@ def _generate_chart(spec_text: str, dest: Path) -> bool:
     if not items:
         return False
 
-    # 中文字体
+    # 中文字体筛选：必须是真正的 CJK 字体，避免被 "Noto Sans Nabataean" 这种
+    # 含"noto"但非中文的字体匹中。优先级：CJK 专字体 > 系统中文字体。
+    _CJK_KEYWORDS = (
+        "cjk", "pingfang", "heiti", "simhei", "simsun", "yahei",
+        "wqy", "wenquanyi", "zen hei", "source han", "siyuan",
+        "noto sans sc", "noto sans tc", "noto serif sc", "noto serif cjk",
+        "noto sans cjk",
+    )
     zh_fonts = [
         f.fname for f in fm.fontManager.ttflist
-        if any(k in f.name.lower() for k in ("cjk", "noto", "wqy", "wenquanyi", "zen hei", "pingfang", "heiti", "simsun", "simhei"))
+        if any(k in f.name.lower() for k in _CJK_KEYWORDS)
     ]
     if zh_fonts:
         fm.fontManager.addfont(zh_fonts[0])
         prop = fm.FontProperties(fname=zh_fonts[0])
         plt.rcParams["font.family"] = prop.get_name()
     plt.rcParams["axes.unicode_minus"] = False
+    # SVG 输出强制把 text 转 path，避免依赖端字体
+    plt.rcParams["svg.fonttype"] = "path"
 
     labels = [it["label"] for it in items]
     values = [it["value"] for it in items]
@@ -397,7 +410,11 @@ def _generate_chart(spec_text: str, dest: Path) -> bool:
     ax.tick_params(axis="both", labelsize=9.5, colors="#333")
     plt.tight_layout(pad=1.2)
     dest.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(dest, dpi=150, bbox_inches="tight", facecolor="white")
+    # SVG 走矢量格式，PNG 走 dpi 150
+    if dest.suffix.lower() == ".svg":
+        fig.savefig(dest, format="svg", bbox_inches="tight", facecolor="white")
+    else:
+        fig.savefig(dest, dpi=150, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     return True
 
@@ -754,23 +771,43 @@ def fill_article(html_path: Path, candidate_urls: list[str] = []) -> dict:
 
         else:  # diagram
             diagram_count[0] += 1
-            # 默认走 HTML/SVG 渲染（矢量、零依赖、中文永远不乱码）。
-            # 仅当规格卡显式写 【渲染】：matplotlib / PNG 或设置环境变量
-            # AIWRITER_USE_MATPLOTLIB=1 时，才尝试 matplotlib。
             spec_preview = _parse_spec(spec_text)
-            use_mpl = (
-                spec_preview["render"] == "matplotlib"
-                or os.environ.get("AIWRITER_USE_MATPLOTLIB") == "1"
-            )
-            if use_mpl:
-                dest = img_dir / f"diagram_{diagram_count[0]:02d}.png"
+            n = diagram_count[0]
+
+            # 路径选择优先级：
+            #   1) 规格卡显式 【渲染】：matplotlib  → PNG（兼容旧约定）
+            #   2) 默认 → 先 SVG，让 wechat-sync 走 cairosvg→PNG 链路
+            #   3) SVG 失败 → 回退 HTML inline chart（保留博客原效果，
+            #      但 md 里会留 placeholder，由 wechat_theme 二次注入兜底）
+            wants_png = spec_preview["render"] == "matplotlib" or os.environ.get("AIWRITER_USE_MATPLOTLIB") == "1"
+
+            if wants_png:
+                dest = img_dir / f"diagram_{n:02d}.png"
                 if _generate_chart(spec_text, dest):
                     filled += 1
-                    print(f"  ✓ diagram_{diagram_count[0]:02d}.png  [matplotlib PNG]")
-                    return _img_html(f"images/{dest.name}", "数据图")
-                print(f"  ⚠  diagram_{diagram_count[0]:02d}  matplotlib 启用但不可用，回退 HTML 路径")
+                    print(f"  ✓ diagram_{n:02d}.png  [matplotlib PNG]")
+                    replacements.append({
+                        "html": _img_html(f"images/{dest.name}", "数据图"),
+                        "md": _img_md(f"images/{dest.name}", "数据图"),
+                    })
+                    return "<<__AIWRITER_PLACEHOLDER__>>"
+                print(f"  ⚠  diagram_{n:02d}.png  matplotlib 不可用，回退默认 SVG 路径")
+
+            # 默认路径：SVG（矢量 + 可被 cairosvg 转 PNG 上传微信）
+            dest_svg = img_dir / f"diagram_{n:02d}.svg"
+            if _generate_chart(spec_text, dest_svg):
+                filled += 1
+                print(f"  ✓ diagram_{n:02d}.svg  [matplotlib SVG]")
+                replacements.append({
+                    "html": _img_html(f"images/{dest_svg.name}", "数据图"),
+                    "md": _img_md(f"images/{dest_svg.name}", "数据图"),
+                })
+                return "<<__AIWRITER_PLACEHOLDER__>>"
+
+            # 兜底：HTML inline chart（不构造 md replacement，留 placeholder
+            # 让下游 wechat_theme.py 通过 chart 块抽取注入）
             filled += 1
-            print(f"  ✓ diagram_{diagram_count[0]:02d}  [HTML图表]")
+            print(f"  ✓ diagram_{n:02d}  [HTML图表 fallback]")
             return _spec_card_html(spec_text)
 
         # 返回占位，稍后一次性替换（保持 replacements 顺序对应）

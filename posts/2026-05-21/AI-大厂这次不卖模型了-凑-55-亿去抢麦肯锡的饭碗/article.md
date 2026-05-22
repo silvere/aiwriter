@@ -150,7 +150,7 @@ OpenAI 花钱买 Tomoro，等于把这五家公司原本付给传统咨询公司
 
 都通向同一件事：人头生意，迟早自动化。只是迟。
 
-<<__AIWRITER_PLACEHOLDER__>>
+![数据图](images/diagram_01.svg)
 
 ## 五、一刀收束
 
