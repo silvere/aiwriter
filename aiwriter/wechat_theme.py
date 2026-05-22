@@ -151,11 +151,29 @@ THEME: dict[str, str] = {
     ),
 
     # —— 自定义：URL 展示 ——
-    # 注意：不能用 display:block，否则微信会把 <span> 当独立块解析，
-    # 在 <li> 里会冒出空 bullet。改用 inline 样式 + 前面插 <br/> 换行。
+    # 段落上下文里用 <br/> + inline span（段落里 <br/> 不会衍生 bullet）
     "_link_url_line": (
         f"font-size: 12px; color: {_MUTE}; line-height: 1.5; "
         "word-break: break-all; "
+        "font-family: 'SFMono-Regular', Consolas, Menlo, monospace;"
+    ),
+
+    # —— 自定义：参考文献卡片 ——
+    # 数据来源段彻底不走 <ul>/<li>，每条引用一张独立 <section>，
+    # 完全脱离微信的 list 解析逻辑，杜绝空 bullet
+    "_ref_card": (
+        f"margin: 12px 0; padding: 12px 16px; "
+        f"background: {_ACCENT_BG}; border-radius: 6px; "
+        f"border-left: 3px solid {_ACCENT_BORDER}; "
+        "line-height: 1.6;"
+    ),
+    "_ref_card_title": (
+        f"color: {_BRAND}; font-weight: 700; text-decoration: none; "
+        f"font-size: 14px; border-bottom: 1px solid {_BRAND_SOFT};"
+    ),
+    "_ref_card_url": (
+        f"display: block; margin-top: 6px; font-size: 11px; "
+        f"color: {_MUTE}; line-height: 1.5; word-break: break-all; "
         "font-family: 'SFMono-Regular', Consolas, Menlo, monospace;"
     ),
 
@@ -307,6 +325,67 @@ def _inject_images_into_md(md_text: str, html_srcs: list[str]) -> str:
         )
 
     return _PLACEHOLDER_DIV.sub(replace_placeholder, md_text)
+
+
+# 识别参考文献段：## 数据来源 / ## 参考文献 / ## 参考资料 / ## 相关链接 / ## 延伸阅读 / ## 引用
+_REFS_HEADING_PATTERN = (
+    r"数据来源|参考文献|参考资料|相关链接|延伸阅读|引用|参考"
+)
+_REFS_SECTION_RE = re.compile(
+    rf"(^##\s+(?:{_REFS_HEADING_PATTERN})\s*\n)(.+?)(?=\n##\s+|\Z)",
+    re.MULTILINE | re.DOTALL,
+)
+_REF_ITEM_RE = re.compile(
+    r"^\s*[-*+]\s+\[([^\]]+)\]\(([^)]+)\)\s*$",
+    re.MULTILINE,
+)
+
+# 用纯字母占位，避免 markdown 把 `<<` / `__` 当成转义或加粗处理
+_REFS_PLACEHOLDER = "AIWRPLACEHOLDERREFSBLOCKAIWR"
+
+
+def _extract_references_section(md_text: str) -> tuple[str, str]:
+    """把参考文献段从 markdown 里抠出来，留一个 placeholder。
+
+    返回 (placeholder_aware_md, refs_html)。
+    refs_html 是已渲染好的 HTML 卡片串，会在 inline-style 注入后直接替换 placeholder。
+    """
+    match = _REFS_SECTION_RE.search(md_text)
+    if not match:
+        return md_text, ""
+
+    heading_line = match.group(1).strip()
+    body = match.group(2)
+    items = _REF_ITEM_RE.findall(body)
+    if not items:
+        return md_text, ""
+
+    # 构建 HTML 卡片串
+    card_style = THEME["_ref_card"]
+    title_style = THEME["_ref_card_title"]
+    url_style = THEME["_ref_card_url"]
+    h2_style = THEME["h2"]
+
+    cards: list[str] = [
+        f'<h2 style="{h2_style}">{heading_line.lstrip("# ").strip()}</h2>'
+    ]
+    for title, url in items:
+        # html-escape 必要字符
+        title_esc = (
+            title.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        )
+        url_esc = url.replace("&", "&amp;").replace('"', "&quot;")
+        cards.append(
+            f'<section style="{card_style}">'
+            f'<a href="{url_esc}" style="{title_style}">{title_esc}</a>'
+            f'<span style="{url_style}">{url_esc}</span>'
+            f"</section>"
+        )
+    refs_html = "\n".join(cards)
+
+    # markdown 里把整段替换成 placeholder
+    new_md = _REFS_SECTION_RE.sub(f"\n\n{_REFS_PLACEHOLDER}\n\n", md_text, count=1)
+    return new_md, refs_html
 
 
 _EXTERNAL_LINK_RE = re.compile(
@@ -484,6 +563,9 @@ def render_markdown_to_wechat(md_text: str, html_for_images: str = "") -> str:
     # 顺便清掉残留的孤立 --- 分隔行（紧跟核心观点删除后留下的）
     md_text = re.sub(r"^---\s*\n\s*\n(?=##\s+)", "", md_text, count=1, flags=re.MULTILINE)
 
+    # 3.5) 抽出"数据来源/参考文献"段，用 placeholder 占位
+    md_text, refs_html = _extract_references_section(md_text)
+
     # 3) Markdown → HTML
     md = _md.Markdown(
         extensions=[
@@ -506,6 +588,17 @@ def render_markdown_to_wechat(md_text: str, html_for_images: str = "") -> str:
         charts_by_src = _extract_charts_keyed_by_image(html_for_images)
         styled = _inject_charts_after_images(styled, charts_by_src)
 
-    # 7) 用一个最外层 <section> 套住，写死字号和行高，作为兜底
+    # 7) 把参考文献 placeholder 替换为预渲染的卡片串
+    if refs_html:
+        # placeholder 在 markdown 阶段会被包成 <p>placeholder</p>，整段替换
+        styled = re.sub(
+            rf"<p[^>]*>\s*{re.escape(_REFS_PLACEHOLDER)}\s*</p>",
+            refs_html,
+            styled,
+        )
+        # 兜底：未被包 <p> 时也替换
+        styled = styled.replace(_REFS_PLACEHOLDER, refs_html)
+
+    # 8) 用一个最外层 <section> 套住，写死字号和行高，作为兜底
     wrapper_style = THEME["wrapper"]
     return f'<section style="{wrapper_style}">{styled}</section>'
