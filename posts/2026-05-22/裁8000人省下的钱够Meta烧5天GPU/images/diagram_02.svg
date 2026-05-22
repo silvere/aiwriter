@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 480" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="bgD2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fdf6e3"/>
+      <stop offset="100%" stop-color="#f4ead0"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="480" fill="url(#bgD2)"/>
+
+  <!-- Title -->
+  <text x="450" y="34" text-anchor="middle" font-family="'Noto Serif SC', serif" font-size="20" fill="#2d3748" font-weight="bold">Stainless：硅谷三巨头共享的 SDK 供应商，被 Anthropic 端了</text>
+  <text x="450" y="56" text-anchor="middle" font-family="'Noto Serif SC', serif" font-size="12" fill="#5b4636" font-style="italic">$300M+ 收购 · 5月18日 · 关停 hosted SDK Generator</text>
+
+  <!-- Vertical divider -->
+  <line x1="450" y1="80" x2="450" y2="450" stroke="#5b4636" stroke-width="1" stroke-dasharray="5 5" opacity="0.5"/>
+
+  <!-- Left side title -->
+  <text x="225" y="92" text-anchor="middle" font-family="'Noto Serif SC', serif" font-size="14" fill="#5b4636" font-weight="bold">收购前（&lt; 5/18）</text>
+
+  <!-- Right side title -->
+  <text x="675" y="92" text-anchor="middle" font-family="'Noto Serif SC', serif" font-size="14" fill="#5b4636" font-weight="bold">收购后（5/18 起）</text>
+
+  <!-- LEFT: Stainless at center, 7 clients radiating equally -->
+  <g>
+    <!-- Center node -->
+    <circle cx="225" cy="265" r="46" fill="#fff" stroke="#3b6286" stroke-width="3"/>
+    <text x="225" y="262" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#3b6286" font-weight="bold">Stainless</text>
+    <text x="225" y="278" text-anchor="middle" font-family="sans-serif" font-size="9" fill="#5b4636">SDK Generator</text>
+
+    <!-- Equal lines to 7 clients -->
+    <g stroke="#3b6286" stroke-width="1.5" opacity="0.85">
+      <line x1="225" y1="219" x2="180" y2="135"/>
+      <line x1="225" y1="219" x2="270" y2="135"/>
+      <line x1="183" y1="245" x2="80" y2="200"/>
+      <line x1="267" y1="245" x2="370" y2="200"/>
+      <line x1="183" y1="285" x2="80" y2="330"/>
+      <line x1="267" y1="285" x2="370" y2="330"/>
+      <line x1="225" y1="311" x2="225" y2="405"/>
+    </g>
+
+    <!-- Client circles -->
+    <g font-family="sans-serif" font-size="11" font-weight="bold">
+      <circle cx="180" cy="125" r="26" fill="#10a37f" stroke="#1c1917" stroke-width="1.5"/>
+      <text x="180" y="130" text-anchor="middle" fill="#fff">OpenAI</text>
+
+      <circle cx="270" cy="125" r="26" fill="#ea4335" stroke="#1c1917" stroke-width="1.5"/>
+      <text x="270" y="130" text-anchor="middle" fill="#fff">Google</text>
+
+      <circle cx="70" cy="200" r="26" fill="#c0392b" stroke="#1c1917" stroke-width="1.5"/>
+      <text x="70" y="205" text-anchor="middle" fill="#fff">Anthropic</text>
+
+      <circle cx="380" cy="200" r="26" fill="#f48120" stroke="#1c1917" stroke-width="1.5"/>
+      <text x="380" y="205" text-anchor="middle" fill="#fff">Cloudflare</text>
+
+      <circle cx="70" cy="330" r="22" fill="#7c5e3c" stroke="#1c1917" stroke-width="1.5"/>
+      <text x="70" y="335" text-anchor="middle" fill="#fff" font-size="10">Replicate</text>
+
+      <circle cx="380" cy="330" r="22" fill="#7c5e3c" stroke="#1c1917" stroke-width="1.5"/>
+      <text x="380" y="335" text-anchor="middle" fill="#fff" font-size="10">Runway</text>
+
+      <circle cx="225" cy="415" r="20" fill="#7c5e3c" stroke="#1c1917" stroke-width="1.5"/>
+      <text x="225" y="420" text-anchor="middle" fill="#fff" font-size="10">Mux</text>
+    </g>
+
+    <text x="225" y="460" text-anchor="middle" font-family="'Noto Serif SC', serif" font-size="12" fill="#5b4636" font-style="italic">三家"对手"共享同一家小公司</text>
+  </g>
+
+  <!-- RIGHT: Anthropic owns Stainless, others cut off -->
+  <g>
+    <!-- Anthropic big circle -->
+    <ellipse cx="675" cy="265" rx="100" ry="80" fill="#c0392b" stroke="#1c1917" stroke-width="3"/>
+    <text x="675" y="240" text-anchor="middle" font-family="sans-serif" font-size="16" fill="#fff" font-weight="bold">Anthropic</text>
+
+    <!-- Stainless absorbed inside Anthropic -->
+    <circle cx="675" cy="285" r="32" fill="#fdf6e3" stroke="#1c1917" stroke-width="1.5"/>
+    <text x="675" y="282" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#c0392b" font-weight="bold">Stainless</text>
+    <text x="675" y="296" text-anchor="middle" font-family="sans-serif" font-size="8" fill="#5b4636">(integrated)</text>
+
+    <!-- Outside clients now disconnected -->
+    <g font-family="sans-serif" font-size="11" font-weight="bold">
+      <circle cx="540" cy="135" r="26" fill="#10a37f" stroke="#1c1917" stroke-width="1.5" opacity="0.6"/>
+      <text x="540" y="140" text-anchor="middle" fill="#fff">OpenAI</text>
+
+      <circle cx="810" cy="135" r="26" fill="#ea4335" stroke="#1c1917" stroke-width="1.5" opacity="0.6"/>
+      <text x="810" y="140" text-anchor="middle" fill="#fff">Google</text>
+
+      <circle cx="540" cy="395" r="26" fill="#f48120" stroke="#1c1917" stroke-width="1.5" opacity="0.6"/>
+      <text x="540" y="400" text-anchor="middle" fill="#fff">Cloudflare</text>
+
+      <circle cx="810" cy="395" r="22" fill="#7c5e3c" stroke="#1c1917" stroke-width="1.5" opacity="0.6"/>
+      <text x="810" y="400" text-anchor="middle" fill="#fff" font-size="10">其余客户</text>
+    </g>
+
+    <!-- Severed connections (red dashed with X) -->
+    <g stroke="#c0392b" stroke-width="2" stroke-dasharray="4 4" fill="none" opacity="0.85">
+      <line x1="560" y1="160" x2="610" y2="220"/>
+      <line x1="790" y1="160" x2="740" y2="220"/>
+      <line x1="560" y1="370" x2="610" y2="310"/>
+      <line x1="790" y1="370" x2="740" y2="310"/>
+    </g>
+    <!-- X marks on severed lines -->
+    <g stroke="#c0392b" stroke-width="3" fill="none" stroke-linecap="round">
+      <g transform="translate(585,190)"><line x1="-7" y1="-7" x2="7" y2="7"/><line x1="-7" y1="7" x2="7" y2="-7"/></g>
+      <g transform="translate(765,190)"><line x1="-7" y1="-7" x2="7" y2="7"/><line x1="-7" y1="7" x2="7" y2="-7"/></g>
+      <g transform="translate(585,340)"><line x1="-7" y1="-7" x2="7" y2="7"/><line x1="-7" y1="7" x2="7" y2="-7"/></g>
+      <g transform="translate(765,340)"><line x1="-7" y1="-7" x2="7" y2="7"/><line x1="-7" y1="7" x2="7" y2="-7"/></g>
+    </g>
+
+    <!-- Annotation -->
+    <text x="675" y="375" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#fff">Hosted Generator</text>
+    <text x="675" y="388" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#f5d76e" font-weight="bold">关停</text>
+
+    <text x="675" y="460" text-anchor="middle" font-family="'Noto Serif SC', serif" font-size="12" fill="#5b4636" font-style="italic">把对手的供应链买了，自己用</text>
+  </g>
+</svg>

@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 540" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="bgD3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fdf6e3"/>
+      <stop offset="100%" stop-color="#f4ead0"/>
+    </linearGradient>
+  </defs>
+  <rect width="920" height="540" fill="url(#bgD3)"/>
+
+  <!-- Title -->
+  <text x="460" y="34" text-anchor="middle" font-family="'Noto Serif SC', serif" font-size="20" fill="#2d3748" font-weight="bold">这一周硅谷的真实结构（2026-05-15 ~ 05-22）</text>
+  <text x="460" y="56" text-anchor="middle" font-family="'Noto Serif SC', serif" font-size="12" fill="#5b4636" font-style="italic">同一个资金池：一边裁人省钱，一边收对手、烧 GPU</text>
+
+  <!-- Left time axis -->
+  <line x1="100" y1="100" x2="100" y2="490" stroke="#5b4636" stroke-width="2"/>
+
+  <!-- Timeline events on left -->
+  <!-- Event: 5/18 Anthropic acquires Stainless -->
+  <g>
+    <circle cx="100" cy="140" r="8" fill="#c0392b" stroke="#1c1917" stroke-width="1.5"/>
+    <text x="115" y="135" font-family="sans-serif" font-size="13" fill="#5b4636" font-weight="bold">5/18</text>
+    <text x="115" y="152" font-family="sans-serif" font-size="13" fill="#2d3748">Anthropic 收 Stainless</text>
+    <text x="115" y="168" font-family="sans-serif" font-size="11" fill="#c0392b" font-weight="bold">$300M+</text>
+  </g>
+
+  <!-- Event: 5/20 Meta layoff -->
+  <g>
+    <circle cx="100" cy="220" r="8" fill="#7c5e3c" stroke="#1c1917" stroke-width="1.5"/>
+    <text x="115" y="215" font-family="sans-serif" font-size="13" fill="#5b4636" font-weight="bold">5/20 凌晨 4:00</text>
+    <text x="115" y="232" font-family="sans-serif" font-size="13" fill="#2d3748">Meta 裁 8000 人</text>
+    <text x="115" y="248" font-family="sans-serif" font-size="11" fill="#7c5e3c">Q1 净利润 +61% · Capex →$145B</text>
+  </g>
+
+  <!-- Event: 5/20 Intuit layoff -->
+  <g>
+    <circle cx="100" cy="300" r="8" fill="#7c5e3c" stroke="#1c1917" stroke-width="1.5"/>
+    <text x="115" y="295" font-family="sans-serif" font-size="13" fill="#5b4636" font-weight="bold">5/20</text>
+    <text x="115" y="312" font-family="sans-serif" font-size="13" fill="#2d3748">Intuit 裁 3000 人（17%）</text>
+    <text x="115" y="328" font-family="sans-serif" font-size="11" fill="#7c5e3c">同期签 ×Anthropic ×OpenAI</text>
+  </g>
+
+  <!-- Week summary -->
+  <g>
+    <circle cx="100" cy="400" r="10" fill="#1e3a8a" stroke="#1c1917" stroke-width="1.5"/>
+    <text x="115" y="395" font-family="sans-serif" font-size="13" fill="#5b4636" font-weight="bold">本周累计</text>
+    <text x="115" y="412" font-family="sans-serif" font-size="13" fill="#2d3748">行业裁员 113,000+ 人</text>
+    <text x="115" y="428" font-family="sans-serif" font-size="11" fill="#1e3a8a" font-weight="bold">Big 4 Capex $725B (+75% YoY)</text>
+  </g>
+
+  <!-- Right side: Sankey flow -->
+  <!-- Left source pool -->
+  <g>
+    <rect x="370" y="170" width="180" height="80" rx="6" fill="#7c5e3c" stroke="#1c1917" stroke-width="1.5"/>
+    <text x="460" y="200" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#fff" font-weight="bold">被裁员工的工资</text>
+    <text x="460" y="226" text-anchor="middle" font-family="sans-serif" font-size="18" fill="#f5d76e" font-weight="bold">≈ 全行业 $20B+</text>
+    <text x="460" y="244" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#fdf6e3">"省下来的"</text>
+  </g>
+
+  <!-- Three outflow targets -->
+  <!-- GPU/Capex (huge) -->
+  <g>
+    <rect x="710" y="100" width="200" height="80" rx="6" fill="#1e3a8a" stroke="#1c1917" stroke-width="1.5"/>
+    <text x="810" y="128" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#fff" font-weight="bold">GPU · 数据中心 · 电力</text>
+    <text x="810" y="156" text-anchor="middle" font-family="sans-serif" font-size="20" fill="#f5d76e" font-weight="bold">$725B</text>
+    <text x="810" y="174" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#bfdbfe">Big 4 Capex（巨流）</text>
+  </g>
+
+  <!-- API bills -->
+  <g>
+    <rect x="710" y="220" width="200" height="60" rx="6" fill="#3a7c63" stroke="#1c1917" stroke-width="1.5"/>
+    <text x="810" y="244" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#fff" font-weight="bold">API 账单</text>
+    <text x="810" y="266" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#dcfce7">付给 Anthropic / OpenAI 的"AI 合作"</text>
+  </g>
+
+  <!-- Acquisition -->
+  <g>
+    <rect x="710" y="310" width="200" height="60" rx="6" fill="#c0392b" stroke="#1c1917" stroke-width="1.5"/>
+    <text x="810" y="334" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#fff" font-weight="bold">收购对手供应链</text>
+    <text x="810" y="356" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#fcd9d9">Stainless · $300M+</text>
+  </g>
+
+  <!-- Sankey paths (thick to GPU, medium to API, thin to acquisition) -->
+  <path d="M 550 210 Q 620 180 710 140" stroke="#1e3a8a" stroke-width="48" fill="none" stroke-linecap="round" opacity="0.78"/>
+  <path d="M 550 215 Q 620 230 710 250" stroke="#3a7c63" stroke-width="22" fill="none" stroke-linecap="round" opacity="0.78"/>
+  <path d="M 550 220 Q 620 290 710 340" stroke="#c0392b" stroke-width="10" fill="none" stroke-linecap="round" opacity="0.78"/>
+
+  <!-- Bottom callout -->
+  <g>
+    <rect x="280" y="430" width="600" height="80" rx="10" fill="#2d3748" stroke="#1c1917" stroke-width="1.5"/>
+    <text x="580" y="460" text-anchor="middle" font-family="'Noto Serif SC', serif" font-size="15" fill="#fff" font-weight="bold">$725B ÷ 113,000 = 每个被裁的人头上压 $6.4M 的 AI 投入</text>
+    <text x="580" y="488" text-anchor="middle" font-family="'Noto Serif SC', serif" font-size="12" fill="#f5d76e" font-style="italic">但这 $6.4M 不是来"替代"你，而是来跟你抢预算座位</text>
+  </g>
+
+  <!-- Connect timeline to flow -->
+  <line x1="115" y1="465" x2="280" y2="465" stroke="#5b4636" stroke-width="1.2" stroke-dasharray="4 4" opacity="0.6"/>
+</svg>
