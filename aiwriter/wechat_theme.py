@@ -440,6 +440,52 @@ _EXTERNAL_LINK_RE = re.compile(
 )
 
 
+# 微信编辑器对 <ol>/<ul> 的渲染有 bug：每个 <li> 之间会插空 li，
+# 导致看到"1. 空 / 2. 内容 / 3. 空 / 4. 内容"。彻底绕开 list 解析：
+# 把所有 ol/ul 重写为 section + 段落形式，自己加序号/bullet 字符。
+_LIST_BLOCK_RE = re.compile(
+    r"<(ol|ul)\b[^>]*>(.*?)</\1>",
+    re.DOTALL | re.IGNORECASE,
+)
+_LI_BLOCK_RE = re.compile(
+    r"<li\b[^>]*>(.*?)</li>",
+    re.DOTALL | re.IGNORECASE,
+)
+
+
+def _rewrite_lists_to_sections(html: str) -> str:
+    """把 <ol>/<ul> 整段重写为 <section> + 自带序号的 <p>，绕开微信 list bug。
+
+    注意：嵌套 list 这里不支持（当前文章用不到）。
+    """
+    text_style = THEME["p"]  # 复用 p 样式
+    container_style = "margin: 14px 0;"
+    marker_style = (
+        f"display: inline-block; min-width: 1.5em; "
+        f"font-weight: 700; color: {_BRAND}; margin-right: 4px;"
+    )
+
+    def repl_list(m: re.Match) -> str:
+        tag = m.group(1).lower()
+        inner = m.group(2)
+        items = _LI_BLOCK_RE.findall(inner)
+        if not items:
+            return ""
+
+        parts: list[str] = []
+        for i, item_html in enumerate(items, 1):
+            marker = f"{i}." if tag == "ol" else "•"
+            parts.append(
+                f'<p style="{text_style}">'
+                f'<span style="{marker_style}">{marker}</span>'
+                f"{item_html.strip()}"
+                f"</p>"
+            )
+        return f'<section style="{container_style}">{"".join(parts)}</section>'
+
+    return _LIST_BLOCK_RE.sub(repl_list, html)
+
+
 def _append_url_to_external_links(html: str) -> str:
     """微信外链不可点击，在每个外链文本下方追加一行可读的 URL。
 
@@ -633,6 +679,9 @@ def render_markdown_to_wechat(md_text: str, html_for_images: str = "") -> str:
 
     # 5) 外链下方追加可读 URL（微信外链不可点击）
     styled = _append_url_to_external_links(styled)
+
+    # 5.5) ol/ul → section + 段落（微信对 list 解析有 bug，会插空 item）
+    styled = _rewrite_lists_to_sections(styled)
 
     # 6) （已移除：之前的"chart 跟在 img 后面"位置注入）
     #     现在改用 _replace_aiwriter_placeholders 在 markdown 阶段精准位置插入
