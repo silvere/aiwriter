@@ -89,13 +89,7 @@ jobs:
             if [ -f "$t/.wechat-sync.json" ]; then
               MEDIA_ID=$(python3 -c "import json; print(json.load(open('$t/.wechat-sync.json'))['media_id'])")
               TITLE=$(python3 -c "import json; print(json.load(open('$t/.wechat-sync.json'))['title'])")
-              if [ -n "$WECHAT_PREVIEW_WXNAME" ]; then
-                echo "::group::预览推送（失败不中断）"
-                aiwriter wechat-preview -- "$MEDIA_ID" "$WECHAT_PREVIEW_WXNAME" || \
-                  echo "::warning::预览推送失败（可忽略），请到微信后台草稿箱手动预览"
-                echo "::endgroup::"
-              fi
-              echo "::notice title=✅ 同步完成 · 《$TITLE》::草稿 media_id: $MEDIA_ID%0A发布命令: gh workflow run wechat-publish.yml --field media_id=$MEDIA_ID"
+              echo "::notice title=✅ 同步完成 · 《$TITLE》::草稿已进微信草稿箱，media_id: $MEDIA_ID%0A预览: 打开 mp.weixin.qq.com → 草稿箱 → 预览%0A发布: gh workflow run wechat-publish.yml --field media_id=$MEDIA_ID"
             fi
           done
 
