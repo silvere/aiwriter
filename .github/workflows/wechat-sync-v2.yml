@@ -90,7 +90,7 @@ jobs:
               MEDIA_ID=$(python3 -c "import json; print(json.load(open('$t/.wechat-sync.json'))['media_id'])")
               TITLE=$(python3 -c "import json; print(json.load(open('$t/.wechat-sync.json'))['title'])")
               echo "::group::预览推送"
-              aiwriter wechat-preview "$MEDIA_ID" "$WECHAT_PREVIEW_WXNAME"
+              aiwriter wechat-preview -- "$MEDIA_ID" "$WECHAT_PREVIEW_WXNAME"
               echo "::notice::《$TITLE》预览已发到微信 $WECHAT_PREVIEW_WXNAME | 发布命令: gh workflow run wechat-publish.yml --field media_id=$MEDIA_ID"
               echo "::endgroup::"
             fi

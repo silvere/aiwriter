@@ -35,4 +35,4 @@ jobs:
           WECHAT_APPID: ${{ secrets.WECHAT_APPID }}
           WECHAT_APPSECRET: ${{ secrets.WECHAT_APPSECRET }}
         run: |
-          aiwriter wechat-publish "${{ inputs.media_id }}"
+          aiwriter wechat-publish -- "${{ inputs.media_id }}"
