@@ -27,7 +27,7 @@ jobs:
         with:
           # workflow_run 触发时拿对应分支的最新代码（含 bot 提交的图片）
           ref: ${{ github.event.workflow_run.head_branch || github.ref_name }}
-          fetch-depth: 10
+          fetch-depth: 30
 
       - name: Setup Python (use local 3.11, self-hosted runner)
         run: |
@@ -73,17 +73,13 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.post }}" ]; then
             targets+=("${{ inputs.post }}")
           else
-            # 工作流由 fill-images 完成后触发：用原始 push 的 commit 找新增 article.html
-            SHA="${{ github.event.workflow_run.head_sha }}"
-            if [ -n "$SHA" ] && git cat-file -e "${SHA}^" 2>/dev/null; then
-              # 兼容 macOS bash 3（无 mapfile）：用 while read 喂数组
-              while IFS= read -r f; do
-                [ -n "$f" ] && targets+=("$(dirname "$f")")
-              done < <(git diff --name-only --diff-filter=A "${SHA}^" "${SHA}" \
-                | grep -E '^posts/.+/article\.html$' || true)
-            else
-              echo "无法计算 diff（仓库太浅或首个 commit），跳过"
-            fi
+            # 从最近 30 个 commit 里找新增的 article.html，过滤掉已有 marker 的
+            # 用 git log 而非单个 commit diff，避免 fill-images auto-commit 的 head_sha 跳过原始提交
+            while IFS= read -r f; do
+              dir=$(dirname "$f")
+              [ -n "$dir" ] && [ ! -f "$dir/.wechat-sync.json" ] && targets+=("$dir")
+            done < <(git log --diff-filter=A --name-only --pretty=format: HEAD \
+              | grep -E '^posts/.+/article\.html$' | sort -u || true)
           fi
 
           if [ ${#targets[@]} -eq 0 ]; then
