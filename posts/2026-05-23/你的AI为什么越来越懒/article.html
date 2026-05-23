@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>你的AI为什么越来越懒</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI产业深度</span>
+  <h1>你的AI为什么越来越懒</h1>
+  <div class="hero-meta">
+    <span>2026-05-23</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">大模型"降智"不是技术故障。当用户量增长10倍而GPU只增3倍，让每个用户"少想一点"不是选择，是唯一的出路。一个参数的调整，揭开了AI产业最深处的结构性矛盾。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <p>2026年3月3日，Anthropic的一名工程师改了一个参数。</p>
+
+    <p>具体来说，他把Claude的推理深度从最高档调到了中档——内部代号"effort 85"，意思是让模型只用85%的力气思考。没有发布公告，没有更新日志。在Anthropic看来，这是一次常规的性能优化。</p>
+
+    <p>用户那边的感受完全是另一回事。一周之内，用户反馈中"lazy"这个词的出现频率上升了93%。有人做了实测：同样的问题，推理过程的字符数从2200个缩减到了560个——缩水了67%。</p>
+
+    <p>这不是一次偶发的技术故障。也不是某个工程师的失误。这是一个所有AI公司迟早都要做的决定。</p>
+
+    <p>要理解这个决定，需要先看一组数字：在参数调整前后的同一时期，Claude的API请求量从1498次暴增到了11.9万次。对应的推理成本从345美元跳到了42121美元。用户在增长，但每个用户带来的不是利润，而是亏损。</p>
+
+    <p>这笔账的背后，是整个AI产业最不愿意公开讨论的问题：<strong>你每月付的那20美元会员费，根本不够AI替你"认真想"的。</strong></p>
+
+    <hr>
+
+    <h2>一、不只是Claude</h2>
+
+    <p>Claude被投诉降智的同一时期，ChatGPT和Gemini的用户也在抱怨同样的事情。有人整理了2025年下半年到2026年初的用户反馈趋势，发现几乎所有主流大模型都经历了类似的质量波动。</p>
+
+    <p>Anthropic的Claude Code负责人在回应中说了实话：这是"优化token消耗"。每一个token都是钱。模型思考得越深入，输出的token越多，Anthropic付给GPU的账单就越贵。</p>
+
+    <p>2025年2月，Anthropic先是引入了"自适应思维"模式，让模型自行决定在每个问题上花多少"思考时间"。一个月后，他们直接把推理深度的默认值从最高档拧到了中档。效果立竿见影：推理成本下降，服务器容量腾出来给更多用户。</p>
+
+    <p>代价是用户体验。但财务报表上只有一个数字在乎：推理成本。</p>
+
+    <p>AI行业的投入和产出严重倒挂。2025年，全球五大云厂商为AI基础设施砸了4430亿美元。而用这些基础设施运行模型的公司呢？OpenAI预计2026年全年亏损140亿美元。Anthropic收入增长到300亿美元年化，也只是刚刚接近盈亏平衡。花得多赚得少，这个行业的基本面决定了每一次推理调用都必须精打细算。</p>
+
+    <p>一个简单的类比：AI公司现在的处境，就像一家自助餐厅发现食材成本是餐费的两倍。每多来一个客人，就多亏一份钱。唯一的应对方法是什么？把牛排换成鸡肉，把大虾换成鱼丸——但菜单上的名字不改。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">对账图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">AI公司的收入与成本——赚得越多亏得越多</div></div><div style="padding:22px 24px 18px"><div style="display:flex;align-items:center;gap:24px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px dashed #e2e8f0"><div style="flex:1;text-align:right;font-size:12px;font-weight:700;color:#1A56DB;letter-spacing:1px">← 流入 / INFLOW</div><div style="width:20px"></div><div style="flex:1;text-align:left;font-size:12px;font-weight:700;color:#F05252;letter-spacing:1px">OUTFLOW / 流出 →</div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">OpenAI 年化收入</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:80.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">240 亿美元</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">OpenAI 预计亏损</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:46.7%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">140 亿美元</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Anthropic 年化收入</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:100.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">300 亿美元</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Anthropic 盈亏</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:0.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">0 亿美元</div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>头部AI公司年收入数百亿，但推理成本让利润为负——赚得越多，亏得越多</div></div>
+
+    <hr>
+
+    <h2>二、AI版"缩水通胀"</h2>
+
+    <p>消费品行业有一个被研究了几十年的现象：缩水通胀（shrinkflation）。可口可乐的罐装从355毫升变成330毫升，薯片袋里的空气越来越多，洗衣液的浓度悄悄降低——价格不变，内容变少。消费者很少注意到，因为变化总是渐进的，而且包装看起来没什么不同。</p>
+
+    <p>大模型正在做同样的事。</p>
+
+    <p>你付的月费没涨，甚至在一些平台上还降了。但你得到的推理深度在下降，回答的详尽程度在缩水，模型"思考"的时间在缩短。一家公司的道德有好有坏，但成本结构没有感情。订阅制商业模式遇到推理经济学，结果是确定的。</p>
+
+    <p>问题出在定价结构上。AI公司向用户收的是固定月费（ChatGPT Plus 20美元/月，Claude Pro 20美元/月），但它们付给GPU的钱是按token计算的。每多想一步，每多输出一个字，就多花一份钱。用户付的是自助餐价格，AI公司承担的是单点菜的成本。</p>
+
+    <p>当用户量快速增长时，这个矛盾被急剧放大。Anthropic的数据显示，Claude的日均token消耗量在一年内增长了数十倍。但订阅收入的增长远远跟不上推理成本的增长——因为每个新用户带来的是20美元月费，但消耗的推理成本可能是50甚至100美元。</p>
+
+    <p>Sam Altman在2025年说过一句被广泛引用的话：同等AI水平的使用成本每12个月下降约10倍。这句话是对的。但他没有说的是另一半事实——AI公司正在把这个成本下降的空间，用于服务更多用户，而不是给每个用户更好的体验。</p>
+
+    <p>换句话说，技术进步带来的效率提升，被增长的用户量吃掉了。分母变大的速度快于分子。</p>
+
+    <p>这就是为什么你觉得AI在变懒。它确实在变懒——不是因为底层模型变弱了，而是因为分给你的算力变少了。就像高速公路拓宽了两倍，但同时涌入了五倍的车流。每辆车的体验不是变好了，而是变差了。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_01.jpg" alt="Shrinkflation concept applied AI showing" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <hr>
+
+    <h2>三、谁在这场降智中赚了钱</h2>
+
+    <p>AI产业链的利润分配，可能是整个科技行业最讽刺的数据之一。</p>
+
+    <p>NVIDIA在2026财年第三季度的数据中心收入达到512亿美元，年化收入约2500亿美元，净利润约530亿美元。这家卖GPU的公司拿走了整个AI产业链约79%的毛利润。</p>
+
+    <p>而训练和运行这些模型的公司呢？OpenAI预计2026年全年亏损140亿美元，不预计2029年前实现正现金流。Anthropic刚接近盈亏平衡。DeepSeek在2026年4月启动了首轮融资——自有资金不够了。下游做应用的（Cursor、Perplexity等），加在一起的利润份额不到产业链的5%。</p>
+
+    <p>这就是AI产业最不对劲的地方。做模型的公司卡在利润最薄的位置——上面要付NVIDIA巨额芯片账单，下面要用低价争夺用户。每赚一块钱的收入，先付出三到四块钱的成本。</p>
+
+    <p>这就是为什么"降智"不是偶发行为，而是结构性的必然。当你的利润是负的，你唯一能压缩的可变成本就是推理深度。固定成本（GPU采购、数据中心建设、研发团队薪资）已经沉没了，用户增长不能停（否则估值下降、融资受阻），能动手术的只有每一次回答的"认真程度"。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">条形图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">AI产业链利润分配——谁在赚钱，谁在亏钱</div></div><div style="padding:22px 24px 18px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px dashed #e2e8f0"><div><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><span style="width:10px;height:10px;border-radius:3px;background:#94A3B8;display:inline-block"></span><span style="font-size:11px;color:#64748b">参照</span></span><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><span style="width:10px;height:10px;border-radius:3px;background:#0E9F6E;display:inline-block"></span><span style="font-size:11px;color:#64748b">正</span></span><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><span style="width:10px;height:10px;border-radius:3px;background:#F59E0B;display:inline-block"></span><span style="font-size:11px;color:#64748b">负</span></span></div><span style="font-size:11px;color:#94a3b8;font-weight:500">单位：亿美元</span></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">NVIDIA 年净利润</span><span style="font-size:15px;font-weight:700;color:#0E9F6E;white-space:nowrap">530 亿美元</span></div><div style="background:#DEF7EC;border-radius:5px;height:10px;overflow:hidden"><div style="background:#0E9F6E;width:100.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">应用层(Cursor+Perplexity等)</span><span style="font-size:15px;font-weight:700;color:#0E9F6E;white-space:nowrap">25 亿美元</span></div><div style="background:#DEF7EC;border-radius:5px;height:10px;overflow:hidden"><div style="background:#0E9F6E;width:8.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">Anthropic</span><span style="font-size:15px;font-weight:700;color:#94A3B8;white-space:nowrap">0 亿美元</span></div><div style="background:#F1F5F9;border-radius:5px;height:10px;overflow:hidden"><div style="background:#94A3B8;width:0.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">OpenAI 年亏损</span><span style="font-size:15px;font-weight:700;color:#F59E0B;white-space:nowrap">-140 亿美元</span></div><div style="background:#FEF3C7;border-radius:5px;height:10px;overflow:hidden"><div style="background:#F59E0B;width:26.4%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>卖铲子的NVIDIA年赚530亿，做模型的OpenAI年亏140亿——淘金者不如卖铲人</div></div>
+
+    <hr>
+
+    <h2>四、当所有AI都一样聪明（或一样懒）</h2>
+
+    <p>模型降智的故事还有另一层含义。</p>
+
+    <p>2024年初，中美顶级大模型在MMLU基准测试上的差距是17.5个百分点。到2026年初，这个差距缩小到了0.3%。Chatbot Arena排行榜上，前六名模型的Elo评分差距在80分以内——对于一个满分1500+的评分体系来说，这已经进入了统计误差区间。</p>
+
+    <p>模型趋同是一个比降智更深远的变化。它意味着大模型公司正在失去技术层面的差异化能力。当GPT-5.4、Claude Sonnet 4.6、Gemini 3.1 Pro在大多数任务上表现几乎一致时，用户的选择逻辑就不再是"谁更聪明"，而是"谁更便宜"或者"谁更稳定"。</p>
+
+    <p>对模型公司来说，这是一个双重打击。一方面，同质化导致定价权流失——你无法为一个跑分高出0.3%的模型收取两倍价格。另一方面，同质化使得"降智"的成本更低——反正用户也分不太清楚不同模型之间的区别，推理深度降低一点，大多数人不会注意到。</p>
+
+    <p>在国内市场，这个趋势走得更极端。2024年5月，DeepSeek-V2以每百万token一元的价格引爆了大模型价格战。一周之内，字节、阿里、百度、腾讯全部跟进。阿里通义千问降价97%，百度文心轻量版直接免费。到了2024年底，DeepSeek V3以0.27美元/百万token的价格达到了GPT-4o的水平。</p>
+
+    <p>但价格战不可能永远打下去。2026年2月，智谱打了行业涨价的"第一枪"——三个月内两次提价，累计涨幅83%。一个月后，阿里云、腾讯云、百度云的AI算力服务全面涨价10%到34%。唯一逆势的是DeepSeek，把价格压到了0.001元/千token的地板。</p>
+
+    <p>同一个月份里出现"地板价"和"全面涨价"，看起来矛盾，实际上揭示的是同一件事：大模型的定价已经脱离了"技术竞赛"的逻辑，进入了"生存竞赛"的逻辑。涨价的是不得不涨——成本撑不住了。降价的是选择了另一条路——用极致效率换市场份额。</p>
+
+    <p>但不管涨还是降，分给每个用户的推理资源只会变少，不会变多。这一点不会因为价格标签的变化而改变。</p>
+
+    <hr>
+
+    <h2>五、什么才是真正值钱的</h2>
+
+    <p>Anthropic的财务数据里藏着一个耐人寻味的信号。</p>
+
+    <p>这家公司在2026年4月的年化收入达到300亿美元，超过了OpenAI的240亿。但它的消费端用户数只有ChatGPT的约5%。真正撑起Anthropic收入的是30万家企业客户，贡献了80%的收入，其中包括8家财富10强企业。</p>
+
+    <p>Anthropic的模型在大多数基准测试中排不到第一。那这30万家企业在为什么买单？</p>
+
+    <p>答案不是"最聪明的AI"，而是"最不容易出事的AI"。个人用户在乎的是"这个回答有多惊艳"，企业在乎的是"这东西会不会在凌晨三点给CEO发一封充满幻觉的邮件"。Anthropic卖的不是跑分，而是安全承诺和企业级SLA。微软的Copilot走的也是同一条路——在2026年企业AI部署中拿下32%份额，核心卖点不是模型最强，而是和Office生态的深度集成让出错的可能性最低。</p>
+
+    <p>当模型能力趋同到Elo分差80分以内时，竞争维度已经从"谁更聪明"转移到了"谁更可靠"。推理深度的绝对值不再是唯一重要的指标——稳定性、安全性、集成深度、错误率才是。一个每次都给你80分回答的AI，对企业来说比一个有时给95分有时给30分的AI更有价值。</p>
+
+    <p>AI编程工具市场是最早出现这个拐点的领域。85%的开发者已经在用AI辅助编程，他们同时使用2到4个工具。留存率最高的不是跑分最好的，而是在复杂工程任务中出错最少的。</p>
+
+    <p>PC行业在1990年代末从"谁的主频高"转向了"谁不蓝屏"。云计算在2010年代从"谁的算力便宜"转向了"谁的SLA更硬"。AI正在经历同样的拐点。</p>
+
+    <hr>
+
+    <h2>回到那个参数</h2>
+
+    <p>2026年3月3日做出的那个决定——把推理深度从最高档调到中档——看起来是一次技术参数的优化。但它实际上回答了一个更根本的问题：</p>
+
+    <p>当AI的智能有成本时，谁来决定你能得到多少智能？</p>
+
+    <p>在当前的商业模式下，这个问题的答案不是用户。用户付了固定的月费，获得的是AI公司单方面决定的推理深度。你感受到的"变懒"，是AI公司在利润压力下做出的一次次隐蔽调整的累积。</p>
+
+    <p>一个月20美元的订阅费，覆盖不了无限制的深度推理。这不需要控诉，算一笔账就够了。</p>
+
+    <p>但这件事值得被说清楚。模型在变强，分给你的那一份在变少。进步是真的，缩水也是真的。</p>
+
+    <p>如果你真的在乎AI输出的质量——用AI辅助编程、做商业分析、处理专业文档——考虑切换到按量付费的API模式。你为每一个token付费，AI公司没有动力让模型"偷懒"。月费更低不代表更划算，因为你付的是打了折的智能。</p>
+
+    <p>至于整个行业，Anthropic的路径给出了一种可能的答案：不卖最聪明的AI，卖最可靠的AI。当技术差异消失后，信任变成了最贵的商品。</p>
+
+    <p>那个3月3日改参数的工程师，做了一个所有AI公司都会做的决定。但他也许无意间揭示了这个行业最重要的一个转向信号：<strong>AI竞赛的下半场，比的不是谁的模型想得最深，而是谁能让用户相信它想得足够深。</strong></p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>模型在变强，分给你的那一份在变少。进步是真的，缩水也是真的。</p>
+    <p>AI竞赛的下半场，比的不是谁的模型想得最深，而是谁能让用户相信它想得足够深。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://36kr.com/p/3767261832446727" target="_blank" rel="noopener">Claude又又又又降智了 - 36氪</a></div>
+      <div class="footer-source-item"><a href="https://tokenmix.ai/blog/ai-pricing-trends-history" target="_blank" rel="noopener">AI API Pricing History - TokenMix</a></div>
+      <div class="footer-source-item"><a href="https://36kr.com/p/3777770980300039" target="_blank" rel="noopener">告别价格战，大模型共迎通胀时代 - 36氪</a></div>
+      <div class="footer-source-item"><a href="https://zhuanlan.zhihu.com/p/1942707679077306986" target="_blank" rel="noopener">大模型价格战逆转？深扒17家厂商最新定价 - 知乎</a></div>
+      <div class="footer-source-item"><a href="https://www.saastr.com/anthropic-just-passed-openai-in-revenue-while-spending-4x-less-to-train-their-models/" target="_blank" rel="noopener">Anthropic Just Passed OpenAI in Revenue - SaaStr</a></div>
+      <div class="footer-source-item"><a href="https://towardsai.net/p/machine-learning/the-great-llm-convergence-when-everyones-best-becomes-nobodys-advantage" target="_blank" rel="noopener">The Great LLM Convergence - Towards AI</a></div>
+      <div class="footer-source-item"><a href="https://investor.nvidia.com/news/press-release-details/2024/NVIDIA-Announces-Financial-Results-for-Second-Quarter-Fiscal-2025/" target="_blank" rel="noopener">NVIDIA Financial Results - Investor Relations</a></div>
+      <div class="footer-source-item"><a href="https://www.ideaplan.io/blog/ai-coding-assistant-market-share-2026" target="_blank" rel="noopener">AI Coding Assistant Market Share 2026 - IdeaPlan</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
