@@ -122,5 +122,54 @@ def wechat_sync(
     )
 
 
+@app.command("wechat-preview")
+def wechat_preview(
+    media_id: str = typer.Argument(..., help="草稿 media_id"),
+    wxname: str = typer.Argument(..., help="接收预览的微信号（须是公众号管理员/运营者）"),
+) -> None:
+    """把草稿推送到指定微信号预览。"""
+    import httpx
+    from aiwriter.config import load_config
+    from aiwriter.wechat import WeChatError, get_access_token, preview_draft
+
+    config = load_config()
+    if not config.has_wechat:
+        console.print("[bold red]错误:[/bold red] 未配置 WECHAT_APPID / WECHAT_APPSECRET")
+        raise typer.Exit(code=1)
+
+    try:
+        with httpx.Client() as client:
+            token = get_access_token(config.wechat_appid, config.wechat_appsecret, client=client)
+            preview_draft(token, media_id, wxname, client=client)
+        console.print(f"[bold green]✓ 预览已推送到微信:[/bold green] {wxname}")
+    except WeChatError as e:
+        console.print(f"[bold red]预览失败:[/bold red] {e}")
+        raise typer.Exit(code=1) from e
+
+
+@app.command("wechat-publish")
+def wechat_publish(
+    media_id: str = typer.Argument(..., help="草稿 media_id"),
+) -> None:
+    """发布草稿到公众号（群发给所有粉丝，每天限 1 次）。"""
+    import httpx
+    from aiwriter.config import load_config
+    from aiwriter.wechat import WeChatError, get_access_token, publish_draft
+
+    config = load_config()
+    if not config.has_wechat:
+        console.print("[bold red]错误:[/bold red] 未配置 WECHAT_APPID / WECHAT_APPSECRET")
+        raise typer.Exit(code=1)
+
+    try:
+        with httpx.Client() as client:
+            token = get_access_token(config.wechat_appid, config.wechat_appsecret, client=client)
+            publish_id = publish_draft(token, media_id, client=client)
+        console.print(f"[bold green]✓ 发布成功！[/bold green] publish_id={publish_id}")
+    except WeChatError as e:
+        console.print(f"[bold red]发布失败:[/bold red] {e}")
+        raise typer.Exit(code=1) from e
+
+
 if __name__ == "__main__":
     app()

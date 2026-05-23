@@ -9,73 +9,57 @@ on:
   workflow_dispatch:
     inputs:
       post:
-        description: 'post 路径（如 posts/2026-05-21/xxx）；留空则尝试自动检测最近一次提交新增的文章'
+        description: 'post 路径（如 posts/2026-05-21/xxx）；留空则自动检测最近新增文章'
         required: false
 
 jobs:
   sync:
-    # 必须用自托管 runner，因为微信 API 要 IP 白名单
     runs-on: self-hosted
-    # 仅在触发它的 workflow 成功时跑（手动触发时无此字段，也放行）
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     permissions:
-      contents: write  # 需要 commit marker
+      contents: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # workflow_run 触发时拿对应分支的最新代码（含 bot 提交的图片）
           ref: ${{ github.event.workflow_run.head_branch || github.ref_name }}
           fetch-depth: 30
 
-      - name: Setup Python (use local 3.11, self-hosted runner)
+      - name: Setup Python
         run: |
-          # 在 self-hosted runner 上直接用本地 Python 3.11，避免 actions/setup-python 的 /Users/runner 权限问题
           PYTHON_BIN="$HOME/.local/bin/python3.11"
           if [ ! -x "$PYTHON_BIN" ]; then
             echo "::error::$PYTHON_BIN 不存在"
             exit 1
           fi
-          # 用 venv 隔离依赖
           "$PYTHON_BIN" -m venv .venv
           echo "$PWD/.venv/bin" >> $GITHUB_PATH
 
-      - name: Install AIWriter (含 wechat 可选依赖)
+      - name: Install AIWriter
         run: |
           python -m pip install --upgrade pip
           pip install -e '.[wechat]'
 
-      - name: 写一份 stub config
+      - name: 写 stub config
         run: |
           mkdir -p .stub-vault/.obsidian
-          cat > config.toml <<'EOF'
-          [vault]
-          path = "./.stub-vault"
+          printf '[vault]\npath = "./.stub-vault"\n\n[wechat]\nauthor = "老铁"\ndefault_digest_chars = 54\n' > config.toml
 
-          [wechat]
-          author = "老铁"
-          default_digest_chars = 54
-          EOF
-
-      - name: 确定要同步的文章 + 执行同步
+      - name: 同步 + 预览
         env:
           WECHAT_APPID: ${{ secrets.WECHAT_APPID }}
           WECHAT_APPSECRET: ${{ secrets.WECHAT_APPSECRET }}
           WECHAT_PREVIEW_WXNAME: ${{ secrets.WECHAT_PREVIEW_WXNAME }}
-          # cairosvg 需要 native libcairo（brew install cairo）
           DYLD_LIBRARY_PATH: /opt/homebrew/lib
           DYLD_FALLBACK_LIBRARY_PATH: /opt/homebrew/lib
         run: |
           set -e
-
           declare -a targets=()
 
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.post }}" ]; then
             targets+=("${{ inputs.post }}")
           else
-            # 从最近 30 个 commit 里找新增的 article.html，过滤掉已有 marker 的
-            # 用 git log 而非单个 commit diff，避免 fill-images auto-commit 的 head_sha 跳过原始提交
             while IFS= read -r f; do
               dir=$(dirname "$f")
               [ -n "$dir" ] && [ ! -f "$dir/.wechat-sync.json" ] && targets+=("$dir")
@@ -94,42 +78,28 @@ jobs:
               continue
             fi
             if [ -f "$t/.wechat-sync.json" ]; then
-              echo "::notice::$t 已同步过（存在 .wechat-sync.json），跳过；如需重发请删除该文件"
+              echo "::notice::$t 已同步过，跳过"
               continue
             fi
+
             echo "::group::同步 $t"
             aiwriter wechat-sync "$t"
-            # 同步成功后推送预览到管理员微信
-            if [ -n "$WECHAT_PREVIEW_WXNAME" ] && [ -f "$t/.wechat-sync.json" ]; then
-              MEDIA_ID=$(python3 -c "import json,sys; d=json.load(open('$t/.wechat-sync.json')); print(d['media_id'])")
-              TITLE=$(python3 -c "import json,sys; d=json.load(open('$t/.wechat-sync.json')); print(d['title'])")
-              python3 - <<PYEOF
-import httpx, json, os
-appid = os.environ["WECHAT_APPID"]
-secret = os.environ["WECHAT_APPSECRET"]
-wxname = os.environ["WECHAT_PREVIEW_WXNAME"]
-media_id = "$MEDIA_ID"
-r = httpx.get("https://api.weixin.qq.com/cgi-bin/token", params={"grant_type":"client_credential","appid":appid,"secret":secret}, timeout=15)
-token = r.json()["access_token"]
-resp = httpx.post("https://api.weixin.qq.com/cgi-bin/draft/preview", params={"access_token":token},
-    content=json.dumps({"towxname":wxname,"media_id":media_id},ensure_ascii=False).encode(),
-    headers={"Content-Type":"application/json; charset=utf-8"}, timeout=15)
-d = resp.json()
-if d.get("errcode", 0) == 0:
-    print(f"  ✓ 预览已推送到微信: {wxname}")
-else:
-    print(f"  ⚠ 预览推送失败: {d}")
-PYEOF
-              echo "::notice::预览已推送到微信 $WECHAT_PREVIEW_WXNAME，media_id=$MEDIA_ID，发布命令：gh workflow run wechat-publish.yml --field media_id=$MEDIA_ID"
-            fi
             echo "::endgroup::"
+
+            if [ -f "$t/.wechat-sync.json" ] && [ -n "$WECHAT_PREVIEW_WXNAME" ]; then
+              MEDIA_ID=$(python3 -c "import json; print(json.load(open('$t/.wechat-sync.json'))['media_id'])")
+              TITLE=$(python3 -c "import json; print(json.load(open('$t/.wechat-sync.json'))['title'])")
+              echo "::group::预览推送"
+              aiwriter wechat-preview "$MEDIA_ID" "$WECHAT_PREVIEW_WXNAME"
+              echo "::notice::《$TITLE》预览已发到微信 $WECHAT_PREVIEW_WXNAME | 发布命令: gh workflow run wechat-publish.yml --field media_id=$MEDIA_ID"
+              echo "::endgroup::"
+            fi
           done
 
       - name: 提交 sync marker
         run: |
           git config user.name  "AIWriter Bot"
           git config user.email "aiwriter-bot@users.noreply.github.com"
-          # 只添加 marker，不动其它文件
           find posts -name '.wechat-sync.json' -print0 | xargs -0 -r git add
           if git diff --staged --quiet; then
             echo "无 marker 变化"
