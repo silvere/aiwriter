@@ -90,6 +90,31 @@ def upload_thumb_material(token: str, image_path: Path, *, client: httpx.Client)
     return data["media_id"], data.get("url", "")
 
 
+def preview_draft(token: str, media_id: str, wxname: str, *, client: httpx.Client) -> None:
+    """把草稿推送到指定微信号预览（该微信号须为公众号管理员/运营者）。"""
+    r = client.post(
+        f"{WECHAT_BASE}/draft/preview",
+        params={"access_token": token},
+        content=json.dumps({"towxname": wxname, "media_id": media_id}, ensure_ascii=False).encode("utf-8"),
+        headers={"Content-Type": "application/json; charset=utf-8"},
+        timeout=15,
+    )
+    _check(r, f"预览推送到 {wxname}")
+
+
+def publish_draft(token: str, media_id: str, *, client: httpx.Client) -> str:
+    """发布草稿（群发给所有粉丝），返回 publish_id。每天限 1 次。"""
+    r = client.post(
+        f"{WECHAT_BASE}/freepublish/submit",
+        params={"access_token": token},
+        content=json.dumps({"media_id": media_id}, ensure_ascii=False).encode("utf-8"),
+        headers={"Content-Type": "application/json; charset=utf-8"},
+        timeout=15,
+    )
+    data = _check(r, "发布草稿")
+    return str(data.get("publish_id", ""))
+
+
 def add_draft(
     token: str,
     *,

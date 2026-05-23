@@ -62,6 +62,7 @@ jobs:
         env:
           WECHAT_APPID: ${{ secrets.WECHAT_APPID }}
           WECHAT_APPSECRET: ${{ secrets.WECHAT_APPSECRET }}
+          WECHAT_PREVIEW_WXNAME: ${{ secrets.WECHAT_PREVIEW_WXNAME }}
           # cairosvg 需要 native libcairo（brew install cairo）
           DYLD_LIBRARY_PATH: /opt/homebrew/lib
           DYLD_FALLBACK_LIBRARY_PATH: /opt/homebrew/lib
@@ -98,6 +99,29 @@ jobs:
             fi
             echo "::group::同步 $t"
             aiwriter wechat-sync "$t"
+            # 同步成功后推送预览到管理员微信
+            if [ -n "$WECHAT_PREVIEW_WXNAME" ] && [ -f "$t/.wechat-sync.json" ]; then
+              MEDIA_ID=$(python3 -c "import json,sys; d=json.load(open('$t/.wechat-sync.json')); print(d['media_id'])")
+              TITLE=$(python3 -c "import json,sys; d=json.load(open('$t/.wechat-sync.json')); print(d['title'])")
+              python3 - <<PYEOF
+import httpx, json, os
+appid = os.environ["WECHAT_APPID"]
+secret = os.environ["WECHAT_APPSECRET"]
+wxname = os.environ["WECHAT_PREVIEW_WXNAME"]
+media_id = "$MEDIA_ID"
+r = httpx.get("https://api.weixin.qq.com/cgi-bin/token", params={"grant_type":"client_credential","appid":appid,"secret":secret}, timeout=15)
+token = r.json()["access_token"]
+resp = httpx.post("https://api.weixin.qq.com/cgi-bin/draft/preview", params={"access_token":token},
+    content=json.dumps({"towxname":wxname,"media_id":media_id},ensure_ascii=False).encode(),
+    headers={"Content-Type":"application/json; charset=utf-8"}, timeout=15)
+d = resp.json()
+if d.get("errcode", 0) == 0:
+    print(f"  ✓ 预览已推送到微信: {wxname}")
+else:
+    print(f"  ⚠ 预览推送失败: {d}")
+PYEOF
+              echo "::notice::预览已推送到微信 $WECHAT_PREVIEW_WXNAME，media_id=$MEDIA_ID，发布命令：gh workflow run wechat-publish.yml --field media_id=$MEDIA_ID"
+            fi
             echo "::endgroup::"
           done
 
