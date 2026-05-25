@@ -1,0 +1,12 @@
+name: 检查runner出口IP
+on:
+  workflow_dispatch:
+jobs:
+  check:
+    runs-on: self-hosted
+    steps:
+      - name: 打印出口IP
+        run: |
+          echo "IPv4: $(curl -4s https://ifconfig.me 2>/dev/null || echo 'N/A')"
+          echo "IPv6: $(curl -6s https://ifconfig.me 2>/dev/null || echo 'N/A')"
+          echo "ipify: $(curl -s https://api.ipify.org 2>/dev/null || echo 'N/A')"
