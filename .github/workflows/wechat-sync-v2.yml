@@ -3,6 +3,8 @@ name: 同步到微信公众号草稿箱
 # 串在「自动填充文章配图」之后，确保图片就位后再同步。
 # 也支持手动触发。
 on:
+  schedule:
+    - cron: '0 23 * * *'   # 北京时间每天 07:00（UTC 23:00 前一天）
   workflow_run:
     workflows: ["自动填充文章配图"]
     types: [completed]
@@ -15,7 +17,7 @@ on:
 jobs:
   sync:
     runs-on: self-hosted
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     permissions:
       contents: write
 
@@ -59,6 +61,13 @@ jobs:
 
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.post }}" ]; then
             targets+=("${{ inputs.post }}")
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
+            # 定时任务：扫全部 posts，按目录名倒序取最新未同步的一篇
+            while IFS= read -r dir; do
+              [ -n "$dir" ] && targets+=("$dir") && break
+            done < <(find posts -name "article.html" -exec dirname {} \; \
+              | sort -r \
+              | while IFS= read -r d; do [ ! -f "$d/.wechat-sync.json" ] && echo "$d"; done)
           else
             while IFS= read -r f; do
               dir=$(dirname "$f")
