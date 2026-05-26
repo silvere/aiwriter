@@ -40,11 +40,7 @@ Leo XIV 念到中段，原话是这样的：
 
 它的对手是谁？台上右二坐的那位。
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🎨</div>
-  <div class="img-placeholder-label">概念图占位 — 圣议会大厅的台上五人</div>
-  <details><summary>生成 Prompt</summary><pre>A flat minimalist illustration of a formal Vatican press hall stage. Five figures sit in a row behind a long table draped with cream-colored cloth. The central figure wears papal white, two cardinals in red on the immediate sides, a scholar in dark academic robes, and on the far right a tech executive in a plain dark suit looking down at notes. Behind them a stained-glass-style geometric mosaic background combining religious iconography motifs and stylized neural network nodes connected by thin lines. Color palette: ivory, papal red, deep blue, muted gold accents. Composition: wide horizontal, formal symmetry slightly broken by the executive's posture. No text labels, no logos, clean illustration, editorial style.</pre></details>
-</div>
+![formal Vatican press hall stage](images/concept_01.jpg)
 
 ---
 
@@ -132,11 +128,7 @@ Anthropic 创立于一个信念：强大的 AI 应该以极大的谨慎来开发
 
 教皇骂集中那一刻，Anthropic 正在完成全球 AI 产业有史以来最集中的一次单笔私募融资。Olah 不可能不知道这件事——他是联合创始人。但他在台上没提。
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🎨</div>
-  <div class="img-placeholder-label">概念图占位 — 圣油与合同的同框</div>
-  <details><summary>生成 Prompt</summary><pre>A split-screen flat illustration. Left half: a tech executive figure standing at a microphone in a marble hall under soft warm light, head slightly bowed, hands clasped, suggesting a moment of public acknowledgement. Right half: the same figure seen from behind in a glass-walled modern office tower at night, signing a stack of legal documents under cool blue light, the silhouettes of distant GPU server racks visible through the window. A thin vertical seam separates the two halves but the figure's posture creates visual continuity across both sides. Color palette: warm marble cream and gold on the left, cool deep blue and silver on the right. No text, no labels, no logos, editorial illustration style, minimalist composition.</pre></details>
-</div>
+![split-screen Left half executive figure](images/concept_02.jpg)
 
 ---
 
