@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Microsoft 把 Computer-Use Agent 卖进生产那周，最强模型在 153 个真实网站上只跑出 33.3%</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI产业深度</span>
+  <h1>Microsoft 把 Computer-Use Agent 卖进生产那周，最强模型在 153 个真实网站上只跑出 33.3%</h1>
+  <div class="hero-meta">
+    <span>2026-05-28</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">Mustapha Lazrek 说 agent 真的把活干了。同一周 ClawBench 论文挂出最强模型在 153 个真实生产网站上的通过率：33.3%。3 次里有 1 次干成的叫 do the work，另外 2 次干的，是 generate the work——给你公司的 ops、合规和最终用户 generate 出来的 work。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、5 月 13 日，Mustapha Lazrek 在 Tech Community 挂的那篇</h2>
+
+    <p>Mustapha Lazrek 的这篇公告挂在 techcommunity.microsoft.com 的 Copilot Studio Blog 节点下，编号 4519427。除了开篇那句 punchline，正文里还有同公司 Charles Lamanna 的配套 quote。Lamanna 现在的头衔是 Microsoft President of Business Applications & Agents，2026 年 3 月组织改组之后直接向 Satya Nadella 汇报。他的那一句原话是：</p>
+
+    <blockquote><p>「If a person can use the app, the agent can too.」</p></blockquote>
+
+    <p>人能用的 app，agent 也能用。</p>
+
+    <p>这一句是过去三年所有 computer-use 厂商共同的对外口径，从 Anthropic 2024 年 10 月那篇「Introducing Computer Use」开始，到 OpenAI Operator 2026 年 1 月的 research preview，到 Google Antigravity 2.0 上周的 I/O 主旨——文字略有差异，结构完全一致：人会用的，agent 也会用。</p>
+
+    <p>至于"人会用的"具体指哪些 app、agent 用得多准、出错的时候谁修——三句话里都不展开。展开就不能上 GA 了（笑）。</p>
+
+    <p>Microsoft 这次 GA 的发售范围是「全部 commercial Power Platform geographies」。GCC、GCC High、DoD 三档主权云不在首批。也就是说面向商业客户全量铺开，面向政府客户暂缓——这个区别值得拎出来看：政府客户合规审计严，所以"GA"那个标签在他们这里要再等一等。商业客户合规审计松，所以可以先上。</p>
+
+    <p>GA 同时官宣了一个 design partner——Graebel，一家全球人才搬迁公司。Microsoft GA 博客里给的客户 quote 来自 Graebel 的 CRO Matt Brownlee：</p>
+
+    <blockquote><p>「By adopting Microsoft Copilot Studio and AI agents, we've moved beyond traditional automation to a more intelligent, scalable operating model.」</p></blockquote>
+
+    <p>我们采用了 Microsoft Copilot Studio 和 AI agent，已经从传统自动化过渡到一个更智能、更可扩展的运营模型。</p>
+
+    <p>整段 quote 没有数字。没有任务通过率、没有 ROI、没有失败回退率、没有"过去一年 agent 跑了 X 万次任务里 Y 次需要人介入"那种厂商应有的硬指标——只有"intelligent"、"scalable"两个形容词。一个完整的客户案例，定量信息为零。</p>
+
+    <p>这是 GA 公告的标准做法。客户提供形容词，厂商背书 GA 标签，benchmark 数字一概不提。</p>
+
+    <p>Microsoft 的定价表挂在 Azure pricing 页和 Copilot Studio Learn 计费文档下。computer-use 步骤按 5 Copilot Credits 一步收费；1 Copilot Credit = $0.01 美元（pay-as-you-go），$200 一个月可预购 25,000 credits。算下来一步 $0.05，一个典型多步任务（10–30 步）端到端价格大约 $0.50 到 $1.50。</p>
+
+    <p>每步 5 分钱。这是 Microsoft 写在定价页上、对外承诺的数字。</p>
+
+    <p>每步 5 分钱不包含什么——这是 Microsoft 没写在定价页上、留给你自己慢慢搞清楚的部分。第四节会算这笔账。</p>
+
+    <hr>
+
+    <h2>二、那 33.3% 是怎么测出来的</h2>
+
+    <p>ClawBench 这篇论文挂在 arXiv 2604.08523，2026 年 4 月 9 日提交 V1，5 月更新 V2 排行榜。第一作者 Yuxuan Zhang 是 UBC 的研究生，所在实验室是 NAIL Group，导师 Kelsey R. Allen。合作者包括 Wenhu Chen——那个写 Tülu 系列论文的 UBC 教授。</p>
+
+    <p>这是一份学术团队产出，不是厂商基准。Microsoft 没投钱、Anthropic 没投钱、OpenAI 没投钱——这一点很重要，等会儿要用。</p>
+
+    <p>153 个任务，144 个<strong>真实生产网站</strong>，15 个生活类别。完整分布如下（来自 GitHub repo reacher-z/ClawBench）：</p>
+
+    <p>| 类别 | 任务数 |<br>|---|---|<br>| Daily Life | 21 |<br>| Entertainment & Hobbies | 15 |<br>| Creation & Initialization | 13 |<br>| Rating & Voting | 10 |<br>| Travel | 9 |<br>| Education & Learning | 9 |<br>| Office & Secretary | 9 |<br>| Beauty & Personal Care | 9 |<br>| Job Search & HR | 8 |<br>| Pet & Animal Care | 8 |<br>| Personal Management | 6 |<br>| Shopping & Commerce | 6 |<br>| Nonprofit & Charity | 6 |<br>| Academia & Research | 5 |<br>| Finance & Investment | 4 |</p>
+
+    <p>「真实生产网站」这一句不能略读。市面上几乎所有 agent 基准都跑在沙盒里——WebArena、VisualWebArena、MiniWoB、AgentBench——一个 Docker 容器，固定快照，结构化日志，跑完销毁。ClawBench 不跑沙盒。153 个任务每一个都点向 144 个<strong>活的</strong>生产网站：Amazon、Spotify、Tripadvisor、Indeed、Coursera、PayPal——名字看着眼熟，是因为你自己每天用。</p>
+
+    <p>评测方法分两阶段。Stage 1 叫 Interception——用 request interceptor 拦住 agent 对真实服务发出的"不可逆"请求（按 URL pattern + method 匹配），在请求触达 live server 之前截下来，所以测试本身不会真的下单、真的扣钱、真的发邮件。Stage 2 叫 LLM Judge——把 agent 跑出来的请求和人类参考答案丢给 DeepSeek V4 Pro，给两套分数：宽松判分（ambiguous 算对）和严格判分（ambiguous 算错）。</p>
+
+    <p>5 层日志全部留：MP4 录屏、按时间戳截图、DOM 事件流、HTTP 流量、agent 的推理消息。出问题可以倒带。</p>
+
+    <p>V2 排行榜最新数字：</p>
+
+    <p>| 模型 | Intercepted（动作到位） | Reward Lenient（宽松通过） |<br>|---|---|---|<br>| Claude Opus 4.7 | 54.6% | 44.6% |<br>| GLM-5.1 | 48.5% | 34.6% |<br>| GPT-5.5 | 45.4% | 35.4% |<br>| DeepSeek V4 Pro | 43.9% | 33.9% |<br>| Claude Sonnet 4.6 | — | 33.3% |<br>| 其余三家（含 GPT-5.4） | 6.5%–14.6% | 0%–10% |</p>
+
+    <p>榜首 Opus 4.7 严格口径 44.6%。论文 V1 头条数字 Sonnet 4.6 是 33.3%——也就是 153 道题里通过 51 道。<strong>剩下 102 道，agent 要么点错按钮、要么填错表单、要么卡在登录、要么编出网站上没有的信息</strong>。GPT-5.4 跑出来 6.5%——153 道题里通过 10 道——你不能说它"接近可用"，只能说它"基本不可用"。</p>
+
+    <p>ClawBench 作者自己承认两条局限。第一条：interceptor 只拦最终提交动作，不验证任务真正完成——也就是说"agent 把请求拼对了"和"任务真的成了"之间还有一段距离，分数本身可能偏高估。第二条：live site 会变，所以分数会漂——这周测和下周测可能不一样。</p>
+
+    <p>两条局限叠加起来，结论比头条数字更糟：33.3% 是论文跑出来的乐观上限。</p>
+
+    <hr>
+
+    <h2>三、同一个 Sonnet 4.6，封闭沙盒里 80%，真实网站上 33%</h2>
+
+    <p>把 Sonnet 4.6 在不同基准上的成绩并排摆出来，可以看清楚 33.3% 不是噪声。</p>
+
+    <p>| 基准 | 类型 | Sonnet 4.6 成绩 |<br>|---|---|---|<br>| SWE-bench Verified | 封闭代码任务 | ~80% |<br>| OSWorld-Verified | 沙盒桌面操作 | 72.5% |<br>| τ-bench Retail | 沙盒客服对话 | 86.2% |<br>| Online-Mind2Web | live 网站 | ~61% |<br>| <strong>ClawBench</strong> | <strong>真实生产网站</strong> | <strong>33.3%</strong> |</p>
+
+    <p>同一个模型，环境从"封闭沙盒"过渡到"真实生产网站"，通过率从 86% 一路掉到 33%。这不是模型不行，这是评测约束不同。SWE-bench 给你冻结的代码库、明确的测试套件、单一目标；ClawBench 给你 Amazon 首页今天的版本、一个会随时跳出来的 cookie 弹窗、一个三轮验证的登录、一个 A/B 测试改过布局的购物车页。</p>
+
+    <p>Anthropic 自己的 Sonnet 4.6 发布博客里有一段原话，说 OSWorld-Verified 上 72.5% 的成绩"approaches a human baseline"——接近人类基线。Anthropic 没说哪个 baseline，也没说接近到什么程度（笑）。但即使按 Anthropic 自家的口径算，72.5% 已经是"接近人类"，那 33.3% 是什么——半个人？</p>
+
+    <p>OSU NLP Group 4 月份挂在 arXiv 2504.01382 的 Online-Mind2Web 论文里有一句话被很多人略过，但它很重要：</p>
+
+    <blockquote><p>「most commercially available agents underperform the academic SeeAct baseline from early 2024」</p></blockquote>
+
+    <p>大多数商用 agent 的表现，不如 2024 年初的学术基线 SeeAct。</p>
+
+    <p>2026 年的 GA 商用 agent，在真实网站上的表现，<strong>不如两年前的学术 baseline</strong>。这句话不是匿名酸民说的，是 OSU NLP Group 自己挂在论文里的。</p>
+
+    <p>这个 gap 不是 evaluator 严苛造成的——τ-bench 沙盒里 Sonnet 4.6 跑出 86.2%，说明模型本身的 reasoning + tool-use 链路是好的。gap 是评测环境的"真实程度"造成的。</p>
+
+    <p>真实意味着什么。真实意味着 CAPTCHA 在第 3 步弹出来；意味着登录之后跳一个 "verify your phone" 二级页；意味着购物车里多出一个上次没清的商品；意味着昨天还能用的 XPath 今天不能用；意味着按钮文字从「Add to Cart」改成「Buy now」；意味着新欧盟 cookie 法规又加了一层 modal。</p>
+
+    <p>真实意味着，<strong>世界不会为你的 agent 冻结布局</strong>。</p>
+
+    <p>封闭基准里跑 88% 的模型，到真实世界里跑 33%。中间那 55 个百分点的差，就是过去三年所有 agent 厂商在 marketing slide 上写"production-ready"的时候，<strong>没告诉你的那个数字</strong>。</p>
+
+    <hr>
+
+    <h2>四、5 Copilot Credits = $0.05/step，这个价格不包含哪些东西</h2>
+
+    <p>第一节没算完的那笔账，可以继续算了。Microsoft Copilot Studio computer-use 的对外定价是每步 $0.05。一个 10 步的任务 $0.50，一个 30 步的任务 $1.50。看起来比雇一个数据录入员便宜——美国一个低端数据录入员每小时大概 $20，30 步任务做下来按 5 分钟算 $1.67，agent 的 $1.50 看着确实便宜了 10%。</p>
+
+    <p>这是定价表愿意让你算出来的那一面。</p>
+
+    <p>定价表不告诉你的那一面：<strong>$0.05/step 是 agent 跑成功的单价，不是 agent 跑成功的成本</strong>。这两个词不一样。</p>
+
+    <p>按 ClawBench 33% 通过率粗算（注意——这是上限，真实企业场景里因为更长 horizon 通常更低）：每跑 1 个能通过的多步任务，背后是 2 个跑不通的任务在被人接管、回滚、重试、修复、解释。这 2 个跑不通的任务里，Microsoft 已经按 $0.05/step 收了你的钱——按 10–30 步计费——agent 跑了你也付了，跑不通你还得自己出钱让人补救。</p>
+
+    <p>让人补救的成本是多少。一个 SaaS 公司专门处理"agent 失败回退"的二线 ops 工程师，按美国本土 $40/hr 算，处理一个失败任务（含日志读取、复现、手动操作完成、记录失败模式）大概 15–30 分钟，单次成本 $10–$20。</p>
+
+    <p>一个完整 TCO 算式（按 30 步任务 + 33% 成功率 + 失败由 ops 二线接管）：</p>
+
+    <p>| 项 | 金额 |<br>|---|---|<br>| 1 次成功的 agent 跑（30 步 × $0.05） | $1.50 |<br>| 2 次失败的 agent 跑（先跑完才知道不行） | $3.00 |<br>| 2 次失败的人接管（按 $15 一次） | $30.00 |<br>| <strong>端到端单次成功成本</strong> | <strong>$34.50</strong> |</p>
+
+    <p>雇人手动做 1 次的成本，按 $20/hr × 5 分钟 / 60 = $1.67。</p>
+
+    <p>agent 比纯人工贵了大约 20 倍（笑）。</p>
+
+    <p>不止 20 倍，还有第二层成本——Microsoft 定价页里悄悄写在脚注的部分：「Cognitive Services、Logic Apps、Azure Functions 调用单独计入 Azure 账单。」也就是说 agent 跑步骤的时候要调的所有 Azure 中间件——按调用次数另算。每次 agent 跑一步，背后调的是一串 Azure 资源；这一串资源不在 $0.05 的"step 单价"里。失败的 agent 跑也要调这一串。失败的成本不止是"白付了 $0.05"，是"白付了 $0.05 + 一串 Azure 中间件调用费 + ops 回退人工"。</p>
+
+    <p>第三层成本——agent 失败的时候你的最终用户怎么办。</p>
+
+    <p>Graebel 的搬迁工单系统是个好例子。客户提交一个跨国搬迁需求，agent 跑了 22 步去填 Graebel 内部"Global Connect"系统，第 18 步卡在一个登录验证页跑不下去。结果是什么。客户那边收到的不是"我们正在处理"——是 18 步动作之后<strong>一个不完整的工单</strong>，需要人工补完。如果接手 ops 当天忙，工单挂三天。客户三天后追问"我的搬迁怎么样了"，得到的答复是"系统在升级中，我们尽快"。Graebel 的品牌损失、客户流失、客服回信成本——<strong>全部在 $0.05/step 之外</strong>。</p>
+
+    <p>「5 Copilot Credits / step」这个数字是 Microsoft 写给 CFO 看的。CFO 看 unit economics，看 per-step pricing；CFO 不看 ops backlog、不看品牌损失、不看用户怒火。等到这三项算进来，agent 的 unit economics 就崩塌。</p>
+
+    <p>Microsoft 当然知道（笑）。所以才在产品页反复强调 "human-in-the-loop review" "configurable approval steps" "session replay with screenshots" ——把"人接管"这件事包装成 governance feature，不是 cost line item。</p>
+
+    <p>包装得很漂亮。漂亮归漂亮，钱还是从你账上扣。</p>
+
+    <p>![flat illustration of a vending machine that dispenses agent labels while invoice papers pile up behind it](images/concept_01.jpg)</p>
+
+    <hr>
+
+    <h2>五、那些跟你说 "production-grade" 的厂商，没有一家披露过端到端任务成功率</h2>
+
+    <p>把这一周三家最响的 agent 公告并排放在一张表上，看一个共同点。</p>
+
+    <p>| 厂商 | 产品 | 公告日期 | 公开披露的端到端任务成功率 |<br>|---|---|---|---|<br>| Microsoft | Copilot Studio CUA GA | 2026-05-13 | 无 |<br>| Anthropic | Stainless 收购 + Sonnet 4.6 Computer Use | 2026-05-18 | 无 |<br>| Google | Antigravity 2.0 + Managed Agents | 2026-05-19/20 | 无 |</p>
+
+    <p>三家公告，零个端到端成功率数字。</p>
+
+    <p>你能在 Anthropic 的 Sonnet 4.6 model card 里找到 OSWorld 72.5%、Terminal-Bench 50.0%、SWE-bench 79.6%——这些都是封闭沙盒里跑出来的数字。你找不到「Sonnet 4.6 在 100 个企业真实任务里跑出 X% 完整通过率」的数字。Anthropic 没披露。Microsoft 没披露。Google 没披露。OpenAI 没披露。</p>
+
+    <p>为什么没披露——因为披露了就没人买了。</p>
+
+    <p>学术界倒是有人测了。ClawBench 测了，Online-Mind2Web 测了，TheAgentCompany 测了——三个团队三个独立测，结论一致：真实场景下，最强模型在 30%–60% 之间徘徊。TheAgentCompany 这篇挂在 arXiv 2412.14161，CMU 团队做的，结论是 Gemini 2.5 Pro 在 175 个 simulated SaaS 任务上 <strong>30.3% 完全自主完成</strong>，加上"部分完成"也只到 39.3%。一个 simulated SaaS 公司——已经比真实企业 IT 环境干净得多——最强模型还是只能搞定不到 1/3。</p>
+
+    <p>学术团队披露这些数字，会被算法工程师上 Twitter 阴阳"benchmark 不代表实战"。厂商不披露这些数字，叫"商业惯例"。</p>
+
+    <p>这一节最后说一个最反直觉的事实——<strong>Microsoft Copilot Studio GA 的两个 GA 后端模型，一个是 OpenAI 的 CUA，一个是 Anthropic 的 Claude Sonnet 4.5</strong>，全部来自第三方。这一条信息来自 Microsoft 自己 2026-02-24 在 Copilot Studio 博客挂出的那篇 "Computer-using agents now deliver more secure UI automation at scale"，原文白纸黑字写着。</p>
+
+    <p>也就是说，<strong>Microsoft 这次卖给企业的"production-grade computer-use agent"，背后的智能完全外包</strong>。Microsoft 提供的是：UI 框架（Copilot Studio）、计费系统（Power Platform）、合规外壳（Purview + Azure Key Vault）、销售渠道（Microsoft 365 客户列表）、品牌背书（GA 标签）。「脑子」是别人的。</p>
+
+    <p>Microsoft 是渠道商。<br>Microsoft 是合规外壳商。<br>Microsoft 是把 33% 成功率包装成"企业级 GA"的那个商。</p>
+
+    <p>Microsoft 不是模型商。</p>
+
+    <p>至于真正提供"脑子"的那两家——OpenAI 和 Anthropic——这一周做了别的事，第七节讲。</p>
+
+    <hr>
+
+    <h2>六、Anthropic 自己 Transparency Hub 里那个 12%</h2>
+
+    <p>「33% 通过率」是任务能不能完成的失败率。还有一个失败率比这个更可怕，叫<strong>安全失败率</strong>。</p>
+
+    <p>Anthropic 的 Transparency Hub 挂在 anthropic.com/transparency。这是 Anthropic 自己半年挂一次的对外披露页面，里面有一组关于 prompt injection 的硬数据：</p>
+
+    <p>| 模型 | 启用 safety system 时的 block 率 | 不启用时的 block 率 |<br>|---|---|---|<br>| Claude Opus 4 | 89% | 71% |<br>| Claude Sonnet 4 | 86% | 69% |</p>
+
+    <p>Anthropic 自己披露的最高防护成绩是 89%。倒推一下——<strong>即使开了最强 safety system，仍有 11% 的 prompt injection 攻击会成功</strong>。Sonnet 4 这个数字是 14%。</p>
+
+    <p>11%–14% 是什么概念。如果你的 agent 跑一个 100 步的复杂工作流，期间每一步都有可能接触不可信内容（网页内容、邮件正文、上传文档），那么这一次跑下来被 prompt injection 成功攻击的累计概率，<strong>远超你能接受的范围</strong>。</p>
+
+    <p>并不是猜想。已经有公开披露的真实事件，全部来自一手 disclosure 渠道：</p>
+
+    <strong>ShadowPrompt</strong> — 针对 Anthropic Claude Chrome Extension 的 zero-click prompt injection 攻击链。受害者<strong>只需访问攻击者控制的页面</strong>——不需要点任何东西——Claude 就会执行注入的指令。该漏洞 SOCRadar 在 2026 年初公开披露后 Anthropic 修复。
+
+    <strong>Anthropic 官方 mcp-server-git 三连漏洞</strong> — 2026 年 1 月披露在 The Hacker News 上的 CVE 链。Anthropic 自己出品的 git MCP server，三个 prompt injection 漏洞分别可导致：远程代码执行、任意文件删除、把任意文件加载进 LLM context。一个用 git 的 agent 看一眼恶意 commit message，可能就把 ~/.ssh/id_rsa 喂给攻击者的服务器。
+
+    <strong>Anthropic Cowork 文件外泄</strong> — 2026 年 1 月披露。Cowork 可被 prompt injection 诱骗，把企业内部敏感文件传送到攻击者的 Anthropic 账号，<strong>全程不需要用户额外授权</strong>。
+
+    <p>三个事件的共同点：受害方都是企业。攻击载体都是 agent 跑在不可信内容里的常规操作。Anthropic 公开承认有这类风险，但披露动作都是事后——攻击者先用、研究人员发现、厂商打补丁。</p>
+
+    <p>把 ClawBench 的 33% 任务成功率和 Anthropic 自己的 11% prompt injection 成功率叠加起来——一个 100 步的 agent 工作流，正常完成的概率是几个零之后才有效数字；被注入劫持去做超出授权动作的概率，反而是高于 50%。</p>
+
+    <p>这两个数字 Microsoft 在 5 月 13 日的 GA 公告里都没提。Microsoft 反复提的是 Purview 审计、Dataverse 日志、Azure Key Vault 凭证管理、Windows 365 隔离 Cloud PC——一整套<strong>事后追溯</strong>的工具。事后能查谁操作了什么、什么时候操作的、操作产生了什么后果。这些工具的隐含前提：<strong>预期会有事故</strong>。</p>
+
+    <p>GA 不代表事故不会发生。GA 代表事故发生之后<strong>可以查清楚是谁的事故</strong>。</p>
+
+    <p>这两件事不一样。但 GA 标签一贴上来，企业 IT 那边看到的是前一个，CFO 那边算的是前一个，buying committee 拍板的时候算的也是前一个。</p>
+
+    <p>直到出事，才知道自己买的是后一个。</p>
+
+    <hr>
+
+    <h2>七、5 月 13 日往后的一周，谁在数钱</h2>
+
+    <p>把这一周的三件事按时间摆出来。</p>
+
+    <strong>5 月 13 日</strong>——Microsoft Copilot Studio computer-use agents GA。背后跑 OpenAI CUA + Anthropic Claude Sonnet 4.5。Microsoft 在台前收企业渠道费，OpenAI 和 Anthropic 在台后按 token 计量收推理费。
+
+    <strong>5 月 18 日</strong>——Anthropic 收购 Stainless。这条公告挂在 anthropic.com/news/anthropic-acquires-stainless。Stainless 是给 OpenAI、Google、Anthropic 三家做 SDK 生成基础设施的公司——你用 pip install openai 那个 openai SDK，背后的代码生成工具就是 Stainless。Anthropic 收购之后宣布关停 Stainless 全部 hosted 服务。Anthropic Head of Platform Engineering Katelyn Lesse 的官方 quote：
+
+    <blockquote><p>「Agents are only as useful as what they can connect to. We're excited to bring the Stainless team into Anthropic to advance Claude's ability to connect to data and tools.」</p></blockquote>
+
+    <p>agent 只跟它能连到的东西一样有用。</p>
+
+    <p>这一句话的反向解读——Anthropic 把整个生态的 SDK 生成基础设施收进自己屋里，<strong>断 OpenAI 和 Google 在这一层的对外能力</strong>。三家共用的 plumbing，从今天起只服务一家。</p>
+
+    <strong>5 月 19–20 日</strong>——Google I/O 主旨发布 Antigravity 2.0 + Antigravity CLI + Managed Agents API。三件套全部基于 Gemini family 模型，全部跑在 Google Cloud sandbox 里。Google 的 marketing slogan 是「manage the mission, not the machine」。Managed Agents API 把 agent 包装成 SaaS——你按 mission 付费，不操心机器。
+
+    <p>三件事拼起来看：Microsoft 卖 agent 渠道，Anthropic 卡 agent plumbing，Google 卖 agent SaaS。三家在 agent 这一层的卡位完全不冲突，因为他们卖的不是同一个东西——Microsoft 卖<strong>位置</strong>（Copilot Studio 的入口）、Anthropic 卖<strong>脑子</strong>（Claude 模型 + Stainless 工具链）、Google 卖<strong>包装</strong>（Managed Agents 的 SaaS 化）。</p>
+
+    <p>谁在最后数钱。看 Anthropic 自己披露的财务数字：Q1 2026 营收 $4.8B，Q2 2026 预测 $10.9B，operating profit $559M——<strong>单季度首次盈利</strong>。ARR 从 2025 年底的 $9B 涨到 2026 Q1 的 $30B，<strong>同比 80 倍</strong>。</p>
+
+    <p>Anthropic 是这一周最大的赢家。Microsoft GA 跑 Sonnet 4.5 是 Anthropic 进的账；Anthropic 自己 claude.ai computer use 升级也是 Anthropic 进的账；Stainless 收购把生态 plumbing 锁进自己屋里，未来 OpenAI 和 Google 的 SDK 战略要重做。这一周 Anthropic 至少在三个方向同时收钱。</p>
+
+    <p>Microsoft 的角色变了。从 Office 时代的"既造软件又卖软件"，到 Copilot Studio 时代的"造渠道、合规外壳、品牌背书，模型外包"——<strong>Microsoft 在向 IBM 1990 年代靠拢，做企业 IT 的整合商</strong>。这不是贬义，是真实的商业模式转型。IBM 当年靠卖渠道和服务做了几十年好生意。Microsoft 复制这条路径没问题——问题是渠道和服务的卖法，前提是"渠道里跑的东西大概率有用"。</p>
+
+    <p>ClawBench 33% 这个数字告诉你，渠道里跑的东西，<strong>3 次有 2 次没用</strong>。</p>
+
+    <p>Daron Acemoglu 2026 年 5 月 11 日在 MIT Technology Review 那篇采访里给的预测——AI 在未来 10 年只会给美国 GDP 涨 1.1%，年生产率涨 0.05%。这个数字跟 Goldman Sachs 同期估的 7% 差出 70 倍。Acemoglu 不是反 AI——他是 2024 年诺贝尔经济学奖得主，主要研究方向就是技术对劳动的影响。他在这篇采访里点名要看三件事，其中第一件就是 "agentic AI deployments"——agent 实际部署后究竟如何。</p>
+
+    <p>5 月 13 日 Microsoft 的 GA 公告给了 Acemoglu 一个观察样本。5 月 18 日 ClawBench V2 排行榜给了 Acemoglu 一个对照数字。Acemoglu 的 1.1% GDP 预测建立在他对"AI 实际生产率"的怀疑上——这一周的三件事，全部支撑他这个怀疑。</p>
+
+    <p>GA 标签贴上去那一刻，真正在数钱的是模型层；真正在承担 67% 失败率成本的是企业 IT、合规、ops、最终用户；真正在算这个 TCO 账的，全世界没几个人。</p>
+
+    <p>Mustapha Lazrek 5 月 13 日那句「agents that actually do the work」，3 次里有 1 次做的是 do the work，另外 2 次做的是 generate the work（笑）。generate 给谁。给你公司的 ops 工程师，给你公司的合规审计，给你公司的最终用户。</p>
+
+    <p>就这。</p>
+
+    <p>![flat illustration of a money flow diagram from Microsoft Copilot Studio brand to Anthropic and OpenAI servers with broken arrows leaking dollars to operations workers below](images/concept_02.jpg)</p>
+
+    <hr>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>GA 标签贴上去那一刻，真正在数钱的是模型层；真正在承担 67% 失败率成本的是企业 IT、合规、ops、最终用户；真正在算这个 TCO 账的，全世界没几个人。</p>
+    <p>Microsoft 在做的事情已经不再是既造软件又卖软件，而是做渠道、合规外壳、品牌背书，模型外包。这不是贬义，是真实的商业模式转型——前提是渠道里跑的东西大概率有用。ClawBench 33% 说，3 次有 2 次没用。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://techcommunity.microsoft.com/blog/copilot-studio-blog/computer-using-agents-in-microsoft-copilot-studio-are-now-generally-available/4519427" target="_blank" rel="noopener">Microsoft Tech Community — Computer-using agents in Microsoft Copilot Studio are now generally available (5/13/2026)</a></div>
+      <div class="footer-source-item"><a href="https://www.microsoft.com/en-us/microsoft-copilot/blog/copilot-studio/computer-using-agents-now-deliver-more-secure-ui-automation-at-scale/" target="_blank" rel="noopener">Microsoft Copilot Blog — Computer-using agents now deliver more secure UI automation at scale (2/24/2026)</a></div>
+      <div class="footer-source-item"><a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/requirements-messages-management" target="_blank" rel="noopener">Microsoft Copilot Studio Learn — Messages and capacity requirements</a></div>
+      <div class="footer-source-item"><a href="https://azure.microsoft.com/en-us/pricing/details/copilot-studio/" target="_blank" rel="noopener">Azure pricing — Copilot Studio</a></div>
+      <div class="footer-source-item"><a href="https://www.microsoft.com/en-us/microsoft-365-copilot/pricing/copilot-studio" target="_blank" rel="noopener">Microsoft 365 Copilot pricing — Copilot Studio</a></div>
+      <div class="footer-source-item"><a href="https://www.microsoft.com/en-us/microsoft-copilot/blog/copilot-studio/new-and-improved-computer-using-agents-a-new-workflows-experience-and-real-time-voice-experiences/" target="_blank" rel="noopener">Microsoft Copilot Studio Blog — May 2026 What's New</a></div>
+      <div class="footer-source-item"><a href="https://www.microsoft.com/en-us/microsoft-copilot/blog/author/charles-lamanna/" target="_blank" rel="noopener">Charles Lamanna author page — Microsoft Copilot Blog</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2604.08523" target="_blank" rel="noopener">arXiv 2604.08523 — ClawBench: Can AI Agents Complete Everyday Online Tasks?</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/html/2604.08523v1" target="_blank" rel="noopener">arXiv HTML version 2604.08523v1</a></div>
+      <div class="footer-source-item"><a href="https://github.com/reacher-z/ClawBench" target="_blank" rel="noopener">GitHub — reacher-z/ClawBench</a></div>
+      <div class="footer-source-item"><a href="https://claw-bench.com/" target="_blank" rel="noopener">ClawBench project page</a></div>
+      <div class="footer-source-item"><a href="https://clawbench.net/" target="_blank" rel="noopener">ClawBench leaderboard mirror</a></div>
+      <div class="footer-source-item"><a href="https://huggingface.co/papers/2604.08523" target="_blank" rel="noopener">HuggingFace Paper 2604.08523</a></div>
+      <div class="footer-source-item"><a href="https://reacher-z.github.io/" target="_blank" rel="noopener">First author Yuxuan Zhang homepage</a></div>
+      <div class="footer-source-item"><a href="https://www.swebench.com/" target="_blank" rel="noopener">SWE-bench leaderboard</a></div>
+      <div class="footer-source-item"><a href="https://github.com/sierra-research/tau-bench" target="_blank" rel="noopener">GitHub — sierra-research/tau-bench</a></div>
+      <div class="footer-source-item"><a href="https://sierra.ai/blog/tau-bench-shaping-development-evaluation-agents" target="_blank" rel="noopener">Sierra — τ-Bench: shaping development of evaluation agents</a></div>
+      <div class="footer-source-item"><a href="https://github.com/OSU-NLP-Group/Online-Mind2Web" target="_blank" rel="noopener">GitHub — OSU-NLP-Group/Online-Mind2Web</a></div>
+      <div class="footer-source-item"><a href="https://hal.cs.princeton.edu/online_mind2web" target="_blank" rel="noopener">Online-Mind2Web HAL leaderboard</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2504.01382" target="_blank" rel="noopener">arXiv 2504.01382 — Online-Mind2Web</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2412.14161" target="_blank" rel="noopener">arXiv 2412.14161 — TheAgentCompany (CMU)</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/news/claude-sonnet-4-6" target="_blank" rel="noopener">Anthropic — Introducing Claude Sonnet 4.6</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/transparency" target="_blank" rel="noopener">Anthropic Transparency Hub</a></div>
+      <div class="footer-source-item"><a href="https://thehackernews.com/2026/01/three-flaws-in-anthropic-mcp-git-server.html" target="_blank" rel="noopener">The Hacker News — Three flaws in Anthropic MCP Git Server (1/2026)</a></div>
+      <div class="footer-source-item"><a href="https://socradar.io/blog/shadowprompt-zero-click-anthropics-claude/" target="_blank" rel="noopener">SOCRadar — ShadowPrompt zero-click on Anthropic Claude Chrome Extension</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/news/anthropic-acquires-stainless" target="_blank" rel="noopener">Anthropic — Anthropic acquires Stainless (5/18/2026)</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/news/claude-in-microsoft-foundry" target="_blank" rel="noopener">Anthropic — Claude in Microsoft Foundry</a></div>
+      <div class="footer-source-item"><a href="https://blog.google/innovation-and-ai/technology/developers-tools/google-io-2026-developer-highlights/" target="_blank" rel="noopener">Google Blog — Google I/O 2026 developer highlights</a></div>
+      <div class="footer-source-item"><a href="https://cloud.google.com/blog/topics/developers-practitioners/io26-news-for-agent-developers-on-google-cloud" target="_blank" rel="noopener">Google Cloud Blog — I/O 2026 news for agent developers</a></div>
+      <div class="footer-source-item"><a href="https://antigravity.google/blog/introducing-google-antigravity-2-0" target="_blank" rel="noopener">Antigravity Blog — Introducing Google Antigravity 2.0</a></div>
+      <div class="footer-source-item"><a href="https://openai.com/index/introducing-chatgpt-agent/" target="_blank" rel="noopener">OpenAI — Introducing ChatGPT Agent</a></div>
+      <div class="footer-source-item"><a href="https://openai.com/index/introducing-operator/" target="_blank" rel="noopener">OpenAI — Introducing Operator (sunset notice)</a></div>
+      <div class="footer-source-item"><a href="https://x.ai/news/grok-build-cli" target="_blank" rel="noopener">xAI — Grok Build CLI</a></div>
+      <div class="footer-source-item"><a href="https://cursor.com/blog/composer-2-5" target="_blank" rel="noopener">Cursor Blog — Composer 2.5</a></div>
+      <div class="footer-source-item"><a href="https://www.technologyreview.com/2026/05/11/1137090/three-things-in-ai-to-watch-according-to-a-nobel-winning-economist" target="_blank" rel="noopener">MIT Technology Review — Three things in AI to watch, according to a Nobel-winning economist (5/11/2026)</a></div>
+      <div class="footer-source-item"><a href="https://sloanreview.mit.edu/audio/ai-is-not-improving-productivity-nobel-laureate-daron-acemoglu/" target="_blank" rel="noopener">MIT Sloan Management Review podcast — AI Is Not Improving Productivity</a></div>
+      <div class="footer-source-item"><a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6290347" target="_blank" rel="noopener">SSRN — Building Pro-Worker Artificial Intelligence (Acemoglu, Autor, Johnson)</a></div>
+      <div class="footer-source-item"><a href="https://siepr.stanford.edu/news/generative-ai-boost-can-boost-productivity-without-replacing-workers" target="_blank" rel="noopener">Stanford SIEPR — Brynjolfsson on AI productivity</a></div>
+      <div class="footer-source-item"><a href="https://www.dwarkesh.com/p/andrej-karpathy" target="_blank" rel="noopener">Dwarkesh Patel podcast — Andrej Karpathy on the decade of agents</a></div>
+      <div class="footer-source-item"><a href="https://news.ycombinator.com/item?id=45619329" target="_blank" rel="noopener">Hacker News — discussion on Karpathy "decade of agents"</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
