@@ -61,19 +61,15 @@ jobs:
 
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.post }}" ]; then
             targets+=("${{ inputs.post }}")
-          elif [ "${{ github.event_name }}" = "schedule" ]; then
-            # 定时任务：扫全部 posts，按目录名倒序取最新未同步的一篇
+          else
+            # schedule / workflow_run / 无 input 的 workflow_dispatch：
+            # 一律按目录名倒序取「最新一篇未同步」的，避免历史 catch-up 把
+            # 老文章重复推进草稿箱（同名草稿微信不会 dedup）。
             while IFS= read -r dir; do
               [ -n "$dir" ] && targets+=("$dir") && break
             done < <(find posts -name "article.html" -exec dirname {} \; \
               | sort -r \
               | while IFS= read -r d; do [ ! -f "$d/.wechat-sync.json" ] && echo "$d"; done)
-          else
-            while IFS= read -r f; do
-              dir=$(dirname "$f")
-              [ -n "$dir" ] && [ ! -f "$dir/.wechat-sync.json" ] && targets+=("$dir")
-            done < <(git log --diff-filter=A --name-only --pretty=format: HEAD \
-              | grep -E '^posts/.+/article\.html$' | sort -u || true)
           fi
 
           if [ ${#targets[@]} -eq 0 ]; then
