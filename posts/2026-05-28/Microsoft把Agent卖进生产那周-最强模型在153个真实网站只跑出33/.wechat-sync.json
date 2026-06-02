@@ -1,0 +1,5 @@
+{
+  "skipped": true,
+  "reason": "manual: images/concept_01.jpg 与 images/concept_02.jpg 在生成阶段未落盘，无封面可上传，人工跳过避免卡 schedule 队列",
+  "skipped_at": "2026-06-02"
+}
