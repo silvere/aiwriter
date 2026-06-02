@@ -1,0 +1,99 @@
+name: 清理微信草稿箱重复
+
+# 手动触发：拉取所有草稿，按标题分组，每组保留 update_time 最新一份，其余删除。
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: '只列清单不真删（true/false）'
+        required: false
+        default: 'true'
+
+jobs:
+  dedup:
+    runs-on: self-hosted
+    steps:
+      - name: dedup
+        env:
+          WECHAT_APPID: ${{ secrets.WECHAT_APPID }}
+          WECHAT_APPSECRET: ${{ secrets.WECHAT_APPSECRET }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          python3 <<'PY'
+          import os, json, urllib.request, urllib.parse, collections, sys
+
+          appid = os.environ["WECHAT_APPID"]
+          secret = os.environ["WECHAT_APPSECRET"]
+          dry = os.environ.get("DRY_RUN", "true").lower() != "false"
+
+          def post(url, body):
+              req = urllib.request.Request(
+                  url,
+                  data=json.dumps(body, ensure_ascii=False).encode("utf-8"),
+                  headers={"Content-Type": "application/json"},
+              )
+              return json.load(urllib.request.urlopen(req, timeout=30))
+
+          def get(url):
+              return json.load(urllib.request.urlopen(url, timeout=30))
+
+          token = get(
+              f"https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={appid}&secret={secret}"
+          )["access_token"]
+
+          # 拉全部草稿
+          drafts = []
+          offset = 0
+          while True:
+              r = post(
+                  f"https://api.weixin.qq.com/cgi-bin/draft/batchget?access_token={token}",
+                  {"offset": offset, "count": 20, "no_content": 1},
+              )
+              items = r.get("item", [])
+              if not items:
+                  break
+              drafts.extend(items)
+              offset += len(items)
+              if offset >= r.get("total_count", 0):
+                  break
+
+          print(f"草稿总数: {len(drafts)}")
+
+          # 按 (第一篇文章标题) 分组
+          groups = collections.defaultdict(list)
+          for d in drafts:
+              media_id = d["media_id"]
+              update_time = d.get("update_time", 0)
+              title = d["content"]["news_item"][0].get("title", "<no-title>")
+              groups[title].append((update_time, media_id))
+
+          to_delete = []
+          for title, lst in groups.items():
+              if len(lst) <= 1:
+                  continue
+              # 保留 update_time 最大那一份
+              lst.sort(reverse=True)
+              keep = lst[0]
+              drop = lst[1:]
+              print(f"\n《{title}》: {len(lst)} 份 → 保留 1，删除 {len(drop)}")
+              print(f"  保留: {keep[1]} (update_time={keep[0]})")
+              for t, mid in drop:
+                  print(f"  删除: {mid} (update_time={t})")
+                  to_delete.append(mid)
+
+          print(f"\n准备删除 {len(to_delete)} 份草稿（dry_run={dry}）")
+
+          if dry:
+              print("DRY RUN，不执行删除。")
+              sys.exit(0)
+
+          for mid in to_delete:
+              r = post(
+                  f"https://api.weixin.qq.com/cgi-bin/draft/delete?access_token={token}",
+                  {"media_id": mid},
+              )
+              ok = r.get("errcode", 0) == 0
+              print(f"  {'✓' if ok else '✗'} {mid} {r}")
+
+          print(f"\n完成，删除 {len(to_delete)} 份。")
+          PY
