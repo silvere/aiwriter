@@ -150,7 +150,7 @@ Anthropic 的安全叙事反过来——"现在没人能管住，但我们最早
 
 Mythos 到底有多强？强到值不值这个"管不住"的标价？
 
-<<__AIWRITER_PLACEHOLDER__>>
+![long horizontal timeline showing eight](images/concept_01.jpg)
 
 ---
 
