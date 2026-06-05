@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>梁文锋自掏 200 亿那天，CATL 和腾讯一起跟了 150 亿，但他们买的不是 DeepSeek</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI产业深度</span>
+  <h1>梁文锋自掏 200 亿那天，CATL 和腾讯一起跟了 150 亿，但他们买的不是 DeepSeek</h1>
+  <div class="hero-meta">
+    <span>2026-06-05</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">2026 年 6 月 3 日 Reuters 披露 DeepSeek 首轮融资 500 亿元、估值 $52-59B 的细节。中文圈主线是"中国 AI 估值上桌了"。把每个数字、每个投资人、每天工商时间戳掰开看——这不是 AI 融资，是一桌一桌人凑钱买自己副业的故事。而看起来最热血的"自掏 200 亿"，其实是 5 月份就准备好的反稀释操作。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、6 月 3 日的那张数字单，每一项都和直觉相反</h2>
+
+    <p>6 月 3 日美东时间凌晨，Reuters 首发。CNBC、SCMP、Axios、Bloomberg 一小时内集中跟进。</p>
+
+    <p>四家信源拼出来的数字单是这样的：</p>
+
+    <ul><li>本轮总盘：500 亿元人民币，约 $7.36B-$7.4B</li>
+<li>投后估值：350-400 亿元美元，约 $52B-$59B</li>
+<li>梁文锋个人出资：200 亿元，占总盘 40%</li>
+<li>Tencent 出资：100 亿元</li>
+<li>CATL 出资：50 亿元</li>
+<li>其余投资方："少于 10 家"，包括国家人工智能产业投资基金、NetEase、JD.com、IDG Capital、Monolith Capital、Royal Valley、Ssang Tech</li>
+<li>预计关账时间：未来"几周内"</li>
+</ul>
+这串数字最容易被人拎出来的一句话是——"$52B，DeepSeek 估值只有 Anthropic $965B 的 1/16"。
+
+    <p>紧跟着是一句感慨——"中国 AI 还是被低估了"。</p>
+
+    <p>但你算第二步就发现不是这样。</p>
+
+    <p>Anthropic 同期数据：ARR 47 亿美元（Dario Amodei 5 月底原话："crazy 80x growth"——一年涨了 80 倍），估值 $965B。估值/收入倍数 ≈ 20.5x。</p>
+
+    <p>DeepSeek 公开口径 ARR 在 $200M-$500M 之间（DeepSeek 自己从未官方披露收入，这是基于 2025 mid-year 媒体报道的 $220M + 全年估算净利 $470M 粗算）。估值 $52-59B。估值/收入倍数 ≈ 100x-300x。</p>
+
+    <strong>按估值/收入倍数算，DeepSeek 反而比 Anthropic 贵 5 到 15 倍。</strong>
+
+    <p>"$52B 看着便宜"这件事，是被绝对数额给迷惑了。一旦折算成倍数，DeepSeek 是这一轮 AI 公司里最贵的——只是因为名字里写着"中国"和"开源"，所有人下意识地把它默认成"廉价替代品"。</p>
+
+    <p>第二项反直觉的，是估值跳跃曲线。</p>
+
+    <p>往回看 8 周：</p>
+
+    <ul><li>4 月初：媒体首次报道 DeepSeek 估值约 $10B</li>
+<li>4 月 22 日：升至约 $20B</li>
+<li>5 月 6 日：升至约 $45B（国家大基金牵头领投的传闻见报）</li>
+<li>5 月 11 日：约 $50B+</li>
+<li>6 月 3 日：$52-59B</li>
+</ul>
+21 天 5 倍。
+
+    <p>成立三年从未对外融资的公司，第一次张口就要 $52B，没有路演、没有 Term Sheet 公开版、没有官方声明。所有数字都来自"sources familiar"。DeepSeek 至 6 月 3 日没发一份新闻稿，梁文锋本人没在任何公开场合接受过这轮融资的提问。</p>
+
+    <p>按常识，这种估值跳跃幅度的项目，至少要有一份公开版 Term Sheet 给投资人圈传一传——给市场一个锚。这次没有。</p>
+
+    <p>不给锚的原因是不需要给——投资人是被点名进来的，不是公开募来的。</p>
+
+    <p>第三项反直觉的，是国家集成电路产业投资基金（俗称"国家大基金"）的入局。</p>
+
+    <p>国家大基金三期 2024 年 5 月成立，注册资本 3440 亿元人民币。过去 12 年，国家大基金一期、二期、三期累计向半导体行业投入 6000+ 亿元，名单上全是中芯国际、长江存储、华虹半导体、北方华创、中微公司——清一色芯片设备、材料、制造。从没正式投过一家纯模型公司。</p>
+
+    <p>5 月 6 日证券时报首次披露国家大基金牵头领投 DeepSeek 这轮。一个月后，6 月 3 日，这条传闻落地。</p>
+
+    <p>国家大基金 12 年破例的政策含义——后面再讲。这里先记一笔：国家队下场不是因为 DeepSeek 估值上来了，是因为 DeepSeek 适配了昇腾。</p>
+
+    <p>把这三项反直觉合在一起：估值倍数最贵、跳跃曲线最陡、国家队首次下场——这不是一次正常的财务轮次。</p>
+
+    <p>这是一场被精心剧本化的资本结构搭建。</p>
+
+    <p>谁写的剧本？答案在 4 月 27 日那天的杭州市市场监管局档案里。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">条形图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">估值/收入倍数对照，单位倍</div></div><div style="padding:22px 24px 18px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px dashed #e2e8f0"><div><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><span style="width:10px;height:10px;border-radius:3px;background:#F05252;display:inline-block"></span><span style="font-size:11px;color:#64748b">流出</span></span><span style="display:inline-flex;align-items:center;gap:5px;margin-right:14px"><span style="width:10px;height:10px;border-radius:3px;background:#94A3B8;display:inline-block"></span><span style="font-size:11px;color:#64748b">参照</span></span></div><span style="font-size:11px;color:#94a3b8;font-weight:500">单位：x</span></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">DeepSeek 估值/收入倍数（高位估算）</span><span style="font-size:15px;font-weight:700;color:#F05252;white-space:nowrap">300 x</span></div><div style="background:#FFE4E4;border-radius:5px;height:10px;overflow:hidden"><div style="background:#F05252;width:100.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">DeepSeek 估值/收入倍数（低位估算）</span><span style="font-size:15px;font-weight:700;color:#F05252;white-space:nowrap">100 x</span></div><div style="background:#FFE4E4;border-radius:5px;height:10px;overflow:hidden"><div style="background:#F05252;width:33.3%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">OpenAI 估值/收入倍数</span><span style="font-size:15px;font-weight:700;color:#94A3B8;white-space:nowrap">30 x</span></div><div style="background:#F1F5F9;border-radius:5px;height:10px;overflow:hidden"><div style="background:#94A3B8;width:10.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div><div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px"><span style="font-size:13px;color:#374151;flex:1;padding-right:12px">Anthropic 估值/收入倍数</span><span style="font-size:15px;font-weight:700;color:#94A3B8;white-space:nowrap">21 x</span></div><div style="background:#F1F5F9;border-radius:5px;height:10px;overflow:hidden"><div style="background:#94A3B8;width:8.0%;height:100%;border-radius:5px;transition:width .4s ease"></div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>DeepSeek 看似便宜，按倍数算反而是 AI 公司里最贵的</div></div>
+
+    <hr>
+
+    <h2>二、4 月 27 日那次工商变更——"自掏 200 亿"的真正起点</h2>
+
+    <p>6 月 3 日 Reuters 报"梁文锋自掏 200 亿、占总盘 40%"。这句话被中文媒体翻译成"创始人长期主义"、"全押 AGI"、"用真金白银背书"。</p>
+
+    <p>把这 200 亿的时间锚点往前推 5 周，故事完全不一样。</p>
+
+    <p>4 月 27 日，杭州市市场监督管理局官网公示——"杭州深度求索人工智能基础技术研究有限公司"工商变更。</p>
+
+    <p>变更前后：</p>
+
+    <ul><li>注册资本：1000 万元 → 1500 万元（+50%）</li>
+<li>梁文锋认缴出资：10 万元 → 510 万元（+500 万）</li>
+<li>梁文锋直接持股比例：1% → 34%</li>
+<li>宁波程恩企业管理咨询合伙企业（有限合伙）持股：99% → 66%</li>
+</ul>
+新增的 500 万认缴出资，几乎全部由梁文锋个人承担。
+
+    <p>宁波程恩是梁文锋通过自然人 + 一致行动人控制的间接持股平台。把直接持股 + 通过宁波程恩间接持股合并算，梁文锋本人对杭州深度求索的控制权约 84.29%。</p>
+
+    <p>5 月 6 日，证券时报报出国家大基金领投传闻。投前估值 $45B 左右。</p>
+
+    <p>5 月 22 日，CnEVPost 首发 CATL 入股传闻。</p>
+
+    <p>6 月 3 日，Reuters 报"梁文锋自掏 200 亿，占总盘 40%"。</p>
+
+    <p>把这 5 周的时间线倒过来读一遍：</p>
+
+    <strong>先把自己的注册资本基数做厚 → 再放外部投资人进来 → 外部稀释的时候，自己的绝对持股不破 80%。</strong>
+
+    <p>这是教科书级反稀释操作。</p>
+
+    <p>不是说反稀释操作有什么道德问题——任何创始人在融资前优化股权结构都是正常的。但 4 月 27 日这次注资把直接持股从 1% 抬到 34%（不是 5% 抬到 10%，是 1% 抬到 34%），等于直接告诉所有未来投资人：以后无论你出多少钱，我的话语权动不了。</p>
+
+    <p>外部 300 亿稀释 84.29% 的盘子，最多只能给外部 15.71% 的股权——分给 Tencent、CATL、国家大基金、网易、京东、IDG、Monolith、Royal Valley、Ssang Tech 这 9 家以内的投资人，平均每家 1.7% 不到。</p>
+
+    <p>按本轮 $52-59B 投后估值算，Tencent 100 亿（约 $13.7B 占 $52-59B 大约 23-26%）——但因为梁文锋持股 84.29%，剩下 15.71% 的盘子里 Tencent 必须分到大部分才能凑出 100 亿对应的股权比例。</p>
+
+    <p>数字不太对得上。</p>
+
+    <p>这里有几种可能：</p>
+
+    <strong>可能 A</strong>：500 亿元中的 200 亿是梁文锋通过宁波程恩注入的自有资金，本质是把 High-Flyer 量化基金赚到的钱转沉淀到 DeepSeek，这部分不稀释外部投资人持股、不构成"对外发行"，纯粹是 owner 内部资本充实。
+
+    <strong>可能 B</strong>：500 亿元是"全口径融资盘"，包括了创始人自有资金 + 外部新股权。外部 300 亿对应的股权份额是按 4-27 工商变更后的扩充注册资本基数算。
+
+    <strong>可能 C</strong>：报道里 350-400 亿元投后估值是按外部 300 亿对应 15.71% 反推的，所以 350-400 亿是"市值口径"，500 亿是"资金流入口径"。
+
+    <p>无论哪种可能，4 月 27 日的工商变更都是这套结构的前置条件。没有 4 月 27 日的预先抬升基数，6 月 3 日的"梁文锋自掏 40%"做不出来。</p>
+
+    <p>"自掏 200 亿"听起来像热血。</p>
+
+    <p>实际是先把基数做厚到 84.29%，再让外部 300 亿稀释自己的 15.71%，最后把整套操作包装成"创始人长期主义"。这是冷静的资本结构动作，不是冲动消费。</p>
+
+    <p>这个时间线值得记下来：</p>
+
+    <strong>4 月 27 日</strong>：梁文锋直接持股 1% → 34%（合并间接持股 84.29%）
+<strong>5 月 6 日</strong>：国家大基金领投传闻见报，投前估值 $45B
+<strong>5 月 22 日</strong>：CATL 入股传闻
+<strong>5 月 28 日</strong>：Anthropic $65B H 轮 / 估值 $965B 反超 OpenAI
+<strong>6 月 1 日</strong>：Anthropic 保密交 S-1
+<strong>6 月 3 日</strong>：DeepSeek 首轮 500 亿落地
+
+    <p>时间巧合到不像巧合。Anthropic 在 5 月 28 日把估值刷到 $965B，DeepSeek 在 6 月 3 日把 cap table 关账——一个准备 IPO，一个准备永远不上市。两边节奏对得这么准，不太可能是赶巧。</p>
+
+    <p>这场资本结构搭建从 4 月 27 日开始铺路，到 6 月 3 日完成闭环。中间 38 天里梁文锋一句话没说，所有动作都通过工商档案和"知情人士"完成。</p>
+
+    <p>控制权防火墙建好了。</p>
+
+    <p>下一个问题：进来这道防火墙的钱，是冲着谁来的？</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">对账图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">4-27 工商变更前后梁文锋持股结构对比</div></div><div style="padding:22px 24px 18px"><div style="display:flex;align-items:center;gap:24px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px dashed #e2e8f0"><div style="flex:1;text-align:right;font-size:12px;font-weight:700;color:#1A56DB;letter-spacing:1px">← 流入 / INFLOW</div><div style="width:20px"></div><div style="flex:1;text-align:left;font-size:12px;font-weight:700;color:#F05252;letter-spacing:1px">OUTFLOW / 流出 →</div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">变更前 梁文锋直接持股</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:8.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">1 %</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">变更后 梁文锋直接持股</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:34.3%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">34 %</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">变更前 宁波程恩（间接）</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:100.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">99 %</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">变更后 宁波程恩（间接）</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:66.7%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">66 %</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">合并后 梁文锋实际控制权</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:84.8%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">84 %</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1"></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>先把自己直接持股从 1% 抬到 34%，外部资本进来时只能稀释剩余 15.71%</div></div>
+
+    <hr>
+
+    <h2>三、每一个外部投资人，都不是冲着 AI 来的</h2>
+
+    <p>500 亿里去掉梁文锋自掏的 200 亿，剩下 300 亿来自不到 9 家外部投资人。</p>
+
+    <p>按已披露名单单独看每一家：</p>
+
+    <p>先看 CATL（宁德时代），出资 50 亿元。</p>
+
+    <p>CnEVPost 5 月 22 日首发，原文标题《CATL plans to invest in DeepSeek》。明面说法："战略投资 AI 头部公司"。</p>
+
+    <p>但 CATL 不是投资公司。CATL 是全球动力电池出货量第一的厂商，2024 年总营收 3620 亿元人民币，2025 年增速因 EV 渗透率见顶而放缓到个位数。CATL 的真实增长曲线已经从 EV 转向储能——2025 年储能业务同比增 110%，但相比电池主业还是小盘子。</p>
+
+    <p>CATL 入股 DeepSeek 不是要做投资人，是要给储能业务找新出口。</p>
+
+    <p>AI 数据中心建到哪儿，电力需求就跟到哪儿。Anthropic 在内华达和德州的数据中心，单座峰值用电就 500MW 起。Google 在俄勒冈州的 TPU 数据中心 1.2GW。一座超大规模数据中心的用电量，等于一座 100 万人口城市。</p>
+
+    <p>电力不是问题，电力调峰才是问题——AI 推理负载尖峰极高，电网容量按峰值规划成本高、按均值规划又应付不了尖峰，唯一的解就是配储能。CATL 卖的是储能柜。</p>
+
+    <p>CATL 50 亿入股 DeepSeek，本质是用股权押注 DeepSeek 后续扩张算力时优先采购 CATL 储能柜。这笔投资的真实回报路径不在 DeepSeek 估值升值上，而在后续储能订单上。</p>
+
+    <p>36kr 英文版 5 月底直接给这笔交易定性为"metering maneuver"——计量算盘。一笔股权投资精准暴露了 AI 这一波最核心的产业链耦合：算力即电力，电力即储能订单。</p>
+
+    <p>第二位是 Tencent，出资 100 亿元。</p>
+
+    <p>Tencent 的内部 AI 投入并没有停。Hunyuan Turbo S 2025 年发布，2026 年 4 月又发了一款 ~30B 参数的 Hunyuan 新模型，姚顺宇主导，对标"长上下文 + Agent 评测"。</p>
+
+    <p>Tencent 在做自己的模型。但 Tencent 同时是 DeepSeek 最大的外部调用方——微信、QQ、腾讯元宝、腾讯文档、腾讯会议，全在用 DeepSeek V4 做底层模型，自家 Hunyuan 在后台做 fallback。</p>
+
+    <p>这就是 Tencent 100 亿的真实逻辑：一边自研对冲，一边投钱锁定。100 亿换的不是 1-2% 股权，是 DeepSeek 永远不能彻底倒向阿里或字节生态的承诺。</p>
+
+    <p>字节跳动今年 2026 年计划投入 1600 亿，近半买 AI 处理器；豆包 5-04 上苹果商店付费订阅。阿里通义千问 2026 年也在加码自研。如果 DeepSeek 突然和阿里达成深度合作，微信 / QQ / 元宝的底层模型就被竞争对手卡脖子。</p>
+
+    <p>100 亿不是财务投资，是供应链反向锁定费。</p>
+
+    <p>第三位是国家集成电路产业投资基金（"国家大基金"），出资估计 30+ 亿元。</p>
+
+    <p>这是这张名单上最反常的一项。国家大基金过去 12 年（一期 2014 + 二期 2019 + 三期 2024）累计向半导体行业注入 6000+ 亿，投了中芯、长存、华虹、北方华创、中微、上海微电子、长电、通富——所有的钱都流向芯片设备、材料、制造、封测，从没正式投过纯模型公司。</p>
+
+    <p>这次破例的政策含义：国家层面正式承认"没有顶层模型，下面的芯片闭环闭不上"。</p>
+
+    <p>DeepSeek V4 4 月 24 日发布，原生适配华为昇腾 950 系推理芯片。这是华为芯片首次拿到一个全球前 3 名的模型做"原生伙伴"——之前昇腾的"原生伙伴"是 Pangu、悟道、Hunyuan，量级和影响力都不在第一梯队。</p>
+
+    <p>国家大基金投 DeepSeek，本质是给昇腾闭环买保险。模型层不稳，芯片层再国产也撑不起战略。这笔钱不在乎短期回报，回报在"DeepSeek 永远首发昇腾"这条承诺里。</p>
+
+    <p>证券时报 5 月 6 日原稿用了一个词——"模型即芯片"。这个词不是营销话术，是国家大基金破例的政策依据。</p>
+
+    <p>网易出资约 30 亿元（估算）。</p>
+
+    <p>网易需要 AI 给两条业务线：游戏（AI NPC、生成式剧情、动画生成）和有道（教育大模型）。网易自家的"伏羲"模型 2024 年发布后没掀起水花，外部接入 DeepSeek 是更快的路径。30 亿投进去换 1% 不到的股权，本质是预付未来 5 年 API 优先调用权。</p>
+
+    <p>京东出资约 30 亿元（估算）。</p>
+
+    <p>京东需要 AI 给电商搜索、客服、物流调度、京东健康。京东 2024 年自研"言犀"模型同样反响平平，2026 年 5 月开始全面接入 DeepSeek。这笔投资是 owner equity 形式的长期合作合同。</p>
+
+    <p>最后是 IDG Capital、Monolith Capital、Royal Valley、Ssang Tech 四家。</p>
+
+    <p>这四家是这张名单上仅有的"纯财务投资人"。共出资估算 70-90 亿（按总盘减项倒算）。每家 20 亿上下，平均拿 0.4% 股权。在 4-27 工商变更预设的稀释结构里，这是 IRR 角度最划算的一批——但权重最低，没有任何业务话语权。</p>
+
+    <p>把九家投资人列在一张表上对照：</p>
+
+    <p>| 投资人 | 金额（亿元） | 明面身份 | 真实意图 |<br>|---|---|---|---|<br>| 梁文锋 | 200 | 创始人 | 反稀释 + 控股锁死 |<br>| Tencent | 100 | 战略投资 | 供应链反向锁定 |<br>| CATL | 50 | 战略投资 | 储能柜出口 |<br>| 国家大基金 | 30+ | 国资 | 昇腾闭环保险 |<br>| NetEase | 30 | 战略投资 | API 优先调用 |<br>| JD.com | 30 | 战略投资 | API 优先调用 |<br>| IDG + Monolith + Royal Valley + Ssang Tech | 60-90 | 财务投资 | 唯一的 IRR 玩家 |</p>
+
+    <p>500 亿里有 410 亿是带着"业务诉求"进来的钱，只有 60-90 亿是纯财务。占比 12-18%。</p>
+
+    <p>正常的 AI 头部公司融资，财务投资人占比通常 50% 以上——红杉、IDG、高瓴、Tiger 这些 LP 钱拿来推估值用。DeepSeek 这轮反着来，财务投资人是配角。</p>
+
+    <p>主角是产业链协同方。</p>
+
+    <p>这不是 AI 融资。这是一场提前编好的产业链整合，借融资的壳完成。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">对账图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">500 亿融资中，业务诉求资金 vs 纯财务资金</div></div><div style="padding:22px 24px 18px"><div style="display:flex;align-items:center;gap:24px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px dashed #e2e8f0"><div style="flex:1;text-align:right;font-size:12px;font-weight:700;color:#1A56DB;letter-spacing:1px">← 流入 / INFLOW</div><div style="width:20px"></div><div style="flex:1;text-align:left;font-size:12px;font-weight:700;color:#F05252;letter-spacing:1px">OUTFLOW / 流出 →</div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">纯财务投资资金（IDG + Monolith + 其余）</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:19.5%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">80 亿元</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">业务诉求资金（含创始人 + 战略投资）</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:100.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">410 亿元</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">正常 AI 头部公司财务投资占比基准</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:61.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">250 亿元</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1"></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>500 亿里 410 亿是绑业务的钱，纯财务只占 12-18%</div></div>
+
+    <hr>
+
+    <h2>四、545% 毛利率的印钞机，为什么主动打折 75%？</h2>
+
+    <p>2026 年 2 月 28 日，DeepSeek 在 GitHub 上公布了一份《DeepSeek-V3/R1 Inference System Overview》技术报告。</p>
+
+    <p>报告里有一行数字让全行业炸了——</p>
+
+    <p>V3 + R1 模型 24 小时推理"理论成本-利润率 545%"。</p>
+
+    <p>具体到原文：日推理 GPU 成本 $87,072（按 H800 $2/h 租金折算），日理论收入 $562,027。利润率 = ($562,027 - $87,072) / $87,072 ≈ 545%。</p>
+
+    <p>这里有几个"理论"前提没被强调：</p>
+
+    <ul><li>按 H800 $2/h 租金算（实际 DeepSeek 用的是 High-Flyer 自有 H800 集群，成本可能更低）</li>
+<li>不含 R&D 与训练成本</li>
+<li>不含免费 web/app 流量与折扣</li>
+<li>按 R1 输出 $2.19/MTok、V3 输出 $1.10/MTok 的旧定价算</li>
+</ul>
+把这些前提去掉，真实毛利率不到 30%。DeepSeek 2025 年估算净利润 $470M，对应口径下毛利率 28-32%——这是 click-vision 等媒体粗算，DeepSeek 自己从没披露过财务数据。
+
+    <p>545% 是个理论上限，不是现实数字。但它出现在 GitHub 官方文档里，本身就是一个公关动作——告诉所有人：我家的 unit economics 比任何同行都好。</p>
+
+    <p>3 个月后，2026 年 5 月 22 日。</p>
+
+    <p>DeepSeek 宣布 V4-Pro API 永久降价至原价 1/4——降幅 75%。</p>
+
+    <p>新价：</p>
+
+    <ul><li>输入 token：$0.435 / MTok</li>
+<li>输出 token：$0.87 / MTok</li>
+<li>缓存命中：$0.003625 / MTok</li>
+</ul>
+V4-Flash 更便宜——输入 $0.14/MTok，输出 $0.28/MTok。
+
+    <p>对照同期 Claude 4 Sonnet：输入 $3/MTok，输出 $15/MTok。GPT-5：输入 $2.5/MTok，输出 $10/MTok。</p>
+
+    <p>按 token 价格算，DeepSeek V4-Pro 是 Claude 4 Sonnet 的 1/7 到 1/17，是 GPT-5 的 1/6 到 1/12。</p>
+
+    <p>一家"545% 印钞机"主动把自己的价格砍到 1/4。</p>
+
+    <p>按常识，印钞机不打折——价格弹性低、需求侧没替代品，涨价才合理，怎么会反向降价 75%？</p>
+
+    <p>这次反着走（笑）。</p>
+
+    <p>降价的目的不是为了多卖。降价的目的是给中国市场定一条价格基准线。</p>
+
+    <p>这条基准线一旦固化在 $0.435/MTok 输入 + $0.87/MTok 输出这个数字上，Claude、GPT、Gemini 在中国市场的定价空间被压死。任何海外模型只要不能把价格压到这个数量级，在中国就根本进不来。</p>
+
+    <p>DeepSeek 不是在卖 token，是在画地为王。</p>
+
+    <p>545% 毛利率给这条策略提供了财务弹药——理论上 DeepSeek 可以在 $0.435/MTok 这个价格下继续保持净利润为正（按推理成本算）。即使把训练 + R&D 摊进去打不平，High-Flyer 量化基金 2025 年 56.55% 的年化回报、700 亿管理规模可以无限输血。</p>
+
+    <p>这就是 200 亿"自掏"的另一层含义——量化基金挣的钱可以源源不断转沉淀到 DeepSeek，DeepSeek 把这笔钱用在永久降价 75% 上，把市场标尺定死在自己这条线上。</p>
+
+    <p>这套组合拳的真实目标不是 ARR，是市场份额。</p>
+
+    <p>对中小开发者意味着什么？</p>
+
+    <p>举一个具体场景——杭州一家做 AI 教育的初创公司，10 个工程师，每天 RAG 调用 5000 万 token。</p>
+
+    <p>原 V4 价格：50M × ($1.74 输入 + $3.48 输出) / 1M = $261/天，约 1850 元人民币。一年 67.5 万。</p>
+
+    <p>V4-Pro 降价后：50M × ($0.435 + $0.87) / 1M = $65.25/天，约 460 元人民币。一年 16.8 万。</p>
+
+    <p>一年省 50 万。</p>
+
+    <p>对一家 10 人初创公司来说，50 万省下来够再雇一个工程师。这就是 DeepSeek 把价格定死的真正杠杆——通过让中小开发者活得更舒服，把整个中国 AI 应用层绑定在 DeepSeek 上。</p>
+
+    <p>应用层绑了，模型层就锁死了。Claude 进不来，GPT 进不来，Gemini 进不来——不是技术问题，是经济问题。</p>
+
+    <p>V4 本身的技术锚点也值得记一笔：</p>
+
+    <ul><li>总参数 ~1T</li>
+<li>上下文 1M token</li>
+<li>原生多模态</li>
+<li>原生适配华为昇腾 950 系</li>
+<li>Hugging Face 模型卡（deepseek-ai/DeepSeek-V4-Pro）截至 6 月 3 日下载量 7000 万+，过去 30 天 1500 万+</li>
+</ul>
+技术层面 V4 是真材实料的，不是估值吹起来的水泡。MIT Technology Review 4-24 评价："V4's native Ascend integration may matter more than its parameter count"——V4 对昇腾的原生适配比参数量更重要。这句评语解释了为什么国家大基金会下场。
+
+    <p>到这里把第四节合起来看：</p>
+
+    <p>545% 是公关数字。$0.435/MTok 是战略武器。1T 参数和 1M 上下文是真材实料的技术底座。背后是 200 亿自掏 + 国家队入场 + 永久降价 75% 给中小开发者的组合拳。</p>
+
+    <p>这套打法在 6 月 3 日 cap table 关账那一刻完成闭环。</p>
+
+    <hr>
+
+    <h2>五、同一周大洋彼岸的镜像剧：Anthropic 的 $36B 私募信贷</h2>
+
+    <p>6 月 3 日 DeepSeek 这边在收 cap table。同一周的另一头，Anthropic 在做完全相反的事。</p>
+
+    <p>时间线对照：</p>
+
+    <strong>5 月 28 日</strong>：Anthropic 公布完成 H 轮 $65B 融资、投后估值 $965B，超越 OpenAI 3 月时的 $852B。
+<strong>5 月 28 日（同日）</strong>：Bloomberg 披露 Apollo + Blackstone 正在为 Anthropic 安排 $36B 私募信贷，专款用于购买 Google TPU，Broadcom 担保。
+<strong>6 月 1 日</strong>：Anthropic 向 SEC 保密提交 S-1，瞄 10 月 IPO。
+<strong>6 月 3 日</strong>：DeepSeek 首轮融资落地。
+
+    <p>$36B 私募信贷的结构分三档：</p>
+
+    <ul><li>A1 档：$6B</li>
+<li>A2 档：$25B</li>
+<li>B 档：$4.5B</li>
+<li>Broadcom 担保</li>
+</ul>
+这是 AI 公司有史以来最大单笔芯片债务融资。$36B 用来一次性买光 Google 在未来 2-3 年的 TPU 产能。
+
+    <p>把这套结构和 DeepSeek 6 月 3 日的 cap table 摆在一起对照：</p>
+
+    <p>| | DeepSeek（6-03） | Anthropic（5-28 至 6-01） |<br>|---|---|---|<br>| 估值口径 | $52-59B 投后 | $965B 投后 |<br>| ARR | 估算 $200-500M | $47B |<br>| 估值/收入倍数 | 100-300x | ~20x |<br>| 主要资金来源 | 创始人自有 + 产业战略投资 + 国资 | 私募信贷 + Broadcom 担保 + 二级 LP |<br>| 算力路径 | High-Flyer 自有 H800 + 适配昇腾 950 | $36B 一次性买 Google TPU |<br>| 上市路径 | 暂无 IPO 计划 | 10 月 IPO 倒计时 |<br>| 控股权 | 创始人 84.29% 锁死 | 多元化稀释 |<br>| 财务投资人占比 | 12-18% | >60% |<br>| 估值增长曲线 | 21 天 5 倍 | 一年 80x ARR |</p>
+
+    <p>两家估值相差 16 倍。两家融资逻辑相差不是一个量级，是一个物种。</p>
+
+    <p>Anthropic 的本质是金融工程化加杠杆——找银行、找担保人、找私募信贷、找 IPO 出口。$36B 信贷 + Broadcom 担保的结构精巧但脆弱，本质是把未来 5 年的 Google TPU 产能预支到现在，再用 ARR 80x 增长的故事撑住偿债能力。一旦 ARR 增速放缓到 20x 以下，整个杠杆链就有压力。</p>
+
+    <p>DeepSeek 的本质是产业链垂直集成绑定——创始人自有资金、卖电池的入场、互联网巨头反向锁定、国家队保芯片闭环。这套结构没有外部杠杆、没有偿债压力、没有 IPO 时间表，唯一的"出口"是把中国 AI 应用层做大。</p>
+
+    <p>两套结构的耐久性测试场景完全不同：</p>
+
+    <p>场景 1，AI 估值整体回落 30%。Anthropic 从 $965B 跌到 $675B，私募信贷利率压力上升，Broadcom 担保启动条款被触发，可能延迟 IPO 或下调发行价。DeepSeek 从 $52B 跌到 $36B，创始人 84.29% 持股没变化，CATL 储能订单照常，Tencent API 调用照常——产业绑定不受估值影响。</p>
+
+    <p>场景 2，美国出口管制再加码，Nvidia / Google 芯片全面禁运。Anthropic 依赖 Google TPU + Nvidia H100，$36B 私募信贷的标的物可能买不到，违约风险上升。DeepSeek 本来就在适配昇腾，影响小。</p>
+
+    <p>场景 3，模型同质化加剧，Claude / GPT / Gemini 性能差距收窄到 5%。Anthropic 估值溢价收窄，"crazy 80x growth" 叙事承压。DeepSeek 本来就是以价格战为核心策略，同质化对它有利。</p>
+
+    <p>三个场景里 DeepSeek 都比 Anthropic 抗压。</p>
+
+    <p>这不是说 DeepSeek 一定赢。是说两套资本结构面对的风险曲线完全不同——Anthropic 押的是高增长 + 顺周期 + 杠杆，DeepSeek 押的是低估值 + 国家产业链 + 自有资金。</p>
+
+    <p>那 DeepSeek 拿了这 500 亿之后，下一步做什么？</p>
+
+    <p>按梁文锋公开过的几次表态，AGI 是终极目标。但中间路径有几个分支：</p>
+
+    <p>分支 A，V5 训练。媒体估算 V5 训练成本 $200M-$500M（按 1.5T-3T 参数 + 1-2T token 训练规模、用昇腾 950 集群推算）。500 亿融资里拿出来训 V5 绰绰有余，剩下的钱可以转沉淀作 R&D 储备。</p>
+
+    <p>分支 B，海外扩张。DeepSeek 在 6 月 3 日时全球月活已经 7000 万 +（Hugging Face + 自家 App + API 调用合计估算），其中海外占比约 25%。500 亿可以撑起一次海外市场推广，但模型海外推广受出口管制 + 监管影响，弹性不大。</p>
+
+    <p>分支 C，永远不上市。500 亿够 DeepSeek 烧 3-5 年，期间不用对外披露任何财务数据，不用应付分析师电话会议，不用响应 Anthropic / OpenAI 的财报节奏。永远不上市的最大好处是永远不用回答"545% 毛利率到底是不是真的"这个问题。</p>
+
+    <p>最可能的组合是 A + C：V5 训练 + 永远不上市。</p>
+
+    <p>把全文五件事的逻辑串成一句话：</p>
+
+    <strong>梁文锋 4 月 27 日把自己持股从 1% 抬到 34%，6 月 3 日让 CATL、Tencent、国家大基金、网易、京东进门凑了 300 亿，每个人买的都不是 DeepSeek——CATL 买储能订单、Tencent 买反向锁定、国家大基金买昇腾闭环、网易京东买 API 优先调用——300 亿外部钱进来时，梁文锋自掏 200 亿的真实功能是把外部稀释限制在 15.71% 以内、把控股权锁死在 84.29%；同周 Anthropic 用 $36B 私募信贷买 Google TPU 准备 10 月 IPO，DeepSeek 用全产业链绑定准备永远不上市。</strong>
+
+    <p>这不是 AI 估值赛跑。是两套 AI 资本主义的耐久性比赛。</p>
+
+    <p>5 月 6 日证券时报那句话还得再引一次——</p>
+
+    <strong>"模型即芯片。"</strong>
+
+    <p>6 月 3 日 cap table 关账那一刻，这四个字才真正写完。</p>
+
+    <div style="margin:32px 0;background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(30,58,138,.07)"><div style="background:linear-gradient(135deg,#1A56DB,#1e3a8a);color:#fff;padding:14px 20px"><div style="font-size:14px;font-weight:700;letter-spacing:.3px">对账图</div><div style="font-size:12px;font-weight:500;color:#BFDBFE;margin-top:3px;letter-spacing:.2px">同一周，两种 AI 资本主义结构对照</div></div><div style="padding:22px 24px 18px"><div style="display:flex;align-items:center;gap:24px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px dashed #e2e8f0"><div style="flex:1;text-align:right;font-size:12px;font-weight:700;color:#1A56DB;letter-spacing:1px">← 流入 / INFLOW</div><div style="width:20px"></div><div style="flex:1;text-align:left;font-size:12px;font-weight:700;color:#F05252;letter-spacing:1px">OUTFLOW / 流出 →</div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">DeepSeek 估值</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:8.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">520 亿美元</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Anthropic 估值</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:100.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">9650 亿美元</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">DeepSeek ARR（估算）</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:8.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">4 亿美元</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Anthropic ARR</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:8.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">470 亿美元</div></div></div><div style="display:flex;align-items:center;gap:24px;margin-bottom:20px"><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">DeepSeek 本轮融资规模</div><div style="width:100%;display:flex;justify-content:flex-end"><div style="background:#EEF2FF;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#1A56DB;height:100%;width:8.0%;margin-left:auto;border-radius:5px 0 0 5px"></div></div></div><div style="font-size:14px;font-weight:700;color:#1A56DB;margin-top:4px">74 亿美元</div></div><div style="width:20px;height:40px;border-left:2px solid #e2e8f0"></div><div style="flex:1;display:flex;flex-direction:column;align-items:flex-start"><div style="font-size:12px;color:#374151;margin-bottom:4px;max-width:100%">Anthropic 私募信贷规模</div><div style="width:100%;display:flex;justify-content:flex-start"><div style="background:#FFE4E4;border-radius:5px;height:14px;width:100%;position:relative;overflow:hidden"><div style="background:#F05252;height:100%;width:8.0%;border-radius:0 5px 5px 0"></div></div></div><div style="font-size:14px;font-weight:700;color:#F05252;margin-top:4px">360 亿美元</div></div></div></div><div style="background:#1e3a8a;color:#fef9c3;padding:14px 20px;font-size:13px;font-weight:600;line-height:1.55;border-top:1px solid #1e3a8a"><span style="color:#fbbf24;margin-right:6px">▸</span>Anthropic 押杠杆 + IPO 出口，DeepSeek 押产业链 + 国家队 + 不上市</div></div><hr>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>梁文锋 4 月 27 日把自己持股从 1% 抬到 34%，6 月 3 日让 CATL、Tencent、国家大基金、网易、京东进门凑了 300 亿——每个人买的都不是 DeepSeek。CATL 买储能订单、Tencent 买供应链反向锁定、国家大基金买昇腾闭环、网易京东买 API 优先调用。300 亿外部钱进来时，梁文锋自掏 200 亿的真实功能是把外部稀释限制在 15.71% 以内、把控股权锁死在 84.29%。</p>
+    <p>同周 Anthropic 用 $36B 私募信贷买 Google TPU 准备 10 月 IPO，DeepSeek 用全产业链绑定准备永远不上市。这不是 AI 估值赛跑，是两套 AI 资本主义的耐久性比赛。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/06/03/deepseek-slated-to-draw-7-billion-in-maiden-fundraising-sources-say.html" target="_blank" rel="noopener">DeepSeek slated to draw $7 billion in maiden fundraising, sources say (CNBC, Reuters 转载)</a></div>
+      <div class="footer-source-item"><a href="https://www.scmp.com/tech/big-tech/article/3355818/deepseek-nears-us7b-haul-first-ever-funding-round-backing-tencent-catl" target="_blank" rel="noopener">DeepSeek nears US$7b haul in first-ever funding round, backing from Tencent, CATL (SCMP)</a></div>
+      <div class="footer-source-item"><a href="https://www.axios.com/2026/06/03/china-deepseek-billion" target="_blank" rel="noopener">China DeepSeek $7 billion funding round (Axios)</a></div>
+      <div class="footer-source-item"><a href="https://technode.com/2026/06/04/deepseek-in-talks-to-raise-7-billion-from-tencent-catl-and-other-investors/" target="_blank" rel="noopener">DeepSeek In Talks To Raise $7 Billion from Tencent, CATL (TechNode)</a></div>
+      <div class="footer-source-item"><a href="https://cnevpost.com/2026/05/22/catl-plans-to-invest-in-deepseek/" target="_blank" rel="noopener">CATL plans to invest in DeepSeek (CnEVPost)</a></div>
+      <div class="footer-source-item"><a href="https://www.thepaper.cn/newsDetail_forward_33067984" target="_blank" rel="noopener">DeepSeek 关联公司注册资本增至 1500 万元，梁文锋持股升至 34%（澎湃新闻）</a></div>
+      <div class="footer-source-item"><a href="https://www.jiemian.com/article/14343641.html" target="_blank" rel="noopener">深度求索注册资本变更 梁文锋持股大幅提升（界面新闻）</a></div>
+      <div class="footer-source-item"><a href="https://www.guancha.cn/economy/2026_04_28_815240.shtml" target="_blank" rel="noopener">深度求索人工智能基础技术研究有限公司发生工商变更（观察者网 4-28）</a></div>
+      <div class="footer-source-item"><a href="https://www.stcn.com/article/detail/3899610.html" target="_blank" rel="noopener">国家大基金或将入股 DeepSeek 估值约 450 亿美元（证券时报 5-06）</a></div>
+      <div class="footer-source-item"><a href="https://www.guancha.cn/economy/2026_05_06_816054.shtml" target="_blank" rel="noopener">国家大基金破例下注 AI 模型公司（观察者网 5-06）</a></div>
+      <div class="footer-source-item"><a href="https://m.gmw.cn/2026-05/23/content_1304468028.htm" target="_blank" rel="noopener">DeepSeek V4-Pro API 永久降价 75%（光明网 5-23）</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/news/confidential-draft-s1-sec" target="_blank" rel="noopener">Anthropic confidential draft S-1 (Anthropic 官方公告 6-01)</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com/2026/06/01/anthropic-s1-confidential/" target="_blank" rel="noopener">Anthropic files confidential S-1 (Fortune 6-01)</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/05/28/anthropic-open-ai-startup-value.html" target="_blank" rel="noopener">Anthropic surpasses OpenAI in startup valuation (CNBC 5-28)</a></div>
+      <div class="footer-source-item"><a href="https://www.bloomberg.com/news/articles/2026-05-28/apollo-shops-36-billion-debt-deal-to-buy-google-chips-for-anthropic" target="_blank" rel="noopener">Apollo shops $36B debt deal to buy Google chips for Anthropic (Bloomberg 5-28)</a></div>
+      <div class="footer-source-item"><a href="https://www.computerworld.com/article/3837452/deepseek-claims-545-cost-profit-ratio-challenging-ai-industry-economics.html" target="_blank" rel="noopener">DeepSeek claims 545% cost-profit ratio (Computerworld 2-28)</a></div>
+      <div class="footer-source-item"><a href="https://www.scmp.com/tech/tech-trends/article/3339633/deepseek-founders-high-flyer-ranks-among-chinas-top-hedge-fund-firms-2025" target="_blank" rel="noopener">High-Flyer ranks among China's top hedge fund firms 2025 (SCMP)</a></div>
+      <div class="footer-source-item"><a href="https://www.technologyreview.com/2026/04/24/1136422/why-deepseeks-v4-matters/" target="_blank" rel="noopener">Why DeepSeek's V4 matters (MIT Technology Review 4-24)</a></div>
+      <div class="footer-source-item"><a href="https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro" target="_blank" rel="noopener">DeepSeek-V4-Pro 模型卡 (Hugging Face)</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
