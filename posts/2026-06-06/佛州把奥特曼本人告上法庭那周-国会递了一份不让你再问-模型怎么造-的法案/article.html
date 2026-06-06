@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>佛州把奥特曼本人告上法庭那周，国会递了一份不让你再问"模型怎么造"的法案</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI产业深度</span>
+  <h1>佛州把奥特曼本人告上法庭那周，国会递了一份不让你再问"模型怎么造"的法案</h1>
+  <div class="hero-meta">
+    <span>2026-06-06</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">一个州把 AI 公司告上法庭，一个国会要给 AI 立规矩，看着都像"终于开始管 AI 了"。但把佛州诉状和那部 269 页的《伟大美国AI法案》摊开对读，这是一记组合拳——佛州在逼问"模型怎么造的"，国会在立法不让各州再问。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、佛州告的不是 ChatGPT 说了什么，是 OpenAI 没做什么</h2>
+<p>你以为佛州起诉 OpenAI，告的是"ChatGPT 教坏了人"。</p>
+<p>诉状里确实有这部分。Uthmeier 的指控清单很长：佛罗里达州立大学 2025 年那起枪击案，凶手据称用 ChatGPT 策划了袭击；ChatGPT 被指鼓励脆弱用户走向自杀；让未成年人"上瘾"，在没有家长监督的情况下收集儿童数据。10 项罪名摊开——4 项欺骗性与不公平贸易行为、2 项过失、2 项产品责任、1 项欺诈性虚假陈述，外加一项公共妨害。</p>
+<p>这些指控针对的是"ChatGPT 这个产品用出去之后惹了什么祸"。法律上有个词，叫部署端（deployment）。产品已经造好了，卖出去了，在用户手里出了事。</p>
+<p>但诉状里真正狠的，不是这部分。</p>
+<p>是 OpenAI 自己许过的承诺。</p>
+<p>2023 年，OpenAI 公开宣布成立一个 superalignment（超级对齐）团队，对外承诺：未来四年拿出公司 <strong>20% 的算力</strong>，专门用来研究怎么控制比人更聪明的 AI。这是写在公告里、给全世界看的数字。</p>
+<p>佛州诉状指控：OpenAI 实际投入 AI 安全的算力，只有 <strong>1% 到 2%</strong>。</p>
+<p>承诺 20%，给了 1-2%。差了一个数量级。</p>
+<p>还有更具体的一条。诉状称，GPT-4o 这种能同时处理文字、图像、音频的模型，按规矩需要数月的安全测试。OpenAI 实际只做了"a one-week evaluation"——一周。当安全人员要求追加时间、把这套系统能出什么岔子测清楚的时候，诉状里写得很直接：</p>
+<blockquote>
+<p>"Altman personally overruled them."</p>
+</blockquote>
+<p>奥特曼本人，亲自驳回。</p>
+<p>这就是为什么这桩官司要把 Altman 个人列为被告。佛州给他扣的帽子是——他作为 CEO 的行为，体现了对人命风险的"utter disregard"（彻底的漠视）。</p>
+<p>你品一下这几条指控的性质。20% 还是 1-2%、测试做数月还是做一周、安全团队的反对该不该被一句话否决——这些全不是"产品用出去之后"的事。这些是模型<strong>还在造的时候</strong>的事。是开发端（development）。</p>
+<div class="img-placeholder diagram">
+  <div class="img-placeholder-icon">📊</div>
+  <div class="img-placeholder-label">信息图占位</div>
+  <details><summary>规格卡</summary><pre>【图类型】：对账图
+【副标题】：佛州诉状里 OpenAI 的"承诺"与"实际"
+【核心判断】：承诺 20% 算力做安全，实际 1-2%；该测数月的模型，测了一周
+【核心内容】：
+  - 承诺投入安全的算力 [流入]：20
+  - 实际投入安全的算力 [流出]：2
+  - 规定的安全测试时长（月） [参照]：3
+  - GPT-4o 实际测试时长（约0.25月） [流出]：1</pre></details>
+</div>
+
+<p>佛州这次能告进去，靠的是部署端的入口——FDUTPA，佛州的《欺骗性与不公平贸易行为法》，一部消费者保护法。它打的是"你把一个你明知有风险的产品当安全的卖给佛州居民"。</p>
+<p>但它真正想让法官看见的证据，全在开发端。</p>
+<p>记住这个区分：部署端是入口，开发端是杀招。这两个词，下一节你还会再见到。</p>
+<hr />
+<h2>二、一部名字带"伟大"的法案，正文第一刀砍向"问模型怎么造"的权力</h2>
+<p>三天后，6 月 4 日，国会这边出场。</p>
+<p>Obernolte 和 Trahan 的《Great American AI Act》讨论稿，269 页。官方新闻稿里的说法很正面：建立全美统一的联邦 AI 治理框架，要求大型前沿开发者做安全披露、报告重大事件、接受第三方审计。</p>
+<p>听着是要给 AI 上规矩。</p>
+<p>翻到最有争议的那一条，画风就变了。</p>
+<p>法案要 preempt（联邦优先，作废）各州"specifically regulating the <strong>development</strong>"——专门针对 AI 模型"开发"——的法律。期限三年。三年内，各州不许就 AI 怎么训练、怎么构建、怎么调权重立新法。</p>
+<p>注意它咬得多准。被冻结的是"development"，开发。法案白纸黑字写明：这条 <strong>不适用于</strong> AI 模型"use or deployment"——使用或部署——的法律。</p>
+<p>把这句话和上一节连起来。</p>
+<p>佛州诉状的杀招在哪？在开发端。OpenAI 承诺 20% 算力实际给 1-2%、该测数月只测一周、Altman 否决安全团队——这些全是"模型怎么造的"。</p>
+<p>国会这部法案要冻结的是哪一端的州立法权？开发端。</p>
+<p>也就是说：佛州这次靠 FDUTPA 这种部署端、消费者欺诈的入口钻进去了，官司大概率能活。但假如哪个州想立一部法，规定"在我这儿发布的前沿模型，必须做满 X 个月安全测试、必须真投承诺的算力做对齐、安全团队的否决 CEO 不能一句话推翻"——</p>
+<p>那才是被这部法案按住、三年内不许碰的东西。</p>
+<div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>A blueprint of a complex machine being locked inside a heavy steel safe, a question mark stamped on the safe door, conceptual illustration about restricting access to how something is built, flat design, minimalist illustration, tech style, blue and white color palette, no text, no labels, clean white background</pre></details>
+</div>
+
+<p>法案还附了一套"给点甜头"的设计：年营收 5 亿美元以上的大型前沿开发者，要发布安全框架、报告重大事件、接受半年一次的第三方独立机构审计，结果报送商务部下面一个叫 CAISI 的中心。</p>
+<p>看起来是责任。但三处细节得拎出来。</p>
+<p>第一，门槛是 5 亿美元营收。这把一众小公司放出去了，真正套上义务的就是头部那几家——而头部那几家，恰恰是最想要"全美一套规矩、别让 50 个州各管各的"的那几家。</p>
+<p>第二，审计是半年一次的"框架披露"，不是哪个州能上门强制核查的硬约束。它管的是"你有没有发个安全框架出来"，不是"你那 20% 算力到底投没投"。</p>
+<p>第三，也是最阴的一处——sunset，日落条款。这套审计义务和那条"冻结各州开发立法"的禁令，三年后一起自动到期，除非国会再续。换句话说，义务和禁令打包，三年后义务可能没了，但这三年各州的手是被绑死的。</p>
+<p><strong>一部名字里带"伟大"的法案，正文第一刀，砍的不是 AI，是问 AI 的人。</strong></p>
+<hr />
+<h2>三、把两张原文拼起来：佛州在问的，正是国会要锁的</h2>
+<p>现在把这两件事彻底拼到一起。</p>
+<p>很多解读把它们当成相反的事——一个在加强监管（佛州起诉），一个在放松监管（国会 preempt）。所以才有人说这周"州和联邦打架了"。</p>
+<p>打架是真打架。但方向不是"管 vs 不管"。</p>
+<p>是"谁来管，管哪一端"。</p>
+<p>佛州站在开发端的门口，靠消费者保护法这个侧门挤了进去，想让法官看 OpenAI 模型是怎么造的。国会这部法案，是把开发端这扇正门，对所有州，焊死三年。</p>
+<p>佛州这次能活，不是因为法案手软，是因为它走的是部署端的侧门（FDUTPA、消费者欺诈），而法案明确放过了部署端。这恰好暴露了产业真正想锁的是什么——</p>
+<p>不是"别告 OpenAI"。告完了产品出事了再赔钱，对一家年化收入早就上了天的公司，是可以预算进成本的事。</p>
+<p>产业真正想锁的是"别立法逼我公开模型怎么造的、别立法逼我必须做满安全测试"。因为那个会动到的，是模型发布的速度、是商业模式的根。</p>
+<div class="img-placeholder diagram">
+  <div class="img-placeholder-icon">📊</div>
+  <div class="img-placeholder-label">信息图占位</div>
+  <details><summary>规格卡</summary><pre>【图类型】：流程图
+【副标题】：同一周的一记组合拳
+【核心判断】：州权从部署端侧门告进去，联邦把开发端正门焊死三年
+【核心内容】：
+  - 6/1 佛州起诉：走部署端侧门(FDUTPA)，证据指向开发端
+  - 6/4 国会法案：preempt 各州"开发"立法权，放过部署
+  - 结果：头条案件幸存，治本的开发端立法被冻结三年
+  - 真正被保护的：模型怎么造，三年内各州无权过问</pre></details>
+</div>
+
+<p>这就是为什么这周最该被记住的判断，不是"AI 终于被管了"。</p>
+<p><strong>是反过来的：这周真正被立法保护起来的，不是 AI 安全，是"别问模型怎么造的"这件事本身。</strong></p>
+<p>头条上的案子能活，治本的法被锁。这才是这套设计最值钱的地方。佛州那种官司每隔几个月来一次，赔点钱，上几天头条，对产业来说是可承受的噪音。而"各州不许立法管开发"这条线一旦冻结三年，等三年后市场格局固化，谁还在乎当年立没立成。</p>
+<p>有人会替这部法案说话：50 个州各立各的法，patchwork（拼凑式监管），不把美国 AI 公司拖死才怪，联邦统一框架本来就比 50 部州法强。</p>
+<p>这话不全错。问题不在"要不要统一"，在"往哪个方向统一"。</p>
+<p>真要统一，就该把佛州诉状里那条"承诺 20% 实际 1-2%"的指控，在联邦层面做成强制审计、强制披露、强制问责——而且不设三年日落，让联邦当地板，各州还能往上加码。那才叫统一框架。</p>
+<p>这部法案给的是反过来的东西：联邦当天花板，各州不许超，三年免检，到期再说。统一的不是责任，是免责。</p>
+<hr />
+<h2>四、谁在掏钱，把这扇门焊死</h2>
+<p>这套打法不是这周才冒出来的。这已经是第三次了。</p>
+<p>2025 年中，国会想在那部"大而美"预算和解法案里塞进一条 10 年（后来缩成 5 年）的"各州 AI 法暂停令"，由参议员 Ted Cruz 主推。结果参议院以 <strong>99 比 1</strong> 把这类条款投了出去。</p>
+<p>同年底，2026 财年国防授权法案（NDAA）里又夹了一条 preemption，被两党联手拿掉。</p>
+<p>行政令也试过。2025 年 12 月 11 日，Trump 签了一道行政令，专门设立一个"AI 诉讼工作组"，让司法部去识别并起诉那些"冲突"的州法，还拿宽带补贴（BEAD 资金）当杠杆胁迫各州。这道令的合法性当场被质疑——行政令能不能作废州法，本身就悬。2026 年 6 月 2 日，也就是佛州起诉的第二天，Trump 又签了一道，给前沿模型发布前设了个最多 30 天的"自愿"审查框架。</p>
+<p>自愿。这个词记一下。</p>
+<p>行政令推不动、可能违宪，于是这次改走立法。《Great American AI Act》就是把"冻结各州开发立法"这件事，从行政令的软地基，搬到国会立法的硬地基上。第三次尝试，换了个最体面的壳。</p>
+<div class="img-placeholder diagram">
+  <div class="img-placeholder-icon">📊</div>
+  <div class="img-placeholder-label">信息图占位</div>
+  <details><summary>规格卡</summary><pre>【图类型】：条形图
+【副标题】：把"冻结各州管AI"塞进法律的三次尝试
+【单位】：—
+【核心判断】：从预算法案到国防授权到专门立法，preemption 第三次卷土重来
+【核心内容】：
+  - 2025年中 预算和解法案塞暂停令：参议院99-1否决
+  - 2025年底 NDAA 夹带 preemption：两党联手删除
+  - 2025/12 行政令设AI诉讼工作组：合法性存疑
+  - 2026/6 Great American AI Act：第三次，改走专门立法</pre></details>
+</div>
+
+<p>为什么这么执着？因为下面这组数字。</p>
+<p>据 GovFacts 统计，大型科技公司为了阻止各州监管 AI，已经砸进去 <strong>超过 10 亿美元</strong>。2022 到 2025 年，从事 AI 议题的游说者数量暴涨 <strong>168%</strong>；据 Sludge 的统计，如今 K 街（华盛顿游说一条街）上大约 <strong>四分之一</strong> 的游说者在做 AI。</p>
+<p>另一头，各州截至 2026 年 3 月，已经在 45 个州提出了至少 1561 项 AI 相关法案。</p>
+<p>这就是矛盾的全貌：一边是 45 个州、1561 项法案，往上长；一边是 10 亿美元游说费，往下压。preemption 是那只往下压的手，要的就是一次性把这 1561 项里管"开发"的那部分，连根冻三年。</p>
+<p>10 亿美元买的不是某一部法案的通过，是"未来三年没人能立新规矩拦我"的安静。对一家估值以千亿计的公司，这是这个星球上回报率最高的预算项。</p>
+<hr />
+<h2>五、连 DeSantis 都不卖账：这不是党派之争，是州、联邦、公司的三方斗</h2>
+<p>如果你觉得这是民主党想管、共和党想放，那这周还有一条新闻专门来打这个脸。</p>
+<p>起诉 OpenAI 的 Uthmeier，37 岁，全美最年轻的总检察长之一，2025 年 2 月上任，上任前是 DeSantis 州长办公室的幕僚长。根正苗红的佛州共和党。</p>
+<p>而 Trump 那套联邦 preemption，佛州共和党这边公开不卖账。州长 DeSantis、还有被看好接班州长的 Byron Donalds，都公开站出来反对联邦把州权收走，主张各州有权自己管 AI。</p>
+<p>同一个红州，一只手起诉 AI 公司、把 CEO 个人告上法庭，另一只手顶着同党总统，拒绝把"管 AI"的权力上交联邦。</p>
+<p>这就把这周这场仗的真正轴线钉死了：它不是左右之争，是州、联邦、公司的三方博弈。</p>
+<div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>A tug of war between three different groups pulling a rope in three directions, representing a three-way power struggle, conceptual illustration, flat design, minimalist, tech and politics theme, blue red and gray color palette, no text, no labels, clean white background</pre></details>
+</div>
+
+<p>党派线在这件事上彻底乱了。红州（佛州这一系）要州权、要亲手锤公司；一部分民主党人（联署这部法案的 Trahan）愿意配合搞联邦框架；而工会——传统上的民主党铁盟友——对这部法案的反应是直接掀桌。</p>
+<p>AFL-CIO 背后站着 63 个工会、1500 万工人，对这类暂停令的态度是"hard no"。AFT（美国教师联合会）主席 Weingarten 和 AFA-CWA 主席 Nelson 联合声明，措辞毫不客气，说这部法案是</p>
+<blockquote>
+<p>"a giveaway to the AI industry and a handful of trillion-dollar companies, at the expense of American workers."</p>
+</blockquote>
+<p>送给 AI 产业和少数几家万亿美元公司的大礼，代价是美国工人。</p>
+<p>工人怕的不是 ChatGPT 会不会上头条。工人怕的是被冻结的那些州法——本来能管算法解雇、自动化压薪、AI 监控的州法。这些法律不上热搜，但它们管的是日常。</p>
+<hr />
+<h2>六、floor 还是 ceiling：这部法案最该被记住的一句反对</h2>
+<p>反对这部法案的声音里，最锋利的一刀来自 Brad Carson——Americans for Responsible Innovation 主席，前俄克拉荷马州民主党众议员。他给的判断是一句"generational mistake"（一代人的错误），以及下面这句：</p>
+<blockquote>
+<p>"This bill takes the current floor on state AI legislation and turns it into a federal ceiling."</p>
+</blockquote>
+<p>这部法案把当前各州 AI 立法的"地板"，变成了一个联邦"天花板"。</p>
+<p>这一句值得拆开。监管立法有两种联邦化路径：联邦当地板（floor），意思是联邦定个最低标准，各州可以在上面加码，管得更严；联邦当天花板（ceiling），意思是联邦定个上限，各州不许超过。</p>
+<p>隐私法、电信法吵了二十年的，就是 floor 还是 ceiling。COPPA（儿童在线隐私法）当年没有完全 preempt 州法，给各州留了加码空间，这是地板逻辑。而《Great American AI Act》对"开发"那条，是彻头彻尾的天花板——不光封顶，还直接清零三年。</p>
+<p>最该被警惕的不是"封顶"，是封顶之后那些不上头条的伤害怎么办。</p>
+<p>佛州这种官司能活，因为它够大、够惨、上得了头条，走得通部署端侧门。但那些管算法招聘歧视、算法解雇、职场 AI 监控的州法——它们往往卡在"开发"和"部署"的交界，往往不够惨烈不上头条，往往就是被这条天花板压住、被这三年冻结的那一批。</p>
+<p><strong>头条上的案子幸存，沉默的多数被冻结。</strong>这是 preemption 最不动声色、也最该被点破的设计。</p>
+<p>所以回到这周开头那两条新闻。</p>
+<p>一个州把 AI 公司告上法庭，看着像"终于开始管了"。国会递出一部 269 页的"伟大法案"，听着像"要立规矩了"。</p>
+<p>但你把两份原文摊在一张桌子上对着读，这周真正被立法保护起来的，从来不是 AI 安全，也不是你。</p>
+<p>是"别问模型怎么造的"这件事本身。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>这周真正被立法保护起来的，不是 AI 安全，也不是你，是"别问模型怎么造的"这件事本身。</p>
+    <p>头条上的案子幸存，沉默的多数被冻结——这才是 preemption 最不动声色、也最该被点破的设计。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.myfloridalegal.com/newsrelease/attorney-general-james-uthmeier-files-first-nation-state-led-lawsuit-against-openai-ceo" target="_blank" rel="noopener">佛州总检察长 Uthmeier 起诉 OpenAI 及其 CEO 官方新闻稿（myfloridalegal.com）</a></div>
+      <div class="footer-source-item"><a href="https://www.myfloridalegal.com/newsrelease/attorney-general-james-uthmeier-launches-criminal-investigation-openai-chatgpt" target="_blank" rel="noopener">佛州总检察长就 FSU 枪击案对 ChatGPT 启动刑事调查新闻稿（myfloridalegal.com）</a></div>
+      <div class="footer-source-item"><a href="https://www.myfloridalegal.com/sites/default/files/openai-filed-stamped-complaint.pdf" target="_blank" rel="noopener">佛州诉 OpenAI 诉状 PDF（myfloridalegal.com）</a></div>
+      <div class="footer-source-item"><a href="https://obernolte.house.gov/media/press-releases/obernolte-trahan-release-discussion-draft-great-american-ai-act" target="_blank" rel="noopener">Obernolte、Trahan 发布《Great American AI Act》讨论稿官方新闻稿（obernolte.house.gov）</a></div>
+      <div class="footer-source-item"><a href="https://rollcall.com/2026/06/04/bipartisan-ai-draft-proposes-three-year-preemption-of-state-laws/" target="_blank" rel="noopener">Roll Call：两党讨论稿提出三年州法 preemption（含条款与 Carson 原话）</a></div>
+      <div class="footer-source-item"><a href="https://rollcall.com/2026/06/02/executive-order-sets-voluntary-cyber-reviews-for-advanced-ai/" target="_blank" rel="noopener">Roll Call：Trump 6 月 2 日行政令设前沿模型自愿审查</a></div>
+      <div class="footer-source-item"><a href="https://www.whitehouse.gov/presidential-actions/2025/12/eliminating-state-law-obstruction-of-national-artificial-intelligence-policy/" target="_blank" rel="noopener">Trump 2025-12-11 行政令《Eliminating State Law Obstruction of National AI Policy》（whitehouse.gov）</a></div>
+      <div class="footer-source-item"><a href="https://www.foxbusiness.com/technology/5-most-explosive-claims-from-floridas-lawsuit-against-openai-sam-altman" target="_blank" rel="noopener">Fox Business：佛州诉状中关于 20% 算力承诺与一周测试的指控</a></div>
+      <div class="footer-source-item"><a href="https://theconversation.com/utter-disregard-for-the-risk-to-human-life-florida-sues-openai-and-sam-altman-over-ai-safety-284289" target="_blank" rel="noopener">The Conversation："utter disregard for the risk to human life"</a></div>
+      <div class="footer-source-item"><a href="https://www.nbcnews.com/tech/tech-news/florida-sues-openai-sam-altman-saying-put-profit-safety-rcna347602" target="_blank" rel="noopener">NBC News：佛州起诉 OpenAI 与 Altman，罪名拆分</a></div>
+      <div class="footer-source-item"><a href="https://www.aft.org/press-release/union-leaders-urge-congress-reject-great-american-ai-act" target="_blank" rel="noopener">AFT 工会联合声明：呼吁国会否决《Great American AI Act》（aft.org）</a></div>
+      <div class="footer-source-item"><a href="https://aflcio.org/press/releases/unions-urge-senators-remove-ban-state-level-ai-accountability-laws-budget" target="_blank" rel="noopener">AFL-CIO：呼吁参议员从预算案中删除州级 AI 问责暂停令</a></div>
+      <div class="footer-source-item"><a href="https://thehill.com/policy/technology/5906305-florida-republicans-regulate-ai/" target="_blank" rel="noopener">The Hill：佛州共和党反对联邦 AI preemption，主张州权</a></div>
+      <div class="footer-source-item"><a href="https://govfacts.org/accountability-ethics/lobbying/big-tech-has-spent-more-than-1-billion-to-stop-states-from-regulating-ai/" target="_blank" rel="noopener">GovFacts：大型科技公司已花费逾 10 亿美元阻止各州监管 AI</a></div>
+      <div class="footer-source-item"><a href="https://readsludge.com/2026/02/24/ai-boom-on-k-street-one-in-four-lobbyists-now-work-on-ai/" target="_blank" rel="noopener">Sludge：K 街四分之一游说者现从事 AI 议题</a></div>
+      <div class="footer-source-item"><a href="https://www.morganlewis.com/pubs/2026/04/ai-enforcement-accelerates-as-federal-policy-stalls-and-states-step-in" target="_blank" rel="noopener">Morgan Lewis：联邦政策停滞下各州 AI 执法加速（develop/deploy/UDAP）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
