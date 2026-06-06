@@ -12,11 +12,7 @@
 
 ---
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🎨</div>
-  <div class="img-placeholder-label">概念图占位</div>
-  <details><summary>生成 Prompt</summary><pre>A stark minimalist illustration of a 48-hour countdown clock on a desk, surrounded by stacks of SEC filing documents and stock certificates, blue and white color palette, flat design, tech editorial style, no text, no labels, clean composition, slightly ominous mood, document pages slightly fluttering</pre></details>
-</div>
+![stark 48-hour countdown clock desk](images/concept_01.jpg)
 
 ## 一、6 月 1 日上午，Anthropic 偷偷递了一份招股书
 
