@@ -61,15 +61,23 @@ jobs:
 
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.post }}" ]; then
             targets+=("${{ inputs.post }}")
-          else
-            # schedule / workflow_run / 无 input 的 workflow_dispatch：
-            # 一律按目录名倒序取「最新一篇未同步」的，避免历史 catch-up 把
-            # 老文章重复推进草稿箱（同名草稿微信不会 dedup）。
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
+            # 定时任务：只处理最近 3 天内未同步的文章（macOS date 语法）
+            CUTOFF=$(date -v-3d '+%Y-%m-%d')
             while IFS= read -r dir; do
-              [ -n "$dir" ] && targets+=("$dir") && break
-            done < <(find posts -name "article.html" -exec dirname {} \; \
-              | sort -r \
-              | while IFS= read -r d; do [ ! -f "$d/.wechat-sync.json" ] && echo "$d"; done)
+              [ -z "$dir" ] && continue
+              date_part=$(echo "$dir" | cut -d'/' -f2)
+              if [[ "$date_part" > "$CUTOFF" || "$date_part" == "$CUTOFF" ]]; then
+                [ ! -f "$dir/.wechat-sync.json" ] && targets+=("$dir")
+              fi
+            done < <(find posts -name "article.html" -exec dirname {} \; | sort -r)
+          else
+            # workflow_run / 无 post 的 workflow_dispatch：扫最近提交新增的文章
+            while IFS= read -r f; do
+              dir=$(dirname "$f")
+              [ -n "$dir" ] && [ ! -f "$dir/.wechat-sync.json" ] && targets+=("$dir")
+            done < <(git log --diff-filter=A --name-only --pretty=format: HEAD \
+              | grep -E '^posts/.+/article\.html$' | sort -u || true)
           fi
 
           if [ ${#targets[@]} -eq 0 ]; then
