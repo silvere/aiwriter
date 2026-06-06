@@ -4,7 +4,7 @@ name: 同步到微信公众号草稿箱
 # 也支持手动触发。
 on:
   schedule:
-    - cron: '0 23 * * *'   # 北京时间每天 07:00（UTC 23:00 前一天）
+    - cron: '25 0 * * *'   # 北京时间每天 08:25（UTC 00:25）
   workflow_run:
     workflows: ["自动填充文章配图"]
     types: [completed]
