@@ -56,55 +56,15 @@ jobs:
           DYLD_LIBRARY_PATH: /opt/homebrew/lib
           DYLD_FALLBACK_LIBRARY_PATH: /opt/homebrew/lib
         run: |
-          set -e
-          declare -a targets=()
-
+          # 选文 + 去重 + 同步逻辑全部收敛到 sync_drafts.py：
+          #   - 只按目录日期选最近 3 天未同步文章（不再 `git log HEAD` 遍历全史重发老文）
+          #   - 同步前实查草稿箱按标题去重，已存在则补标记跳过（绝不重复发放）
+          #   - 单篇失败只记 warning 继续，不中断整批（缺封面等不再卡死新文）
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.post }}" ]; then
-            targets+=("${{ inputs.post }}")
-          elif [ "${{ github.event_name }}" = "schedule" ]; then
-            # 定时任务：只处理最近 3 天内未同步的文章（macOS date 语法）
-            CUTOFF=$(date -v-3d '+%Y-%m-%d')
-            while IFS= read -r dir; do
-              [ -z "$dir" ] && continue
-              date_part=$(echo "$dir" | cut -d'/' -f2)
-              if [[ "$date_part" > "$CUTOFF" || "$date_part" == "$CUTOFF" ]]; then
-                [ ! -f "$dir/.wechat-sync.json" ] && targets+=("$dir")
-              fi
-            done < <(find posts -name "article.html" -exec dirname {} \; | sort -r)
+            python skills/scripts/sync_drafts.py --post "${{ inputs.post }}"
           else
-            # workflow_run / 无 post 的 workflow_dispatch：扫最近提交新增的文章
-            while IFS= read -r f; do
-              dir=$(dirname "$f")
-              [ -n "$dir" ] && [ ! -f "$dir/.wechat-sync.json" ] && targets+=("$dir")
-            done < <(git log --diff-filter=A --name-only --pretty=format: HEAD \
-              | grep -E '^posts/.+/article\.html$' | sort -u || true)
+            python skills/scripts/sync_drafts.py --recent-days 3
           fi
-
-          if [ ${#targets[@]} -eq 0 ]; then
-            echo "::notice::没有新文章需要同步"
-            exit 0
-          fi
-
-          for t in "${targets[@]}"; do
-            if [ ! -f "$t/article.html" ]; then
-              echo "::warning::$t/article.html 不存在，跳过"
-              continue
-            fi
-            if [ -f "$t/.wechat-sync.json" ]; then
-              echo "::notice::$t 已同步过，跳过"
-              continue
-            fi
-
-            echo "::group::同步 $t"
-            aiwriter wechat-sync "$t"
-            echo "::endgroup::"
-
-            if [ -f "$t/.wechat-sync.json" ]; then
-              MEDIA_ID=$(python3 -c "import json; print(json.load(open('$t/.wechat-sync.json'))['media_id'])")
-              TITLE=$(python3 -c "import json; print(json.load(open('$t/.wechat-sync.json'))['title'])")
-              echo "::notice title=✅ 同步完成 · 《$TITLE》::草稿已进微信草稿箱，media_id: $MEDIA_ID%0A预览: 打开 mp.weixin.qq.com → 草稿箱 → 预览%0A发布: gh workflow run wechat-publish.yml --field media_id=$MEDIA_ID"
-            fi
-          done
 
       - name: 提交 sync marker
         run: |
