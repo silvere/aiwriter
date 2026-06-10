@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>95 分的 AI，为什么是个不及格的产品</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 深度观察</span>
+  <h1>95 分的 AI，为什么是个不及格的产品</h1>
+  <div class="hero-meta">
+    <span>2026-06-10</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">一个每步 95% 的 AI，连做 20 步只剩 36% 的成功率。卡住所有 Agent 落地的，不是智商，是可靠性的复利衰减——但这道诅咒，真的躲不开吗？</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、0.95 的诅咒</h2>
+<p>这道乘法题有个不留情面的名字，叫复利。</p>
+<p>复利你熟。存钱的时候它是你的朋友，每年滚一点，时间越长越甜。可一旦你算的是"每一步都不能出错"，复利就站到了对立面：它不再把收益滚大，而是把"不出错的概率"一点点磨小。</p>
+<p>把账摆出来看。单步成功率 95%，做 5 步，端到端成功率掉到 77%；做 10 步，掉到 60%；做 20 步，只剩 36%。那个 95% 一个数字都没动，变的只是步数。链条越长，越往下塌。</p>
+<p>这不是纸上推演。METR 这家专门测 AI 能力的机构在 2025 年做过一项研究：今天最前沿的模型，去做 4 分钟以内能干完的任务，成功率接近 100%；可一旦任务长到需要 4 个小时，成功率就掉到 10% 以下。同一个模型，同样的聪明，只是把任务拉长，它就从近乎全能变成几乎全废。</p>
+<p>最扎心的例子来自 Devin。2024 年 3 月，一家公司发布了号称"全球第一位 AI 软件工程师"的它，演示视频里独立接活、写码、修 bug，一气呵成，硅谷为之沸腾。一年后，独立测试者给了它 20 个真实任务：14 个失败，3 个成功，3 个说不清。更让人不安的不是成功率低，而是——测试者发现，他根本找不出任何规律，来预测哪些任务 Devin 能做成，哪些会砸。</p>
+<p>能力时好时坏，且坏得没有道理可循。这才是复利衰减真正的杀伤力：它不只让 Agent 变弱，还让它变得不可预测。而一个你无法预测的系统，是没法交给它负责任何要紧事的。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/diagram_01.svg" alt="数据图" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+<h2>二、Demo 是单步，生产是连乘</h2>
+<p>那为什么演示视频里它那么能打，一到真实工作就原形毕露？</p>
+<p>因为 demo 考的是单步，生产考的是连乘。一段三分钟的演示，本质上是从无数次尝试里挑出来的、那个恰好每一步都没出错的样本。它展示的是 0.95 的那个 95%，而把背后 0.95 自乘十几次的那个 36% 藏了起来。</p>
+<p>行业评测同样藏着这个把戏。软件工程领域有个著名的考卷叫 SWE-bench，顶尖模型在它的"Verified"版本上能拿到 70% 以上，看着很美。可当研究者把题目换成更干净、更难泄题的"Pro"版本，同一批模型的得分直接掉到 23%。差距从哪来？有人去翻了原始题库，发现大约三分之一的题目，在问题描述或评论里就直接埋着答案。模型不是解出来的，是抄到的。</p>
+<p>测试分数，本身也是一种 demo。</p>
+<p>这就解释了一个奇怪现象：从 2024 年起，"Agent 元年"这个说法每年都被隆重宣布一次，2025 年又来一遍，2026 年还在用。一个需要反复宣布开始的纪元，恰恰说明它迟迟没有真正到来。不是模型不够聪明——今天的模型聪明得吓人。卡住所有人的，是从"挑一次好结果给你看"到"每一次都得给你做对"之间那道巨大的鸿沟。</p>
+<p>MIT 在 2025 年的一份调查给这道鸿沟标了价：在企业里部署生成式 AI 的试点项目，95% 没能跑出可衡量的回报。能力的烟花放得震天响，落到地上，绝大多数没能换成钱。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/diagram_02.svg" alt="数据图" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+<h2>三、等一下，这道乘法题算错了</h2>
+<p>故事似乎到这里就该结束了：Agent 不行，因为复利衰减是道躲不开的诅咒。很多文章就停在这里，得出一个廉价的结论——别信 demo，AI 都是骗局。</p>
+<p>但真正较真的人会在这里停下来，问一句：0.95 自乘 20 次，这个算法本身，对吗？</p>
+<p>它藏着一个偷偷塞进来的前提：每一步的成败，是相互独立的，像连续抛 20 次硬币，每次都从头开始、互不影响。可 Agent 的每一步，真是这样吗？</p>
+<p>不是。而且它从两个相反的方向都不成立。</p>
+<p>先看坏的一面。研究者发现 Agent 有一种"自我条件化"的毛病：当它的上下文里已经躺着自己之前犯下的错误，它接下来犯错的概率会显著上升。错误不是独立的硬币，而是会传染的感冒——一步错，后面更容易步步错。在这种情况下，真实的衰减比 0.95 自乘还要陡。这是为什么很多多智能体系统会"自信地、滚雪球般地"集体翻车。</p>
+<p>再看好的一面。0.95 自乘的算法还偷偷假设了"一错即死"——任何一步错了，整件事就报废。可真实系统是可以重试、可以回滚的。如果一个错误能被当场发现、当场撤销，那么它根本不会进入那条连乘的链条。</p>
+<p>于是，决定 Agent 生死的，根本不是单步那个 95% 有多高，而是另一个被所有人忽略的变量：<strong>错误之间，是相互独立、还是会彼此传染；是无声地累积、还是能被当场抓住。</strong></p>
+<p>这才是问题的真正命门。Sierra 团队设计过一个更诚实的衡量指标，叫 pass^k——不是问"做一次能不能对"，而是问"同一件事，连做 k 次，是不是次次都对"。结果，一个在单次测试里成绩尚可的顶级 Agent，在零售场景下连续做对 8 次的概率，掉到了 25% 以下。它不是不会做，是做不稳。会做和做得稳，是两种完全不同的能力。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/concept_01.jpg" alt="chain connected nodes where errors" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+<h2>四、可靠性是可以"买"的——用架构，不是用智商</h2>
+<p>如果命门是"错误会不会传染、能不能被抓住"，那么破局的方向就立刻变了：你不需要等一个更聪明的模型，你需要一套更会兜底的架构。</p>
+<p>2025 年底，一篇论文给出了堪称暴力的证明。研究者用的不是什么顶配大模型，而是一个中等个头的 gpt-4.1-mini。他们做的事很朴素：把一个庞大任务拆成极小的步子，每一步让模型独立跑三遍，然后投票表决——三个里有两个一致，就采信。靠着这套笨办法，他们让模型连续执行了超过一百万步，全程零错误。</p>
+<p>关键在成本。三遍投票，听起来要贵三倍，但因为错误被压在了萌芽阶段、不再往下传染，总成本的增长是对数级的，而不是指数级的。换句话说，任务规模翻倍，你要补的冗余只增加一点点。复利衰减这条看似不可逾越的诅咒，在架构层面被正面打破了。</p>
+<p>这件事的道理，工程界其实用了几十年。你每天刷的视频、打的电话，信号在传输中无时无刻不在出错，可你几乎从不察觉——因为通信系统里铺满了纠错码，错一位，立刻补回来。飞机的关键系统从不指望单台计算机永不宕机，而是装三台、五台，少数服从多数。可靠性从来不是靠某个零件做到完美，而是靠系统设计出来的冗余。AI 也一样。</p>
+<p>吴恩达把这件事说得最直白。他做过一个对比：让又老又笨的 GPT-3.5 套上一层"反思—调用工具—规划"的工作流，去解编程题，正确率能冲到 95%，反过来碾压了直接换用更大模型的收益。同样的脑子，换一套干活的章法，结果天差地别。</p>
+<p><strong>真正稀缺的，从来不是更聪明的模型，而是更稳的架构。</strong> 当所有人都在为下一代模型的参数和跑分屏息以待时，决定 Agent 能不能落地的那把钥匙，其实握在做系统、做容错、做流程的工程师手里。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/diagram_03.svg" alt="数据图" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+<h2>五、为什么"九数长征"走不完</h2>
+<p>既然可靠性能用架构买到，那是不是再等一两年就万事大吉了？</p>
+<p>没那么快。前 OpenAI 创始成员、特斯拉前 AI 总监 Karpathy 给这件事起了个名字，叫"九数长征"。意思是，把可靠性从 90% 提到 99%，再从 99% 提到 99.9%，每往上拱一个 9，所花的工程力气，大致等于此前所有努力的总和。从 0 做到 90%，一个漂亮 demo 就够了；可生产环境要的是小数点后好几个 9，那是一条看不到头的路。</p>
+<p>所以 Karpathy 说，这不是"Agent 元年"，这是"Agent 的十年"。</p>
+<p>这里要分清两件被混为一谈的事：能力和可靠性，是两条不同的曲线。能力那条，涨得飞快——METR 的数据显示，AI 能独立搞定的任务时长，过去六年每七个月就翻一倍，最近还在加速。但可靠性那条，爬得极慢，因为它要对抗的是复利，是每多一个 9 就翻倍的成本。</p>
+<p>落地，本质上是这两条曲线的赛跑：模型的能力在涨，但我们想让它干的活也越来越长、越来越复杂，对可靠性的要求水涨船高。今天卡住所有人的，不是能力那条线太低，而是可靠性那条线，追不上我们野心膨胀的速度。</p>
+<h2>六、最后一道题，不在代码里</h2>
+<p>就算有一天，架构真的把可靠性那条曲线也拉了上来，故事就圆满了吗？</p>
+<p>诺奖经济学家 Acemoglu 泼了盆冷水。他造过一个词，叫"凑合的自动化"——技术上能把人替下来，却没真正创造多少新价值，省下的只是一点人力成本。他据此预测，未来十年 AI 对美国 GDP 的拉动大概只有百分之一，远低于那些动辄"工业革命级"的乐观叙事。他尤其怀疑：Agent 真能接管人类工作里那些琐碎、含混、要同时拎着好几条线的部分吗？</p>
+<p>这话点破了一件更要紧的事。回头看 MIT 那份"95% 试点没回报"的报告，研究者反复强调：大多数失败的主因，并不是技术不行，而是组织接不住——业务流程没改、人没培训、数据没打通。可靠性的鸿沟，从来不只在代码里，也在代码之外的那个组织里。</p>
+<p>于是我们绕回到开头那道乘法题。一个每步 95 分的 AI，最终是 95 分的产品还是 36 分的废品，并不取决于那个 95 有多漂亮。它取决于三件事：你把它放进了一条多长的链条；你愿不愿意为"稳"额外付钱，去搭那套兜底的冗余；以及，链条的另一端，有没有一个真正准备好接住它的人和组织。</p>
+<p>模型会越来越聪明，这一点毫无悬念。但聪明从来都不是终点。<strong>能把聪明稳稳地、一次又一次地交付出去，才是。</strong> 这道题，AI 自己解不了，得我们一起算。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>一个每步 95 分的 AI，最终是 95 分的产品还是 36 分的废品，并不取决于那个 95 有多漂亮，而取决于三件事：你把它放进了多长的链条，你愿不愿意为'稳'额外付钱去搭那套兜底的冗余，以及链条的另一端，有没有一个真正准备好接住它的人和组织。</p>
+    <p>模型会越来越聪明，这毫无悬念。但聪明从来不是终点——能把聪明稳稳地、一次又一次地交付出去，才是。这道题，AI 自己解不了，得我们一起算。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://metr.org/blog/2025-03-19-measuring-ai-ability-to-complete-long-tasks/" target="_blank" rel="noopener">METR: Measuring AI Ability to Complete Long Tasks</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/pdf/2505.05115" target="_blank" rel="noopener">Is there a half-life for the success rates of AI agents? (arXiv 2505.05115)</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/pdf/2406.12045" target="_blank" rel="noopener">τ-bench: pass^k 一致性指标 (arXiv 2406.12045)</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/html/2511.09030v1" target="_blank" rel="noopener">Solving a Million-Step LLM Task with Zero Errors (arXiv 2511.09030)</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/html/2509.16941v1" target="_blank" rel="noopener">SWE-Bench Pro: benchmark vs 真实 (arXiv 2509.16941)</a></div>
+      <div class="footer-source-item"><a href="https://x.com/AndrewYNg/status/1773393357022298617" target="_blank" rel="noopener">Andrew Ng: Four design patterns for agentic workflows</a></div>
+      <div class="footer-source-item"><a href="https://dev.to/alanwest/i-gave-devin-10-real-tasks-it-completed-3-3063" target="_blank" rel="noopener">I Gave Devin 10 Real Tasks. It Completed 3</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com/2025/08/18/mit-report-95-percent-generative-ai-pilots-at-companies-failing-cfo/" target="_blank" rel="noopener">Fortune: MIT report 95% of GenAI pilots failing</a></div>
+      <div class="footer-source-item"><a href="https://venturebeat.com/technology/karpathys-march-of-nines-shows-why-90-ai-reliability-isnt-even-close-to" target="_blank" rel="noopener">VentureBeat: Karpathy's March of Nines</a></div>
+      <div class="footer-source-item"><a href="https://sloanreview.mit.edu/audio/ai-is-not-improving-productivity-nobel-laureate-daron-acemoglu/" target="_blank" rel="noopener">MIT Sloan: AI Is Not Improving Productivity (Acemoglu)</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
