@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anthropic 自曝 80% 代码 AI 写完那天，建议全世界一起踩刹车——这脚刹车，它自己不踩</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 产业深度</span>
+  <h1>Anthropic 自曝 80% 代码 AI 写完那天，建议全世界一起踩刹车——这脚刹车，它自己不踩</h1>
+  <div class="hero-meta">
+    <span>2026-06-10</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">2026 年 6 月，Anthropic 在自家研究所页面挂出一篇长文，自曝截至 5 月，合并进它代码库的代码里超过 80% 是 Claude 写的。然后在同一篇文章里，它郑重建议全世界的前沿 AI 实验室一起按下暂停键。一家把「AI 造 AI」写进自己 KPI 的公司，转头劝整个行业刹车。把那份「暂停」提案的小字读完你会发现：它设计的刹车，唯独停不了它自己。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、AI 在造 AI，这不是科幻，是它写在 KPI 里的一行字</h2>
+<p>先把 Anthropic 自己交代的数字摆上桌。</p>
+<div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>An AI robot arm assembling a smaller copy of itself on a factory line, recursive self-replication, minimalist flat design, tech illustration, deep blue and white color palette, sense of an automated loop, no text, no labels, clean white background</pre></details>
+</div>
+
+<p>截至 2026 年 5 月，合并进它自家代码库的代码里，超过 80% 由 Claude 编写。而在 2025 年 2 月、它发布 Claude Code 之前，这个比例还只是个位数。一年零三个月，从个位数到 80%。</p>
+<p>换句话说，这家全球估值最高的 AI 公司，它的产品，现在主要由它的另一个产品制造。</p>
+<p>数字不止这一个。Anthropic 说，2026 年第二季度，一个典型工程师每天合并的代码量，是 2024 年的 8 倍——人不再亲手敲，转而去指挥和审查 Claude 写出来的东西。在最难的、开放式的工程问题上，Claude 的成功率 2026 年 5 月冲到 76%，半年涨了 50 个百分点。</p>
+<p>还有两个更扎心的。第一个，它让 Claude 去优化一段训练代码、在保证结果正确的前提下尽量提速：2025 年 5 月，Opus 4 平均能提速约 3 倍；一年后，一个还没发布、内部代号 Mythos 的模型，提到了约 52 倍。作为参照，一个熟练的人类研究员花上 4 到 8 小时，大概能做到 4 倍。第二个，它挑了 129 个真实研究场景里"人类当时走了弯路"的节点，问模型下一步该往哪走，再让另一个 Claude 当裁判：2025 年 11 月的 Opus 4.5 有 51% 的时候选得比人好，到 2026 年 4 月的 Mythos，这个数字是 64%。</p>
+<p>把这些拼起来，Anthropic 想说的事情很清楚：AI 已经在显著加速 AI 自己的研发。再往前推，推到足够远、给足够算力，就会出现一个能完全自主设计、训练自己下一代的系统。这件事有个专门的名字，叫递归式自我改进。</p>
+<p>然后是那句被所有人引用的话，原文一字不差：</p>
+<blockquote>
+<p>"我们还没到那一步，递归式自我改进也并非不可避免。但它的到来，可能比多数机构准备好的时间要早。"</p>
+</blockquote>
+<p>一家公司，用自己最敏感的内部数据，给"人类可能很快就管不住 AI"这件事做了背书。听起来，这是一次罕见的、把刀递到自己脖子上的坦白。</p>
+<div class="img-placeholder diagram">
+  <div class="img-placeholder-icon">📊</div>
+  <div class="img-placeholder-label">信息图占位</div>
+  <details><summary>规格卡</summary><pre>【图类型】：条形图
+【副标题】：Claude 写进 Anthropic 代码库的比例
+【单位】：%
+【核心判断】：15 个月，从个位数到 80%——它的产品，主要由它的另一个产品制造
+【核心内容】：
+  - 2025年2月 Claude Code 发布前：3
+  - 2026年5月：80</pre></details>
+</div>
+
+<h2>二、这份坦白，发生在它递交招股书之后第三天</h2>
+<p>坦白这东西，得看在什么时间点说。</p>
+<p>把这一周的日历摊开看。6 月 1 日，Anthropic 把 IPO 招股书（S-1）悄悄递进了 SEC，走的是机密递交，估值标到约 9650 亿美元，离万亿就差一个零头，比同期的 OpenAI 还高。6 月 2 日，白宫签了一道关于先进 AI 的行政令，建立的是一套<strong>自愿</strong>的前沿模型审查框架，并且明确写了：不据此设立强制许可制度。6 月 4 日，那篇自曝 80%、呼吁全球暂停的文章上线。</p>
+<p>三天。一头是冲刺万亿美元上市，一头是劝全行业刹车。中间隔着的，不是什么新发现，是同一批数字换了个说话的对象。</p>
+<p>对着 SEC 和投资人，80% 代码由 AI 写、8 倍效率、52 倍提速，是增长故事，是"我们的边际成本正在塌、渗透率正在飙"的招股材料。对着公众和监管，同一组数字，变成了"快失控了，大家快停下"的警示弹。</p>
+<p>同一份数据，朝资本市场说是油门，朝舆论场说是刹车。这不矛盾，这是精算。</p>
+<p>我不打算替它猜动机——猜动机这事，已经被一堆"卖矛又卖盾"的标题写烂了，没什么增量。我只想干一件更没劲、但更扎实的事：把它那份"暂停"提案的条款，一条一条读出来。因为一份倡议是真心要约束自己，还是要约束别人，不看它的措辞多诚恳，看它的触发条件怎么写。</p>
+<div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>A runner sprinting toward a stock-market IPO bell at full speed while holding up a red "pause" road sign in the other hand, split-direction tension, minimalist flat editorial illustration, deep blue and red accent on white, no text, no labels, clean white background</pre></details>
+</div>
+
+<h2>三、读小字：这份"暂停"，根本没打算停自己</h2>
+<p>提案的核心条款，拆开是这么几句。</p>
+<p>Anthropic 说，一次有意义的减速或暂停，需要多个实力雄厚、处在或接近前沿的实验室，分布在多个国家，在相同条件下同意停下；而且每一家都要能验证其他家是真的停了。它还说，一个可信的暂停，必须事先写清楚：什么条件触发它、什么条件解除它、由谁来裁决条件是否满足。最后，它给自己的承诺是这样的——只有当别的前沿实验室也以可验证的方式停下时，它才会跟着停。</p>
+<p>读完了。现在我们来数一数，要让 Anthropic 真的停下来，需要同时满足几个条件。</p>
+<p>多个顶级实验室——OpenAI、谷歌、xAI、DeepSeek，得凑齐。它们分布在多个国家——也就是说，得让中美的实验室在同一张协议上签字。所有人在相同条件下同意停。还要有一套谁也骗不了谁的核查机制，能确认对方没偷偷接着训练。最后还得有人说得清触发线划在哪、谁来当裁判。</p>
+<p>这几个条件，但凡有一个没凑齐，这份提案对 Anthropic 自己的约束力，就是零。</p>
+<p>而这几个条件，恰好没有一个在短期内凑得齐。OpenAI 没附议，谷歌没附议，没有任何一家前沿实验室站出来说"我也停"。至于那套核查机制——审计、来源追踪、算力证明——按 Anthropic 自己的说法，还停留在"研究所正在研究"的阶段。它甚至诚实地承认：一次训练比一座导弹发射井好藏得多，投入又是通用的，谁都有偷偷违约的动机。</p>
+<p><strong>于是这份提案有了一个很优雅的结构：它把"停"的前提，设成了一件近期绝不可能发生的事。这样一来，它既喊了暂停，姿态拉满；又一步都不用真停，IPO 照递，模型照训。</strong></p>
+<p>这不叫呼吁暂停。这叫给暂停设一个永远不会被触发的扳机，然后把宣传它的功劳收下。</p>
+<div class="img-placeholder diagram">
+  <div class="img-placeholder-icon">📊</div>
+  <div class="img-placeholder-label">信息图占位</div>
+  <details><summary>规格卡</summary><pre>【图类型】：流程图
+【副标题】：要 Anthropic 真的停下，需同时满足的条件
+【核心判断】：四道闸门全开才触发暂停——而当下没有一道是开的
+【核心内容】：
+  - 多个顶级实验室同意停（OpenAI/谷歌/xAI 均未附议）
+  - 跨多国签字（需中美实验室同桌）
+  - 可验证对方真停了（核查机制仍在研究阶段）
+  - 写清触发/解除/谁裁决（尚无）</pre></details>
+</div>
+
+<h2>四、那个 80%，它自己都说"几乎肯定夸大了"</h2>
+<p>退一步，就算它真心想停，这场警报赖以成立的证据，结实吗？</p>
+<p>最有力的拆台话，又是 Anthropic 自己说的。在同一篇文章里，它给那些惊人数字打了个补丁：代码行数是个不完美的度量，它只看量、不看质；那个 8 倍的效率提升，"几乎肯定夸大了"真实的生产力增长。</p>
+<p>这就有点尴尬了。一个连作者自己都标注"几乎肯定夸大了"的数字，被摆在文章最显眼的位置，去给"人类可能失控"这个一万分严肃的判断背书。</p>
+<p>更要命的是"由 Claude 编写"这六个字本身的模糊。它到底指什么？是 AI 自己想清楚、自主写下一大段逻辑，还是工程师敲下回车让它自动补全、再由人逐行审过才合并进去？这两件事差着十万八千里，可在"80%"这个数字里，它们被算成了同一件。而 Anthropic 对这块工作的描述，恰恰偏向后者——人在指挥、在审查。那这 80% 衡量的，更像是"人用 AI 把活干得更快了"，而不是"AI 开始自己干活了"。</p>
+<p>把它放到同行里看，这事就更清楚了。AI 写大量代码，根本不是 Anthropic 独有的奇观。谷歌 CEO 皮查伊 2024 年 10 月在财报电话会上就说过，谷歌超过四分之一的新代码由 AI 生成、再由工程师审核接受。微软 CEO 纳德拉 2025 年 4 月当着扎克伯格的面说，微软仓库里大概 20% 到 30% 的代码是软件写的。</p>
+<p>数字有高有低，口径还不完全一样。但有一件事完全一样：皮查伊和纳德拉报完这个数，都是接着讲下一段增长，没有一个人因此建议全世界停下来。</p>
+<p><strong>同样是 AI 在写代码，到了别人嘴里是生产力，到了 Anthropic 嘴里成了核武器。差的不是技术，是谁需要这个叙事。</strong></p>
+<div class="img-placeholder diagram">
+  <div class="img-placeholder-icon">📊</div>
+  <div class="img-placeholder-label">信息图占位</div>
+  <details><summary>规格卡</summary><pre>【图类型】：条形图
+【副标题】：AI 写代码的占比，三家都在报
+【单位】：%
+【核心判断】：同样的事实，只有正在 IPO 的那家把它讲成了"该按暂停键"
+【核心内容】：
+  - 谷歌（皮查伊，2024年10月财报会）：25
+  - 微软（纳德拉，2025年4月）：30
+  - Anthropic（2026年5月）：80</pre></details>
+</div>
+
+<h2>五、真正在争的，从来不是"停不停"</h2>
+<p>如果这份提案近期既停不了别人、也没打算停自己，那它图什么？</p>
+<p>图的是定义权。</p>
+<p>看清楚 Anthropic 在提案里给自己揽下的那些活：研究那套核查机制——审计、来源追踪、算力证明；界定什么条件算"触发"、什么条件算"解除"、由谁来当裁判。这些听起来像义务，其实是权力。谁写下了"什么时候该停"的标准，谁就握住了那把尺子。等到哪天监管真要落地一套前沿 AI 的暂停规则，桌上现成的草稿、现成的验证方案，是这家公司提前写好的。</p>
+<p>这就是为什么时间点关键。一家正在 IPO、自曝 80% 代码由 AI 写的公司，同时给全世界起草"该在哪条线上踩刹车"的标准——它不是在交出方向盘，它是在抢着当那个画线的人。</p>
+<p>而现实里，这条线一时半会儿画不到它头上。白宫 6 月 2 日那道行政令，方向恰恰相反：自愿、轻监管、明文拒绝强制许可。在这样的政策环境里，一个"全球协调暂停"的方案，近期没有任何落地的可能。它更像一张提前占好的座位，而不是一份马上生效的承诺。</p>
+<p>所以别被"暂停"两个字晃了眼。<strong>真正的问题从来不是"要不要停"，而是"由谁来定义什么时候该停"——而这个问题的答案，Anthropic 想抢在所有人前面写下来。</strong></p>
+<p>至于那脚刹车，它确实踩了。</p>
+<p>踩给你看的。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>Anthropic 那篇文章里的数字是真的：80% 的代码由 Claude 写、人均效率 8 倍、实验提速 52 倍，警告也写得诚恳。但把那份「暂停」提案的条款一条条读完会发现，它要求多国、多家顶级实验室在可验证的前提下一起停——而这几个条件近期一个都凑不齐，于是它一步都不用真停，IPO 照递，模型照训。</p>
+    <p>同样是 AI 写大量代码，谷歌、微软都报过更低的数字，却没有一个人因此喊暂停。差别不在技术，在谁正在 IPO、谁需要这套叙事。真正被争夺的从来不是「要不要停」，而是「由谁来定义什么时候该停」。那脚刹车 Anthropic 确实踩了——踩给别人看的。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/institute/recursive-self-improvement" target="_blank" rel="noopener">When AI builds itself（Anthropic Institute，2026-06-04）</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/news/claude-3-7-sonnet" target="_blank" rel="noopener">Claude 3.7 Sonnet 与 Claude Code 发布公告（Anthropic，2025-02-24）</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/responsible-scaling-policy/rsp-v3-0" target="_blank" rel="noopener">Responsible Scaling Policy v3.0（Anthropic，含自主 AI 研发阈值）</a></div>
+      <div class="footer-source-item"><a href="https://darioamodei.com/essay/machines-of-loving-grace" target="_blank" rel="noopener">Machines of Loving Grace（Dario Amodei，2024-10）</a></div>
+      <div class="footer-source-item"><a href="https://www.whitehouse.gov/presidential-actions/2026/06/promoting-advanced-artificial-intelligence-innovation-and-security/" target="_blank" rel="noopener">行政令：Promoting Advanced Artificial Intelligence Innovation and Security（白宫，2026-06-02）</a></div>
+      <div class="footer-source-item"><a href="https://www.sec.gov/Archives/edgar/data/0001652044/000165204424000115/googexhibit991q32024.htm" target="_blank" rel="noopener">Alphabet 2024 Q3 财报 8-K（皮查伊"超四分之一新代码由 AI 生成"语境）</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2025/04/29/satya-nadella-says-as-much-as-30percent-of-microsoft-code-is-written-by-ai.html" target="_blank" rel="noopener">Satya Nadella：微软 20%–30% 代码由 AI 写（CNBC 转录 LlamaCon 现场发言，2025-04-29）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
