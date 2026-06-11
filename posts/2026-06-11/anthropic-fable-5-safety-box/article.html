@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anthropic 把吓到国会的 AI 装进消费者订阅里，叫它「寓言」</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 深度观察</span>
+  <h1>Anthropic 把吓到国会的 AI 装进消费者订阅里，叫它「寓言」</h1>
+  <div class="hero-meta">
+    <span>2026-06-11</span>
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">6 月 9 日，Anthropic 发布了 Claude Fable 5。三个月前，同一家公司的同一项技术，让美国国会开了听证会，让白宫签了行政令，让全球政府发了一波警告。现在，它每百万输入 token 收你 10 美元。Dario Amodei 在发布会结束后第二天，公开呼吁要给 AI 公司套上更严的法规。这两件事，是同一家公司在同一周干的。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、让政府「寒毛直竖」的，是哪项技术</h2>
+<p>Fable 5 是 Anthropic Mythos 系列模型的「消费者版」。Mythos，神话。这个命名不是随便起的。</p>
+<p>今年早些时候，Mythos Preview 被证明能发现<strong>数千个关键漏洞</strong>——覆盖主流操作系统、网络浏览器、关键基础设施的未知安全漏洞，能跑出完整的攻击链。NBC 新闻的报道用了一个短语：「built on the same tech that spooked the government」——建立在吓到政府的同一项技术之上。</p>
+<p>「吓到」不是修辞。这项能力成为了<strong>国会听证会、国家安全文件和白宫行政令</strong>的直接主题。特朗普政府随后签署行政令：前沿 AI 模型发布前 30 天，须向联邦政府提供访问权限。也就是说，在 Fable 5 正式上线之前，政府拿到它足足看了一个月。</p>
+<p>你现在也可以用它了。</p>
+
+<figure style="margin:32px 0;text-align:center"><img src="images/concept_01.jpg" alt="sleek consumer product box labeled" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <h2>二、「安全护栏」的实际工作方式</h2>
+<p>Anthropic 当然知道把这件事直接推给消费者会引发什么问题，所以 Fable 5 带了一套安全架构。值得认真看看它是怎么运作的，因为它比你想象的更微妙——也更让人玩味。</p>
+<p>触发「危险」分类器时，Fable 5 <strong>不会拒绝你的请求</strong>。它会把你的问题转给 Claude Opus 4.8——能力更弱、但被认为更安全的上一代模型——然后把答案返回给你。整个过程走同一个 API 调用，同一个 model ID，<strong>你不会收到任何通知说刚才用的不是 Fable 5</strong>。</p>
+<p>三个领域会触发这个切换：网络安全（Fable 5 最强的能力所在）、生物和化学、以及模型蒸馏防护（防止有人通过大量对话来复制模型）。</p>
+<p>平均触发率不到 5%。也就是说，95% 以上的时间里，你用的都是完整的 Fable 5。</p>
+<p>这个机制有一个隐含的前提，值得挑出来看：<strong>危险问题并没有被拒绝，只是被降级处理了</strong>。Opus 4.8 不是一块砖，它仍然是当时最强模型之一。「危险的事情用更笨的模型来做」——这是安全，还是安全剧场？Anthropic 没有公布哪些查询触发了切换，也没有说 Opus 4.8 在这些场景下的拒绝率有多高。</p>
+
+<div style="background:#f8f9ff;border:1px solid #e2e8f0;border-radius:12px;padding:20px 24px;margin:32px 0;font-size:13px;color:#4a4a6a;white-space:pre-wrap">Clean technical diagram showing query routing flow: User query → Classifier (triangle shape) → two paths: 95% goes to "Fable 5 (Full)" labeled green, 5% gets silently routed to "Opus 4.8 (Fallback)" labeled orange → both paths merge → "User receives answer (no notification)" at the bottom. Three trigger zones labeled: Cybersecurity, Bio/Chem, Model distillation. Minimal flat design, white background, professional infographic style.</div>
+
+    <h2>三、SWE-Bench Pro 80.3%：这个数字意味着什么</h2>
+<p>撇开政策争论，Fable 5 在能力上确实是另一个档次。</p>
+<p>SWE-Bench Pro（真实开源代码库的 bug 修复任务，被认为比学术基准更接近实际工程难度）：Fable 5 跑出了 <strong>80.3%</strong>，SWE-Bench Verified 是 <strong>95.0%</strong>。同一测试下，GPT-5.5 是 58.6%，Gemini 3.1 Pro 是 54.2%。</p>
+<p>22 个百分点的领先，不是「略微领先」，是一代人的差距。</p>
+<p>一个早期客户做了个测试：一项前沿物理研究任务。Fable 5 用 36 小时跑完，消耗了三分之一的推理 token；GPT-5.5 用了 4 天。绝对价格上 Fable 5 更贵（$10/百万 input，GPT-5.5 是 $5），但算效率账，对重度任务用户来说，Fable 5 反而可能更省。</p>
+<p>代码能力强不是一句中性的技术描述。SWE-Bench 测的是真实 GitHub 仓库的 bug——就是互联网基础设施、金融系统、医疗软件每天在跑的那种代码。一个能修掉 80% 现实 bug 的模型，和一个能找到数千个未知漏洞的模型，在某种程度上，描述的是同一种能力的两面。</p>
+
+    <h2>四、发布后第二天，CEO 呼吁立法</h2>
+<p>Fable 5 发布次日，Dario Amodei 公开发表声明，要求给 AI 公司施加更严格的法律约束，包括要求前沿模型发布前经过独立安全评估，以及给监管机构授权<strong>阻止不安全 AI 发布</strong>的权力。</p>
+<p>在同一周，他宣布了目前全球最强的可用模型，然后呼吁立法来管理像这样的模型。</p>
+<p>这可以被理解为表里不一的公关。也可以被理解为一种真实的张力——Anthropic 相信自己的模型是「相对安全的那个选项」，所以发布它；同时相信整个行业需要更严格的规则，所以要求立法。</p>
+<p>两种解读都成立。让它们同时成立的前提，是你接受「我这个是相对安全的，所以要放出来」这个逻辑。</p>
+<p>Anthropic 的整个商业模式，在某种程度上依赖于公众接受这个前提。</p>
+
+<figure style="margin:32px 0;text-align:center"><img src="images/concept_02.jpg" alt="figure suit simultaneously pressing glowing" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+    <h2>五、「寓言」是个有意思的名字</h2>
+<p>Fable——寓言。通常是带着教训的故事，讲给需要被教育的人听。</p>
+<p>Anthropic 的模型命名系列之前叫 Claude，再之前叫 Opus、Sonnet、Haiku，后来是 3.5、3.7，然后跳到了 4.x，现在是 Fable 和 Mythos。这是一条从工具名（诗体）到神话名（神明）再到叙事名（故事）的路径。</p>
+<p>叙事，是 Anthropic 一直以来最擅长的东西。「负责任的 AI」、「安全优先」、「慢下来想清楚」——这套叙事让他们拿到了数百亿美元融资，让他们有了区别于 OpenAI 的市场定位，让他们坐上了国会的证人席。</p>
+<p>Fable 5 是一篇寓言。寓言的教训是什么，取决于你怎么读这件事。</p>
+<p>一种读法：Anthropic 花了好几年建立「安全」信誉，然后用这笔信誉背书，把业界最强的模型推向市场。这是品牌资产的变现，没有什么特别可指责的。</p>
+<p>另一种读法：能力 vs. 安全，这个行业叙事里的终极张力，在 Fable 5 身上找到了一个新的平衡点——不是「更安全所以更弱」，而是「更强，但我们告诉你这是安全的」。无论你信不信，这套话术第一次跑通了商业闭环。</p>
+<p>你现在也可以用它了。6 月 22 日之前免费。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>把吓到政府的技术装进消费者订阅、发布次日喊立法管理——Fable 5 把 Anthropic 长期以来的矛盾推到了台前。安全护栏的实际设计（5% 触发率、静默降级到 Opus 4.8、不通知用户）更像是一套精心设计的免责叙事，而不是真正的风险拦截。</p>
+    <p>「寓言」这个名字本身就是答案：它是一个带着教训的故事，而 Anthropic 是那个讲故事的人。教训是什么，取决于你信不信讲故事的人。</p>
+  </div>
+
+  <!-- 来源 footer -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.nbcnews.com/tech/security/fable-5-anthropic-release-public-mythos-claude-model-rcna349104" target="_blank" rel="noopener">Anthropic releases Fable 5 model, built on the same tech that spooked the government（NBC News）</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/news/claude-fable-5-mythos-5" target="_blank" rel="noopener">Claude Fable 5 and Mythos 5（Anthropic 官方）</a></div>
+      <div class="footer-source-item"><a href="https://claude5.ai/en/news/claude-fable-5-safety-architecture-classifiers-opus-fallback" target="_blank" rel="noopener">Inside Claude Fable 5's Safety Architecture: Classifiers, Opus 4.8 Fallback, and 30-Day Retention</a></div>
+      <div class="footer-source-item"><a href="https://lushbinary.com/blog/claude-fable-5-vs-gpt-5-5-vs-gemini-3-1-pro-comparison/" target="_blank" rel="noopener">Claude Fable 5 vs GPT-5.5 vs Gemini 3.1 Pro（Lushbinary）</a></div>
+      <div class="footer-source-item"><a href="https://www.finout.io/blog/claude-fable-5-mythos-5-pricing-benchmarks" target="_blank" rel="noopener">Claude Fable 5 and Mythos 5: Pricing, API Costs, and Benchmark Comparison</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
