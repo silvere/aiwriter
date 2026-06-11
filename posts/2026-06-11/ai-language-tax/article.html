@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>一个汉字，在 AI 眼里是三块积木</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 深度观察</span>
+  <h1>一个汉字，在 AI 眼里是三块积木</h1>
+  <div class="hero-meta">
+    <span>2026-06-11</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">很多人有个直觉：中文比英文复杂，所以 AI 处理起来更费钱，这是没办法的事。这个直觉只对了一半。中文确实更费，但贵的不是汉字本身——是英语太多这件事，被悄悄写进了大模型最底层的那道工序里。而你既看不见它，也从没为它投过票。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、你以为按字付费，其实按"积木"付费</h2>
+<p>先说一件可能让你意外的事：大模型并不是一个字一个字地读你的话。</p>
+<p>你发给它的每一句中文，会先被切成一块块叫 token 的"积木"，模型按积木的数量来收费、来计算、来记忆。这道切割的工序叫 tokenizer，分词器。它才是你和模型之间真正的第一道关口——在模型"思考"之前，你的话已经先被它切过一遍了。</p>
+<p>问题就出在怎么切。</p>
+<p>今天绝大多数模型用的切法叫 BPE（字节对编码）。它的逻辑很朴素：在训练语料里，哪些字符片段经常一起出现，就把它们合并成一块更大的积木。英文里 "ing" "tion" "the" 总是高频连在一起，于是各自成了一块积木，一个常见英文单词往往只要一两块。中文要复杂些：一个汉字在计算机底层要用 3 个字节存储。最常用的那批字，因为出现得够多，大多也能各自攒成一块完整积木；可一旦碰上不那么高频的字词，或者用的是英语为主、压根没怎么给中文攒过积木的旧词表，很多汉字就合并不成整块，只能拆成两三块字节碎片硬拼。越是不常用、越是没被照顾到的中文，在 AI 眼里就被切得越碎。标题里"一个汉字三块积木"，说的正是这种没被好好照顾时的情形。</p>
+<p>结果就是，同样一句话的意思，中文要用掉更多积木。积木更多，意味着三件事同时发生：按 token 计费时账单更高，模型一次能装下的内容更短，每个字吐出来的速度也更慢。</p>
+<p>这不是哪家公司故意刁难中文用户。它是一个更冷的事实：分词器的"积木库"是在一堆英文里攒出来的，于是用英文搭东西最省，换成别的语言就开始打折扣。<strong>贵的不是中文，是"英语攒得更多"这件事被焊进了 AI 的底层。</strong></p>
+<figure style="margin:32px 0;text-align:center"><img src="images/concept_01.jpg" alt="machine that slices into small" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+<h2>二、还没开始计算，账就已经分了三六九等</h2>
+<p>这个差距到底有多大？2023 年有一项研究把它量了出来。</p>
+<p>牛津大学的 Aleksandar Petrov 等人在那年的 NeurIPS 会议上发表了一篇论文，标题直接就叫《语言模型的分词器在语言之间制造了不公平》。他们拿一套覆盖两百种语言的平行语料——同样的意思、997 个句子、翻译成各种语言——挨个去测，看同一句话在不同语言里被切成多少块积木。</p>
+<p>结果是：最极端的两种语言之间，token 数量能差到约 15 倍。也就是说，表达同一个意思，有的语言只需要切十几块，有的语言要切两百多块。即便是那些号称"支持多语言"的分词器，也没能抹平这道沟。</p>
+<p>中文落在哪里？Petrov 的论文没有单独标出中文对英文的确切倍数，这一点得说清楚，免得以讹传讹。但综合多个独立测试，在那几年通用的旧词表下，中文大致是英文的两倍上下——你打一段中文，AI 眼里的积木数，差不多是同等英文的两倍。</p>
+<p>把这个倍数翻译成你能感觉到的东西，是三笔账。第一笔是钱：按 token 计费的接口，中文每表达同样多的内容，要多付一截。第二笔是记性：模型一次能装下的积木总数是固定的（这就是所谓的"上下文窗口"），中文更占地方，于是同一个窗口里，中文能塞下的实际内容更少——极端语言甚至只剩英文的十分之一。第三笔是速度：积木越多，吐字越慢。</p>
+<p>这件事真正刺眼的地方，不在于贵了多少，而在于它发生的位置——它发生在模型开始"思考"之前。<strong>还没进入计算，光是切词这一步，语言就已经被分成了三六九等。</strong> 你以为自己在和一个对所有语言一视同仁的智能对话，可在它真正动脑子之前，那道切割工序已经先按语言给你定了价。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/diagram_01.svg" alt="数据图" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+<h2>三、OpenAI 想修这道不公，结果修出一嘴脏话</h2>
+<p>好消息是，这件事不是没人管。坏消息是，管起来的样子相当狼狈。</p>
+<p>2024 年，OpenAI 发布 GPT-4o 时悄悄换掉了分词器的词表，从原来约 10 万块积木的旧库，扩到约 20 万块的新库，其中大约四分之一留给了非英语。效果立竿见影：按官方说法，同样的内容，中文要切的积木数压缩到了原来的约 1/1.4（少了约三成），印地语压到约 1/2.9，古吉拉特语这类印度语系甚至压到约 1/4.4。这等于 OpenAI 自己承认：旧词表对非英语确实不经济，该补。</p>
+<p>补是补了，但补出了新问题。</p>
+<p>为了凑出那些中文积木，OpenAI 往词表里塞了大量从网上抓来、却没好好清洗的语料。普林斯顿的博士生 Tianle Cai 把 GPT-4o 词表里最长的 100 个中文 token 翻出来一看，发现其中 97 个不是正常词汇，而是涉黄、赌博、垃圾广告里的长词组——这是《麻省理工科技评论》2024 年 5 月报道的细节。也就是说，模型用来理解中文的那批最"高级"的积木，相当一部分是从灰色产业的网络垃圾里攒出来的。</p>
+<p>这不只是难看。研究者随后证明，这些"攒出来却没怎么被训练过"的积木是脆弱点，可以被用来诱导模型胡说八道，甚至绕过安全限制。一道本来想弥补语言不公的工序，反手又开了一个安全口子。</p>
+<p>值得琢磨的是整件事里普通用户的位置——你完全不在场。词表怎么定、积木从哪来、清洗到什么程度，全是工程团队在黑箱里完成的决定。你每天用中文和模型对话，却根本不知道自己依赖的那套"积木库"，是用什么料攒出来的。这道决定你说中文贵不贵、稳不稳的底层工序，从头到尾没有征求过你的意见。</p>
+<h2>四、中文并非注定更贵，是谁的语料说了算</h2>
+<p>讲到这儿，你可能已经得出一个悲观结论：汉字天生吃亏，认命吧。但接下来这部分，恰恰要把前面的故事翻过来。</p>
+<p>中文吃亏，从来不是因为汉字有什么先天缺陷，而是因为攒积木的那堆语料里英文太多。那么反过来，如果有人用一堆以中文为主的语料去攒积木，会怎么样？</p>
+<p>国产模型给出了答案。像通义千问、DeepSeek 这些主要服务中文用户的模型，做了一件很直接的事：把大量常用汉字、常见词组，整个儿地塞进词表，让它们各自成为一块完整的积木，而不是被拆成字节碎片。这么一调，中文的切割效率立刻就上来了。有测试称，拿同一段平行内容去比，DeepSeek 上中文用掉的积木甚至比英文还少约三分之一——这个数字来源单一、口径也敏感，姑且当个方向看，别当定论，但方向是清楚的：中文完全可以不吃亏，只要攒积木的人，本来就是冲着中文去的。</p>
+<p>这恰恰是整件事最该被记住的一层。<strong>所谓"语言税"，根子不是语言学，是话语权——谁的语料更多，谁定义了什么叫"高频"，谁就能把自己的语言切得更便宜。</strong> 它不是刻在汉字里的物理定律，是写在训练数据里的权力分配。能被英语攒走的便宜，也能被中文攒回来。</p>
+<p>当然，话不能说满，得补一刀冷水。2026 年有研究者较真地测了一轮，发现只数积木数是片面的：中文优化模型的单块积木单价往往更低，而英语模型的积木数虽多、单价却便宜，两边一抵，所谓"中文更省钱"在不少模型上其实并不成立；更要命的是，同一个模型用中文解题，正确率有时比用英文低好几个百分点——你省下的积木，可能拿答错的概率补了回去。这盆冷水提醒我们：语言税真实存在，但它早已不是"中文一定更贵"这么一句话能概括的了。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/diagram_02.svg" alt="数据图" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+<h2>五、你被切了多少积木，自己看不见</h2>
+<p>倍数在缩小，国产模型也在反超，那这件事是不是快不算事了？我的看法相反。倍数本身只是表象，真正难解的，是它一直藏在你看不见的地方。</p>
+<p>直到现在，你大概率仍然不知道：你刚刚发出去的那句中文，被切成了几块积木；这套切法是按谁的语料定的；你为这几块多付了多少钱、少装了多少内容。这些信息，没有一个写在你和模型对话的界面上。你能看到的只是一个输入框和一段回答，看不到中间那道按语言定价的工序。这种"它在悄悄给你算账，而你浑然不觉"的状态，比贵几倍本身更值得在意。</p>
+<p>把镜头拉远一点，这道看不见的工序就成了一条全球的线。在那些语言资源本就稀缺的地方——缅甸、柬埔寨、非洲的许多小语种——这道折扣打得最狠：同样大小的窗口，装得下的母语内容只剩一个零头。越是不发达、母语越小众的地区，用同一个 AI 就越贵、越笨、越早被截断。当智能开始按积木计费，语言就成了一条隐形的贫富线，而画这条线的，是几家公司词表里的语料配比。</p>
+<p>所以，作为一个用中文的人，你至少可以做两件具体的事。</p>
+<p>一是把这道工序"看见"。找个分词器的可视化小工具（搜 tiktokenizer 这类就有），把你常发的中文段落粘进去，亲眼看看它被切成几块、同样意思的英文又是几块。这一眼，会让"按 token 计费"从一句抽象的话，变成你能算清的账。二是把"中文效率"纳入你选模型的标准。同样的活儿，一个为中文攒过积木的模型，可能比一个英语为主的模型更便宜也更跟手——这本是你该享受的便宜，别白白让给默认选项。</p>
+<p>回到开头那个画面：一个汉字，在 AI 眼里被切成三块积木。这件事的演变，藏着一个更大的问题——当变聪明这件事开始论"积木"收费，你用什么语言，就在很大程度上决定了你能多便宜地变聪明。<strong>而这条按语言划下的价格线，从头到尾，没有人请你投过票。</strong></p>
+<hr />
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>语言税真实存在，但它早已不是中文一定更贵这么简单。它正被国产模型和新词表迅速改写，只是改的过程相当狼狈——而无论怎么改，那道决定你说中文贵不贵的工序，始终待在你看不见的黑箱里。</p>
+    <p>下次用中文和 AI 对话，不妨记住：你说的每句话，都先被一台你没见过的机器切成了积木，再按块计价。贵的从来不是汉字，是谁的语料说了算。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2305.15425" target="_blank" rel="noopener">Language Model Tokenizers Introduce Unfairness Between Languages（Petrov et al., NeurIPS 2023）</a></div>
+      <div class="footer-source-item"><a href="https://aleksandarpetrov.github.io/tokenization-fairness/" target="_blank" rel="noopener">Tokenization Fairness 交互式可视化（Aleksandar Petrov）</a></div>
+      <div class="footer-source-item"><a href="https://openai.com/index/hello-gpt-4o/" target="_blank" rel="noopener">Hello GPT-4o：o200k_base 词表与多语言 token 压缩（OpenAI, 2024）</a></div>
+      <div class="footer-source-item"><a href="https://www.technologyreview.com/2024/05/17/1092649/gpt-4o-chinese-token-polluted/" target="_blank" rel="noopener">GPT-4o's Chinese token-training data is polluted by spam and porn（MIT Technology Review, 2024.05）</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2510.12389" target="_blank" rel="noopener">Tokenization Disparities as Infrastructure Bias（arXiv:2510.12389, 2025）</a></div>
+      <div class="footer-source-item"><a href="https://www.36kr.com/" target="_blank" rel="noopener">AI 大模型的"中文税"：中文比英文更费 Token（中文综述，含国产模型对比，数字需复核）</a></div>
+      <div class="footer-source-item"><a href="https://tiktokenizer.vercel.app/" target="_blank" rel="noopener">tiktokenizer：在线分词器可视化工具</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
