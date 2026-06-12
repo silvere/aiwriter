@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>你的 AI 有了一张卡，但卡背面没有名字</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 与商业</span>
+  <h1>你的 AI 有了一张卡，但卡背面没有名字</h1>
+  <div class="hero-meta">
+    <span>2026-06-12</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">2026 年 3 月的某一天，一台服务器上的 AI 程序，为一次数据查询付了两美分。没有人点确认，没有人收到验证短信，事后也没有人去对这笔账。在此之前的五千年里，每一笔交易的至少一端，都站着一个能被追问的人。那天是第一次，付钱的那一端，谁也不是。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、一个躺了三十年的代码，醒了</h2>
+<p>先从一个很少有人注意的细节讲起。</p>
+<p>你打开网页时，服务器会悄悄回你一串数字。404 是"页面没找到"，403 是"你没权限"，这些大家都见过。还有一个数字，绝大多数人一辈子都不会遇到——402，它的官方名字叫 "Payment Required"，付款。</p>
+<p>这个代码是 1990 年代写进 HTTP 标准的。当时起草协议的人预感到，互联网早晚要为内容收费，于是给未来留了一个位子，等一种还不存在的"数字现金"长出来。可那种现金始终没来。DigiCash、eCash、Hashcash，1990 年代那批做数字货币的实验，一个接一个死掉。浏览器从来不知道遇到 402 该干什么——因为收钱的另一半，根本没人造出来。</p>
+<p>于是 402 就那么空着，整整三十多年。打个不算夸张的比方：有人在 1997 年的牌桌上摆了一把椅子，标签写着"留给将来会自己付钱的那台机器"，然后这把椅子空了三十年。</p>
+<p>机器过去为什么坐不上这把椅子？三个原因。一是没有"在一次请求里顺手付钱"的标准做法；二是今天的支付体系——信用卡、银行——它的实名认证是刻意按人设计的，要身份证、要住址、要电话，本意就是把机器挡在门外；三是 AI 自己也没本事走完"看到价格、决定付、接着干活"这一整圈。</p>
+<p>2025 年下半年，三件事同时凑齐了。AI agent 能自主跑完多步任务了；MCP 这套协议成了 agent 和外部工具对话的通用接口；稳定币加上低手续费的链，让"一次付几分钱"在经济上第一次划得来。Coinbase 顺势把 402 叫醒，做了 x402——在一次网络请求的信封里，塞进一段签好名的付款凭证。机器看见 402，不再发懵，而是直接掏钱，然后继续干活。</p>
+<p>那把空了三十年的椅子，终于坐上了人。准确说，坐上去的不是人。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/concept_01.jpg" alt="empty chair poker table reserved" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+<h2>二、被吹爆的故事，和它悄悄删掉的那个按钮</h2>
+<p>椅子一坐上，叙事立刻就大了起来。</p>
+<p>各家机构开始给 2030 年的"agent 经济"估值。Juniper 说 1.5 万亿美元，麦肯锡说 3 到 5 万亿，Gartner 更激进，说到 2028 年光是企业之间，AI agent 就要经手 15 万亿美元的采购。这些数字大得让人晕。但同一张表上，eMarketer 给 2029 年的预测只有 1440 亿——和最高的那个差了三十倍。</p>
+<p>差三十倍意味着什么？意味着这些几乎全是预测，不是现实。一件事如果真在发生，大家估出来的数不会差三十倍；差三十倍，说明大家估的其实是各自的想象。</p>
+<p>想看现实，得看一个被吹得最响、却被自己人悄悄删掉的产品。</p>
+<p>2025 年秋天，OpenAI 和 Stripe 一起推了 "Instant Checkout"——你在 ChatGPT 里聊着聊着看上一件东西，不用跳走，当场就能买。发布会上的措辞是"几百万商户即将接入"。半年后，2026 年 3 月，这个功能被砍掉了。</p>
+<p>砍掉的原因，比任何一份预测都诚实。真正上线接入 ChatGPT 结账的，只有大约 30 家 Shopify 商户。用户的行为是"问得很起劲、买得很冷淡"——爱问这件衣服怎么样，就是不在对话框里下单。更要命的是底层基础设施压根没搭好：连美国各州的销售税该怎么代收代缴，系统都还没建；库存怎么管，被分析机构 Forrester 形容为"灾难性地从计划里缺席"。</p>
+<p>这件事值得每个看 agent 支付新闻的人记住：<strong>宣传稿永远比它脚下的商业基础设施，完整得多。</strong></p>
+<p>那么机器真正在自己花的钱，花在哪？看 x402 的实际流量就明白了——绝大多数是机器在为一次行情查询付一美分、为一次跨链分析付一毛钱，是 API 之间、数据之间分分钱的结算。换句话说，"agent 帮你去网上买双袜子"是被高估的故事；<strong>agent 替另一个 agent 买数据、买算力、买调用，才是先成立的那一半。</strong></p>
+<p>机器经济先在机器之间发生。它安静、琐碎、没有购物车的动画，因此也没上头条。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/diagram_01.png" alt="同一件事，预测差了三十倍" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+<h2>三、账单背面，没有名字</h2>
+<p>现在说这篇文章真正想说的那件事。</p>
+<p>过去五千年，所有交易都默认一个前提：买东西的那一方，是一个能被追责的人或法人。他签字，他付款，他对这笔钱负责。如果货不对板，你找他；如果他赖账，法院找他；他每年还得为这笔花销交税。整套金融、法律、税务的机器，都是围着"买方是个能被追问的人"转的。</p>
+<p>agent 自己花钱，第一次把这个前提抽掉了。</p>
+<p>最好的证据，是美国运通 2026 年 4 月发的一份新闻稿。运通宣布，要为 AI agent 的购买兜底——如果你的 agent 替你买错了，运通赔。听起来很负责。但仔细读那份稿子，会发现一个被精心绕开的词：欺诈。</p>
+<p>运通愿意为机器的"失误"负责，却小心地不碰机器"被骗"。差别在哪？agent 自己算错、买多了，这是失误，运通认。可如果有坏人冒充一个合法的 agent、骗过了认证再去刷钱，这是欺诈——这部分损失算谁的，运通没说，因为它也不知道该算谁的。</p>
+<p>这一个词的留白，把整个行业的难处暴露得清清楚楚。</p>
+<p>法律此刻是真空的。一个 agent 如果"幻觉"出一笔交易，凭空买了不该买的东西，责任指向谁？指向那个按下"运行"键的用户，还是指向写这个 agent 的公司？现在没有定论。更复杂的是事后反悔：客户收了货可以说"我的 agent 超出了授权"，也可以说"我的 agent 被攻陷了"——而银行卡那套"拒付"（chargeback）的规则，从设计之初就没考虑过买方是一台机器。</p>
+<p>行业当然在打补丁。Google 主导的 AP2 协议，搞了一个叫"授权凭证"（Mandate）的东西：你给 agent 签发一张密码学签名的许可证，写明能花多少、买什么、用多久，这张证随每笔交易传过去，让商户和银行能核验。这套机制聪明，但它的本质，不过是想给那张没名字的卡，重新补一个名字上去。</p>
+<p>只是名字补在了授权链的最前端——那个签发许可证的人身上。问题没消失，只是被往前推了一格。机器仍然在花钱，只是我们假装，每一笔背后都还坐着一个负责的人。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/concept_02.jpg" alt="back blank credit card where" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+<h2>四、当花钱变成一道 AI 安全题</h2>
+<p>授权链往前推一格，麻烦也跟着往前挪。因为链条最前端那个 agent，本身是可以被骗的。</p>
+<p>这就是 Simon Willison 这些年一直在喊的事——prompt injection（提示注入）。一个 agent 在"自以为正在老老实实执行你指令"的时候，可以被外部内容悄悄带偏：一段被污染的商品描述、一条藏了指令的用户评论、一个做了手脚的网页，都能把它推去做它本不该做的事。当 agent 手里还攥着花钱的权限，这件事就从"AI 会不会答错"，升级成"AI 会不会替你把钱付给骗子"。</p>
+<p>这不是假想。已经有研究团队红队测试了 AP2——一篇叫《Whispers of Wealth》的论文，演示了怎么通过操纵商品排名、诱导 agent 泄露用户敏感信息来攻破它。一旦 agent 能付款，支付安全就不再只是金融问题，它变成了 AI 安全问题。这两个领域过去各管各的，现在被焊死在了一起。</p>
+<p>还有一层更隐蔽的风险，发生在 agent 和 agent 之间。</p>
+<p>当机器开始互相定价、互相收费，经济学家发现了一件不安的事：用强化学习训练的 agent，不需要任何明面上的串通，就能自己学会把价格维持在高于充分竞争的水平——也就是悄悄合谋。它们靠的是一种隐性的互相惩罚机制，谁先降价谁吃亏，于是大家心照不宣地把价格架在高处。人类的价格卡特尔需要开会、需要握手、会留下证据；机器的卡特尔，连话都不用说一句。这是反垄断执法将要面对的全新战场。</p>
+<p>至于"机器没有身份证怎么过实名认证"——这道题甚至还没真正开始解。有人想给 agent 造一套可验证的身份，有人押注合成身份和身份漂移会成为新的攻击面。每一条路，都还在草图阶段。</p>
+<h2>五、谁来兜底，谁就握住了咽喉</h2>
+<p>把这些线索连起来，会得出一个和大多数报道不太一样的结论。</p>
+<p>agent 经济真正的护城河，不是哪一套协议赢了。x402、AP2、还是 Stripe 那套，谁成为标准，最终可能没那么重要——巨头们正在互相对冲下注，Visa 干脆做了个一次接入就能同时支持四套协议的方案。真正稀缺、真正决定谁能掌权的，是另一样东西：谁敢为"agent 花错了钱"兜底，谁能定义那笔账到底算谁的。</p>
+<p>这也是为什么运通要抢先发那份新闻稿，又要小心地绕开"欺诈"两个字。它不是在做慈善，它是在试探——试探"该算谁的"这条线，眼下到底能划在哪。能划这条线的人，握住的是整个 agent 经济的咽喉，而这恰恰是传统支付网络的强项，不是某个加密协议的强项。</p>
+<p>所以接下来值得盯的，不是又一份"2030 年几万亿"的预测，而是第一起公开的事故：某个 agent 被一段注入的指令诱导，付出去一笔不该付的大钱，然后所有人围在一起，发现没人愿意认领这个账单。那一刻会比任何发布会都更能说明问题。它会逼着这个行业，第一次认真回答那个被绕开了太久的问题。</p>
+<p>回到开头那台服务器。它付出去的两美分，至今没有人对账，也没有人需要对账。那张被反复刷过的卡还在被刷，而卡背面那行本该写名字的地方，依旧空着。</p>
+<p>我们没等它写上名字，就已经开始用它了。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>agent 经济真正的护城河，不是哪一套协议赢了，而是谁敢为'机器花错了钱'兜底、谁能定义那笔账算谁的。</p>
+    <p>那张被反复刷过的卡还在被刷，而卡背面本该写名字的地方，依旧空着。我们没等它写上名字，就已经开始用它了。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.coinbase.com/developer-platform/discover/launches/x402" target="_blank" rel="noopener">Introducing x402 — Coinbase</a></div>
+      <div class="footer-source-item"><a href="https://www.aei.org/technology-and-innovation/402-payment-required-the-http-code-that-waited-30-years-and-why-it-matters-today/" target="_blank" rel="noopener">402 Payment Required: The HTTP Code That Waited 30 Years — AEI</a></div>
+      <div class="footer-source-item"><a href="https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol" target="_blank" rel="noopener">Announcing AP2 — Google Cloud Blog</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/03/24/openai-revamps-shopping-experience-in-chatgpt-after-instant-checkout.html" target="_blank" rel="noopener">OpenAI revamps shopping after Instant Checkout struggle — CNBC</a></div>
+      <div class="footer-source-item"><a href="https://thefinancialbrand.com/news/payments-trends/when-ai-agents-make-incorrect-purchases-whos-responsible-197147" target="_blank" rel="noopener">When an AI Agent Makes an Incorrect Purchase, Who's Responsible? — The Financial Brand</a></div>
+      <div class="footer-source-item"><a href="https://www.americanexpress.com/en-us/newsroom/articles/innovation/american-express-debuts-agentic-commerce-experiences--ace--devel.html" target="_blank" rel="noopener">American Express Debuts Agentic Commerce Experiences & Agent Purchase Protection</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/pdf/2601.22569" target="_blank" rel="noopener">Whispers of Wealth: Red-Teaming Google's AP2 via Prompt Injection — arXiv</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/html/2501.16935v1" target="_blank" rel="noopener">Beyond Human Intervention: Algorithmic Collusion — arXiv</a></div>
+      <div class="footer-source-item"><a href="https://www.juniperresearch.com/press/agentic-commerce-set-to-generate-15-trillion-globally-by-2030-as-payments-infrastructure-leaders-revealed/" target="_blank" rel="noopener">Agentic Commerce $1.5T by 2030 — Juniper Research</a></div>
+      <div class="footer-source-item"><a href="https://www.digitalcommerce360.com/2025/11/28/gartner-ai-agents-15-trillion-in-b2b-purchases-by-2028/" target="_blank" rel="noopener">Gartner: AI agents $15T in B2B by 2028 — Digital Commerce 360</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
