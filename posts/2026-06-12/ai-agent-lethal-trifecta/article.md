@@ -30,11 +30,7 @@ EchoLeak 的攻击链，拆开看简单得让人不安。
 
 微软后来在服务端默默修掉了 EchoLeak，也没有证据显示它在真实世界被用过。但问题是，这种攻击根本不是一次性的意外。它有名字，有家谱，而且补丁补不干净。
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🎨</div>
-  <div class="img-placeholder-label">概念图占位</div>
-  <details><summary>生成 Prompt</summary><pre>a plain sealed envelope quietly whispering to a large open bank vault, secret documents silently flowing out of the vault into the envelope, no hands no clicks, flat design, minimalist illustration, tech style, blue and white color palette, no text, no labels, clean white background</pre></details>
-</div>
+![plain sealed envelope quietly whispering](images/concept_01.jpg)
 
 ## 二、有人给这个病起了个名字：致命三件套
 
@@ -58,11 +54,7 @@ EchoLeak 凑齐了这三件：Copilot 能读企业资料，能收外部邮件，
 
 发现 ForcedLeak 的安全公司，连外泄出口都不用自己搭。他们发现 Salesforce 的白名单里有一个早就过期的域名，花 5 美元把它注册下来，就成了一个被官方信任的数据接收点。
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🎨</div>
-  <div class="img-placeholder-label">概念图占位</div>
-  <details><summary>生成 Prompt</summary><pre>a robot assistant holding three golden keys labeled as its own features, unknowingly handing copies of the same three keys to a shadowy stranger, flat design, minimalist illustration, tech style, blue and white color palette with red accent, no text, no labels, clean white background</pre></details>
-</div>
+![robot assistant holding three golden](images/concept_02.jpg)
 
 ## 三、把 100 个 agent 拉出来验明正身
 
@@ -80,19 +72,7 @@ EchoLeak 凑齐了这三件：Copilot 能读企业资料，能收外部邮件，
 
 得说清楚，Adversa AI 自己是一家做 AI 红队和安全生意的公司，这份报告它既是裁判也卖防护，看的时候得把这层身份摆在桌上。但 98% 和 11% 这两个数字，跟前面那一串有名有姓、有 CVE 编号的真实事故，是能互相对上的。它不是危言耸听，它是把大家心知肚明、却没人摆到台面上的事，量化了一遍。
 
-<div class="img-placeholder diagram">
-  <div class="img-placeholder-icon">📊</div>
-  <div class="img-placeholder-label">信息图占位</div>
-  <details><summary>规格卡</summary><pre>【图类型】：饼图
-【副标题】：AIRQ 把 100 个生产级 agent 分进四个象限
-【单位】：%
-【核心判断】：真正"既能干又设防到位"的只有 11%，而 40% 裸奔的巨人扛着 60% 的风险
-【核心内容】：
-  - 裸奔的巨人 Exposed Giants：40
-  - 稳健操作者 Tight Operators：33
-  - 谦逊小工具 Humble Providers：16
-  - 加固型领跑者 Fortified Leaders：11</pre></details>
-</div>
+![数据图](images/diagram_01.svg)
 
 ## 四、为什么这不是 bug，是规格
 
@@ -120,19 +100,7 @@ Salesforce 2026 年初那份调研了 1050 名 IT 主管的报告说，企业现
 
 把这两组数字摆在一起，画面就有点荒诞了：一边是 98% 凑齐三件套、只有 11% 守得住的攻击面，另一边是 40% 的渗透率和 80% 的"已经赚钱"。大家在用一种自己也承认补不干净的东西，而且用得越来越深、越来越觉得划算。
 
-<div class="img-placeholder diagram">
-  <div class="img-placeholder-icon">📊</div>
-  <div class="img-placeholder-label">信息图占位</div>
-  <details><summary>规格卡</summary><pre>【图类型】：条形图
-【副标题】：部署热度、回报、攻击面一起冲顶，只有"守得住"卡在低位
-【单位】：%
-【核心判断】：企业把一种 98% 可被一封邮件策反的东西，当成已经赚钱的生产力工具往里装
-【核心内容】：
-  - 凑齐"致命三件套"的 agent [流出]：98
-  - 称 agent 已带来可衡量 ROI 的企业 [流入]：80
-  - 2026 年底将内嵌 agent 的企业应用 [流入]：40
-  - 这些 agent 里真正设防到位的 [参照]：11</pre></details>
-</div>
+![数据图](images/diagram_02.svg)
 
 行业当然不是没动作。但你仔细看它在动什么，会发现一个微妙的转向：主流的防御思路，已经悄悄从"怎么修好提示词注入"，变成了"怎么在它被攻陷之后，让损失小一点"——缩小爆炸半径、最小权限、高危动作让人来点头确认。Willison 给的药方也是这个路数：三条腿砍掉任意一条，攻击就断了，而最容易砍的通常是那条对外通信的腿。
 
