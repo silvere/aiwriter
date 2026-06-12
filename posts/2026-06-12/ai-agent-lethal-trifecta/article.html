@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>让你的 AI 能干活的三个本事，正好是陌生人策反它的三个开关</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 与安全</span>
+  <h1>让你的 AI 能干活的三个本事，正好是陌生人策反它的三个开关</h1>
+  <div class="hero-meta">
+    <span>2026-06-12</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">2025 年初，一家公司的一名员工收到一封普通邮件，没病毒、没钓鱼链接，他甚至没点开。几周后，公司接入的 Microsoft 365 Copilot，在另一名员工随口提问时，把内部资料悄悄打包发去了一个陌生地址——全程没人按过任何按钮。攻击者没黑进任何系统，他只是给这家公司的 AI，写了一段话。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、一封不用你点开的邮件</h2>
+<p>EchoLeak 的攻击链，拆开看简单得让人不安。</p>
+<p>第一步，攻击者往公司里任意一个邮箱发一封邮件。邮件正文里藏着一段指令——用白底白字、或者 HTML 注释的方式写，人眼看不见，但模型读得见。这封邮件就这么躺在收件箱里，不需要任何人打开。</p>
+<p>第二步，公司里某个员工开始用 Copilot 干活，问它一个跟这封邮件八竿子打不着的问题，比如"帮我总结一下上周的项目进展"。Copilot 为了回答，会去翻检它能够到的所有资料——邮件、文档、聊天记录。那封藏了指令的邮件，被它一并捞了进来，当成了上下文的一部分。</p>
+<p>第三步，模型读到那段藏起来的指令，照做了。指令让它把刚才碰到的敏感内容，编码进一个图片链接里。Copilot 渲染这个图片时，数据就顺着链接，发去了攻击者的服务器。微软自己的注入分类器和链接防护，被绕了过去。</p>
+<p>发现它的 Aim Labs 用了一句很冷的话描述：整个过程，"只需要向组织里的一个人发一封邮件就能发起"。</p>
+<p>这里值得停一下。传统的网络攻击，是攻击者想办法骗过机器、钻进系统的缝里。EchoLeak 不是。它没有钻任何缝——它走的是正门，用的是 Copilot 被设计出来就该有的本事：读你的资料、读外面来的东西、然后替你行动。攻击者做的唯一一件事，是用人话给它下了个命令，而它分不清这个命令是你下的，还是邮件里那个陌生人下的。</p>
+<p>微软后来在服务端默默修掉了 EchoLeak，也没有证据显示它在真实世界被用过。但问题是，这种攻击根本不是一次性的意外。它有名字，有家谱，而且补丁补不干净。</p>
+<div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>a plain sealed envelope quietly whispering to a large open bank vault, secret documents silently flowing out of the vault into the envelope, no hands no clicks, flat design, minimalist illustration, tech style, blue and white color palette, no text, no labels, clean white background</pre></details>
+</div>
+
+<h2>二、有人给这个病起了个名字：致命三件套</h2>
+<p>2025 年 6 月，独立研究者 Simon Willison 写了一篇博客，把这类攻击背后的结构，归纳成了三个零件。他管它叫 the lethal trifecta，致命三件套。</p>
+<p>三件套是这样三样能力：</p>
+<p>一是<strong>访问私有数据</strong>——agent 能碰你的邮箱、客户库、源代码、文件。这本来就是大多数工具存在的全部意义。</p>
+<p>二是<strong>接触不可信内容</strong>——任何外部文字能进到模型眼前的渠道。Willison 的原话是，一个能读你邮件的工具，本身就是完美的不可信内容来源，因为"攻击者可以直接给你的 LLM 发邮件，告诉它该做什么"。</p>
+<p>三是<strong>能对外通信</strong>——agent 能发出一个 HTTP 请求，哪怕只是加载一张图、生成一个可点的链接，这条通道就能被用来把偷到的东西送回给攻击者。</p>
+<p>Willison 那篇文章真正的杀伤力，不在于他描述了一种攻击，而在于他指出了一件让人没法反驳的事：这三件套，恰好就是一个 agent 之所以"有用"的全部。</p>
+<p>你雇一个 AI 助理，不就是图它能读你的东西（私有数据）、能处理别人发来的邮件和网页（不可信内容）、还能替你回复、下单、调接口（对外通信）吗？把这三样里任意拆掉一件——不让它碰你的数据，或者不让它读外面的东西，或者不让它对外做任何动作——它立刻就退化成一个只会陪你聊天的玩具，不再是能干活的 agent。</p>
+<p>这就是整件事最别扭的地方。<strong>它的三个卖点，连起来就是一把别人也能用的钥匙；而你没法只留卖点、不留钥匙，因为它们是同一样东西。</strong></p>
+<p>EchoLeak 凑齐了这三件：Copilot 能读企业资料，能收外部邮件，能加载外链图片。ForcedLeak 也凑齐了——Salesforce 的 Agentforce 能查 CRM，能从公开的"网页留资"表单里读到陌生人填的内容，攻击者就把指令塞进了那个没有长度限制的描述框，CVSS 9.4。还有 CamoLeak，CVSS 9.6，攻击者用 GitHub Copilot Chat 自己的图片代理通道，把私有仓库的源码一个字符一个字符地编码外泄出去。</p>
+<p>发现 ForcedLeak 的安全公司，连外泄出口都不用自己搭。他们发现 Salesforce 的白名单里有一个早就过期的域名，花 5 美元把它注册下来，就成了一个被官方信任的数据接收点。</p>
+<div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>a robot assistant holding three golden keys labeled as its own features, unknowingly handing copies of the same three keys to a shadowy stranger, flat design, minimalist illustration, tech style, blue and white color palette with red accent, no text, no labels, clean white background</pre></details>
+</div>
+
+<h2>三、把 100 个 agent 拉出来验明正身</h2>
+<p>致命三件套是不是个别现象？2026 年 6 月 3 日，一家叫 Adversa AI 的安全公司给出了一份实测答案。</p>
+<p>他们做了一份叫 AIRQ 的报告，把市面上 100 个最流行的生产级 AI agent 拉出来，分 10 个类别，从三个维度打分：攻击面有多大（这东西暴露了多少）、爆炸半径有多大（一旦被攻陷后果有多惨）、防御措施有多少（拿什么挡）。</p>
+<p>第一个数字就够冷的：致命三件套同时出现在 <strong>98%</strong> 被测的 agent 里。报告的原话是，几乎所有 agent 都具备"被单一一份恶意文档接管"的条件。</p>
+<p>第二个数字更难看。把强大程度和防御程度交叉起来分四个象限，真正"既能干、又设防到位"的——他们叫 Fortified Leaders，加固型领跑者——只占 <strong>11%</strong>。剩下 89% 要么不够设防，要么干脆又强又裸奔。</p>
+<p>最大的一块是右上角那个象限，Exposed Giants，裸奔的巨人：占了 40%，却承担了全部风险预算的 60%。报告里把这叫"权力—保护倒挂"——越强大的 agent，往往防护越薄弱，其中编码类、能直接操作电脑的那类 agent 最严重。</p>
+<p>还有一个数字适合单独记住：那些 agent 声称自己有防御的，<strong>83% 拿不出任何公开证据</strong>。也就是说，连"我设了防"这句话，大多数时候也只是句话。</p>
+<p>得说清楚，Adversa AI 自己是一家做 AI 红队和安全生意的公司，这份报告它既是裁判也卖防护，看的时候得把这层身份摆在桌上。但 98% 和 11% 这两个数字，跟前面那一串有名有姓、有 CVE 编号的真实事故，是能互相对上的。它不是危言耸听，它是把大家心知肚明、却没人摆到台面上的事，量化了一遍。</p>
+<div class="img-placeholder diagram">
+  <div class="img-placeholder-icon">📊</div>
+  <div class="img-placeholder-label">信息图占位</div>
+  <details><summary>规格卡</summary><pre>【图类型】：饼图
+【副标题】：AIRQ 把 100 个生产级 agent 分进四个象限
+【单位】：%
+【核心判断】：真正"既能干又设防到位"的只有 11%，而 40% 裸奔的巨人扛着 60% 的风险
+【核心内容】：
+  - 裸奔的巨人 Exposed Giants：40
+  - 稳健操作者 Tight Operators：33
+  - 谦逊小工具 Humble Providers：16
+  - 加固型领跑者 Fortified Leaders：11</pre></details>
+</div>
+
+<h2>四、为什么这不是 bug，是规格</h2>
+<p>正常的安全漏洞，发现了就补，补完就好了。致命三件套不一样——它补不干净，因为它根的不是某行代码，是大模型本身的工作方式。</p>
+<p>一个大模型读到的所有东西，不管是你的指令，还是邮件里、网页里、文档里的文字，进到它眼前时是同一股数据流，长得一模一样。它没有一个机制能区分"这句是主人下的命令"和"这句是数据里夹带的私货"。这跟数据库领域的 SQL 注入是同一个病根：指令和数据走了同一条管子。</p>
+<p>区别在于，SQL 注入能根治——你把指令和数据严格分开就行。但大模型的"理解",本身就建立在把一切都当文字来读之上。英国国家网络安全中心 NCSC 在官方博客里把这话说得很直白：针对生成式 AI 的提示词注入，"可能永远无法像 SQL 注入那样被彻底缓解"，因为大模型"天生就分不清"。</p>
+<p>这不是某一家厂商没做好。把它们各自的官方表态摆一排看，画风惊人地一致：</p>
+<p>Anthropic 说，"即便用上最好的防御，模型层面的保护也永远做不到 100% 有效"，还补了一句"没有任何浏览器 agent 对提示词注入免疫"。OpenAI 把它定性为"前沿的、未解的安全难题"，并承认这种攻击的性质让"确定性的安全保证变得很难"。OWASP 那份业界公认的大模型风险榜，连续两版都把提示词注入排在第一位。</p>
+<p>Simon Willison 把这件事背后的安全逻辑讲得最透：在安全领域，99% 是不及格的。一个能挡住 99% 攻击的过滤器，约等于没用——因为攻击者的全部工作，就是去找那剩下 1% 还能打穿的方法，而他只需要成功一次，你的数据就出去了。</p>
+<p>最好的证据，是 EchoLeak 自己。微软 2025 年 6 月修掉了它。九个月后，2026 年 3 月，微软又给 M365 Copilot 发了一个新编号 CVE-2026-26133，官方描述几乎一字不差：M365 Copilot 里的 AI 命令注入，允许未授权的攻击者通过网络泄露信息。</p>
+<p>同一个产品，同一类洞，补完九个月又开。<strong>因为那不是一个能补上的洞，那是这栋楼的户型图。</strong></p>
+<h2>五、它们正被装进你的公司</h2>
+<p>如果这东西 98% 都能被一封邮件策反，那理性的做法应该是先别急着用。现实是反着来的。</p>
+<p>Salesforce 2026 年初那份调研了 1050 名 IT 主管的报告说，企业现在平均已经在跑 12 个 AI agent，其中一半还在各干各的、互不连通。Gartner 预测，到 2026 年底，40% 的企业应用会内嵌任务型 agent——而一年前，这个数字还不到 5%。Anthropic 那份《2026 年 AI agent 现状报告》更进一步：80% 的组织说，agent 带来的已经不是"预期价值"或"试点结果"，而是实打实、可衡量的投资回报。</p>
+<p>把这两组数字摆在一起，画面就有点荒诞了：一边是 98% 凑齐三件套、只有 11% 守得住的攻击面，另一边是 40% 的渗透率和 80% 的"已经赚钱"。大家在用一种自己也承认补不干净的东西，而且用得越来越深、越来越觉得划算。</p>
+<div class="img-placeholder diagram">
+  <div class="img-placeholder-icon">📊</div>
+  <div class="img-placeholder-label">信息图占位</div>
+  <details><summary>规格卡</summary><pre>【图类型】：条形图
+【副标题】：部署热度、回报、攻击面一起冲顶，只有"守得住"卡在低位
+【单位】：%
+【核心判断】：企业把一种 98% 可被一封邮件策反的东西，当成已经赚钱的生产力工具往里装
+【核心内容】：
+  - 凑齐"致命三件套"的 agent [流出]：98
+  - 称 agent 已带来可衡量 ROI 的企业 [流入]：80
+  - 2026 年底将内嵌 agent 的企业应用 [流入]：40
+  - 这些 agent 里真正设防到位的 [参照]：11</pre></details>
+</div>
+
+<p>行业当然不是没动作。但你仔细看它在动什么，会发现一个微妙的转向：主流的防御思路，已经悄悄从"怎么修好提示词注入"，变成了"怎么在它被攻陷之后，让损失小一点"——缩小爆炸半径、最小权限、高危动作让人来点头确认。Willison 给的药方也是这个路数：三条腿砍掉任意一条，攻击就断了，而最容易砍的通常是那条对外通信的腿。</p>
+<p>这话翻译过来就是：既然门锁不死，那就别在屋里放太值钱的东西。这是成熟的工程态度，但它也等于承认了一件事——<strong>今天绝大多数企业级 agent，是"可用，但不可信"的</strong>。你可以让它干活，但你得始终记着，它随时可能被一段你没看见的文字说服，转头把你卖了。</p>
+<p>所以最诚实的"部署一个 AI agent"，在 2026 年应该这么念：部署一个有用的系统，同时接受它能被陌生人策反——然后你决定，这个买卖你做不做。</p>
+<p>回到开头那封邮件。它最后没在真实世界里得手，微软补上了。但重点从来不是那一封邮件。重点是我们一边亲手把"读你的数据、读外面的东西、替你行动"这三样能力焊到一起，一边对它居然会听陌生人的话表示震惊。</p>
+<p>那个 AI 助理没有安全漏洞。那个安全漏洞，就是这个 AI 助理本身。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>提示词注入不是某一行代码里的 bug，而是大模型「分不清指令和数据」的规格。让 agent 有用的三件套——读你的数据、读外面的东西、替你行动——正是策反它的三个开关，拆掉任意一件，它就不再是 agent。</p>
+    <p>于是最诚实的「部署一个 AI agent」，在 2026 年应该这么念：部署一个有用、却随时可能被陌生人策反的系统，然后你决定，这个买卖做不做。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/" target="_blank" rel="noopener">The lethal trifecta for AI agents — Simon Willison</a></div>
+      <div class="footer-source-item"><a href="https://simonwillison.net/2025/Sep/26/how-to-stop-ais-lethal-trifecta/" target="_blank" rel="noopener">How to stop AI's 'lethal trifecta' — Simon Willison</a></div>
+      <div class="footer-source-item"><a href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2025-32711" target="_blank" rel="noopener">CVE-2025-32711 (EchoLeak) — Microsoft MSRC</a></div>
+      <div class="footer-source-item"><a href="https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-26133" target="_blank" rel="noopener">CVE-2026-26133 — Microsoft MSRC</a></div>
+      <div class="footer-source-item"><a href="https://www.legitsecurity.com/blog/camoleak-critical-github-copilot-vulnerability-leaks-private-source-code" target="_blank" rel="noopener">CamoLeak: Critical GitHub Copilot Vulnerability — Legit Security</a></div>
+      <div class="footer-source-item"><a href="https://noma.security/blog/forcedleak-agent-risks-exposed-in-salesforce-agentforce/" target="_blank" rel="noopener">ForcedLeak: Agent Risks in Salesforce Agentforce — Noma Security</a></div>
+      <div class="footer-source-item"><a href="https://www.helpnetsecurity.com/2026/06/03/research-ai-agent-security-capability/" target="_blank" rel="noopener">AI agent security capability research (AIRQ) — Help Net Security</a></div>
+      <div class="footer-source-item"><a href="https://genai.owasp.org/llmrisk/llm01-prompt-injection/" target="_blank" rel="noopener">LLM01:2025 Prompt Injection — OWASP</a></div>
+      <div class="footer-source-item"><a href="https://www.ncsc.gov.uk/blog-post/prompt-injection-is-not-sql-injection" target="_blank" rel="noopener">Prompt injection is not SQL injection — UK NCSC</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/research/prompt-injection-defenses" target="_blank" rel="noopener">Mitigating the risk of prompt injections in browser use — Anthropic</a></div>
+      <div class="footer-source-item"><a href="https://openai.com/index/prompt-injections/" target="_blank" rel="noopener">Understanding prompt injections: a frontier security challenge — OpenAI</a></div>
+      <div class="footer-source-item"><a href="https://www.salesforce.com/news/stories/connectivity-report-announcement-2026/" target="_blank" rel="noopener">2026 Connectivity Benchmark Report — Salesforce</a></div>
+      <div class="footer-source-item"><a href="https://www.gartner.com/en/newsroom/press-releases/2025-08-26-gartner-predicts-40-percent-of-enterprise-apps-will-feature-task-specific-ai-agents-by-2026-up-from-less-than-5-percent-in-2025" target="_blank" rel="noopener">Gartner: 40% of Enterprise Apps Will Feature Task-Specific AI Agents by 2026</a></div>
+      <div class="footer-source-item"><a href="https://resources.anthropic.com/hubfs/The%202026%20State%20of%20AI%20Agents%20Report.pdf" target="_blank" rel="noopener">The 2026 State of AI Agents Report — Anthropic</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
