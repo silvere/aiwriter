@@ -36,11 +36,7 @@ Anthropic 一边照办，一边憋着一肚子委屈。它说自己"正在遵守
 
 记住这句话，它待会儿会回来咬人。
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🎨</div>
-  <div class="img-placeholder-label">概念图占位</div>
-  <details><summary>生成 Prompt</summary><pre>a single unmarked sealed envelope sitting in front of two large power switches flipped to off, dim office at dusk, minimalist conceptual illustration, flat design, tech style, blue and grey color palette, no text, no labels, clean background</pre></details>
-</div>
+![single unmarked sealed envelope sitting](images/concept_01.jpg)
 
 ## 二、把镜头倒回 48 小时：枪是他自己递上去的
 
@@ -60,18 +56,7 @@ Anthropic 一边照办，一边憋着一肚子委屈。它说自己"正在遵守
 
 它论证得非常成功。成功到两天后，政府信了。
 
-<div class="img-placeholder diagram">
-  <div class="img-placeholder-icon">📊</div>
-  <div class="img-placeholder-label">信息图占位</div>
-  <details><summary>规格卡</summary><pre>【图类型】：流程图
-【副标题】：Anthropic 的一周
-【核心判断】：他用六天论证模型有多危险，第七天政府照单全收
-【核心内容】：
-  - 6/4 发文求"全球暂停危险 AI"
-  - 6/9 发布最强模型 Fable 5 / Mythos 5
-  - 6/10 求政府"应能封杀不安全模型"+掏3.5亿给失业兜底
-  - 6/12 政府封杀 Fable 5 / Mythos 5</pre></details>
-</div>
+![person megaphone shouting word danger](images/concept_02.jpg)
 
 ## 三、再倒回一周：他先把"危险"两个字喊给了全世界
 
@@ -93,11 +78,7 @@ Anthropic 一边照办，一边憋着一肚子委屈。它说自己"正在遵守
 
 每一步都是 Anthropic 自己迈的。政府只做了最后那个它被反复邀请去做的动作。
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🎨</div>
-  <div class="img-placeholder-label">概念图占位</div>
-  <details><summary>生成 Prompt</summary><pre>a person megaphone shouting the word danger into a void, and the echo bouncing back to flip a switch behind them, conceptual minimalist illustration, flat design, tech style, red and blue accents on white, no text, no labels, clean background</pre></details>
-</div>
+![数据图](images/diagram_02.svg)
 
 ## 四、两本账：对镜头说"危险到要暂停"，对监管说"满大街都是"
 
@@ -121,16 +102,7 @@ Anthropic 一边照办，一边憋着一肚子委屈。它说自己"正在遵守
 
 无论哪一头是真的，另一头就是营销。这一周里，Anthropic 至少说谎了一次——只是我们不知道是哪一次。
 
-<div class="img-placeholder diagram">
-  <div class="img-placeholder-icon">📊</div>
-  <div class="img-placeholder-label">信息图占位</div>
-  <details><summary>规格卡</summary><pre>【图类型】：对账图
-【副标题】：同一个模型，同一家公司，同一周
-【核心判断】：对公众说危险到要暂停，对监管说满大街都是——两句不可能同时为真
-【核心内容】：
-  - 对公众（6/4 求暂停）[流出]：100
-  - 对监管（6/12 辩护）[流入]：5</pre></details>
-</div>
+<<__AIWRITER_PLACEHOLDER__>>
 
 ## 五、但你先别急着鼓掌
 
