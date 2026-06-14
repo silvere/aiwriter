@@ -56,7 +56,7 @@ Anthropic 一边照办，一边憋着一肚子委屈。它说自己"正在遵守
 
 它论证得非常成功。成功到两天后，政府信了。
 
-![person megaphone shouting word danger](images/concept_02.jpg)
+![Anthropic 的一周时间线](images/diagram_01.svg)
 
 ## 三、再倒回一周：他先把"危险"两个字喊给了全世界
 
@@ -78,7 +78,7 @@ Anthropic 一边照办，一边憋着一肚子委屈。它说自己"正在遵守
 
 每一步都是 Anthropic 自己迈的。政府只做了最后那个它被反复邀请去做的动作。
 
-![数据图](images/diagram_02.svg)
+![把危险喊给全世界](images/concept_02.jpg)
 
 ## 四、两本账：对镜头说"危险到要暂停"，对监管说"满大街都是"
 
@@ -102,7 +102,7 @@ Anthropic 一边照办，一边憋着一肚子委屈。它说自己"正在遵守
 
 无论哪一头是真的，另一头就是营销。这一周里，Anthropic 至少说谎了一次——只是我们不知道是哪一次。
 
-<<__AIWRITER_PLACEHOLDER__>>
+![对公众与对监管的两套说辞](images/diagram_02.svg)
 
 ## 五、但你先别急着鼓掌
 
