@@ -82,7 +82,10 @@ def _write_marker(post_dir: Path, media_id: str, title: str, *, note: str) -> No
 
 def _resolve_targets(args) -> list[Path]:
     if args.post:
-        return [Path(args.post)]
+        p = Path(args.post)
+        if not p.is_absolute():
+            p = (_REPO / p).resolve()
+        return [p]
     cutoff = (datetime.now(timezone.utc) - timedelta(days=args.recent_days)).strftime("%Y-%m-%d")
     targets = []
     for html in sorted(_REPO.glob("posts/*/*/article.html"), reverse=True):
