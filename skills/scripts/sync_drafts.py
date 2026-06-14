@@ -101,6 +101,7 @@ def main() -> int:
     ap.add_argument("--post", help="显式指定 post 目录")
     ap.add_argument("--recent-days", type=int, default=3, help="自动选最近 N 天未同步文章")
     ap.add_argument("--dry-run", action="store_true", help="只列计划不真同步")
+    ap.add_argument("--force", action="store_true", help="强制重发：跳过标题去重，先删除草稿箱已存在的同标题草稿再新增")
     args = ap.parse_args()
 
     config = load_config()
@@ -130,11 +131,25 @@ def main() -> int:
             title = _article_title(d)
             # 【核心去重】标题已在草稿箱 → 补标记跳过，绝不重发
             if title in box:
-                print(f"  ♻  {rel} 草稿箱已存在《{title[:24]}》→ 补标记跳过（去重）")
-                if not args.dry_run:
-                    _write_marker(d, box[title], title, note="dedup: 草稿箱已存在，补标记防重发")
-                deduped += 1
-                continue
+                if args.force:
+                    old_media_id = box[title]
+                    print(f"  ⚠  {rel} 强制模式：删除旧草稿《{title[:24]}》media_id={old_media_id[:22]}...")
+                    try:
+                        httpx.post(
+                            f"{WECHAT_BASE}/draft/delete",
+                            params={"access_token": token},
+                            json={"media_id": old_media_id},
+                            timeout=20,
+                        ).raise_for_status()
+                        print(f"    ✓ 已删除旧草稿")
+                    except Exception as e:  # noqa: BLE001
+                        print(f"::warning::删除旧草稿失败 {rel}: {e}（仍尝试新增）")
+                else:
+                    print(f"  ♻  {rel} 草稿箱已存在《{title[:24]}》→ 补标记跳过（去重）")
+                    if not args.dry_run:
+                        _write_marker(d, box[title], title, note="dedup: 草稿箱已存在，补标记防重发")
+                    deduped += 1
+                    continue
 
             if args.dry_run:
                 print(f"  ✚ [dry-run] 将同步 {rel}《{title[:24]}》"); continue
