@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>「史上最大一笔私募融资」那天，AI 算力被做成了债券——而最贵的 AI 公司，连算力都是租的</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">科技金融</span>
+  <h1>「史上最大一笔私募融资」那天，AI 算力被做成了债券——而最贵的 AI 公司，连算力都是租的</h1>
+  <div class="hero-meta">
+    <span>2026-06-15</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">350 亿美元，被称为「史上最大一笔私募融资」。但它不是谁给 AI 投的股权——它是一笔被切成等级、标好利率、贴上投资级评级卖出去的债。AI 烧钱的故事，从「烧风投」翻到了「借机构」，而买单的人，可能就在你的保单里。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、先说清楚：这 350 亿，是债，不是投资</h2>
+
+    <p>我们把这事拆开看。</p>
+
+    <p>这个「AI XPV 平台」，三方分工特别清楚：博通出芯片（它自己定制的 XPU 加配套网络），阿波罗和黑石出钱，目标是到 2028 年，给最前沿的几家 AI 公司——点了名的有 Anthropic 和 OpenAI——铺出超过 20 吉瓦（GW）的算力。</p>
+
+    <p>20 吉瓦什么概念？一个普通核电机组也就 1 吉瓦上下。他们要给 AI 铺二十个核电站那么多的电力级算力。</p>
+
+    <p>而第一笔启动资金，就是这 350 亿。</p>
+
+    <p>关键在这 350 亿是怎么凑出来的。它不是阿波罗和黑石大手一挥从兜里掏的现金，它是一套分了层的债券结构：</p>
+
+    <div class="img-placeholder diagram">
+  <div class="img-placeholder-icon">📊</div>
+  <div class="img-placeholder-label">信息图占位</div>
+  <details><summary>规格卡</summary><pre>【图类型】：条形图
+【副标题】：350 亿里，优先级先评级、先被偿付
+【单位】：亿美元
+【核心判断】：A1+A2 优先级共 246 亿拿到投资级评级和固定利息，最底层 104 亿先吃第一笔损失
+【核心内容】：
+  - A2 优先级·卖给机构(5.75%) [流入]：240
+  - A1 优先级·卖给银行(国债+100bp) [流入]：6
+  - 劣后层·先吃第一笔损失 [流出]：104</pre></details>
+</div>
+
+    <p>最上面一层，叫 A1，6 亿美元，卖给银行，利率是美国国债收益率再加 100 个基点。</p>
+
+    <p>第二层，叫 A2，240 亿美元，卖给机构投资者，固定收益率 5.75%。</p>
+
+    <p>这两层加起来 246 亿，都拿到了一个东西——<strong>私有信用评级，落在「中等投资级」区间</strong>。</p>
+
+    <p>「投资级」这三个字是整件事的灵魂。它的意思是：评级机构认为，这笔债违约的概率很低，低到可以放心卖给那些只被允许买「安全资产」的大块头——保险公司、养老金、年金账户。</p>
+
+    <p>所以这 350 亿的本质是：把给 AI 公司买芯片、铺算力这件烧钱的事，包装成了一份「很安全、有固定利息、可以放进退休账户」的理财产品。</p>
+
+    <p>Ehsani 那句「史上最大私募融资」，说穿了就一件事：我们第一次把 AI 算力这么大规模地，做成了一种可以批发卖给机构的金融商品。就这。</p>
+
+    <hr>
+
+    <h2>二、这笔债，拿什么做的抵押？答案是算力本身</h2>
+
+    <p>一笔债能卖出去、能拿到投资级评级，得有人信它还得上。靠什么信？得有抵押物，得有能产生现金流的资产。</p>
+
+    <p>这笔债的抵押物，是芯片，是算力本身。</p>
+
+    <p>说白了，这是一个「拿 AI 芯片和未来的算力收入，去借钱再买更多 AI 芯片」的循环。博通把芯片造出来塞进这个平台，平台拿这些芯片和它们未来能跑出来的算力订单当底层资产，向机构借钱，借来的钱再去付芯片和数据中心的账单。</p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>AI computer chips being wrapped and packaged into a stack of bond certificates, financial securitization concept, flat design, minimalist illustration, tech style, blue and white color palette, no text, no labels, clean white background</pre></details>
+</div>
+
+    <p>这套「把单一资产未来的现金流，切成不同等级、分别定价、卖给不同投资人」的玩法，金融史上不是头一回见。上一次它被玩到极致、并且家喻户晓，是 2008 年——那次的底层资产是房子。</p>
+
+    <p>我把丑话说前头：这次的评级是投资级，结构也比当年干净得多，我不是在说它就是下一个次贷，别给我扣这帽子。</p>
+
+    <p>但机制是同一套机制。而所有这类结构能成立、能拿到「投资级」，都死死压在一个假设上：底层资产的现金流不会断。</p>
+
+    <p>这次压的假设是什么？是 <strong>AI 的算力需求只会涨、不会回头</strong>。</p>
+
+    <p>博通 CEO Hock Tan 在通稿里说得很漂亮，他说我们正处在一个「历史性的拐点，AI 算力的需求正在从根本上重塑全球经济格局」。</p>
+
+    <p>这话你正着听是雄心，反着听是底牌：整个 350 亿能评成投资级、能卖给保险公司，全靠「AI 需求永不回头」这一个判断撑着。这个判断要是错了，「投资级」三个字，就只是三个字。</p>
+
+    <hr>
+
+    <h2>三、那 AI 公司自己呢？它是个租客</h2>
+
+    <p>聊到这你可能会想：能撬动 350 亿投资级大债，被博通和华尔街众星捧月的 Anthropic，得多有钱、多有家底啊。</p>
+
+    <p>来看看这家「全世界最贵的 AI 公司之一」，在这条链里到底持有什么。</p>
+
+    <p>这第一笔 350 亿，对应的是 Anthropic 那「超过 1 吉瓦」的算力扩张。这 1 吉瓦，按官方通稿的说法，是部署在 Fluidstack 的场地里，2026 年年中开始上线。</p>
+
+    <p>Fluidstack 是谁？一家专门盖、专门租数据中心的公司。</p>
+
+    <p>也就是说，这条链是这样的：</p>
+
+    <p>楼，是 Fluidstack 的。芯片，是博通的。钱，是阿波罗和黑石的。算力跑起来之后，Anthropic 是那个掏钱买算力、用算力的「客户」。</p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>a small lone tenant figure standing inside a vast empty data center hall full of server racks he does not own, holding only a paper contract, sense of owning nothing, flat design, minimalist illustration, tech style, blue and white color palette, no text, no labels, clean white background</pre></details>
+</div>
+
+    <p>数一下就知道，在这条价值上千亿的链条里，Anthropic 几乎不持有任何一块硬资产。它不拥有那些楼，不拥有那些芯片，更不拥有那笔债。</p>
+
+    <p>它持有的，是一样东西：「AI 会一直涨」的那个故事，以及把这个故事变现的能力。</p>
+
+    <p>这不是寒碜，这是这一代 AI 巨头的标准姿势——轻资产，把重资产（楼、电、芯片）和重负债（那 350 亿）全都甩到别人的资产负债表上，自己只攥着模型和叙事。</p>
+
+    <p>姿势很聪明。聪明到你得问一句：一个连算力都是租的、连买芯片的钱都是别人借的公司，9650 亿美元的估值，估的到底是它的「资产」，还是它的「故事」？</p>
+
+    <hr>
+
+    <h2>四、所以风险最后落在谁头上？落在你的保单里</h2>
+
+    <p>现在我们把镜头从 AI，转到这笔债的另一头——买它的人。</p>
+
+    <p>回到通稿里一个特别容易被划过去的细节：这 350 亿的<strong>「初始锚定投资人」，是阿波罗和黑石的「信用与保险业务」（Credit & Insurance Business）</strong>。</p>
+
+    <p>这六个字，是整件事最该被看见、也最少被报道的地方。</p>
+
+    <p>阿波罗和黑石这种机构的「保险业务」是干嘛的？管的就是保险、年金、退休金这类钱——也就是千千万万普通人交的保费、攒的养老钱。这类钱有个铁律：只能买「安全」的东西，不能拿去赌。</p>
+
+    <p>所以你看，整个链条的设计，最后是闭环的：</p>
+
+    <div class="img-placeholder diagram">
+  <div class="img-placeholder-icon">📊</div>
+  <div class="img-placeholder-label">信息图占位</div>
+  <details><summary>规格卡</summary><pre>【图类型】：流程图
+【核心判断】：风险从愿赌的风投，一层层挪到了图稳的保险与养老金
+【核心内容】：
+  - Anthropic 只出"AI 会一直涨"的承诺
+  - 博通出芯片 / Fluidstack 出场地 / 阿波罗出债
+  - 350 亿被切成等级、贴上投资级评级
+  - 债卖给以保险和养老金为主力的机构投资人
+  - AI 需求若回头，违约落在保险与养老金的资产负债表</pre></details>
+</div>
+
+    <p>Anthropic 出一个「AI 永远涨」的承诺；博通出芯片、Fluidstack 出楼、阿波罗出债；这笔债被切成等级、贴上投资级评级；然后卖给以保险和养老金为主力的机构投资人。</p>
+
+    <p>风险，就这样从一群「愿赌服输」的风投，悄悄挪到了一群「图个稳当」的退休账户身上。</p>
+
+    <p>风投烧钱打水漂，那是人家自己的事，人家本来就是来赌的，赌输了认。</p>
+
+    <p>可保险和养老金这类钱，买的是「投资级」三个字给的安全感。一旦 AI 需求真的不及预期、那 1 吉瓦的算力跑不出预期的订单、底层现金流断了，违约的损失，落的就是这些资产负债表——也就是普通人的保单和年金的底层资产。</p>
+
+    <p>这才是这周真正发生的事。不是又一笔 AI 大单。是 AI 这场豪赌，第一次找到了它的「接盘侠」——而接盘的，是一群只想买份安稳、压根没打算赌 AI 的普通人。</p>
+
+    <p>赌赢了，分红是科技公司和华尔街的。赌输了，账单顺着「投资级」这根管子，流进你的保单。就这。</p>
+
+    <hr>
+
+    <h2>写在最后</h2>
+
+    <p>回到开头那 350 亿。</p>
+
+    <p>它当然可以是个好消息——AI 算力的需求是真的猛，猛到旧的融资方式（风投、科技巨头自掏腰包）已经喂不饱它，得动用华尔街最庞大的那台机器：把一切做成债，卖给全世界的机构。这说明 AI 的胃口大到了一个新量级。</p>
+
+    <p>但同一件事，换个角度看，是另一回事：当一个东西的钱多到要靠「保险和养老金」来接，意味着最先愿意赌它的那批聪明钱（风投、科技自有资金），已经喂不动、或者不想一个人扛了，开始往外分散风险。</p>
+
+    <p>「史上最大私募融资」是一句雄心，也是一张分散风险的通知单。</p>
+
+    <p>下次再有人跟你说某家 AI 公司多有钱、估值多高、模型分数多炸，你可以问两个特别扫兴、但特别有用的问题：</p>
+
+    <p>它的算力，是买的，还是租的？</p>
+
+    <p>它欠的那笔钱，记在谁的资产负债表上——是赌徒的，还是你的？</p>
+
+    <p>AI 这一轮最大的赌注，没押在纳斯达克的股价上。它正一层一层、贴着「投资级」的标签，押进你的保单里。</p>
+
+    <p>而你，可能压根没同意过这场赌局。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>「史上最大私募融资」是一句雄心，也是一张分散风险的通知单。最先愿意赌 AI 的那批聪明钱，开始往外分散风险了。</p>
+    <p>AI 这一轮最大的赌注，没押在纳斯达克的股价上。它正一层一层、贴着「投资级」的标签，押进你的保单里——而你，可能压根没同意过这场赌局。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.broadcom.com/company/news/financial-releases/64396" target="_blank" rel="noopener">Broadcom / Apollo / Blackstone 官方通稿：设立 AI XPV 平台，2028 年前部署超 20GW 算力，首期 350 亿美元（2026-06-09）</a></div>
+      <div class="footer-source-item"><a href="https://ir.apollo.com/news-events/press-releases/detail/629/apollo-leads-35-billion-capital-solution-for-broadcom-ai" target="_blank" rel="noopener">Apollo IR：领投 350 亿美元 AI XPV 平台资本方案，A1/A2 优先级票据结构与投资级评级</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/news/anthropic-invests-50-billion-in-american-ai-infrastructure" target="_blank" rel="noopener">Anthropic：在美国投资 500 亿美元算力基建，与 Fluidstack 在得州、纽约自建数据中心</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/news/google-broadcom-partnership-compute" target="_blank" rel="noopener">Anthropic：扩大与 Google、Broadcom 合作，获取数吉瓦级新一代算力</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
