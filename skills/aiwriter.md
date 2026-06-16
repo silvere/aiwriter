@@ -224,9 +224,33 @@ Read `templates/three-gates.md` 执行完整流程：
 
 ## Step 5：配图
 
-每节根据大纲的 `image_type` 走不同路径：
+**配图不是装饰，是替读者做理解工作。** 先通读全文，找到读者会卡壳的地方，只在「补充理解」处配图——每张图都要过**删图测试**（删了它读者理解会变差吗？不会就别配）。
 
-**concept 类（概念/氛围图）**：写入占位块，Step 7 阶段 fill_images.py 自动用 Gemini 2.5 Flash Image 生成。
+### 微信公众号（默认）：理解图优先
+
+平台是**微信公众号**时，**默认走「理解图（understanding）」配图流程**——按 illustrate 框架做功：通读 → 定位难点（`难度×重要性` 打分）→ 配图设计（过删图测试）→ 写占位 → 配图地图。**完整方法论、难点分类表、占位块格式、统一 CSS 约定，Read `templates/illustration-spec.md`**（必读）。
+
+理解图用 HTML→PNG 渲染（中文/数字精确、整篇风格统一），是公众号配图主力：
+
+```html
+<div class="img-placeholder understanding" data-caption="图注：把图的结论钉回正文，别写'如图所示'">
+  <div class="img-placeholder-icon">🧩</div>
+  <div class="img-placeholder-label">理解图占位</div>
+  <details><summary>理解图 HTML</summary><pre>&lt;div class="illustration"&gt;…HTML 转义后的 .illustration 片段，用统一 CSS class…&lt;/div&gt;</pre></details>
+</div>
+```
+
+Step 5 结束时给出**配图地图**：每张图（位置/难点类型/理解工作/图注）+ 说明哪些地方没配图、为什么。
+
+### 三类占位的分工
+
+| 类型 | 适用 | 渲染 |
+|------|------|------|
+| **understanding**（公众号默认） | 多步机制 / 结构关系 / 反直觉对照 / 时间线 / 数据对比 | HTML→PNG（Playwright） |
+| **concept**（AI 氛围图） | 抽象概念→艺术类比、「想象一下」写实画面 | OpenAI/Gemini 生图，搜图兜底 |
+| **diagram**（数据规格卡） | 纯数据图表，详见 `templates/diagram-spec.md` | matplotlib / HTML / SVG |
+
+concept 占位块：
 
 ```html
 <div class="img-placeholder concept">
@@ -236,9 +260,9 @@ Read `templates/three-gates.md` 执行完整流程：
 </div>
 ```
 
-**diagram 类（信息图/数据图）**：写入占位块 + 规格卡。详细字段、图类型选型、示例 Read `templates/diagram-spec.md`。
+> 小红书 / 其它平台：沿用 concept + diagram 即可，理解图为可选。
 
-> ⚠️ **`</div>` 不得省略**——fill_images.py 的正则依赖此结构。
+> ⚠️ **`</details>` 和最外层 `</div>` 不得省略**，understanding 的 `<pre>` 内 HTML 必须转义——fill_images.py 的正则依赖此结构。
 
 ---
 
@@ -317,7 +341,7 @@ python3 skills/scripts/md_to_html.py \
 python3 skills/scripts/fill_images.py "posts/{今日日期}/{slug}/article.html"
 ```
 
-concept 图走 Gemini，diagram 图走 HTML/SVG。
+understanding 理解图走 HTML→PNG（Playwright），concept 图走 OpenAI/Gemini，diagram 图走 matplotlib/HTML/SVG。本地缺 Node/Playwright/Chromium 时理解图占位自动跳过（不中断），由 CI 兜底渲染。
 
 ### 7.5 推送 GitHub
 
