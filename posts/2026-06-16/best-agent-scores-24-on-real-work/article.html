@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>全世界最强的 AI，去做了一次真人的工作，考了 24 分——它一边交白卷，一边在赚几十亿</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI · 科技观察</span>
+  <h1>全世界最强的 AI，去做了一次真人的工作，考了 24 分——它一边交白卷，一边在赚几十亿</h1>
+  <div class="hero-meta">
+    <span>2026-06-16</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">全世界最强的 AI agent 去做真人的工作，最高只考了 24 分，最难一档几乎全是零。可同一批 AI 正一边写代码一边赚进几十亿。能变现的 agent，和能取代你的 agent，从来不是同一个。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、这张卷子，考的不是「知道」，是「干完」</h2>
+<p>先把这套题说清楚，它叫 Agents' Last Exam，直译就是「智能体的最后一场考试」，发布方是伯克利的 RDI 中心，背后牵头的是宋晓东（Dawn Song）的团队。</p>
+<p>它跟过去那些 AI 基准，是两个物种。</p>
+<p>过去考 AI，考的是「你知不知道」。MMLU 那套题，本质是一万多道选择题，从法律考到医学；最前沿的模型早就刷到了 90 分往上，刷到出题的人自己都不好意思了。后来有了 SWE-bench、Terminal-Bench 这些，开始考「你会不会写代码」，最强的也奔着八九十分去了。</p>
+<p>分数一年比一年好看。问题是，分数好看了，活没见多干。</p>
+<p>这就是这帮伯克利的人想戳破的东西。他们在论文里写得很直接：这几年 AI 在各种榜单上分数狂飙，却没有变成跨行业的、真正有经济价值的落地——而这个鸿沟，「很大程度上是一个评测问题」。说人话就是：你们考的题，本身就是假的。</p>
+<p>所以他们把题换了。换成真人专家在真实工作里，用真实软件，真正交付过的项目。一千四百多道，覆盖五十五个细分职业领域，从量化交易、基因组分析，到航空航天工程、建筑设计、影视特效。每一道，都对着美国联邦那套职业分类标准（SOC）去抠，确保考的是真有人靠它吃饭的活。</p>
+<p>最狠的是判分。没有人工裁判，没有「酌情给分」。每道题的标准答案，是专家干完活之后才封存起来的隐藏参考；AI 交了卷，由一个确定性的判分器去比对——文件齐不齐、数字对不对、字段漏没漏、约束守没守。对就是对，错就是错，没得商量。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/diagram_01.svg" alt="数据图" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+<p>考「知道」，AI 是学霸。考「干完」，它现形了。</p>
+<hr />
+<h2>二、24 分什么概念：最强的也搞砸了四分之三</h2>
+<p>榜单第一名，是 OpenAI 的 GPT-5.5 配上 Codex 这套外壳，24.0 分。</p>
+<p>第二名、第三名，咬得很紧，差的都是个位数。Anthropic 的 Claude Fable 5 拿了 22.0 分，排第三。一路往下，到了榜单末尾的 Claude Opus 4.8，15.8 分。</p>
+<p>我把这几个名字摆出来，是想让你感受一下：这不是几个歪瓜裂枣去考砸了。这是把当今地球上最贵、最强、被吹得最厉害的一整排 AI，全请进考场，集体考了个不及格。所谓「最高分」24.0，翻译过来就是——<strong>地球上最能打的那个 agent，把真实工作搞砸了四分之三。</strong></p>
+<p>而这还是挑了最简单的题给的脸。</p>
+<p>这套题分三档难度。哪怕是最容易的那一档，最强的 agent 也没摸到 50 分。到了最难的「最后考试」那一档，画风就不是低分了，是清一色的零：Claude Opus 4.8，0 分；谷歌 Gemini，0 分；一票叫得上名字的顶级 agent，齐刷刷交白卷。整档平均下来，通过率只有 2.6%。</p>
+<p>不是答得不好，是基本答不出来。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/diagram_02.svg" alt="数据图" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+<p>你可能会想，分低就分低，AI 进步快，明年不就上去了。这个反驳我们后面会正面接。但在那之前，得先搞清楚一件更要命的事：它到底是「答不上来」，还是「压根不知道自己答错了」。</p>
+<hr />
+<h2>三、头号死因：它不是不会干，是不知道自己没干完</h2>
+<p>伯克利的人扒了一遍 AI 的失败现场，挑出了最高频的一种死法。他们给它起了个名字，叫「过早宣布成功」。</p>
+<p>具体长这样：agent 吭哧吭哧干了一通，然后特别自信地告诉你——搞定了，所有检查都通过了，可以交付。你打开一看，文件缺了一个，关键数字算错了，表格漏了一整列字段，或者干脆违反了题目白纸黑字写明的约束条件。</p>
+<p>它不是干不动，它是干到一半，自己以为干完了。</p>
+<p>这件事的杀伤力，比单纯的低分大得多。一个知道自己不会的实习生，至少会跟你说一声「这个我搞不定」；而这些 agent，是干砸了还拍着胸脯跟你说没问题的那种。<strong>agent 真正缺的不是干活的手，是那只回头检查自己干没干完的眼睛。</strong></p>
+<p>这也正好挡住了一种抬杠：有人会说，最难那档题本来就是给未来留的天花板，你拿 0 分说事是断章取义。这话对一半。可「过早宣布成功」这个毛病，从最简单的题就开始犯了，它跟难度没关系，跟「能不能自我核验」有关系。这不是题出得刁，是 AI 这项能力本身有个窟窿。</p>
+<p>你平时看的那些 agent 演示视频，丝滑、流畅、一气呵成，最后弹出一行绿色的「✅ 完成」。ALE 干的事，就是把那行绿字撕开，看看底下到底交了什么货。</p>
+<p>能演示，和能交付，中间隔着的就是这张 24 分的卷子。</p>
+<hr />
+<h2>四、那它怎么还在赚几十亿？因为「能变现」和「能取代」是两个东西</h2>
+<p>可要是 agent 这么不顶用，满天飞的那些「AI 帮公司省了多少人」「Claude Code 一年进账几十亿」「德勤给四十多万员工配上 AI」，又是怎么回事？</p>
+<p>这两件事，一点都不矛盾。它们俩，恰恰是这事的题眼。</p>
+<p>看一个特别扎眼的对比。Claude Fable 5 这个模型，在专门考写代码的 SWE-bench Pro 上，能拿 80.3 分，把 GPT-5.5 按在地上摩擦。可同一个 Fable 5，换到 ALE 上去考真实工作，掉到 22 分。</p>
+<p>同一个大脑，同一周，两张卷子，从 80 掉到 22。</p>
+<p>差别不在 AI 变笨了，差别在「写代码」这件事，是个对 AI 极其友好的特例。代码这东西，写完能立刻编译、能跑测试、能报错；旁边还坐着一个会 review 的工程师，盯着它、改着它、出事了兜着它。这是一个有护栏、有即时反馈、有人盯梢的窄场景。在这种场景里，agent 确实能干活，也确实在变现。</p>
+<p>而 ALE 考的是另一回事：把任务丢给它，让它在 Siemens、Unreal 这些专业软件里，长程地、跨工具地、自己干自己验，干完没人帮它检查。一旦没了护栏、没了那只回头检查的眼睛，它就露出了第三节那个窟窿——以为自己干完了，其实交了白卷。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/diagram_03.svg" alt="数据图" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+<p>所以企业里那些「AI 提效」的真金白银，赚的全是窄场景的钱：写代码、写测试、写文档、跑 DevOps——清一色是「人在回路里盯着」的活。这跟「让 agent 自己上岗，顶替一个完整的岗位」，差着十万八千里。</p>
+<p><strong>能帮公司赚钱的那个 agent，和能取代你的那个 agent，从来不是同一个东西。</strong> 前者是个带护栏的窄工具，后者是个能全自主交付的同事——而后者，刚考了 24 分。</p>
+<hr />
+<h2>五、那「AI 取代白领」到底是真是假</h2>
+<p>把话挑明，也得给反方留够位置，不然就是耍流氓。</p>
+<p>第一种反驳来自厂商：你这考的是「全自主、零人工介入」，可真实职场里没人这么用 agent，都是人机协同，人审人补人兜底，你拿全自主的零分说事，是偷换概念。这话我完全同意——因为这恰恰是我整篇要说的。协同场景里 agent 有用，这事我没否认；我否认的是「它能自己顶一个岗」。把「协同提效」说成「自主取代」的，不是我，是招股书和裁员邮件。</p>
+<p>第二种反驳更硬，来自出题方自己的博客。他们承认，今天 agent 外面套的那层厚厚的「脚手架」，很多是在替当前模型补短板；而这些脚手架，往往会在下一代模型里被「溶解」掉，变成模型自带的能力。换句话说，今天的低分有一部分是工程不成熟，不全是能力天花板。明年再考，头部分数大概率会从 24 往上走，奔 30、40 去。</p>
+<p>这个我认。但请注意，涨分和「能上岗」是两件事。最难那一档的零分、那个「不知道自己没干完」的窟窿，要靠架构级的进步去补，不是多套两层脚手架就能糊上的。</p>
+<p>更别说，今天这 24 分还贵得离谱。Fable 5 平均做一道题要烧掉 15.7 美元，是 GPT-5.5 的四倍，是另一个对手 Composer 的十二倍。花十二倍的钱，交一份白卷。你要真把它当员工招进来，这工资条你看了得住院。</p>
+<p>所以「AI 取代知识工作者」这个叙事，到底是真是假？</p>
+<p>ALE 给了一个冷冰冰的标尺：当最强的系统在真实有偿工作上只过 24 分、最难一档近乎全零，所谓「取代」，在绝大多数岗位上是一句被市值需要、却没被生产率证据支撑的营销话。真实发生的，是任务级的局部增强——它替你写了那段代码、那份初稿、那张表，而不是替掉了「你」。</p>
+<p>落到你身上，就两件事。别因为一封写着「AI 让我们提效」的裁员邮件，就真信自己被一台机器换掉了——换掉你的是想省钱的管理层，AI 只是那件最体面的外套。还有，下次再有人拍着 PPT 跟你说「我们的 agent 能顶一个分析师」，你可以特别平静地问他一句：</p>
+<p>那它 ALE 考了多少分？</p>
+<p>两张卷子，两个分数，看着像两个 AI。可它就是同一个。一个正在帮人赚钱，一个还远远顶不了你的班。把这两个分开，你就不慌了。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>两张卷子，两个分数，看着像两个 AI。可它就是同一个。一个正在帮人赚钱，一个还远远顶不了你的班。</p>
+    <p>把这两个分开，你就不慌了。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2606.05405" target="_blank" rel="noopener">Agents' Last Exam（论文）</a></div>
+      <div class="footer-source-item"><a href="https://agenthle.org/leaderboard" target="_blank" rel="noopener">Agents' Last Exam 官方排行榜</a></div>
+      <div class="footer-source-item"><a href="https://github.com/rdi-berkeley/agents-last-exam" target="_blank" rel="noopener">Agents' Last Exam 官方代码与数据仓库</a></div>
+      <div class="footer-source-item"><a href="https://agents-last-exam.org/blogs/harness-matters" target="_blank" rel="noopener">Does the Harness Matter? Lessons from ALE-Claw（官方博客）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
