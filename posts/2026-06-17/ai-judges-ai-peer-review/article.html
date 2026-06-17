@@ -375,19 +375,7 @@
     <h2>一、6 月 15 日：向一台机器证明「你是人」</h2>
 <p>先把 NeurIPS 这份通告里的数字摆清楚，因为每一个都长得像段子。</p>
 <p>969 篇立场论文，Pangram 这个检测器给出的结果是：70.5% 的论文 AI 分超过 50%，28.2%（273 篇）直接顶到 100%。会议据此桌拒了 178 篇（占全赛道 18.4%），剩下 123 篇缓刑——6 月 15 日前自证清白，证不出来就一起拒。</p>
-<div class="img-placeholder diagram">
-  <div class="img-placeholder-icon">📊</div>
-  <div class="img-placeholder-label">信息图占位</div>
-  <details><summary>规格卡</summary><pre>【图类型】：条形图
-【副标题】：NeurIPS 2026 立场论文赛道，969 篇的去向
-【单位】：篇
-【核心判断】：近三成论文被一台检测器判了 100% AI 分，命运压在一个看不见的分数上
-【核心内容】：
-  - 全部投稿 [参照]：969
-  - Pangram 判 100% AI 分 [负]：273
-  - 直接桌拒 [负]：178
-  - 缓刑·须 6·15 前自证是人写 [负]：123</pre></details>
-</div>
+<figure style="margin:32px 0;text-align:center"><img src="images/diagram_01.svg" alt="数据图" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
 
 <p>这里得替 Pangram 说句公道话，免得你误会：所谓「100% AI 分」，不是说这篇论文 100% 的字都是 AI 敲的。它的官方解释是「文本里有大量段落存在实质性的 AI 使用」。这是个概率判断，不是逐字鉴定。</p>
 <p>可问题恰恰出在这。一个连发明者都反复强调「别按字面理解」的概率分数，被一个顶级会议拿去当了桌拒的硬依据——过线就毙，不上诉。</p>
@@ -402,11 +390,7 @@
 <p>现在这个平衡被炸了。NeurIPS、ICLR、AAAI 这几个会，投稿量这几年集体冲到数万篇一届。论文翻着倍涨，免费审稿人就那么多，每个人手里压着十几二十篇，还都是本职工作之外的活。</p>
 <p>人扛不住了，会怎么办？很简单，也用 AI。</p>
 <p>ICML 今年就抓了个现行：因为违反它自己白纸黑字、且审稿人签过字的 LLM 使用规则，桌拒了大约 497 篇论文，背后牵出 398 名违规的「互惠审稿人」——一边给别人的论文写着 AI 生成的评审，一边自己的论文也在被 AI 审。</p>
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🎨</div>
-  <div class="img-placeholder-label">概念图占位</div>
-  <details><summary>生成 Prompt</summary><pre>an empty academic review desk with stacks of unread paper manuscripts piling up, a single small robot quietly stamping documents in the dark, symbolizing peer review work abandoned by humans and taken over by machines, flat design, minimalist illustration, tech style, blue and white color palette, no text, no labels, clean white background</pre></details>
-</div>
+<figure style="margin:32px 0;text-align:center"><img src="images/concept_01.jpg" alt="empty academic review desk stacks" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
 
 <p>ICLR 那边的数字更直白。检测方 Pangram 估算，今年 ICLR 收到的评审意见里，约 21% 是完全由 AI 生成的，超过一半带有 AI 痕迹。也就是说，你熬了大半年的论文，递上去，给你写「意见」的那个「专家」，可能压根没读，是把你的稿子丢进模型、几秒钟生成了一段看着挺专业的话。</p>
 <p>两头同时塌：作者用 AI 写论文，审稿人用 AI 写评审。一篇没人真正写的东西，被一份没人真正读的意见审判——中间那个「人类专家把关」的环节，被抽空了，只剩两台模型隔空对话。</p>
@@ -418,17 +402,7 @@
 <p>效率是碾压级的。整个流程一天之内跑完，单篇成本不到 1 美元。一个人类审稿人读一篇论文得花几个钟头，AI 把两万多篇全审完，花的时间和钱，约等于人类喝顿下午茶。</p>
 <p>但便宜和快，都不是重点。重点是会后那份覆盖 5,834 人的调查——作者、审稿人、领域主席都填了。结果是：大家不光觉得 AI 评审有用，而且在一系列关键维度上，<strong>作者更偏好 AI 给的评审，而不是人给的</strong>。</p>
 <p>论文报告，在用来衡量评审质量的 9 项指标里，有 6 项，作者觉得 AI 比人类做得更好：揪技术错误、提出作者没想到的点、改进研究设计、整体的彻底程度……机器在这些事上，赢了人。</p>
-<div class="img-placeholder diagram">
-  <div class="img-placeholder-icon">📊</div>
-  <div class="img-placeholder-label">信息图占位</div>
-  <details><summary>规格卡</summary><pre>【图类型】：条形图
-【副标题】：AAAI-26 调查，9 项评审质量指标的较量
-【单位】：项
-【核心判断】：9 项里 6 项，作者觉得机器审得比人更到位——这不是 AI 太强，是人审得太敷衍
-【核心内容】：
-  - 作者更偏好 AI 评审的指标 [负]：6
-  - 作者更偏好人类评审的指标 [正]：3</pre></details>
-</div>
+<figure style="margin:32px 0;text-align:center"><img src="images/diagram_02.svg" alt="数据图" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
 
 <p>你得品一下这件事有多荒诞。</p>
 <p>写论文的人，是这个星球上最懂 AI 的一群人。他们最清楚 AI 会胡编引用、会一本正经地说错话。可就是这群人，回过头来评价「谁审我的论文审得更走心」，投给了机器。</p>
@@ -441,11 +415,7 @@
 <p>科学这套体系能自我纠错，靠的是一个朴素假设：生产知识的人，和鉴定知识的人，是两拨独立的人、用独立的脑子。我写的我可能看不出错，但换个人来审，能审出来。这叫独立验证，是整个科学大厦的地基。</p>
 <p>现在，这两拨人，正在变成同一类东西。</p>
 <p>斯坦福那边搞了个叫 Agents4Science 的会，玩得最彻底：论文的主要作者是 AI，审稿人也是 AI——三个不同的大模型组队当审稿人，连引用和代码都让 AI 去核。AI 写、AI 审、AI 把关，闭环了。这套实验的结果，最后发在了《自然》子刊上。</p>
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🎨</div>
-  <div class="img-placeholder-label">概念图占位</div>
-  <details><summary>生成 Prompt</summary><pre>a closed loop where one machine writes a document and hands it to an identical machine that stamps approval on it, the two machines mirror each other in an endless cycle, symbolizing knowledge being both produced and verified by the same kind of mind, flat design, minimalist illustration, tech style, blue and white color palette, no text, no labels, clean white background</pre></details>
-</div>
+<figure style="margin:32px 0;text-align:center"><img src="images/concept_02.jpg" alt="closed loop where one machine" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
 
 <p>连「用来测量 AI 的尺子」本身，都未必干净。专门做 AI 评测的机构 Epoch AI，6 月 12 日复盘了自家那套号称很硬的数学基准 FrontierMath，结果发现第二版里，原来的题目竟有 42% 存在「虽小但关键」的错误，修正了 135 道、删掉 12 道。也就是说，过去我们拿来给 AI 打分、排名、写进发布会 PPT 的那把尺子，自己先是歪的。</p>
 <p>把这几件事叠在一起看：写论文的可以是 AI，审论文的可以是 AI，给 AI 打分的尺子本身也带错。当生产、鉴定、度量三道关都交给同一类大脑，那个「独立第三方来验一遍」的假设，就只是个假设了。它还在纸面上转，但已经空转。</p>
