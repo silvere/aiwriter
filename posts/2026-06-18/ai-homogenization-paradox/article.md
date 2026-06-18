@@ -18,11 +18,7 @@
 
 ---
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🎨</div>
-  <div class="img-placeholder-label">概念图占位</div>
-  <details><summary>生成 Prompt</summary><pre>a large crowd of many distinct different people each holding up an identical glowing lightbulb of the exact same shape, individuality merging into sameness, flat design, minimalist illustration, tech style, blue and white color palette, no text, no labels, clean white background</pre></details>
-</div>
+![large crowd many distinct different](images/concept_01.jpg)
 
 ## 一、九个人，一个名字
 
@@ -52,17 +48,7 @@
 
 另一个，AI 写出来的小说，**彼此之间更像了**。研究测了故事两两之间的相似度，用上 AI 之后，这个相似度涨了大约 10%。也就是说，每篇单看都更精彩，但摞在一起，面孔越来越糊成一张。
 
-<div class="img-placeholder diagram">
-  <div class="img-placeholder-icon">📊</div>
-  <div class="img-placeholder-label">信息图占位</div>
-  <details><summary>规格卡</summary><pre>【图类型】：条形图
-【副标题】：同一个 AI，把个体和群体推向相反方向
-【单位】：%
-【核心判断】：每个人的作品更好看了，但所有人的作品也更像了——同一根杠杆，两个方向
-【核心内容】：
-  - 个体·故事「可用性」最高提升 [正]：9
-  - 群体·故事两两相似度上升 [负]：10.7</pre></details>
-</div>
+![数据图](images/diagram_01.svg)
 
 Doshi 和 Hauser 给这事起了个名，叫「**社会困境**」（social dilemma）。我把它翻得再白一点：对你个人，用 AI 是稳赚的；对你们所有人，多样性是稳赔的。而因为对个人稳赚，所以没有任何一个理性的人，会主动不用。
 
@@ -86,11 +72,7 @@ Doshi 和 Hauser 给这事起了个名，叫「**社会困境**」（social dile
 
 更极端的情况叫「模型崩塌」。2024 年《自然》（Nature）上 Ilya Shumailov 那篇说得很清楚：如果让 AI 反复拿 AI 生成的东西去训练下一代 AI，分布的「尾巴」——也就是那些稀有的、古怪的、不主流的内容——会先消失，模型最后收敛成一小撮平庸的均值。这不只是文字，图像、声音的模型都一样。
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🎨</div>
-  <div class="img-placeholder-label">概念图占位</div>
-  <details><summary>生成 Prompt</summary><pre>a giant funnel taking in thousands of colorful varied diverse shapes at the top and outputting a single repeated identical gray shape at the bottom, mode collapse concept, machine averaging everything into one, flat design, minimalist illustration, tech style, blue and white color palette, no text, no labels, clean white background</pre></details>
-</div>
+![giant funnel taking thousands colorful](images/concept_02.jpg)
 
 所以别再自责「是不是我提示词没写好」。默认状态下，模型本来就是一台「求平均」的机器。它的工作不是给你最奇的那个答案，是给你最稳的那个——而最稳的那个，对所有人都一样。
 
@@ -104,11 +86,7 @@ Doshi 和 Hauser 给这事起了个名，叫「**社会困境**」（social dile
 
 翻成人话：AI 的「默认审美」是有国籍的。你以为它在帮你表达，它其实在悄悄地、礼貌地，把你的表达改成它老家那个味儿。
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🎨</div>
-  <div class="img-placeholder-label">概念图占位</div>
-  <details><summary>生成 Prompt</summary><pre>many different cultural patterns and scripts from around the world flowing through a machine and coming out as one single uniform western template, cultural diversity being flattened into one default style, flat design, minimalist illustration, tech style, blue and white color palette, no text, no labels, clean white background</pre></details>
-</div>
+![many different cultural patterns scripts](images/concept_03.jpg)
 
 这事在语言里也留下了指纹。2025 年《科学·进展》上 Dmitry Kobak 那篇，扒了一千五百万篇生物医学论文摘要，发现 ChatGPT 出来之后，「delve」（钻研）这类词的出现频率暴涨——光「delves」一个词，频率就涨了 28 倍。他们据此估算，2024 年至少 13.5% 的摘要是 AI 帮着写的，某些领域这个数字飙到 40%。一个本来五花八门的学术语料库，正在被几百个 AI 偏爱的词，统一刷成同一种腔调。
 
