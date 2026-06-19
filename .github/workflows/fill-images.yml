@@ -24,13 +24,23 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: 安装系统依赖（CJK 字体让 matplotlib SVG 渲染中文不丢字）
+      - name: Setup Node（理解图 HTML→PNG 用 Playwright）
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 安装系统依赖（CJK 字体让中文渲染不丢字）
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq fonts-noto-cjk
+          sudo apt-get install -y -qq fonts-noto-cjk fonts-wqy-zenhei
 
       - name: 安装图片生成依赖
         run: pip install --quiet openai python-dotenv matplotlib
+
+      - name: 安装 Playwright + Chromium（理解图渲染层）
+        run: |
+          npm install -g playwright
+          playwright install --with-deps chromium
 
       - name: 填充图片占位符
         env:
