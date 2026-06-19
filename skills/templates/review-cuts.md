@@ -102,6 +102,7 @@
 Agent(
   description="读者刀审稿 - 3类读者反应分析",
   subagent_type="general-purpose",
+  model="sonnet",          # 读者刀是按视角逐段挑刺的机械活，走 Sonnet 4.6 省 token
   prompt="""
 你是文章审稿员。Read 文件 {article.md 完整路径}（整篇读完）。
 
