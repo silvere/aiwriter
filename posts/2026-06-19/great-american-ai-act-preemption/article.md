@@ -16,7 +16,7 @@
 
 ---
 
-![United States Capitol building with a giant glass dome covering it, flat minimalist illustration, federal government and technology regulation theme, blue and white color palette, no text, no labels, clean white background](images/concept_01.jpg)
+![封面：都在数它给 AI 加了几道紧箍咒，没人念第 121 条——一部「管 AI」的法，承重墙是「别管 AI」。](images/cover.png)
 
 ## 一、先看清楚，这 269 页到底硬在哪
 
