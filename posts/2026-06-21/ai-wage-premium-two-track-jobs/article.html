@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 不抢你工作，它把你工作劈成两半——一半涨薪 62%，一半标上「谁都能干」</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 观察</span>
+  <h1>AI 不抢你工作，它把你工作劈成两半——一半涨薪 62%，一半标上「谁都能干」</h1>
+  <div class="hero-meta">
+    <span>2026-06-21</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">PwC 6 月 15 日发布《2026 全球 AI 就业晴雨表》，扒了 27 国、超 10 亿条招聘广告，得出一个让你想转发的数字：会用 AI 的打工人，工资溢价已冲到 62%。但那 62% 不是入场券——AI 正把你这份工作劈成判断和执行，只给判断那一半涨薪，给执行那一半盖章：「这活儿现在谁都能干」。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <p>![封面：AI 把一份工作劈成两半——左边"判断"涨薪 62%，右边"执行"被标上"谁都能干"。决定你在哪半边的，不是你会不会 AI。](images/cover.png)</p>
+
+    <h2>一、先把硬的认了：AI 真没在裁人，它在疯狂招人、疯狂涨薪</h2>
+
+    <p>要拆一份报告的叙事，得先承认它数据硬的地方。不然就成了为反对而反对，那是耍流氓。</p>
+
+    <p>这份晴雨表最反直觉、也最实在的一组数据是这样的：把所有公司按"被 AI 影响的程度"排队，AI 暴露度最高的那批公司，从 2018 年到 2025 年，员工人数涨了 52%；而 AI 暴露度最低的那批，只涨了 36%。</p>
+
+    <p>你没看错。用 AI 用得最狠的公司，不是在裁人，是在比别人更快地招人。</p>
+
+    <p>工资也是。最暴露的那批公司，员工整体薪资涨了 24%，最不暴露的只涨了 17%。劳动生产率，最暴露的行业 2025 年比 2018 年涨了 34%，最不暴露的涨了 24%。每一项，会用 AI 的一边都赢。</p>
+
+    <p>所以 PwC 给了一句很提气的官方结论：AI"远不是一个就业杀手，当它被用来撬动增长、打开新市场时，它甚至可能是一个就业扩张器"。</p>
+
+    <p>这话听着是不是特别舒服？特别想转发到家族群，告诉天天担心你被 AI 取代的老妈："看，专家说了，AI 是来给我加薪的。"</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图注：四项指标全是会用 AI 的公司赢——这一栏 PwC 反复在讲。问题是它没把另一栏并排放给你看。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：四项指标全是会用 AI 的公司赢——这一栏 PwC 反复在讲。问题是它没把另一栏并排放给你看。</figcaption></figure>
+
+    <p>舒服归舒服，先在心里记一笔账：这份告诉你"AI 对打工人是好事"的报告，是谁发的？是普华永道。一家靠帮企业做"AI 数字化转型"咨询赚钱的公司。它说 AI 是好事，约等于卖铲子的告诉你这山里有金子。</p>
+
+    <p>铲子可能是真好铲子，金子也可能是真金子。但这话从谁嘴里出来，你得记着。我们接着往下看，看它招人、涨薪这串好数字底下，那把刀藏在哪。</p>
+
+    <h2>二、报告自己起的名字就泄了底：不是"更好"，是"两种"</h2>
+
+    <p>把这份报告从头读到尾，你会发现 PwC 其实根本没说"AI 让所有打工人都更好"。是解读的人，自动把"两种未来"读成了"一种好未来"。</p>
+
+    <p>它说的是，全球的活儿正在被 AI 劈成两条轨道。</p>
+
+    <p>第一条，PwC 叫它"专业化"（professionalised）。它的原话定义是：AI 把岗位里那些重复的、routine 的活儿自动化掉，于是人类的判断力和专业知识被进一步凸显。说人话就是——脏活累活机器干了，你那点真本事更值钱了。</p>
+
+    <p>第二条，叫"平权化"（democratised）。原话定义是：AI 让这个岗位本身，变得连非专家也能上手。说人话就是——你这活儿，AI 一加持，外面随便拉个人来都能干个七七八八。</p>
+
+    <p>同一场 AI 浪潮，落在这两条轨道上的人，是两种完全相反的命运。而 PwC 给的例子，狠就狠在它专门挑了反直觉的。</p>
+
+    <p>专业化轨道，它举的代表是放射科医生。这职业你熟吧？过去十年被预言"最先死于 AI"的头号种子选手，AI 看片子又快又准，多少人断言放射科要凉。结果晴雨表的数据显示，放射科医生的岗位需求在涨。为啥？因为 AI 把读片这种重复劳动接走之后，医院能处理的病例量上去了，对那个最后拍板、签字、负责的高水平判断，需求反而更大了。</p>
+
+    <p>平权化轨道，它举的代表是 IT 服务经理、医疗秘书。这些岗位，多少人觉得稳得很，坐办公室、懂流程、饿不着。结果它们在另一条轨道上——AI 让这些活儿对非专家敞开了，需求往下走。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="图注：你以为最先被 AI 取代的放射科医生，在涨；你以为稳的 IT 服务经理，在缩。分轨标准不是'会不会 AI'，是 AI 接走的到底是你的杂活、还是你这个人。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：你以为最先被 AI 取代的放射科医生，在涨；你以为稳的 IT 服务经理，在缩。分轨标准不是'会不会 AI'，是 AI 接走的到底是你的杂活、还是你这个人。</figcaption></figure>
+
+    <p>这两条轨道差多少？专业化岗位的数量增长，是平权化的整整 2 倍；薪资增长速度，从 2021 年算起快了 42%。</p>
+
+    <p>那么，决定你被分到哪条轨道的，到底是什么？</p>
+
+    <p>直觉会告诉你：是"你会不会用 AI"。学会了 AI，上专业化的车；不学，被平权化淘汰。所有让你赶紧报班的解读，都建立在这个直觉上。</p>
+
+    <p>但 PwC 的定义里，分轨标准压根不是这个。是 AI 在你这份工作里，接走的到底是哪一半——它接走的是你判断周围那些重复的执行，你就被抬上专业化轨道；它接走的是你这份工作本身的门槛、让谁都能进来，你就被铲到平权化轨道。</p>
+
+    <p>会不会 AI，是你手里的工具。判断和执行的配比，是这份工作的命。工具你能学，命这个东西，得看你这活儿原本是靠脑子吃饭，还是靠"会这套流程"吃饭。</p>
+
+    <h2>三、那 62% 的溢价，不是入场券，是一张倒计时的票</h2>
+
+    <p>回到那个最诱人的数字，62% 的工资溢价。</p>
+
+    <p>为什么会用 AI 能多挣六成？经济学里这事一点都不神秘：因为稀缺。会的人少，活儿需要，价格就上去。62% 是稀缺给的价。</p>
+
+    <p>但你把"平权化"那条轨道的定义再读一遍——"让非专家也能干"。这句话翻译过来是什么？是稀缺正在被亲手摧毁的过程。今天你会某个 AI 技能值钱，是因为它还稀缺；而 AI 工具进化的方向，就是让这个技能不再稀缺、让它"谁都能上手"。你吃的这口溢价，本质是在吃这个技能"还没烂大街"的时间差。</p>
+
+    <p>这不是我瞎推的，报告里有个数据直接戳穿了它：AI 暴露度最高的那些岗位，它们要求的技能，变化速度是 AI 暴露度最低岗位的 2 倍还多。而且这个差距，比去年又扩大了 75%。</p>
+
+    <p>技能换得越来越快，是什么意思？是你今天辛辛苦苦考下来、能吃 62% 溢价的那个 AI 技能，保质期正在变短。今天的稀缺溢价，两三年后大概率变成招聘要求里的一行基线——"熟练使用 XX，应届亦可"。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="图注：溢价这条曲线在往上窜，但它脚下的技能保质期在缩短；而且同样会 AI，在消费行业值 118%，在政府部门只值 16%——溢价不是'会 AI'给的，是稀缺给的。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：溢价这条曲线在往上窜，但它脚下的技能保质期在缩短；而且同样会 AI，在消费行业值 118%，在政府部门只值 16%——溢价不是'会 AI'给的，是稀缺给的。</figcaption></figure>
+
+    <p>还有个数字能把"溢价是会 AI 给的"这个错觉彻底打碎：同样是会 AI，在消费市场这个行业，溢价高达 118%；在政府和公共部门，只有 16%。同一身本事，换个行业，价格差了 7 倍多。</p>
+
+    <p>这说明什么？说明给你涨薪的从来不是"会 AI"这三个字本身，而是这门本事在你这个具体的位置上，到底还稀不稀缺、还连不连着判断。把"会 AI"当成护身符的人，相当于揣着一张写着金额的票，却没看票面上那行小字：本券两到三年内作废。</p>
+
+    <p>更别说，当一个技能从稀缺变成"谁都会"，会它的人就从"稀缺人才"变成"庞大供给"。供给一上来，你在老板面前那点议价的腰杆，是会软下去的。你以为 62% 是你赢了，其实那是这门手艺，被铲平之前的最后一次报价。</p>
+
+    <h2>四、最狠的一刀，落在还没入行的新人身上</h2>
+
+    <p>如果说前面这些落在存量打工人身上还算缓刀，那 AI 对一类人是直接抽梯子——刚毕业、想入行的新人。</p>
+
+    <p>这份报告今年专门加了一块对"初级岗位"的分析，光美国就扒了 240 万条入门级招聘广告。它发现了一个很拧巴的现象，PwC 给它起名叫"高级化"（seniorization）。</p>
+
+    <p>什么意思？在 AI 暴露度高的领域，那些标着"初级""应届可"的岗位，要求你具备领导力、判断力这类传统上属于资深员工技能的概率，是 AI 暴露度低岗位的 7 倍。在最暴露的那些职业里，初级岗位招聘广告上新冒出来的技能要求，有 52% 是过去只跟老员工挂钩的；而最不暴露的职业，这个比例只有 7%。</p>
+
+    <p>PwC 全球劳动力业务负责人 Pete Brown 的原话说得很清楚：</p>
+
+    <blockquote><p>"经验和专业能力之间那种传统的关系正在改变。AI 拿走了一部分过去充当'学徒期'的日常工作，同时又把对判断力、领导力和适应力的需求，提前到了职业生涯非常早的阶段。"</p></blockquote>
+
+    <p>这话斯文，翻成大白话就很扎心了：过去你进一个行业，是从打杂、跑腿、做表、改格式这些纯执行的活儿干起，干着干着，判断力就在这些杂活里慢慢熬出来了。这套"边打杂边长本事"的路子，就是所谓的学徒期。</p>
+
+    <p>现在 AI 把打杂的活儿全接走了。听上去是好事？可问题是，企业转头就要求你一进门就有判断力——而判断力这东西，原本恰恰是靠那几年打杂熬出来的。梯子中间那几级被 AI 抽掉了，然后它指着梯子顶端跟你说：你得先站到这儿，我才让你上来。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_04.png" alt="图注：AI 接走了新人打杂的活，却要求新人一进门就有本该靠打杂熬出来的判断力——升级版初级岗 +35%，普通初级岗 -10%。入行的梯子，中间几级被抽了。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：AI 接走了新人打杂的活，却要求新人一进门就有本该靠打杂熬出来的判断力——升级版初级岗 +35%，普通初级岗 -10%。入行的梯子，中间几级被抽了。</figcaption></figure>
+
+    <p>数据也对得上：那种一进门就要求资深技能的"升级版"初级岗，从 2019 年到现在涨了 35%；而那种能让你边打杂边长本事的普通初级岗，缩了 10%。</p>
+
+    <p>这就是"AI 不裁人"这句话里，最不动声色的一刀。它没裁掉在职的人，它裁掉的是"入行"这件事本身。纯执行的活儿是新人唯一的入场口，而执行，正是 AI 第一个清空的东西。一个连门都进不去的人，不会出现在"裁员率"的统计里——他只是从来没被算进来过。</p>
+
+    <h2>五、所以这报告真正该怎么用：先别急着励志</h2>
+
+    <p>得替最硬的一种反驳挡一刀，不然不公道。</p>
+
+    <p>有人会说：你通篇在泼冷水，那照你说，这份报告唯一的用处就是制造焦虑？那我学不学 AI、往哪儿走，不还是得有个说法？</p>
+
+    <p>有说法。但在给说法之前，得先把这份报告里被所有"励志解读"自动跳过的那个数字摆出来——它才是这事的底色。</p>
+
+    <p>PwC 发现，在 AI 暴露度最高的公司里，收益也不是平均分的。最顶端那 20% 的"超级明星"企业，劳动生产率增长高达 163%，是整体最暴露公司平均水平（34%）的差不多 5 倍。也就是说，AI 创造的那块大蛋糕，绝大部分被极少数头部公司端走了。</p>
+
+    <p>这正是 2024 年诺贝尔经济学奖得主、MIT 的 Daron Acemoglu 一直在敲的警钟：技术进步从来不会自动变成所有人的繁荣。当 163% 的生产率红利高度集中在金字塔尖那一小撮企业手里时，这就不再是一个"你努力学 AI 就能分一杯羹"的技能问题了，这是个谁拿走了蛋糕的权力问题。</p>
+
+    <p>把这层说破，是为了先把丑话讲在前头：<strong>指望靠个人选对赛道，就能在 AI 这局里翻盘，是不现实的。</strong> 163% 流向哪里，不在你我这种打工人的牌桌上。你往判断密集的轨道挪，挪到头，也只是从"马上被铲平"换成"晚一点被铲平"，房子还是那个着火的房子，你只是挑了个离门近点的座位。</p>
+
+    <p>但——在这个房子既定的前提下，挑离门近的座位，依然比闭着眼乱坐强。这就是这份报告对个人唯一诚实的用法：</p>
+
+    <p>它不该被你读成"快去考个 AI 证书追那 62% 溢价"。它该被你读成一道盘点题——把你现在这份工作摊开，老老实实分一下：哪些是判断（要不要、对不对、谁负责，这些只有你拍得了板的部分），哪些是执行（流程化的、能写成 SOP 的、别人照着就能干的部分）。判断占的比重越大，AI 来了你越往上抬；执行占的比重越大，你越早被盖上那个"谁都能干"的章。</p>
+
+    <p>然后往判断那一头使劲。不是去追最新最炫的 AI 工具——那是执行，而且保质期两年。是去练那些 AI 替不掉、也"民主化"不掉的东西：在信息不全时拍板的判断力、对一件事到底值不值得做的品味、出了事敢负责的担当。报告里也说了，AI 暴露岗位新长出来的任务，有 2.5 倍更依赖同理心、判断力和创造力。机器越能干，这几样越是你最后的护城河。</p>
+
+    <p>这份 10 亿条招聘广告堆出来的报告，最该让你记住的，不是 62% 那个让你想转发的数字。是它背后那句没明说的话：</p>
+
+    <strong>AI 从来不裁人。它只是把"裁人"这个词，悄悄改成了"这个岗位现在谁都能干"。然后它还会先给你涨 62%，奖励你学会了亲手说出这句话。</strong>
+
+    <p>至于那 163% 去了哪儿——它不在你的盘点题里，也不在你能改的范围里。但你至少有权知道，自己盘的是哪一半。</p>
+
+    <p>就这。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>这份 10 亿条招聘广告堆出来的报告，最该让你记住的不是 62% 那个数字，是它背后那句没明说的话：AI 从来不裁人，它只是把「裁人」悄悄改成了「这个岗位现在谁都能干」，然后还会先给你涨 62%，奖励你学会亲手说出这句话。</p>
+    <p>至于那 163% 的红利去了哪儿——它不在你的盘点题里，也不在你能改的范围里。但你至少有权知道，自己盘的是哪一半。就这。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.pwc.com/gx/en/news-room/press-releases/2026/pwc-2026-ai-jobs-barometer.html" target="_blank" rel="noopener">PwC：2026 全球 AI 就业晴雨表新闻稿《AI 把全球劳动力市场分成两条截然不同的路径，奖励人类技能》（2026-06-15）</a></div>
+      <div class="footer-source-item"><a href="https://www.pwc.com/gx/en/services/ai/ai-jobs-barometer.html" target="_blank" rel="noopener">PwC：2026 Global AI Jobs Barometer 主报告页</a></div>
+      <div class="footer-source-item"><a href="https://www.pwc.com/gx/en/issues/artificial-intelligence/job-barometer/2026/2026-global-ai-jobs-barometer-full-report.pdf" target="_blank" rel="noopener">PwC：2026 Global AI Jobs Barometer 全报告 PDF</a></div>
+      <div class="footer-source-item"><a href="https://www.pwc.com/gx/en/news-room/press-releases/2025/ai-linked-to-a-fourfold-increase-in-productivity-growth.html" target="_blank" rel="noopener">PwC：2025 全球 AI 就业晴雨表新闻稿（提供 25%→56% 历史基准）</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/research/labor-market-impacts" target="_blank" rel="noopener">Anthropic：AI 的劳动力市场影响研究（反证——AI 暴露度上升与就业总量下降相关）</a></div>
+      <div class="footer-source-item"><a href="https://shapingwork.mit.edu/wp-content/uploads/2026/03/Automation-and-Polarization.pdf" target="_blank" rel="noopener">Daron Acemoglu & Jonas Loebbing：Automation and Polarization（2024）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
