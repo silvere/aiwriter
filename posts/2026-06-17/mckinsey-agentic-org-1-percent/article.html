@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agentic Organization：1% 的未来，99% 的话术</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">管理 · 商业观察</span>
+  <h1>Agentic Organization：1% 的未来，99% 的话术</h1>
+  <div class="hero-meta">
+    <span>2026-06-17</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">麦肯锡 2025 年发了份报告提了个新词——agentic organization。但最炸裂的不是新词，是它顺手公布的数据：89% 公司还在工业时代，1% 是网络组织。这意味着——麦肯锡画的饼，99% 的公司只能拿来做下一份 PPT。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>麦肯锡到底说了什么</h2>
+<p>先复述一下原文，不然容易被人觉得我在断章取义。</p>
+<p>报告标题：《The Agentic Organization: Contours of the Next Paradigm for the AI Era》，麦肯锡 People &amp; Organizational Performance 部门出品。</p>
+<p>核心论点是——</p>
+<p>AI 正在带来<strong>工业革命和数字革命以来最大的组织范式转移</strong>。</p>
+<p>新范式叫 agentic organization：人类和 AI agent（虚拟的 + 物理的）在近乎零边际成本下并肩工作。</p>
+<p>麦肯锡给这个新组织搭了五根柱子：</p>
+<table>
+<thead>
+<tr>
+<th>支柱</th>
+<th>翻译成人话</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Business model</td>
+<td>你卖的是什么变了</td>
+</tr>
+<tr>
+<td>Operating model</td>
+<td>你怎么干活变了</td>
+</tr>
+<tr>
+<td>Governance</td>
+<td>谁说了算变了</td>
+</tr>
+<tr>
+<td>Workforce, people, culture</td>
+<td>你雇谁、怎么管、文化怎么塑变了</td>
+</tr>
+<tr>
+<td>Technology &amp; data</td>
+<td>底层技术栈变了</td>
+</tr>
+</tbody>
+</table>
+<p>然后给了几个具体的"未来形态"描述——</p>
+<p><strong>未来形态一：agentic team（智能体团队）</strong></p>
+<p>未来的组织结构会变成小型、结果导向的"智能体团队"。一个 2-5 人的多学科人类小队，可以监督一座"agent factory"——50 到 100 个专业 AI agent，跑一整套端到端流程。</p>
+<p><strong>未来形态二：performance management 变形</strong></p>
+<p>绩效考核不再看你完成了多少任务，而是看你<strong>有多会编排 agent、释放价值、交付结果</strong>。</p>
+<p><strong>未来形态三：人才系统重写</strong></p>
+<p>职业路径、激励机制、领导力模型，全部要重新设计。</p>
+<p>听起来很美。</p>
+<p>兄弟们这套描述熟悉吗？</p>
+<p>熟悉。这是麦肯锡过去 30 年发过的所有"下一代组织"报告的标准模板。</p>
+<p>只是这次主角从 BPR、敏捷、数字化、平台化，换成了 agent。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/concept_01.jpg" alt="Editorial sleek corporate framework diagram" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+<hr />
+<h2>真正炸裂的不是新概念，是 89-9-1 这三个数字</h2>
+<p>报告里有一组数据被很多读者忽略了。我把它单拎出来——</p>
+<blockquote>
+<p>89% 的组织还停留在工业时代。<br />
+9% 是数字时代的"敏捷/产品平台"模式。<br />
+只有 1% 是去中心化网络。</p>
+</blockquote>
+<p>这三个数字才是整篇报告的真正暴击。</p>
+<p>为什么？因为它们彻底打脸了过去 30 年所有的"数字化转型"叙事。</p>
+<p>我们听了多少年"中台战略"、"敏捷转型"、"产品平台化"、"data-driven"、"组织变革"——</p>
+<p>最后的结果是：<strong>全球只有 9% 的公司勉强算"数字时代"。</strong></p>
+<p>也就是说，过去 30 年，全世界 91% 的公司在"转型"上花的钱，转出了一个寂寞。</p>
+<p>兄弟们想清楚——</p>
+<p>90% 的"转型"投入，本质上是给咨询公司、给软件供应商、给中层管理者<strong>提供叙事素材</strong>。</p>
+<p>不是真的在变。</p>
+<p>是在<strong>演变</strong>。</p>
+<p>那现在麦肯锡说 "agentic organization 是下一个范式"——</p>
+<p>凭什么相信这次能跑出 10%？</p>
+<p>凭什么相信它不会变成下一份占据 91% 公司 PPT 的"演变"？</p>
+<p>我个人感觉，<strong>它跑不出来。</strong></p>
+<p>它会变成 99% 公司的话术，1% 公司的实战。</p>
+<p>而且更骚的是——这 1% 大概率不是听了麦肯锡才变的。<strong>这 1% 是已经变了，麦肯锡才能写报告。</strong></p>
+<p>报告永远是事后归纳。不是事前指南。</p>
+<div style="background:#f8f9ff;border:1px solid #e2e8f0;border-radius:12px;padding:20px 24px;margin:32px 0;font-size:13px;color:#4a4a6a;white-space:pre-wrap">type: stacked_bar
+title: 全球组织所处时代分布（McKinsey 2025）
+data:
+  - layer: "工业时代（命令链 / 科层制）"
+    value: 89
+    color: "#94A3B8"
+  - layer: "数字时代（敏捷 / 产品平台）"
+    value: 9
+    color: "#3B82F6"
+  - layer: "去中心化网络（Agentic 起点）"
+    value: 1
+    color: "#10B981"
+y_label: "占全球组织比例 (%)"
+note: "90% 的'转型'，转出的是 9% 的成果。下一个范式的起点，是 1%。"</div>
+
+<hr />
+<h2>Agent Factory 这件事，可能没那么浪漫</h2>
+<p>报告里有个具体的形态描述——</p>
+<p>"2 到 5 个人，监督 50 到 100 个 AI agent。"</p>
+<p>听起来很科幻，对吧？</p>
+<p>兄弟们仔细想想——</p>
+<p><strong>这玩意儿其实就是个新版的中层管理结构。</strong></p>
+<p>你以为你升级了？</p>
+<p>你只是从"管 5 个下属"变成了"管 50 个 agent"。</p>
+<p>KPI 没变（按 agent 产出算）。汇报关系没变（你向 leader 汇报，agent 向你汇报）。返工没变（agent 输出错了你要兜底）。压力没变（甚至更大，因为 agent 不会请假）。</p>
+<p>更恐怖的是——</p>
+<p><strong>agent 不会跳槽、不会维权、不会写《置身钉内》。</strong></p>
+<p>这意味着 agent factory 模式下，"老板对中层的剥削上限"被打开了。</p>
+<p>以前一个中层管 10 个人，要顾及流失率、要团建、要做职业规划。现在管 100 个 agent，纯粹的工具关系，<strong>没有任何人性约束</strong>。</p>
+<p>理论上麦肯锡说的是"人类小队监督 agent factory"——人是核心，agent 是工具。</p>
+<p>但实操上，绝大部分公司会演变成——</p>
+<p><strong>人也变成 agent factory 里的一个 supervisor agent。</strong></p>
+<p>你被一个更高阶的 manager（可能是真人，可能是更高级的 orchestrator agent）监督。</p>
+<p>你的工作不是"做事"，是"让 agent 出活"。</p>
+<p>你的价值不是"创造"，是"调度"。</p>
+<p>这是升级，还是异化？</p>
+<p>我个人感觉，<strong>取决于谁来设计这套系统</strong>。</p>
+<p>如果是被「权力美学」浸泡过的中层来设计——这是异化。</p>
+<p>如果是真的有 product mindset 的人来设计——这才可能是升级。</p>
+<p>但你公司更可能是哪种？</p>
+<p>兄弟们答案你自己心里清楚。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/concept_02.jpg" alt="single human silhouette center surrounded" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+<hr />
+<h2>麦肯锡话术的真实用途</h2>
+<p>聊聊咨询报告这件事本身。</p>
+<p>我没有要黑麦肯锡的意思。这份报告的 framework 是认真的，里面的数据也都有出处。</p>
+<p>但兄弟们想清楚一件事——</p>
+<p><strong>麦肯锡报告的真实读者不是"未来的组织"。是"现在的 CEO"。</strong></p>
+<p>CEO 拿到这份报告，他要做什么？</p>
+<p>他要做的不是真的把公司改成 agentic organization。</p>
+<p>他要做的是——</p>
+<p>第一步：开高管会，PPT 第一页放"麦肯锡 2025 年报告"。</p>
+<p>第二步：宣布"我们要拥抱 agentic organization 这个范式"。</p>
+<p>第三步：给每个 BU 下指标——"今年年底前每个团队要落地 X 个 AI agent，覆盖 Y 个流程"。</p>
+<p>第四步：CTO 部门成立"Agentic Transformation Office"，VP 级编制。</p>
+<p>第五步：基层员工被通知"从今天起你要学会使用 agent"。</p>
+<p>第六步：半年后，复盘——"我们已经部署了 1000 个 agent，覆盖 50 个流程，效率提升 30%"。</p>
+<p>第七步：CEO 在年报里写"我们正在向 agentic organization 转型"。</p>
+<p>兄弟们这套打法熟悉吗？</p>
+<p>熟悉。</p>
+<p>这跟 2010 年代的"中台战略"、2018 年的"数字化转型"、2020 年的"All in 云"、2023 年的"大模型 + 各业务"，是同一套剧本。</p>
+<p>每次咨询公司发布新概念，CEO 就有了新的<strong>组织叙事素材</strong>。</p>
+<p>每次新叙事，就有一波 KPI 下达、一波 reorg、一波"战略级项目"立项。</p>
+<p>最后落到一线员工头上的——</p>
+<p>是更多的会、更多的双重汇报、更多的"AI 战略"配额。</p>
+<p>而真正的 1%，那些已经在做 agentic organization 的公司，根本不需要看麦肯锡。</p>
+<p>他们都是因为业务被逼到这个形态。</p>
+<p><strong>麦肯锡只是给 99% 的公司提供了一个"我也要变"的借口。</strong></p>
+<p>这才是咨询经济学的核心——</p>
+<p><strong>它卖的不是答案，是行动理由。</strong></p>
+<div style="background:#f8f9ff;border:1px solid #e2e8f0;border-radius:12px;padding:20px 24px;margin:32px 0;font-size:13px;color:#4a4a6a;white-space:pre-wrap">type: timeline
+title: 大厂吸收咨询报告的标准 7 步剧本
+events:
+  - time: "Week 1"
+    label: "CEO 高管会 / 报告引述"
+  - time: "Week 2"
+    label: "宣布拥抱新范式"
+  - time: "Week 4"
+    label: "BU 接 KPI / 配额下达"
+  - time: "Month 2"
+    label: "成立 Transformation Office"
+  - time: "Month 3"
+    label: "基层被通知必须用 agent"
+  - time: "Month 6"
+    label: "复盘：部署 X 个 agent，效率+Y%"
+  - time: "Month 12"
+    label: "年报：'我们正在向 XX 转型'"
+note: "每个新概念都跑同一个剧本"</div>
+
+<hr />
+<h2>1% 的公司为什么不需要咨询报告</h2>
+<p>如果 99% 是话术，那 1% 长什么样？</p>
+<p>我观察过几家真的在做 agentic-like 组织的公司。它们有几个共同点——</p>
+<p><strong>共同点一：业务被逼到这个形态，不是战略选的</strong></p>
+<p>Anthropic 自己 80% 的代码由 Claude 写。不是因为高管开会决定"我们要 dogfood"，是因为<strong>他们工程师人数少、产品迭代快、不用 AI 就 ship 不出来</strong>。</p>
+<p>这种"被逼"的状态，是 agentic organization 的真正前提。</p>
+<p>任何一个<strong>有充足人手、流程稳定、不缺时间</strong>的公司，都不会真的变成 agentic。它会留在"演变"阶段。</p>
+<p><strong>共同点二：决策层就是执行层</strong></p>
+<p>1% 的公司，往往是创始人就在写 prompt、就在调 loop、就在跑 agent。</p>
+<p>他们不需要"组织设计师"，他们就是组织本身。</p>
+<p>而 99% 的公司，从 CEO 到一线员工中间有 7 层管理。每一层都在用自己的方式翻译"agentic organization"——翻到一线，已经变成"你这个月要加 3 个 AI button"。</p>
+<p><strong>共同点三：没有 transformation office</strong></p>
+<p>真正的 1%，没有专门的转型部门。</p>
+<p>转型部门是数字时代的产物，它的存在前提是"组织有一个稳定结构，需要被改造"。</p>
+<p>agentic organization 的核心是<strong>结构本身就是流动的</strong>——没什么好转型的，因为没有"型"。</p>
+<p>所以 99% 的公司搞 Transformation Office 是个悖论：</p>
+<p><strong>你越认真搞转型，你越证明自己还在工业时代。</strong></p>
+<p>真正网络化的组织，连"我要转型"这个意识都没有。</p>
+<p>它就是这样。</p>
+<div style="background:#f8f9ff;border:1px solid #e2e8f0;border-radius:12px;padding:20px 24px;margin:32px 0;font-size:13px;color:#4a4a6a;white-space:pre-wrap">type: comparison_table
+title: 99% 话术派 vs 1% 实战派
+columns: ["维度", "99% 公司", "1% 公司"]
+rows:
+  - ["驱动力", "战略选择 / KPI 下达", "业务被逼 / 不用 agent ship 不出来"]
+  - ["决策层", "和执行层隔 7 层", "决策层就是执行层"]
+  - ["转型机构", "有 Transformation Office", "没有，因为没'型'"]
+  - ["对咨询报告", "依赖", "不需要"]
+  - ["AI 部署逻辑", "覆盖率 / 配额", "解决具体问题"]
+  - ["进度衡量", "agent 数量 / KPI", "ship 速度 / 用户反馈"]
+note: "区分维度不是技术成熟度，是组织成熟度"</div>
+
+<hr />
+<h2>你怎么办——别做 99% 里的内卷分子</h2>
+<p>最后一节，聊聊你。</p>
+<p>如果你的公司刚好被这波 agentic organization 话术砸到——</p>
+<p>你的 leader 在群里转发麦肯锡报告，VP 在述职 PPT 里加了"agent 战略"，CTO 部门开始招聘 "AI Transformation Director"——</p>
+<p>你怎么办？</p>
+<p>几个个人感觉。</p>
+<p><strong>观察一：分清"agent 部署"和"agent thinking"</strong></p>
+<p>你公司大概率在做的是 <strong>agent 部署</strong>——按 KPI 配额，往现有流程里塞 agent，让覆盖率好看。</p>
+<p>但真正有价值的是 <strong>agent thinking</strong>——从一开始就用"如何让 agent 自动跑这个流程"的思维方式设计工作。</p>
+<p>前者是任务，后者是能力。</p>
+<p>把时间花在练能力上，不要花在凑配额上。</p>
+<p><strong>观察二：不要成为"AI button 制造者"</strong></p>
+<p>接上《置身钉内》那篇我说过的话——</p>
+<p>如果你公司给你的 KPI 是"在你 module 里加 N 个 AI feature"——</p>
+<p>我建议你<strong>只加一个</strong>。但这一个必须是真的有用的。</p>
+<p>凑数加 N 个，结果就是另一个 ONE 产品的悲剧。</p>
+<p><strong>观察三：把自己当成 1% 来思考</strong></p>
+<p>你公司是 99% 的，不代表你要按 99% 的方式思考。</p>
+<p>下次 leader 让你"推进 agent 落地"的时候，问自己三个问题：</p>
+<ol>
+<li>这个流程<strong>真的需要 agent 吗</strong>？不用 agent 现在哪里卡？</li>
+<li>用 agent 之后，<strong>谁会真的受益</strong>？是用户、是公司、还是只是 leader 的 PPT？</li>
+<li>如果我是这家公司的创始人，<strong>我会这么做吗</strong>？</li>
+</ol>
+<p>如果三个答案都不令人满意——</p>
+<p>那这个 agent 项目就是 99% 的话术，不是 1% 的实战。</p>
+<p>参与还是参与，但你要知道自己在做什么。</p>
+<p>不要内化"agent 数量 = 价值"的逻辑。</p>
+<p><strong>观察四：真正的 agentic 能力是个人的，不是组织的</strong></p>
+<p>最后一个反直觉判断——</p>
+<p>麦肯锡说"agentic organization"，但真正的 agentic 能力，<strong>首先是个人的，不是组织的</strong>。</p>
+<p>一个会写 loop 的工程师，比一个有 Transformation Office 的公司更 agentic。</p>
+<p>一个能让 Claude/Cursor/Codex 自动完成端到端任务的 PM，比一个有"agent 战略"的 BU 更 agentic。</p>
+<p>一个用 AI 一个人撑起一家公司的创业者，比一个开了 100 场"AI 赋能"会议的大厂 VP 更 agentic。</p>
+<p>你公司转型不转型不归你管。</p>
+<p>但你自己能不能成为那个 1% 的个体——这是你能选的。</p>
+<p>兄弟们这才是麦肯锡报告真正值得读的部分。</p>
+<p>不是它给的 framework。</p>
+<p>是它<strong>给你一个对标的镜子</strong>：</p>
+<p>89% 的公司还在工业时代，9% 在数字时代，1% 在网络时代。</p>
+<p>你呢？</p>
+<p>你自己是哪个时代的个体？</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/concept_03.jpg" alt="single person laptop sparse modern" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+<hr />
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>咨询公司卖的不是答案，是行动理由。每次新概念，CEO 就有了新的组织叙事素材。落到一线员工头上的是更多的会、更多双重汇报、更多'AI 战略'配额。</p>
+    <p>真正的 agentic 能力，首先是个人的，不是组织的。一个会写 loop 的工程师，比一个有 Transformation Office 的公司更 agentic。你公司转型不归你管，但你能不能成为那个 1% 的个体——这是你能选的。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.mckinsey.com/capabilities/people-and-organizational-performance/our-insights/the-agentic-organization-contours-of-the-next-paradigm-for-the-ai-era" target="_blank" rel="noopener">The Agentic Organization: Contours of the Next Paradigm for the AI Era（McKinsey）</a></div>
+      <div class="footer-source-item"><a href="https://www.mckinsey.com/~/media/mckinsey/business%20functions/people%20and%20organizational%20performance/our%20insights/the%20agentic%20organization%20contours%20of%20the%20next%20paradigm%20for%20the%20ai%20era/the-agentic-organization-contours-of-the-next-paradigm-for-the-ai-era.pdf" target="_blank" rel="noopener">McKinsey 2025 报告 PDF</a></div>
+      <div class="footer-source-item"><a href="https://www.mckinsey.com/~/media/mckinsey/business%20functions/people%20and%20organizational%20performance/our%20insights/the%20state%20of%20organizations/2026/the-state-of-organizations-2026.pdf" target="_blank" rel="noopener">The State of Organizations 2026（McKinsey）</a></div>
+      <div class="footer-source-item"><a href="https://www.mckinsey.com/capabilities/people-and-organizational-performance/our-insights/ai-is-everywhere-the-agentic-organization-isnt-yet" target="_blank" rel="noopener">AI is everywhere, the agentic organization isn't yet（McKinsey）</a></div>
+      <div class="footer-source-item"><a href="https://medium.com/quantumblack/how-we-enabled-agents-at-scale-in-the-enterprise-with-the-agentic-ai-mesh-baf4290daf48" target="_blank" rel="noopener">Agentic AI Mesh 架构（QuantumBlack / McKinsey on Medium）</a></div>
+      <div class="footer-source-item"><a href="https://www.mckinsey.com/capabilities/tech-and-ai/our-insights/tech-forward/state-of-ai-trust-in-2026-shifting-to-the-agentic-era" target="_blank" rel="noopener">State of AI Trust in 2026（McKinsey）</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/institute/recursive-self-improvement" target="_blank" rel="noopener">Anthropic Claude Code 自我代码占比 80% 报道</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
