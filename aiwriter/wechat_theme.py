@@ -194,9 +194,10 @@ THEME: dict[str, str] = {
 # ── 图片占位符清理 ────────────────────────────────────────────────────────
 
 # article.md 里 fill-images 还没填的占位符。
-# 结构：外层 <div class="img-placeholder ..."> 包 2 个 inner div + 1 个 details，再独占一行 </div>
+# 结构：外层 <div class="img-placeholder ..." [额外属性]> 包 inner div + details，再独占一行 </div>
+# class 后允许额外属性（如 understanding 类的 data-caption="…"）。
 _PLACEHOLDER_DIV = re.compile(
-    r'<div class="img-placeholder[^"]*">.*?\n</div>',
+    r'<div class="img-placeholder[^"]*"[^>]*>.*?\n</div>',
     re.DOTALL,
 )
 _PROMPT_DETAILS = re.compile(r"<details>.*?</details>", re.DOTALL)

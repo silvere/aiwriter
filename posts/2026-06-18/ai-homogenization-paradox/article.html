@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 让每个人都更有创意，世界却越来越像了</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 观察</span>
+  <h1>AI 让每个人都更有创意，世界却越来越像了</h1>
+  <div class="hero-meta">
+    <span>2026-06-18</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">沃顿做了个实验：九个互不相识的人用 ChatGPT 设计玩具，竟给玩具起了同一个名字。单看每个人都更有创意了，凑到一起却创出了同一个东西。AI 让你单独看更有创意，让你们放一起更像——这是过去两年里，一批顶刊用真人实验反复测出的同一件事。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <figure style="margin:32px 0;text-align:center"><img src="images/concept_01.jpg" alt="large crowd many distinct different" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+<h2>一、九个人，一个名字</h2>
+<p>先把那个实验说全。</p>
+<p>这是沃顿商学院 Lennart Meincke、Gideon Nave、Christian Terwiesch 几个人做的，2025 年发在《自然·人类行为》（Nature Human Behaviour）上。他们让人做创意发散题——给玩具起点子、拿日常物品设计新东西，一半人自己想，一半人用 ChatGPT 帮着想。一共五组实验。</p>
+<p>结论很统一：用 ChatGPT 的那组，每个人的点子单看都不差，但整组人的点子高度重叠，重叠率高到 94%。前面说的「Build-a-Breeze Castle」撞名九次，就出在这。而自己想的那组，点子几乎条条不一样。</p>
+<p>你品一下这个画面。AI 没让任何人变笨，它让每个人都变「好」了一点——然后所有人一起，朝着同一个「好」走了过去。</p>
+<p>这里有个特别反直觉的点，得说清楚：同质化，不是因为大家偷懒、不是因为有人抄。恰恰相反，是因为每个人都认真用了 AI，每个人都拿到了那个「最优解」。问题在于，对同一道题，AI 给一万个人的「最优解」，长得都差不多。</p>
+<p>说白了，AI 不是把creative的人变平庸了，是把所有creative的人，导向了同一种creative。就这。</p>
+<p>那这只是「起名字」这种小事吗？换个更硬的实验看看。</p>
+<h2>二、个体往上，群体往下，是同一根杠杆</h2>
+<p>2024 年 7 月，《科学·进展》（Science Advances）登了一篇更狠的，作者是 Anil Doshi 和 Oliver Hauser。</p>
+<p>他们找了 293 个人写短篇小说，一部分人能看到 AI 给的故事点子，一部分人纯靠自己。写完，再找 600 个评审、打了三千多份评分。</p>
+<p>两个结果同时成立，而且是对着干的：</p>
+<p>一个，AI 确实让小说更好看了。拿到 AI 点子的人，作品的「可用性」（能不能抓住读者、有没有发表潜力）最高涨了 9%。而且最受益的，是那些本来写得最差的人——AI 把短板托了上去。这是实打实的个体增益。</p>
+<p>另一个，AI 写出来的小说，<strong>彼此之间更像了</strong>。研究测了故事两两之间的相似度，用上 AI 之后，这个相似度涨了大约 10%。也就是说，每篇单看都更精彩，但摞在一起，面孔越来越糊成一张。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/diagram_01.svg" alt="数据图" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+<p>Doshi 和 Hauser 给这事起了个名，叫「<strong>社会困境</strong>」（social dilemma）。我把它翻得再白一点：对你个人，用 AI 是稳赚的；对你们所有人，多样性是稳赔的。而因为对个人稳赚，所以没有任何一个理性的人，会主动不用。</p>
+<p>这就是它阴的地方。它不像盗版、不像注水那种「坏行为」，你可以靠骂、靠管去治。它是「好行为」的副产品——每个人都做了对自己最有利、最聪明的选择，然后集体掉进坑里。经济学管这叫公地悲剧：草是大家的，羊是自己的，于是草一定被啃光，哪怕每个放羊的人都不是坏人。</p>
+<p>到这你可能想问：凭什么 AI 给所有人的答案就长得差不多？这事怪用的人吗？</p>
+<p>不怪。这毛病，是模型出厂前就焊死在里头的。</p>
+<h2>三、毛病不在你，在模型被「调乖」的那一步</h2>
+<p>要看懂这个，得知道一个大模型是怎么从「能说话」变成「好用」的。</p>
+<p>预训练完的原始模型，其实是个话痨，什么都敢说，但经常胡说。厂商接下来会做一步，叫 RLHF（基于人类反馈的强化学习）——拿人的偏好去训它，让它学会挑那个「大多数人会觉得有用、得体、安全」的答案说。这一步，是它从「野」变「乖」的关键，也是它变好用的关键。</p>
+<p>问题是，「乖」是有代价的，而这个代价正好是多样性。</p>
+<p>2024 年 ICLR 上，Robert Kirk 等人有篇论文把这事测了个明白，结论一句话：<strong>RLHF 会显著降低模型输出的多样性</strong>。同年另一篇（Padmakumar 和 He）测得更细——他们对比发现，没经过这步调教的原始 GPT-3 帮人写作，不怎么压缩多样性；而经过 RLHF 调乖的 InstructGPT 一上手，词汇和内容的多样性就明显往下掉。</p>
+<p>你把这两篇拼起来看，结论很冷：让 AI「好用」的那一步，和让 AI「趋同」的那一步，是同一步。不是两个毛病，是一个硬币的两面。它越是被训得「给你最稳妥、最得体的那个答案」，它就越是给一万个人同一个答案。</p>
+<p>更极端的情况叫「模型崩塌」。2024 年《自然》（Nature）上 Ilya Shumailov 那篇说得很清楚：如果让 AI 反复拿 AI 生成的东西去训练下一代 AI，分布的「尾巴」——也就是那些稀有的、古怪的、不主流的内容——会先消失，模型最后收敛成一小撮平庸的均值。这不只是文字，图像、声音的模型都一样。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/concept_02.jpg" alt="giant funnel taking thousands colorful" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+<p>所以别再自责「是不是我提示词没写好」。默认状态下，模型本来就是一台「求平均」的机器。它的工作不是给你最奇的那个答案，是给你最稳的那个——而最稳的那个，对所有人都一样。</p>
+<p>它碾平的，还不只是创意本身。</p>
+<h2>四、它顺手碾平的，是「你是谁」</h2>
+<p>同质化最容易被忽略的一层，是它有方向。它不是把大家往中间收，是把大家往某一个特定的口音上收。</p>
+<p>2025 年的 CHI 大会上，康奈尔的 Mor Naaman 团队发了篇研究，找了 118 个印度人和美国人写东西，开 AI 写作建议。结果是：印度人的写法，明显朝美国人的写法靠了过去，而反过来美国人几乎没被印度人影响。更扎心的是，印度人用 AI 的效率增益还更小——因为 AI 老给他们「不对味」的建议，他们得花更多力气去改。</p>
+<p>翻成人话：AI 的「默认审美」是有国籍的。你以为它在帮你表达，它其实在悄悄地、礼貌地，把你的表达改成它老家那个味儿。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/concept_03.jpg" alt="many different cultural patterns scripts" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"></figure>
+
+<p>这事在语言里也留下了指纹。2025 年《科学·进展》上 Dmitry Kobak 那篇，扒了一千五百万篇生物医学论文摘要，发现 ChatGPT 出来之后，「delve」（钻研）这类词的出现频率暴涨——光「delves」一个词，频率就涨了 28 倍。他们据此估算，2024 年至少 13.5% 的摘要是 AI 帮着写的，某些领域这个数字飙到 40%。一个本来五花八门的学术语料库，正在被几百个 AI 偏爱的词，统一刷成同一种腔调。</p>
+<p>音乐更直白。2024 年底一篇叫《Missing Melodies》的研究统计了上百万小时的训练音频，发现里头约 86% 都是全球北方（欧美）的音乐，全球南方的曲风只占 14.6%。Suno、Udio 这些张口就来的生成器，喂的就是这套偏食的食谱。于是它「创作」出来的世界音乐，听着总像同一个地方的人写的。就这。</p>
+<p>创意被碾平，你还能安慰自己「反正都是娱乐」。可当被碾平的是你的口音、你的用词、你的文化默认值，碾完之后你甚至不知道丢了什么——因为那个「更顺、更专业、更得体」的版本，看起来明明是升级。</p>
+<p>那问题能修吗？</p>
+<h2>五、能修，但没人有动力修</h2>
+<p>我得把话说公道。同质化不是不能治。</p>
+<p>沃顿那几个人（对，还是他们）后来又写了篇《Prompting Diverse Ideas》，证明只要你舍得在提示词上下功夫——加思维链、强制要求 AI 给出差异化的方案——AI 产出的创意方差是能被显著拉回来的。AI 实践派的代表 Ethan Mollick 也一直是这个调：同质化是真问题，但它是个工程问题，能靠更好的用法解决。</p>
+<p>技术上，他说得对。2025 年还有一篇叫《Verbalized Sampling》的论文更进一步，揪出了趋同的病根——是 RLHF 训练时，人类标注员天然偏爱「眼熟、顺口」的答案，这种偏好被喂进了模型，让它学会了往典型、往中间靠。研究者只用一句提示词的小技巧（让模型一次给出多个答案并报出各自概率，再抽样），就把多样性拉回了 2 到 3 倍。所以你看，它真不是治不了，连根都找着了。</p>
+<p>但这恰恰是整件事最让人没辙的地方。</p>
+<p>因为「修好它」需要额外的力气，而「将就用」零成本还更快。对你个人来说，最优解永远是接住 AI 吐出来的第一个还不错的答案——你为什么要费劲去逼它给你十个怪点子，再自己挑？省下来的那点多样性，又不进你的口袋，是进「所有人」那个虚无缥缈的公共账户。</p>
+<p>于是又绕回第二节那个社会困境：人人都有能力修，人人都没有动力修。能修，和会被修，是两码事。</p>
+<p>我也得把反方最硬的一拳替它们打出来。2025 年 Ashkinaze 等人做过一个八百多人、四十多国参与的大实验，结论跟 Doshi 他们正好相反：在一个「你能看到别人的点子在不断演化」的动态设计里，给人看 AI 的例子，反而让集体的点子多样性涨了。这拳很实，得接住。接法是：那个能涨多样性的场景，是被精心设计过的——有源源不断的他人输入在搅动。而你我每天真实的用法，是一个人、一个对话框、一个「采纳」按钮，看不到别人，也等不及演化。这恰恰就是 Doshi 和 Hauser 那个会趋同的场景。能涨多样性的，是实验室里的特例；会赔多样性的，是你手机里的日常。</p>
+<p>更糟的是，你想换个模型躲开都难。2026 年 3 月发在《PNAS Nexus》上的一篇研究测了一圈，发现不同公司的大模型，在创意发散题上给出的答案，竟然彼此也高度雷同，模型与模型之间的相似，远高于人与人之间。它们读的是同一片互联网，被同一套 RLHF 思路调教，最后长出了同一种品味。你以为你在 ABCD 之间选，其实它们是一个人的四个马甲。</p>
+<p>所以这事的终局，不是「AI 会不会扼杀创意」——它不会，它确实让你我每个人都更能写、更能画、更能编。终局是：当全世界八十亿人共用同几台「求平均」的机器，我们每个人都在变得更有创意的同时，集体正在变成同一个人。</p>
+<p>赢的是你，单数的你。赔的是你们，复数的你们。而账单，记在那个没人负责的公共账户上。</p>
+<h2>写在最后</h2>
+<p>回到开头那九个人。</p>
+<p>他们没有一个人偷懒，没有一个人抄袭，每个人都真诚地、努力地、用上最好的工具，想出了一个自己满意的好名字。</p>
+<p>然后他们撞了同一个名。</p>
+<p>这才是 AI 同质化最该让人后背发凉的地方：它不是靠让你变差来抹平你，它是靠让你变好来抹平你。它给你的每一步都是升级，每一步你都心甘情愿，等你回头，发现身边所有人手里举着的，是同一座微风城堡。</p>
+<p>下次 AI 帮你润色完一段话、生成完一张图、写完一段旋律，你先别急着点「采纳」。你可以问自己一个特别扫兴、但特别要紧的问题：</p>
+<p>这个「更好的版本」，是更像我了，还是更像所有人了？</p>
+<p>AI 不会让你失去创意。它只会让你的创意，和另外八十亿人的，长成同一张脸。</p>
+<p>而你，可能压根没发现自己什么时候，开始跟全世界撞名。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>AI 不会扼杀创意，它确实让每个人都更能写、更能画、更能编。可当全世界八十亿人共用同几台「求平均」的机器，我们在各自变强的同时，集体正在长成同一张脸。</p>
+    <p>下次点「采纳」之前，问自己一句特别扫兴、但特别要紧的话：这个「更好的版本」，是更像我了，还是更像所有人了？</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.science.org/doi/10.1126/sciadv.adn5290" target="_blank" rel="noopener">Doshi & Hauser：生成式 AI 提升个体创意，却降低新内容的集体多样性（Science Advances, 2024，N=293，600 名评审）</a></div>
+      <div class="footer-source-item"><a href="https://www.nature.com/articles/s41562-025-02173-x" target="_blank" rel="noopener">Meincke, Nave & Terwiesch：ChatGPT 降低头脑风暴的点子多样性（Nature Human Behaviour, 2025，五组实验，94% 重叠）</a></div>
+      <div class="footer-source-item"><a href="https://mackinstitute.wharton.upenn.edu/2025/new-in-nature-chatgpt-decreases-idea-diversity-in-brainstorming/" target="_blank" rel="noopener">Wharton Mack Institute：ChatGPT Decreases Idea Diversity in Brainstorming（实验细节与「Build-a-Breeze Castle」撞名九次）</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2310.06452" target="_blank" rel="noopener">Kirk et al.：理解 RLHF 对大模型泛化与多样性的影响（ICLR 2024，RLHF 显著降低输出多样性）</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2309.05196" target="_blank" rel="noopener">Padmakumar & He：用语言模型写作会降低内容多样性吗（ICLR 2024，InstructGPT 降低多样性，原始 GPT-3 不会）</a></div>
+      <div class="footer-source-item"><a href="https://www.nature.com/articles/s41586-024-07566-y" target="_blank" rel="noopener">Shumailov et al.：模型在递归训练自身生成数据时会崩塌（Nature, 2024，分布尾部消失）</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2409.11360" target="_blank" rel="noopener">Agarwal, Naaman & Vashistha：AI 写作建议把写作向西方风格趋同、削弱文化差异（CHI 2025，118 名印美参与者）</a></div>
+      <div class="footer-source-item"><a href="https://news.cornell.edu/stories/2025/04/ai-suggestions-make-writing-more-generic-western" target="_blank" rel="noopener">Cornell Chronicle：AI suggestions make writing more generic, more Western</a></div>
+      <div class="footer-source-item"><a href="https://www.science.org/doi/10.1126/sciadv.adt3813" target="_blank" rel="noopener">Kobak et al.：从超额词汇看 LLM 辅助的生物医学写作（Science Advances, 2025，1500 万摘要，「delve」频率激增）</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2412.04100" target="_blank" rel="noopener">Missing Melodies：AI 音乐生成对全球南方的「近乎完全」忽略（arXiv 2412.04100，86% vs 14.6%）</a></div>
+      <div class="footer-source-item"><a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4708466" target="_blank" rel="noopener">Meincke, Mollick et al.：Prompting Diverse Ideas（思维链等提示可提升 AI 创意多样性）</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2510.01171" target="_blank" rel="noopener">Verbalized Sampling：缓解模式坍缩、释放 LLM 多样性（arXiv 2510.01171，指认 RLHF 偏好数据的「典型性偏好」为病根，提示技巧提升 2–3 倍多样性）</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2401.13481" target="_blank" rel="noopener">Ashkinaze et al.：AI 想法如何影响人类创意的多样性与演化（CI 2025，800+ 人、40+ 国，动态设计下 AI 反而提升集体多样性——本文的反方证据）</a></div>
+      <div class="footer-source-item"><a href="https://academic.oup.com/pnasnexus/article/5/3/pgaf042/8529001" target="_blank" rel="noopener">Wenger & Kenett：大语言模型在创意上高度同质（PNAS Nexus, 2026 年 3 月，模型间相似度高于人际）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>

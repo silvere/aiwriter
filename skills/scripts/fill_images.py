@@ -2,6 +2,9 @@
 """
 扫描 article.html 中的 img-placeholder 占位符，自动填充图片。
 
+understanding 类 → 解释型「理解图」：把 <pre> 里的 .illustration HTML 片段
+                  用 render_illustration（Playwright/Chromium）渲染成高清 PNG。
+                  中文/数字精确、风格统一，是公众号配图的主力（见 templates/illustration-spec.md）。
 concept 类 → OpenAI 兼容生图（含 hub.jerryai.cn 代理）→ Gemini → Pexels / Unsplash 搜图兜底
 diagram 类 → 解析规格卡数据，用 matplotlib 生成图表；无法解析时渲染为数据卡片
 
@@ -33,8 +36,12 @@ import sys
 import urllib.error
 import urllib.parse
 import urllib.request
+from html import unescape
 from pathlib import Path
 from typing import Optional
+
+# 让 understanding 类能 import 同目录的 render_illustration（含 symlink 调用）
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 # 本次运行内已下载图片的 MD5，防止同一篇文章出现重复图
 _used_hashes: set[str] = set()
@@ -62,12 +69,13 @@ _STYLE_WORDS = {
     "on", "at", "to", "for", "is", "are", "was", "were",
 }
 
-# 占位符匹配：</div> 可选（兼容 LLM 漏写关闭标签的情况）
+# 占位符匹配：class 后允许额外属性（如 understanding 的 data-caption）；</div> 可选
 _PLACEHOLDER_RE = re.compile(
-    r'<div class="img-placeholder (concept|diagram)">(.*?</details>)\s*(?:</div>)?',
+    r'<div class="img-placeholder (concept|diagram|understanding)"[^>]*>(.*?</details>)\s*(?:</div>)?',
     re.DOTALL,
 )
 _PRE_RE = re.compile(r"<pre>(.*?)</pre>", re.DOTALL)
+_CAPTION_RE = re.compile(r'data-caption="([^"]*)"')
 
 
 # ─── concept：搜图下载 ───────────────────────────────────────────────────────
@@ -730,6 +738,31 @@ def _img_md(rel_path: str, alt: str) -> str:
     return f"![{safe_alt}]({rel_path})"
 
 
+def _illus_html(rel_path: str, caption: str) -> str:
+    """理解图：figure + 可选 figcaption（图注把图钉回正文）。"""
+    cap = (
+        f'<figcaption style="font-size:13px;color:#888;margin-top:10px;'
+        f'line-height:1.5">{caption}</figcaption>'
+        if caption else ""
+    )
+    return (
+        f'<figure style="margin:32px 0;text-align:center">'
+        f'<img src="{rel_path}" alt="{caption or "理解图"}" '
+        f'style="max-width:100%;border-radius:12px;'
+        f'box-shadow:0 4px 20px rgba(0,0,0,.08)">'
+        f'{cap}</figure>'
+    )
+
+
+def _illus_md(rel_path: str, caption: str) -> str:
+    """理解图 Markdown：图片 + 斜体图注行（微信主题会渲染成图注）。"""
+    safe = caption.replace("[", "").replace("]", "")
+    line = f"![{safe}]({rel_path})"
+    if caption:
+        line += f"\n\n*{caption}*"
+    return line
+
+
 # ─── 主处理逻辑 ──────────────────────────────────────────────────────────────
 
 def fill_article(html_path: Path, candidate_urls: list[str] = []) -> dict:
@@ -742,6 +775,7 @@ def fill_article(html_path: Path, candidate_urls: list[str] = []) -> dict:
     replacements: list[dict] = []
     concept_count = [0]
     diagram_count = [0]
+    understanding_count = [0]
     filled = skipped = 0
 
     def handle_placeholder(m: re.Match) -> str:
@@ -751,6 +785,35 @@ def fill_article(html_path: Path, candidate_urls: list[str] = []) -> dict:
         pre_m = _PRE_RE.search(inner)
         spec_text = pre_m.group(1).strip() if pre_m else ""
         original = m.group(0)
+
+        if kind == "understanding":
+            understanding_count[0] += 1
+            n = understanding_count[0]
+            cap_m = _CAPTION_RE.search(original)
+            caption = cap_m.group(1).strip() if cap_m else ""
+            # <pre> 里是（通常 HTML 转义过的）.illustration 片段
+            fragment = unescape(spec_text) if spec_text else ""
+            dest = img_dir / f"illus_{n:02d}.png"
+            if not fragment.strip():
+                reason = "empty_html"
+            else:
+                try:
+                    from render_illustration import render as _render_illus
+                    reason = _render_illus(fragment, dest)
+                except Exception as e:  # noqa: BLE001
+                    reason = f"import_error: {e}"
+            if reason is None:
+                filled += 1
+                print(f"  ✓ illus_{n:02d}.png  [HTML→PNG]")
+                replacements.append({
+                    "html": _illus_html(f"images/{dest.name}", caption),
+                    "md": _illus_md(f"images/{dest.name}", caption),
+                })
+            else:
+                skipped += 1
+                print(f"  ✗ illus_{n:02d}  跳过（{reason}）")
+                replacements.append({"html": original, "md": original})
+            return "<<__AIWRITER_PLACEHOLDER__>>"
 
         if kind == "concept":
             concept_count[0] += 1
