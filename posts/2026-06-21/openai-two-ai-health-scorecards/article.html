@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenAI 同一天发了两份 AI 看病成绩单：自己批改那份说「比医生准」，送外人评审那份只敢说「多对了 4.8%」</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 观察</span>
+  <h1>OpenAI 同一天发了两份 AI 看病成绩单：自己批改那份说「比医生准」，送外人评审那份只敢说「多对了 4.8%」</h1>
+  <div class="hero-meta">
+    <span>2026-06-21</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">6 月 18 日，OpenAI 同一天发了两份 AI 看病成绩单。一份挂在自家官网，吹 GPT-5.5 回答健康问题"已超过人类医生"，59 分对 43.7；另一份发在过同行评审的 NEJM AI 上，谦虚得不像同一家公司：在 376 个孩子里帮医生多确诊 4.8%，还白纸黑字写着"模型没诊断任何人"。所有人都在转第一份。可把两份并排放，OpenAI 自己就告诉了你——能自己说了算时它喊"替代医生"，得过外人那关时它只敢说"给医生打下手"。差别不在 AI 强不强，在评分那支笔攥在谁手里。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>two contrasting medical report cards placed side by side on a desk, the left card glowing bright and boastful, the right card modest and stamped with an official seal, split composition, flat design, minimalist editorial illustration, tech style, blue and white color palette with a single orange accent, soft shadows, no text, no letters, no numbers, clean white background</pre></details>
+</div>
+
+    <h2>一、先把吹的那份认了：59 比 43.7，AI 确实赢了</h2>
+
+    <p>拆一份成绩单，得先承认它硬的地方。不然就成了为黑而黑，那是耍流氓。</p>
+
+    <p>OpenAI 这次甩出来的数字，单看是真不虚。</p>
+
+    <p>先是一个 71%。OpenAI 说，过去大约两个月里，ChatGPT 上那些健康类回答中，被标记"含至少一个事实性错误"的比例，下降了 71%。错误率砍掉七成，听着确实是质的飞跃。</p>
+
+    <p>然后是那个最唬人的对比实验。OpenAI 找了一批医生，让他们给一批有代表性的健康问题写标准答案——时间随便花，网随便查，唯一不许用的就是 AI。然后再找另一批医生，盲评：同一个问题，AI 答的和人医生答的摆在一起，哪个更好。一共评了 3500 条回答。结果是，GPT-5.5 在准确性、沟通质量、完整性、对做健康决策的帮助，四个维度全部赢过医生手写的答案。</p>
+
+    <p>还有那个 59 分。在 OpenAI 一个叫 HealthBench Professional 的专业医疗评测里，它的模型拿了 59.0 分，作为对照的医生基线只有 43.7 分。其中"写病历、写文书"这类任务，AI 64.1 分对医生 32.1 分，几乎是翻倍碾压。这个差距，统计学上 p 值小到 3.7×10⁻¹⁰，基本可以排除"碰巧赢的"。</p>
+
+    <p>这些数字摆出来，你很难嘴硬。AI 在处理医学文字这件事上，又快又全，是真本事。</p>
+
+    <p>而且 OpenAI 反复强调，这次更新是给免费用户的。GPT-5.5 早就是 ChatGPT 的默认模型，不充钱也能用。230 万——不对，是它自报的每周 2.3 亿人在 ChatGPT 上问健康相关的问题。一个比医生答得还好的东西，免费向几亿人开放。</p>
+
+    <p>这话听着是不是特别提气？特别想转给那个一生病就乱搜、搜完更焦虑的朋友：你看，以后别瞎搜了，直接问 AI，专家说了，比医生还准。</p>
+
+    <p>提气归提气，先在心里记一笔账：这份告诉你"AI 比医生准"的成绩单，是谁出的题，又是谁批的卷？</p>
+
+    <h2>二、出题的、批卷的、考生，三个都姓 Open</h2>
+
+    <p>把那份成绩单翻到背面，问题就出来了。</p>
+
+    <p>HealthBench Professional 这套医疗考卷，是谁编的？是 OpenAI。论文署名的 16 个作者，从通讯作者到打杂的，全部来自 OpenAI，没有一家外部医院、外部大学联署。</p>
+
+    <p>那批卷子的，又是谁？这里是最骚的一步。这套评测不是请医生一份份人工打分的——是让一个 AI 模型当裁判，照着评分标准给答案打分。而这个当裁判的模型，是 GPT-5.4。也是 OpenAI 自己家的。</p>
+
+    <p>你把这条链子捋一遍：题，OpenAI 出的；给答案打分的裁判，是 OpenAI 的模型；考出 59 分的考生，还是 OpenAI 的模型。出题人、裁判、考生，三个角色，全姓 Open。</p>
+
+    <p>这就好比一场考试，卷子是你出的，改卷的是你弟弟，考第一名的是你儿子。然后你开发布会宣布：经过严格测评，我儿子的水平超过了在场所有老师。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="出题、批卷、考生三个角色全姓 Open——59 分这场考试，是 OpenAI 自己跑完的闭环。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">出题、批卷、考生三个角色全姓 Open——59 分这场考试，是 OpenAI 自己跑完的闭环。</figcaption></figure>
+
+    <p>OpenAI 当然会辩解：评分标准（rubric）是真医生写的，一条条临床要点，迭代了好几轮。这没错。但写标准的是医生，真正一份份对着标准打分、决定 59 还是 43 的，是那个 AI 裁判。标准再客观，最后捏着分数笔的手，姓什么很重要。</p>
+
+    <p>更要命的是，这块牌子还不是什么"医疗金标准"。它是开放的，谁都能来刷分——今年 1 月，中国的百川 M3 就在同款 HealthBench 上反超过 OpenAI 当时的最强模型。一块能被对手刷过去的评测，本质就是个竞争靶子：靶子上的环数，证明你枪法比对手准，证明不了你能上手术台。何况这块靶子还是 OpenAI 自己造的、长期自家模型霸榜——值得起疑的，从来不是谁分高，是谁攥着这套打分的规则。</p>
+
+    <p>这一节不是要说 AI 在装。AI 处理医学文字的能力是真的。这一节要说的是：当一家公司自己出题、用自己的模型批卷、再发布自己的胜利时，那个"赢"字，含金量是要打折的。打多少折，下一节有个更直接的证据——连 OpenAI 自己，都没敢把这张卷子端到你面前。</p>
+
+    <h2>三、考 59 分的那个 AI，根本不是端给你的那个</h2>
+
+    <p>这是整件事里最绕、也最值得停下来看的地方。说穿了就一句：考试上场的，和进你手机的，根本是两个 AI。版本号你不用记，记住这层错位就行。</p>
+
+    <p>考出 59 分、把医生按在地上摩擦的，是哪个 AI？翻 OpenAI 自己的论文，那个版本叫 GPT-5.4，而且是 "ChatGPT for Clinicians"——一个专门给临床医生用的版本。它的对手呢？是单枪匹马、一个人作答的医生。</p>
+
+    <p>而 6 月 18 日那篇官网博文，吹的、要端到你免费 ChatGPT 里的，是 GPT-5.5 Instant。一个面向所有普通人的通用版。</p>
+
+    <p>发现没有？考试时上场的是"医生专用版"，发奖时领奖、进你手机的是"大众通用版"。OpenAI 把一个专业版考出的高分，挂到了一个通用版的发布会上。考的和卖的，不是同一个东西。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="考高分的是医生专用版、对手是单个医生；端到你手机里的却是另一个通用版。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">考高分的是医生专用版、对手是单个医生；端到你手机里的却是另一个通用版。</figcaption></figure>
+
+    <p>这还只是第一层错配。第二层更直接：对照实验里，医生是一个人、没有 AI 帮忙、单独答题；现实里真正的好医生，是会查文献、会会诊、会拿 AI 当工具的。让一个被绑住手脚的单人医生，去对打一个调好了的模型——这场比试，从设计上就是奔着 AI 赢去的。</p>
+
+    <p>而最诚实的一句话，藏在 OpenAI 自己的免责声明里。官网原文写着：健康功能"旨在支持、而非替代医疗护理，不用于诊断或治疗"。</p>
+
+    <p>你品品这个拧巴：左手发布会上说我比医生准，右手用户协议里写着别拿我来诊断。一家公司同时讲这两句话，不是精神分裂，是精算——能吹的地方一个字不少，要担责的地方一个字不沾。</p>
+
+    <p>连 Sam Altman 自己都露过底。他公开说过，ChatGPT 多数时候是比多数医生更强的诊断工具；但紧接着同一场，他又说了下半句——<strong>"我真的不想在没有人类医生在场的情况下，把自己的医疗命运交给 ChatGPT。"</strong></p>
+
+    <p>老板亲自给你打了样：这东西可以信，但别拿自己的命去信。这话他自己懂。可这半句，从来不会印在发布会的大屏幕上。</p>
+
+    <h2>四、同一天那份规矩的成绩单，AI 连诊断都不许下</h2>
+
+    <p>现在翻到第二份，那份没人转的。</p>
+
+    <p>同一天，OpenAI 和波士顿儿童医院、哈佛，一起在 NEJM AI 上发了篇论文。研究对象是 376 个孩子——注意，这 376 个，全是已经做过基因检测、看过专科、医生们用尽办法还是没查出病因的疑难病例。是医学体系里被剩下的那批人。</p>
+
+    <p>AI 在这里干了什么？它用的是 o3 Deep Research 模型，输入病历、症状、预筛的基因清单，输出的不是诊断，而是"<strong>带证据链接的候选假设</strong>"。说人话：AI 不下结论，它只递线索——"我怀疑可能是这几个方向，证据在这儿，你们看"。然后把球踢回给医生。</p>
+
+    <p>接下来这套流程，才是这篇论文最硬的地方。AI 递上来的假设，要过四道关：</p>
+
+    <p>第一关，至少两名临床遗传学家，各自独立审。第二关，按国际通行的 ACMG/AMP 框架（一套给基因变异定"致病等级"的国际标准），把可疑的基因变异定级，够不够得上"致病"。第三关，送 CLIA 认证（美国临床实验室的资质体系）的实验室，独立做检测确认。第四关，临床团队拍板，再把结果告诉家属。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="AI 只递线索，诊断要过医生、框架、实验室、临床四道关——它一道都越不过。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">AI 只递线索，诊断要过医生、框架、实验室、临床四道关——它一道都越不过。</figcaption></figure>
+
+    <p>四道关，AI 站在最前面，一道都越不过去。它只能把线索递到第一关门口，剩下三关全是人和实验室在走。</p>
+
+    <p>最后的成果是：376 个里，多确诊了 18 个，4.8%。分布是 10 例罕见神经发育障碍、4 例神经肌肉病、2 例儿童猝死、2 例早发精神病——每一个，都是一个本来要在黑暗里继续等下去的家庭。</p>
+
+    <p>这篇论文的结论部分，OpenAI 写了一句和发布会画风完全相反的话：本研究不能作为"患者、医生或用户应该用 OpenAI 模型来诊断疾病或做医疗决策"的证据；模型没有诊断任何一个参与者，每一个诊断，都由合格的临床专家通过既定流程作出。</p>
+
+    <p>它甚至主动认怂，列了一堆没做到的：这是回顾性研究、没测假阳性会带来多少负担、没算省了多少时间和成本。</p>
+
+    <p>你看，把外人（NEJM 的同行评审）请进来当裁判，AI 的角色立刻就老实了——从"比医生准"的替代品，变成了"帮医生多找到 4.8%"的助手。一个字都不敢吹大。</p>
+
+    <h2>五、同一家公司，两副面孔，差别只在谁攥着评分的笔</h2>
+
+    <p>把这两份成绩单并排钉在墙上，结论就自己跳出来了。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_04.png" alt="自评那份 AI 是替代品，外审那份 AI 是助手——变的只是评分的笔在谁手里。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">自评那份 AI 是替代品，外审那份 AI 是助手——变的只是评分的笔在谁手里。</figcaption></figure>
+
+    <p>左边这份，OpenAI 自己出题、用自己的模型批卷、自己在博客发布，没人管。于是 AI 成了"超过医生"的替代品，标题敢用最大号字。</p>
+
+    <p>右边这份，送进 NEJM 让外人评审，规则是医生复核、实验室确认、专家拍板。于是 AI 缩回到"给候选假设"的助手，连"诊断"两个字都不敢碰。</p>
+
+    <p>技术是同一拨技术，公司是同一家公司。唯一变的，是<strong>评分的那支笔，攥在谁手里</strong>。笔在自己手里，AI 就是医生的替代品；笔在外人手里，AI 就只敢当医生的助手。</p>
+
+    <p>有人会较真：这两份研究本来就不是一回事，一个考的是回答健康问题的文字质量，一个测的是罕见病里找线索的本事，苹果跟橘子，没法直接比。没错。可正因为是两件事，OpenAI 在这两件事上挑的说法，才更露馅——同样是它家的 AI、同样有它深度参与，能自己说了算的场合，它就喊"超过医生"；得过外人那一关的场合，它就乖乖退回"给医生打下手"。</p>
+
+    <p>OpenAI 没有撒谎。两份成绩单的数字可能都是真的。它只是非常清楚地知道，哪份能拿去做免费用户的增长故事，哪份得规规矩矩走学术程序。能吹的吹满，要担责的收紧——这不叫造假，这叫公关。比造假高级，也比造假难防。</p>
+
+    <p>所以下次再刷到"AI 看病比医生准"这种标题，先别急着焦虑或狂喜，问三句话就行：这个 benchmark 是谁建的？给答案打分的裁判是谁？过没过外部同行评审？三句话问下来，多数"碾压医生"的神话，都会缩水成"在某个自己画的靶子上多打了几环"。</p>
+
+    <p>AI 真能帮上医疗的忙，那份 NEJM 论文已经证明了——在专家都束手的地方，多救回 18 个孩子，这是实打实的功德。但功德是医生带着 AI 一起挣的，不是 AI 一个人挣的。</p>
+
+    <p>把免费 ChatGPT 给你的健康回答，当成一条值得拿去问医生的线索，可以。当成诊断，别。</p>
+
+    <p>这不是我说的。这是 OpenAI 自己，用同一天发的两份成绩单，亲口告诉你的。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>「AI 看病比医生准」值不值得信，不取决于 AI 多强，取决于这场考试谁出题、谁批卷、过没过外人那一关。OpenAI 自评的版本，自家出题、自家模型打分，于是 AI 成了医生的替代品；送进 NEJM 让外人审的版本，要过医生复核和实验室确认，于是 AI 老老实实退回助手。</p>
+    <p>下次再刷到"AI 碾压医生"，先问三句：谁建的 benchmark、谁当裁判、过没过同行评审。把免费 ChatGPT 给的健康回答，当成一条值得拿去问医生的线索，可以；当成诊断，别——这是 OpenAI 用同一天的两份成绩单，亲口告诉你的。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://openai.com/index/improving-health-intelligence-in-chatgpt/" target="_blank" rel="noopener">OpenAI：Improving health intelligence in ChatGPT</a></div>
+      <div class="footer-source-item"><a href="https://openai.com/index/diagnose-rare-childhood-diseases/" target="_blank" rel="noopener">OpenAI：Using AI to help physicians diagnose rare genetic diseases affecting children</a></div>
+      <div class="footer-source-item"><a href="https://ai.nejm.org/doi/full/10.1056/AIcs2501343" target="_blank" rel="noopener">NEJM AI：LLM-Assisted Reanalysis of Unsolved Rare Disease（DOI: 10.1056/AIcs2501343）</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2604.27470" target="_blank" rel="noopener">HealthBench Professional（arXiv: 2604.27470）</a></div>
+      <div class="footer-source-item"><a href="https://www.nature.com/articles/s41591-026-04431-5" target="_blank" rel="noopener">Nature Medicine：行业自建基准可能系统性偏向开发者模型（2026-06-12）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
