@@ -20,11 +20,7 @@
 
 ---
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🎨</div>
-  <div class="img-placeholder-label">概念图占位</div>
-  <details><summary>生成 Prompt</summary><pre>two contrasting medical report cards placed side by side on a desk, the left card glowing bright and boastful, the right card modest and stamped with an official seal, split composition, flat design, minimalist editorial illustration, tech style, blue and white color palette with a single orange accent, soft shadows, no text, no letters, no numbers, clean white background</pre></details>
-</div>
+![two contrasting medical report cards](images/concept_01.jpg)
 
 ## 一、先把吹的那份认了：59 比 43.7，AI 确实赢了
 
