@@ -82,7 +82,19 @@ jobs:
           find posts -name '.wechat-sync.json' -print0 | xargs -0 -r git add
           if git diff --staged --quiet; then
             echo "无 marker 变化"
-          else
-            git commit -m "auto: 微信草稿同步标记 [skip ci]"
-            git push
+            exit 0
           fi
+          git commit -m "auto: 微信草稿同步标记 [skip ci]"
+          # 应对并发 push 冲突（fill_images / 其他 sync run 抢先 push）：
+          # rebase 重试最多 5 次；marker 文件是新增不会冲突
+          for i in 1 2 3 4 5; do
+            if git push; then
+              echo "marker 推送成功（尝试 $i 次）"
+              exit 0
+            fi
+            echo "push 失败，rebase 后重试（第 $i 次）..."
+            git pull --rebase origin "${{ github.event.workflow_run.head_branch || github.ref_name }}" || true
+            sleep $((i * 2))
+          done
+          echo "::warning::marker push 经 5 次重试仍失败，下次 sync 会按标题去重补 marker"
+          exit 0
