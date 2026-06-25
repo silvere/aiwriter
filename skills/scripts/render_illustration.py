@@ -108,22 +108,36 @@ html,body{background:transparent}
 """
 
 
+_VENDOR_ECHARTS = _HERE / "vendor" / "echarts.min.js"
+
+
+@lru_cache(maxsize=1)
+def _echarts_inline() -> str:
+    """把 vendored echarts.min.js 读成内联 <script>，渲染时离线注入（不依赖 CDN）。"""
+    if _VENDOR_ECHARTS.exists():
+        return f"<script>{_VENDOR_ECHARTS.read_text(encoding='utf-8')}</script>"
+    return ""
+
+
 def wrap_fragment(fragment: str) -> str:
     """把 `.illustration` 片段包成带统一样式的完整 HTML 文档。
 
-    若 fragment 已含 <style> 或完整 <html>，原样使用（让模型可覆盖默认样式）。
+    - 若 fragment 已含完整 <html>，原样使用。
+    - 含 <style> 时不再注入默认样式（让模型可覆盖）。
+    - 用到 echarts 时，自动在 head 内联 vendored echarts.min.js（多序列数据图）。
     """
     low = fragment.lower()
     if "<html" in low:
         return fragment
     has_style = "<style" in low
     style_block = "" if has_style else f"<style>{ILLUSTRATION_CSS}</style>"
+    echarts_block = _echarts_inline() if "echarts" in low else ""
     # 没有 .illustration 外层就补一个，保证截图选择器命中
     if 'class="illustration"' not in fragment and "class='illustration'" not in fragment:
         fragment = f'<div class="illustration">{fragment}</div>'
     return (
         "<!doctype html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\">"
-        f"{style_block}</head><body>{fragment}</body></html>"
+        f"{style_block}{echarts_block}</head><body>{fragment}</body></html>"
     )
 
 
