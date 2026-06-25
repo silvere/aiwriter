@@ -77,21 +77,86 @@ fill_images.py 会 unescape → 用 render_illustration（Playwright/Chromium）
 - **`data-caption` 是图注**——务必写，且别写"如图所示"，要把图的结论钉回正文。
 - **`<pre>` 内不要出现 `</details>` 或 `</pre>` 字样**。
 
-### 统一 CSS 约定（一篇文章所有图共用 → 成套感）
+## 4.5 高大上铁律：把想法画出来，不要给文字加底色
 
-不用写 `<style>`，render_illustration 会自动注入下面这套变量与基础类。直接用这些 class 即可：
+这一节是配图从「一般」到「高大上」的分水岭，**每张图都必须过**。
 
-- 变量：`--primary`(#3B5BDB 主蓝) `--accent`(#E8590C 强调橙) `--good`(#2B8A3E 绿) `--ink`(墨) `--sub`(灰) `--line`(描边) `--bg-soft`(浅底)
-- 容器：`.illustration`（外层卡片，**必须有，截图选择器靠它**） `.illustration h2` / `.sub`
-- 流程：`.row` 横排，`.step`（含 `.n` 序号圆点 / `.label` / `.desc`），`.arrow` 箭头
-- 对照：`.vs` 两列，`.vs .think`（"以为"浅橙）/ `.vs .fact`（"其实"浅绿），配 `.tag.think` / `.tag.fact` 标签
-- 对比条：`.bar-row`（含 `.name` / `.bar`（设 `style="width:..."`）/ `.val`）
-- 底部：`.note` 收口小字（很适合放删图测试结论或一句 punchline）
+**一句话**：图是把观点*视觉化*（一个形状 / 一段空间关系 / 一个隐喻），不是把文字放进圆角盒子里。
 
-需要更复杂的样式，可在片段里自带 `<style>`（会覆盖默认），或内联 `style=""`。
+### 视觉形态词表（难点类型 → 用什么形态画，别再默认堆步骤卡）
 
-## 5. 接入与降级
+| 难点 | 视觉形态 | 主要手段 |
+|------|----------|---------|
+| 一个关键比例/占比/规模 | **一个大数字** `bignum` + 一句话；必要时配**一根** `proportion` 比例条 | 大数 + 直接标注 |
+| 构成/拆分（≤4 项） | **一根** `proportion` 分段条 + 图例直接标注 | 禁止画多根柱 |
+| 多步机制/因果 | 带**连接线/箭头**的流程；能用隐喻就用隐喻（墙、闸门、回路） | 内联 SVG + `.step` |
+| 包含/层级关系 | **嵌套**（同心圆、套盒）——让"谁在谁里面"一眼可见 | 内联 SVG 圆/矩形 |
+| 反直觉对照 | 并置两侧（`.vs`），或用**大小/位置**编码强弱 | `.vs` 或 SVG |
+| 时间线/演变 | 一条主轴 + 拐点标注 | 内联 SVG 轴线 |
+| 真·多序列数据 | 才用图表（ECharts）；**3 根以内的柱子一律改成大数字/比例条** | 见 §6 |
 
-- 公众号文章默认产出 understanding；纯抽象概念/"想象一下"用 concept；纯数据可用 diagram。
+### 反模式（出现任何一条＝重做）
+
+1. **纯文字罗列**：整张图删掉边框后就是几行字 → 不合格，必须有一个删不掉的视觉形状。
+2. **裸条形图**：三五根没有设计的柱子 → 改成「大数字 + 一根比例条」或直接标注。
+3. **emoji 当图标**：🧩🎨📊 只能出现在占位块图标处，**绝不进 `.illustration` 画面**；要图标用内联 SVG 线性图标。
+4. **一张图塞多个想法**：一图只解一个卡点；元素（卡片/条目）总数 ≤ 6。
+5. **花哨配色**：≥2 个强调色 = 廉价。全图只用 **1 个**强调色（`--accent`），其余灰阶。
+
+### 验收闸（accept 前自问，任一"否"就重做）
+
+- 把图里所有文字遮住，还剩一个**能看懂大意的形状**吗？
+- 有没有**一个**明确的视觉焦点（最大的那个元素）？
+- 是否只用了 1 个强调色 + 大留白？
+- 这张图是**画出了**观点，还是只是把那段话*排版*了一遍？
+
+## 4.6 统一设计系统（自动注入，直接用 class，别自带 `<style>`）
+
+render_illustration 自动注入下面这套**编辑级**变量与组件，保证整篇成套：
+
+- **配色**：`--accent`(#E0792B 暖橙，唯一强调色) `--accent-deep` `--accent-soft` ｜ `--ink`(近黑) `--sub`(灰) `--hair`(发丝线) ｜ `--neutral`/`--neutral-soft`(冷灰) ｜ `--good`/`--bad`
+- **文头**：`.kicker`（小字间距大写眉标，放栏目/主体名）→ `h2`（38px 大标题）→ `.sub`（副标题）
+- **大数字**：`.bignum`（150px 焦点数字，内可放 `<small>%</small>`）——少量数据首选
+- **比例条**：`.proportion`（容器）内放若干 `.seg`（`style="width:..%;background:.."`）+ `.scale`（左右刻度）——替代多根柱
+- **图例/直接标注**：`.legend` 容器 + `.lg`（含 `.dot` / `.n` 大数 / `.t` 小注）
+- **流程**：`.row` 横排 + `.step`（`.n` 序号 / `.label` / `.desc`）+ `.arrow`
+- **对照**：`.vs` 两列（`.think` 暖 / `.fact` 绿）+ `.tag.think` / `.tag.fact`
+- **收口**：`.punch`（底部主张条，`<b>` 走强调色）/ `.note`（小字补充）
+- **容器**：`.illustration`（**必须有**，截图选择器靠它；已含纸底+留白+阴影）
+
+**内联 SVG 是高大上的关键**：嵌套圆、连接线箭头、墙/闸门/回路等隐喻，都用内联 `<svg>` 画（文字用 `<text>` 但只放短标签）。SVG 配色复用上面的 hex。需要覆盖默认时可内联 `style=""`。
+
+### 一个「好图」示例（大数字 + 比例条，替代裸柱）
+
+```html
+&lt;div class="illustration"&gt;
+  &lt;div class="kicker"&gt;META · 2026 年这次重组&lt;/div&gt;
+  &lt;h2&gt;一次动了全球 1/5 的人&lt;/h2&gt;
+  &lt;div class="row" style="align-items:center;gap:48px;margin-top:28px"&gt;
+    &lt;div class="bignum"&gt;20&lt;small&gt;%&lt;/small&gt;&lt;/div&gt;
+    &lt;div style="flex:1"&gt;
+      &lt;div class="proportion"&gt;
+        &lt;div class="seg" style="width:57%;background:var(--accent-deep)"&gt;裁&lt;/div&gt;
+        &lt;div class="seg" style="width:43%;background:var(--accent)"&gt;转&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class="legend" style="margin-top:22px"&gt;
+        &lt;div class="lg"&gt;&lt;div class="dot" style="background:var(--accent-deep)"&gt;&lt;/div&gt;&lt;div&gt;&lt;div class="n"&gt;~8000&lt;/div&gt;&lt;div class="t"&gt;裁员&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+        &lt;div class="lg"&gt;&lt;div class="dot" style="background:var(--accent)"&gt;&lt;/div&gt;&lt;div&gt;&lt;div class="n"&gt;~7000&lt;/div&gt;&lt;div class="t"&gt;强制转岗做 AI&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="punch"&gt;同一周，扎克伯格认错：&lt;b&gt;我们犯了错误，几乎肯定会再犯更多&lt;/b&gt;&lt;/div&gt;
+&lt;/div&gt;
+```
+
+## 6. 真·多序列数据图（≥2 序列且 ≥4 类目才用）
+
+只有当数据确实是「多序列 × 多类目」（裸大数字/比例条表达不了）时才画图表。优先 **ECharts**（在 `.illustration` 内放 `<div id="chart">` + CDN `<script>` + `echarts.init`，`animation:false`），配极简主题（去网格线、直接标注、单强调色），质感远胜裸 matplotlib。
+
+> ECharts 引擎尚未默认接入；未接入前，**3~4 个数据点一律退回「大数字 + 比例条」**（见 §4.6 示例），不要画裸柱。需要我把 ECharts 主题接进渲染层时说一声。
+
+## 7. 接入与降级
+
+- 公众号文章默认产出 understanding（按 §4.5 铁律设计）；纯抽象概念/"想象一下"用 concept；多序列数据见 §6。
 - fill_images.py 自动渲染，落地 `images/illus_NN.png`（PNG，微信草稿同步直接上传，无需转换）。
 - 渲染层不可用（无 Node/Playwright/Chromium）时 → 该占位**跳过保留**，不中断流程，后续步骤照常。
