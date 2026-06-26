@@ -66,46 +66,9 @@
 
 所以"把自己活成机器"是什么意思？就是你主动放弃了那座孤岛，把自己塞进系统给你预留的那个节点形状里：不提问，只执行；不判断，只达标；不为结果负责，只为指标负责。你把自己身上那些不可计量、不可预测、不可替换的部分，一点点磨平，好让自己更顺滑地嵌进流程。你以为这样最安全。可一旦你把自己彻底节点化了，你就真的和一台机器在同一个赛道上竞争了——而那是一场你必输的比赛，因为机器更快、更便宜、不睡觉。
 
-<div class="img-placeholder understanding" data-caption="图：人是熵增汪洋里的逆熵孤岛，机器节点是它的反面。把自己活成机器，就是从左侧主动滑向右侧——最省力，也最危险。">
-  <div class="img-placeholder-icon">🧩</div>
-  <div class="img-placeholder-label">理解图占位</div>
-  <details><summary>理解图 HTML</summary><pre>&lt;div class="illustration"&gt;
-  &lt;div class="kicker"&gt;人 vs 系统节点 · 存在方式的两极&lt;/div&gt;
-  &lt;h2&gt;把自己活成机器，是主动放弃孤岛&lt;/h2&gt;
-  &lt;svg width="980" height="420" viewBox="0 0 980 420" xmlns="http://www.w3.org/2000/svg" style="display:block;margin-top:20px"&gt;
-    &lt;ellipse cx="240" cy="210" rx="185" ry="155" fill="#FEF3EA" stroke="#E0792B" stroke-width="3.5"/&gt;
-    &lt;ellipse cx="240" cy="210" rx="100" ry="80" fill="#FDDBB8" stroke="none"/&gt;
-    &lt;text x="240" y="118" text-anchor="middle" font-size="26" font-weight="800" fill="#E0792B" font-family="PingFang SC,sans-serif"&gt;人&lt;/text&gt;
-    &lt;text x="240" y="148" text-anchor="middle" font-size="17" fill="#C05C14" font-family="PingFang SC,sans-serif"&gt;逆熵的孤岛&lt;/text&gt;
-    &lt;text x="240" y="192" text-anchor="middle" font-size="18" fill="#3D3A35" font-family="PingFang SC,sans-serif"&gt;独特&lt;/text&gt;
-    &lt;text x="240" y="220" text-anchor="middle" font-size="18" fill="#3D3A35" font-family="PingFang SC,sans-serif"&gt;会提问&lt;/text&gt;
-    &lt;text x="240" y="248" text-anchor="middle" font-size="18" fill="#3D3A35" font-family="PingFang SC,sans-serif"&gt;为结果负责&lt;/text&gt;
-    &lt;text x="240" y="276" text-anchor="middle" font-size="18" fill="#3D3A35" font-family="PingFang SC,sans-serif"&gt;不可预测&lt;/text&gt;
-    &lt;defs&gt;
-      &lt;marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"&gt;
-        &lt;polygon points="0 0,10 3.5,0 7" fill="#9AA4B2"/&gt;
-      &lt;/marker&gt;
-    &lt;/defs&gt;
-    &lt;line x1="448" y1="210" x2="528" y2="210" stroke="#9AA4B2" stroke-width="3" marker-end="url(#arr)"/&gt;
-    &lt;rect x="430" y="172" width="120" height="52" rx="6" fill="#fff" stroke="#D7DCE3" stroke-width="1.5"/&gt;
-    &lt;text x="490" y="194" text-anchor="middle" font-size="14" fill="#9AA4B2" font-family="PingFang SC,sans-serif"&gt;把自己活成机器&lt;/text&gt;
-    &lt;text x="490" y="214" text-anchor="middle" font-size="13" fill="#B0B8C4" font-family="PingFang SC,sans-serif"&gt;= 主动放弃孤岛&lt;/text&gt;
-    &lt;rect x="557" y="60" width="360" height="300" rx="8" fill="#F4F6F8" stroke="#C8CDD6" stroke-width="2"/&gt;
-    &lt;rect x="577" y="80" width="320" height="260" rx="4" fill="#EBEEF2" stroke="none"/&gt;
-    &lt;text x="737" y="120" text-anchor="middle" font-size="26" font-weight="800" fill="#717584" font-family="PingFang SC,sans-serif"&gt;系统节点&lt;/text&gt;
-    &lt;text x="737" y="152" text-anchor="middle" font-size="17" fill="#9AA4B2" font-family="PingFang SC,sans-serif"&gt;可被计量的单元&lt;/text&gt;
-    &lt;text x="737" y="200" text-anchor="middle" font-size="18" fill="#9AA4B2" font-family="PingFang SC,sans-serif"&gt;可计量&lt;/text&gt;
-    &lt;text x="737" y="230" text-anchor="middle" font-size="18" fill="#9AA4B2" font-family="PingFang SC,sans-serif"&gt;可重复&lt;/text&gt;
-    &lt;text x="737" y="260" text-anchor="middle" font-size="18" fill="#9AA4B2" font-family="PingFang SC,sans-serif"&gt;可替换&lt;/text&gt;
-    &lt;text x="737" y="290" text-anchor="middle" font-size="18" fill="#9AA4B2" font-family="PingFang SC,sans-serif"&gt;只达标&lt;/text&gt;
-    &lt;rect x="850" y="82" width="22" height="22" rx="2" fill="#C8CDD6"/&gt;
-    &lt;rect x="876" y="82" width="22" height="22" rx="2" fill="#C8CDD6"/&gt;
-    &lt;rect x="850" y="108" width="22" height="22" rx="2" fill="#C8CDD6"/&gt;
-    &lt;rect x="876" y="108" width="22" height="22" rx="2" fill="#C8CDD6"/&gt;
-  &lt;/svg&gt;
-  &lt;div class="punch"&gt;孤岛抵抗熵增，代价是持续燃烧自我；&lt;b&gt;向右滑是最省力的路，也是消失的路。&lt;/b&gt;&lt;/div&gt;
-&lt;/div&gt;</pre></details>
-</div>
+![图：人是熵增汪洋里的逆熵孤岛，机器节点是它的反面。把自己活成机器，就是从左侧主动滑向右侧——最省力，也最危险。](images/illus_01.png)
+
+*图：人是熵增汪洋里的逆熵孤岛，机器节点是它的反面。把自己活成机器，就是从左侧主动滑向右侧——最省力，也最危险。*
 
 ---
 
@@ -137,39 +100,9 @@
 
 AI 极其擅长 labor——一切重复的、循环的、有标准答案的活，它做得又快又便宜。AI 也越来越能干 work——它能写文档、能生成代码、能出设计稿、能起草合同，它正在大量接管"制造人造物"这件事。这两块，人确实在节节败退，且看不到反转。
 
-<div class="img-placeholder understanding" data-caption="图：用阿伦特的三分法去切 AI——劳动几乎被吃光，工作被接管大半，唯有行动（责任、判断、在场）仍是人的专属疆域。">
-  <div class="img-placeholder-icon">🧩</div>
-  <div class="img-placeholder-label">理解图占位</div>
-  <details><summary>理解图 HTML</summary><pre>&lt;div class="illustration"&gt;
-  &lt;div class="kicker"&gt;阿伦特三分法 · AI 时代的人类坐标&lt;/div&gt;
-  &lt;h2&gt;AI 正在吃掉两层，但行动守住了&lt;/h2&gt;
-  &lt;svg width="980" height="480" viewBox="0 0 980 480" xmlns="http://www.w3.org/2000/svg" style="display:block;margin-top:24px"&gt;
-    &lt;rect x="60" y="340" width="860" height="96" rx="6" fill="#E0792B"/&gt;
-    &lt;text x="180" y="382" font-size="28" font-weight="700" fill="#fff" font-family="PingFang SC,sans-serif"&gt;劳动 Labor&lt;/text&gt;
-    &lt;text x="180" y="416" font-size="20" fill="rgba(255,255,255,0.85)" font-family="PingFang SC,sans-serif"&gt;重复、循环、可预测的活动&lt;/text&gt;
-    &lt;rect x="700" y="352" width="196" height="44" rx="4" fill="rgba(0,0,0,0.22)"/&gt;
-    &lt;text x="798" y="380" text-anchor="middle" font-size="18" font-weight="700" fill="#fff" font-family="PingFang SC,sans-serif"&gt;AI 已大量替代&lt;/text&gt;
-    &lt;rect x="60" y="210" width="860" height="96" rx="6" fill="#F0ECE4"/&gt;
-    &lt;rect x="60" y="210" width="540" height="96" rx="6" fill="#D7875A"/&gt;
-    &lt;text x="180" y="252" font-size="28" font-weight="700" fill="#fff" font-family="PingFang SC,sans-serif"&gt;工作 Work&lt;/text&gt;
-    &lt;text x="180" y="286" font-size="20" fill="rgba(255,255,255,0.88)" font-family="PingFang SC,sans-serif"&gt;写文档、代码、设计——制造持久人造物&lt;/text&gt;
-    &lt;rect x="590" y="222" width="182" height="44" rx="4" fill="#9AA4B2"/&gt;
-    &lt;text x="681" y="250" text-anchor="middle" font-size="18" font-weight="700" fill="#fff" font-family="PingFang SC,sans-serif"&gt;AI 正在接管大半&lt;/text&gt;
-    &lt;rect x="60" y="36" width="860" height="138" rx="10" fill="#fff" stroke="#E0792B" stroke-width="4"/&gt;
-    &lt;text x="180" y="90" font-size="36" font-weight="800" fill="#E0792B" font-family="PingFang SC,sans-serif"&gt;行动 Action&lt;/text&gt;
-    &lt;text x="180" y="128" font-size="22" fill="#3D3A35" font-family="PingFang SC,sans-serif"&gt;公共出场 · 言说 · 开启新事物&lt;/text&gt;
-    &lt;rect x="500" y="56" width="88" height="38" rx="19" fill="#E0792B"/&gt;
-    &lt;text x="544" y="81" text-anchor="middle" font-size="19" font-weight="700" fill="#fff" font-family="PingFang SC,sans-serif"&gt;责任&lt;/text&gt;
-    &lt;rect x="608" y="56" width="88" height="38" rx="19" fill="#E0792B"/&gt;
-    &lt;text x="652" y="81" text-anchor="middle" font-size="19" font-weight="700" fill="#fff" font-family="PingFang SC,sans-serif"&gt;判断&lt;/text&gt;
-    &lt;rect x="716" y="56" width="88" height="38" rx="19" fill="#E0792B"/&gt;
-    &lt;text x="760" y="81" text-anchor="middle" font-size="19" font-weight="700" fill="#fff" font-family="PingFang SC,sans-serif"&gt;在场&lt;/text&gt;
-    &lt;text x="620" y="130" text-anchor="middle" font-size="20" font-weight="700" fill="#E0792B" font-family="PingFang SC,sans-serif"&gt;人的专属领域&lt;/text&gt;
-    &lt;text x="30" y="110" text-anchor="middle" font-size="15" fill="#9AA4B2" font-family="PingFang SC,sans-serif" transform="rotate(-90 30 110)"&gt;↑ 越往上越难被替代&lt;/text&gt;
-  &lt;/svg&gt;
-  &lt;div class="punch"&gt;AI 往上吃，&lt;b&gt;行动层是唯一守住的人类专属疆域&lt;/b&gt;——责任、判断与在场，机器无法代劳。&lt;/div&gt;
-&lt;/div&gt;</pre></details>
-</div>
+![图：用阿伦特的三分法去切 AI——劳动几乎被吃光，工作被接管大半，唯有行动（责任、判断、在场）仍是人的专属疆域。](images/illus_02.png)
+
+*图：用阿伦特的三分法去切 AI——劳动几乎被吃光，工作被接管大半，唯有行动（责任、判断、在场）仍是人的专属疆域。*
 
 但 action 是另一回事。阿伦特说，行动的前提是"复数性"——需要真实的他者在场，需要你以一个独一无二的人的身份，对另一个独一无二的人说话和负责。行动的本质是"开端"——是引入一个此前不存在、也无法从过去推算出来的新东西。这恰恰是一切机器在定义上做不到的：机器的本职就是可预测、可重复，而行动的本职是不可预测、是开始。
 
