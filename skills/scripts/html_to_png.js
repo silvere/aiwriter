@@ -67,9 +67,9 @@ async function main() {
       viewport: { width: opt.width + 120, height: 800 },
     });
     await page.goto(pathToFileURL(inHtml).href, { waitUntil: "networkidle", timeout: 30000 });
-    // 等字体就绪，避免截到 fallback 字体或方块
+    // 等字体就绪，避免截到 fallback 字体或方块（ECharts 也在 fonts.ready 后才绘制）
     await page.evaluate(() => (document.fonts ? document.fonts.ready : Promise.resolve()));
-    await page.waitForTimeout(150);
+    await page.waitForTimeout(400);
 
     const el = await page.$(opt.selector);
     const target = el || page;

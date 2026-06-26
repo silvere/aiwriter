@@ -50,75 +50,94 @@ def _node_env() -> dict:
         env["NODE_PATH"] = root + (os.pathsep + existing if existing else "")
     return env
 
-# §4 统一 CSS 约定：一篇文章所有解释型配图共用，保证「成套感」。
+# §4 统一设计系统：一篇文章所有配图共用，保证「成套感」+ 编辑级质感。
+# 设计基调：暖纸底 + 近黑墨字 + 单一强调色 + 灰阶中性 + 大留白 + 一个视觉焦点。
 # 字体优先系统 CJK（PingFang/雅黑），CI 上回退 WenQuanYi/Noto CJK。
 ILLUSTRATION_CSS = """
 :root{
-  --primary:#3B5BDB; --accent:#E8590C; --good:#2B8A3E;
-  --ink:#1A1B2E; --sub:#6B7280; --line:#E5E7EB; --bg-soft:#F4F6FB;
+  --paper:#FBFAF7; --ink:#15171F; --sub:#717584; --hair:#ECE8E0;
+  --accent:#E0792B; --accent-deep:#C75B12; --accent-soft:#FBEAD6;
+  --neutral:#9AA4B2; --neutral-soft:#EAEDF1; --good:#2FA36B; --bad:#D14B4B;
   --font:"PingFang SC","Microsoft YaHei","WenQuanYi Zen Hei","Noto Sans CJK SC","Noto Sans SC",sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{background:transparent}
 .illustration{
-  width:1100px; background:#fff; border-radius:20px; padding:48px;
-  color:var(--ink); font-family:var(--font); line-height:1.6;
-  box-shadow:0 8px 40px rgba(26,27,46,.08);
+  width:1100px; padding:60px 64px; border-radius:24px; color:var(--ink);
+  font-family:var(--font); line-height:1.6;
+  background:radial-gradient(125% 125% at 82% -12%, #FFFFFF 0%, var(--paper) 55%);
+  box-shadow:0 10px 50px rgba(21,23,31,.07);
 }
-.illustration h2{font-size:30px;font-weight:800;letter-spacing:.5px;margin-bottom:6px}
-.illustration .sub{font-size:16px;color:var(--sub);margin-bottom:28px}
-.illustration .row{display:flex;align-items:stretch;gap:16px}
+/* ── 文头 ── */
+.illustration .kicker{font-size:14px;font-weight:700;letter-spacing:4px;color:var(--accent);margin-bottom:14px;text-transform:uppercase}
+.illustration h2{font-size:38px;font-weight:800;letter-spacing:-.5px;line-height:1.2;margin:0}
+.illustration .sub{font-size:17px;color:var(--sub);margin:12px 0 36px;line-height:1.5;font-weight:500}
+/* ── 大数字焦点（少量数据首选，替代裸柱）── */
+.illustration .bignum{font-size:150px;font-weight:850;line-height:.9;letter-spacing:-5px;color:var(--accent)}
+.illustration .bignum small{font-size:54px;font-weight:800;vertical-align:16px;margin-left:2px}
+/* ── 单根比例条（占比/构成，替代多根柱）── */
+.illustration .proportion{display:flex;height:34px;border-radius:9px;overflow:hidden;background:var(--neutral-soft)}
+.illustration .proportion .seg{height:100%;display:flex;align-items:center;padding-left:14px;color:#fff;font-size:14px;font-weight:700}
+.illustration .scale{display:flex;justify-content:space-between;margin-top:10px;font-size:13px;color:var(--sub)}
+/* ── 图例 / 直接标注 ── */
+.illustration .legend{display:flex;gap:32px;flex-wrap:wrap}
+.illustration .lg{display:flex;gap:11px;align-items:flex-start}
+.illustration .lg .dot{width:14px;height:14px;border-radius:4px;margin-top:6px;flex-shrink:0}
+.illustration .lg .n{font-size:24px;font-weight:850;line-height:1}
+.illustration .lg .t{font-size:14px;color:var(--sub);margin-top:5px}
+/* ── 流程：编号 + 连接箭头 ── */
+.illustration .row{display:flex;align-items:stretch;gap:18px}
 .illustration .col{flex:1}
-.illustration .step{
-  background:var(--bg-soft);border:1px solid var(--line);border-radius:14px;
-  padding:20px 22px;flex:1;
-}
-.illustration .step .n{
-  display:inline-flex;align-items:center;justify-content:center;
-  width:34px;height:34px;border-radius:50%;background:var(--primary);
-  color:#fff;font-weight:800;font-size:17px;margin-bottom:12px;
-}
-.illustration .arrow{align-self:center;color:var(--primary);font-size:30px;font-weight:800}
-.illustration .label{font-size:18px;font-weight:700;margin-bottom:4px}
-.illustration .desc{font-size:15px;color:var(--sub)}
-.illustration .vs{
-  display:flex;gap:18px;
-}
-.illustration .vs > div{
-  flex:1;border-radius:14px;padding:22px 24px;border:1px solid var(--line);
-}
-.illustration .vs .think{background:#FFF4E6}
-.illustration .vs .fact{background:#EBFBEE}
-.illustration .tag{
-  display:inline-block;font-size:13px;font-weight:700;padding:3px 10px;
-  border-radius:999px;margin-bottom:10px;
-}
+.illustration .step{background:#fff;border:1px solid var(--hair);border-radius:16px;padding:22px 24px;flex:1;box-shadow:0 2px 14px rgba(21,23,31,.04)}
+.illustration .step .n{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:var(--accent);color:#fff;font-weight:800;font-size:18px;margin-bottom:14px}
+.illustration .arrow{align-self:center;color:var(--neutral);font-size:30px;font-weight:800}
+.illustration .label{font-size:19px;font-weight:800;margin-bottom:5px}
+.illustration .desc{font-size:15px;color:var(--sub);line-height:1.55}
+/* ── 对照（以为 vs 其实 / 内 vs 外）── */
+.illustration .vs{display:flex;gap:20px}
+.illustration .vs>div{flex:1;border-radius:16px;padding:24px 26px;border:1px solid var(--hair)}
+.illustration .vs .think{background:var(--accent-soft)}
+.illustration .vs .fact{background:#E7F3EC}
+.illustration .tag{display:inline-block;font-size:13px;font-weight:700;padding:4px 12px;border-radius:999px;margin-bottom:12px}
 .illustration .tag.think{background:var(--accent);color:#fff}
 .illustration .tag.fact{background:var(--good);color:#fff}
-.illustration .bar-row{display:flex;align-items:center;gap:14px;margin:10px 0}
-.illustration .bar-row .name{width:160px;font-size:15px;font-weight:600}
-.illustration .bar{height:26px;border-radius:8px;background:var(--primary)}
-.illustration .bar-row .val{font-size:16px;font-weight:800;color:var(--ink)}
-.illustration .note{margin-top:24px;font-size:14px;color:var(--sub);border-top:1px dashed var(--line);padding-top:14px}
+/* ── 收口 punchline（图的一句话主张）── */
+.illustration .punch{margin-top:34px;padding-top:22px;border-top:1px solid var(--hair);font-size:17px;font-weight:600;line-height:1.55}
+.illustration .punch b{color:var(--accent)}
+.illustration .note{margin-top:28px;font-size:14px;color:var(--sub);border-top:1px solid var(--hair);padding-top:16px;line-height:1.55}
 """
+
+
+_VENDOR_ECHARTS = _HERE / "vendor" / "echarts.min.js"
+
+
+@lru_cache(maxsize=1)
+def _echarts_inline() -> str:
+    """把 vendored echarts.min.js 读成内联 <script>，渲染时离线注入（不依赖 CDN）。"""
+    if _VENDOR_ECHARTS.exists():
+        return f"<script>{_VENDOR_ECHARTS.read_text(encoding='utf-8')}</script>"
+    return ""
 
 
 def wrap_fragment(fragment: str) -> str:
     """把 `.illustration` 片段包成带统一样式的完整 HTML 文档。
 
-    若 fragment 已含 <style> 或完整 <html>，原样使用（让模型可覆盖默认样式）。
+    - 若 fragment 已含完整 <html>，原样使用。
+    - 含 <style> 时不再注入默认样式（让模型可覆盖）。
+    - 用到 echarts 时，自动在 head 内联 vendored echarts.min.js（多序列数据图）。
     """
     low = fragment.lower()
     if "<html" in low:
         return fragment
     has_style = "<style" in low
     style_block = "" if has_style else f"<style>{ILLUSTRATION_CSS}</style>"
+    echarts_block = _echarts_inline() if "echarts" in low else ""
     # 没有 .illustration 外层就补一个，保证截图选择器命中
     if 'class="illustration"' not in fragment and "class='illustration'" not in fragment:
         fragment = f'<div class="illustration">{fragment}</div>'
     return (
         "<!doctype html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\">"
-        f"{style_block}</head><body>{fragment}</body></html>"
+        f"{style_block}{echarts_block}</head><body>{fragment}</body></html>"
     )
 
 
