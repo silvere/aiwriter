@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google 不缺钱，缺一张还没上市的股票</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 观察 · 行业观察</span>
+  <h1>Google 不缺钱，缺一张还没上市的股票</h1>
+  <div class="hero-meta">
+    <span>2026-06-27</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">2026 年 6 月，7 天里 Google 走了 5 个顶级 AI 研究员，4 个去了同一家公司 Anthropic。单日市值蒸发约 2250 亿美元，CEO 却在戛纳说我们赢得了应得的人才。Google 缺的不是钱、不是算力——是一张还没上市的股票。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>Top scientists quietly walking out of a giant glass corporate tower toward a smaller rising rocket-shaped building on the horizon, conceptual illustration about talent leaving a mature company for a pre-IPO startup, flat design, minimalist, tech editorial style, warm orange and cool grey color palette, no text, no labels, clean light background</pre></details>
+</div>
+
+    <h2>4 个人，同一周，去了同一家公司</h2>
+
+    <p>先把事实钉死，不然容易被人说我在拱火。</p>
+
+    <strong>6 月 18 日</strong>，Noam Shazeer 离开 Google，去 OpenAI。这人是 2017 年那篇《Attention Is All You Need》的作者之一，Transformer 的爹之一，在 Google 是工程副总裁，联合带 Gemini。2024 年 Google 花了大约 27 亿美元，才把他从他自己创办的 Character.AI 买回来。买回来不到两年，走了。
+
+    <strong>6 月 19 日</strong>，第二天，John Jumper 离开 Google，去 Anthropic。他是 AlphaFold 的核心作者，2024 年跟 Hassabis 一起拿了诺贝尔化学奖。注意，是跟现任老板一起拿的奖，转头去了对家。
+
+    <p>如果到这里你觉得“就走俩明星，至于吗”，那是因为故事还没讲完。</p>
+
+    <strong>6 月 24 日到 25 日</strong>，又有三个人陆续被曝出走，无一例外，全去 Anthropic。一个做 Google 的 AI 编程工具，一个做预训练，还有一个是 Gemini 2.5 的贡献者、做 AI 安全——最后这位干脆自己在 X 上发帖认领了。
+
+    <p>数一下。5 个人，7 天，4 个去了 Anthropic，1 个去了 OpenAI。</p>
+
+    <p>这就不是“人才流失”了。人才流失是水漏了，四面八方往下渗。这是 4 个人朝着同一个方向，排着队，往同一个门里走。</p>
+
+    <p>定向的。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="6 天 5 人，4 个流向同一家公司 Anthropic——不是四散流失，是定向投奔。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">6 天 5 人，4 个流向同一家公司 Anthropic——不是四散流失，是定向投奔。</figcaption></figure>
+
+    <hr>
+
+    <h2>Google 给的工资，大概率是全行业最高的</h2>
+
+    <p>讲到这儿，正常人的第一反应是：肯定是 Google 给少了呗，被人加钱挖走了。</p>
+
+    <p>这个反应，错得很彻底。</p>
+
+    <p>Google 缺钱吗？2024 年它光是为了把 Shazeer 一个人买回来，就付了约 27 亿美元的技术授权费。2026 年，Alphabet 计划的 AI 资本开支是大约 1900 亿美元——这个数字比绝大多数国家一年的 GDP 都高。</p>
+
+    <p>Google 缺算力吗？它有自研的 TPU，有全球最深的数据中心家底。Hassabis 在戛纳那番话里专门点了一句：我们的研究团队是所有实验室里<strong>最大、最广的</strong>。这话是凡尔赛，但也是事实。</p>
+
+    <p>Google 缺平台、缺品牌、缺顶级问题吗？都不缺。AlphaFold 拿诺奖是在这儿拿的，Transformer 是在这儿造的，全世界最聪明的一批脑子，本来就长在这棵树上。</p>
+
+    <p>所以你看，钱、算力、平台、声望，这四样 Google 一样不缺，甚至样样领先。</p>
+
+    <p>可它还是在一周里，眼睁睁看着 4 个人朝同一个对手走。</p>
+
+    <p>于是只剩一个解释：如果一家公司什么都给得起，人还是要走，那它一定有一样东西，无论花多少钱都给不出来。</p>
+
+    <hr>
+
+    <h2>它缺的那张牌，叫“还没上市”</h2>
+
+    <p>我们来看看那 4 个人奔过去的 Anthropic，手里到底攥着什么。</p>
+
+    <p>2026 年 5 月 28 日，Anthropic 官宣完成 Series H 融资：一轮融了 <strong>650 亿美元</strong>，投后估值 <strong>9650 亿美元</strong>，红杉等机构领投。官方说，年化收入跑道（run-rate revenue）已经越过 <strong>470 亿美元</strong>。</p>
+
+    <p>6 月 1 日，Anthropic 秘密递交了 IPO 申请（S-1），目标是 2026 年秋天、最快 10 月在纳斯达克上市。它的老对手 OpenAI，估值约 8520 亿美元，也在同一条队里排着。</p>
+
+    <p>现在把两边摆一起看。</p>
+
+    <p>你去 Google，拿到的是一家市值约 2 万亿美元、已经上市二十多年的公司的股票。这股票好不好？好，稳，年年分红，但它的天花板就在那儿——它要再翻一倍，得变成 4 万亿美元的公司，这事不是不可能，是这辈子大概率轮不到因为你加班加出来。</p>
+
+    <p>你去 Anthropic，拿到的是一家 9650 亿美元、<strong>下个月就要上市</strong>的公司的、还没上市的股权。就算按现在这个估值进去，它从私募市场迈进公开市场、再带着 470 亿美元的年化收入往上长的空间，也比一只早被市场磨平了预期的成熟股要厚——更何况越早进去，那张纸越值钱，先到的人吃的就是这一口。</p>
+
+    <p>这两样东西，名字都叫“股权激励”，但根本不是一个物种。</p>
+
+    <p>一个是已经涨到头的钱，一个是还没上市、还能翻倍的票。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="同叫“股权激励”，一个已涨到天花板，一个还卡在上市前最陡的那一跳。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">同叫“股权激励”，一个已涨到天花板，一个还卡在上市前最陡的那一跳。</figcaption></figure>
+
+    <strong>Google 能开出全行业最高的工资，唯独开不出“还没上市”这四个字。</strong>
+
+    <p>而这四个字，恰恰是一个顶级研究员在 2026 年最想要的东西。因为他清楚，模型这东西迟早趋同，benchmark 你追我赶，真正一次性、不可逆、改变人生量级的财富机会，就卡在某家公司“从未上市到上市”的那一下。错过了，就没了。</p>
+
+    <hr>
+
+    <h2>这是一场上市公司在规则上就打不了的仗</h2>
+
+    <p>你可能会说：那 Google 也去发期权啊，多发点不就行了？</p>
+
+    <p>发不了。因为期权的价值，来自“还没上市”这个状态本身。Google 二十多年前就把这个状态用掉了。它现在能给你的，是一家成熟公司的成熟股票——稳定、可预期、没有那一跳。它越成功、越大、越稳，那一跳就越不可能再来。</p>
+
+    <p>这就是反常识的地方：<strong>让 Google 留不住人的，恰恰是它“已经成功”这件事。</strong></p>
+
+    <p>当然，得给反方留位置。Hassabis 在戛纳的反驳不是没道理：单个模型的迭代是系统工程，不是哪一个研究员拍脑袋决定的，走几个人，Gemini 明天不会崩。Gemini 的市场份额这一年确实从个位数涨到了 27% 以上，产品没掉链子。市场那 2250 亿美元的单日蒸发里，多少是基本面，多少是情绪，这事谁也说不清——不同口径给的数字本身就从 2250 亿到 2700 亿不等，本来就带着市场的过激反应。反过来，对家那 9650 亿美元的估值你也大可以说是泡沫，赌它的人未必都能全身而退。</p>
+
+    <p>所以我不说“走了几个人 Google 就完了”，那是蠢话。</p>
+
+    <p>我说的是，这一周像一次压力测试，测出了一个 Google 花多少钱都补不上的结构性漏洞：它能在工资单上赢，却在“未上市股权”这张牌上，连牌桌都上不了。</p>
+
+    <p>这事什么时候算我错？很简单：等 Anthropic 和 OpenAI 真上了市，期权红利锁定、那一跳兑现完了，如果到时候人才不再单向往外跑，甚至开始回流 Google，那就说明我把“上市与否”看得太重了。这个，我们 12 到 18 个月后回来对账。</p>
+
+    <p>但在那之前，如果你最近也在看 offer，记住一件事：别光盯着工资数字谁高。去看那家公司的股票——它是已经涨到头了，还是，还没上市。</p>
+
+    <p>能开出最高工资的公司，往往恰恰开不出最值钱的那张纸。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>Google 什么都给得起——全行业最高的工资、最深的算力、最好的问题。唯独给不出还没上市这四个字，而这恰恰是 2026 年一个顶尖研究员最想要的东西。让它留不住人的，不是它太穷，是它太成功、太大、上市太久。</p>
+    <p>所以下次看 offer，别只比工资数字。去看那家公司的股票——是已经涨到头了，还是还没上市。能开出最高工资的公司，往往恰恰开不出最值钱的那张纸。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/news/series-h" target="_blank" rel="noopener">Anthropic raises $65B in Series H funding at $965B post-money valuation</a></div>
+      <div class="footer-source-item"><a href="https://x.com/AnthropicAI/status/2060061347522433422" target="_blank" rel="noopener">Anthropic on X：Series H $65B / $965B 估值公告</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com/2026/06/01/anthropic-confidentially-files-ipo-965-billion-valuation/" target="_blank" rel="noopener">Anthropic confidentially files for IPO at $965 billion valuation — Fortune</a></div>
+      <div class="footer-source-item"><a href="https://techcrunch.com/2026/05/28/anthropic-raises-65-billion-nears-1t-valuation-ahead-of-ipo/" target="_blank" rel="noopener">Anthropic raises $65 billion, nears $1T valuation ahead of IPO — TechCrunch</a></div>
+      <div class="footer-source-item"><a href="https://techcrunch.com/2026/06/24/ai-researchers-continue-to-leave-google-for-its-rivals/" target="_blank" rel="noopener">AI researchers continue to leave Google for its rivals — TechCrunch</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com/2026/06/23/google-deepmind-ai-researcher-departures-raise-doubts-about-ability-to-win-the-ai-race-shazeer-jumper-eye-on-ai/" target="_blank" rel="noopener">As top talent leaves Google DeepMind, some question if the lab can remain at the forefront — Fortune</a></div>
+      <div class="footer-source-item"><a href="https://www.semafor.com/article/06/23/2026/deepmind-chief-demis-hassabis-says-googles-still-winning-ai-talent" target="_blank" rel="noopener">Demis Hassabis says Google's still winning AI talent — Semafor</a></div>
+      <div class="footer-source-item"><a href="https://www.morningstar.com/news/marketwatch/20260622213/alphabet-sees-225-billion-market-cap-wipeout" target="_blank" rel="noopener">Alphabet sees $225 billion market cap wipeout — Morningstar/MarketWatch</a></div>
+      <div class="footer-source-item"><a href="https://easternherald.com/2026/06/26/google-deepmind-anthropic-ai-talent-exodus-alphabet/" target="_blank" rel="noopener">Google Loses Four Researchers to Anthropic as Alphabet Sheds $270 Billion</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
