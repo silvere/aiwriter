@@ -20,11 +20,7 @@ Google 缺的不是钱，也不是人，更不是算力。它缺的，是一张*
 
 ---
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🎨</div>
-  <div class="img-placeholder-label">概念图占位</div>
-  <details><summary>生成 Prompt</summary><pre>Top scientists quietly walking out of a giant glass corporate tower toward a smaller rising rocket-shaped building on the horizon, conceptual illustration about talent leaving a mature company for a pre-IPO startup, flat design, minimalist, tech editorial style, warm orange and cool grey color palette, no text, no labels, clean light background</pre></details>
-</div>
+![Top scientists quietly walking out](images/concept_01.jpg)
 
 ## 4 个人，同一周，去了同一家公司
 
