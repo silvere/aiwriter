@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>全网都说 Claude 贵 20 倍，Anthropic 转头把价格又抬了一倍</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 观察 · 商业拆解</span>
+  <h1>全网都说 Claude 贵 20 倍，Anthropic 转头把价格又抬了一倍</h1>
+  <div class="hero-meta">
+    <span>2026-06-29</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">全网都在喊：开发者出逃 DeepSeek，Claude 贵 20 倍，再不降价就要完。可你打开 Anthropic 自己的官网，最新旗舰 Fable 5 定价是被骂贵的 Opus 的两倍。一家被价格战打的公司，不会在所有人喊它贵的时候，把价格又抬一倍。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>"贵 20 倍"这个数字，是怎么被算出来的</h2>
+
+    <p>先说那个满天飞的「20 倍」。</p>
+
+    <p>我不引用任何分析师，也不引用任何「业内人士」。我只用两个东西：Anthropic 挂在官网的定价页，和 DeepSeek 公布的 V4 价格。一手的，谁都能去点开看。</p>
+
+    <p>Claude 这边，一共四档，从便宜到贵：Haiku 4.5（输入 1 美元 / 输出 5 美元），Sonnet 4.6（3 / 15），Opus 4.8（5 / 25），Fable 5（10 / 50），单位都是每百万 token。</p>
+
+    <p>DeepSeek 这边，最便宜的 V4 Flash，输入 0.14 美元，输出 0.28 美元。</p>
+
+    <p>现在我们来做小学算术。同样是输入价，你拿 DeepSeek 去比谁？</p>
+
+    <p>比 Haiku，1 除以 0.14，是 7 倍。<br>比 Sonnet，是 21 倍。<br>比 Opus，是 36 倍。<br>比 Fable 5，是 71 倍。</p>
+
+    <p>如果你比的是输出价，Fable 5 的 50 除以 0.28，是 <strong>178 倍。</strong></p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="同一句「便宜 N 倍」，换个型号、换输入还是输出，就能差出 25 倍——「20 倍」只是被挑出来的那一个" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">同一句「便宜 N 倍」，换个型号、换输入还是输出，就能差出 25 倍——「20 倍」只是被挑出来的那一个</figcaption></figure>
+
+    <p>所以「20 倍」是哪来的？是拿 Sonnet 的输入价去比的，21 倍，四舍五入喊成 20。</p>
+
+    <p>（严谨一点：Lindy 到底切去跑哪一档，公开报道里没说清楚，所以这个 20 倍是媒体最流通的口径，不是 Lindy 的真实账单。但这恰恰是重点——连被比的是哪个型号都没定下来，这个数就敢满天飞。）</p>
+
+    <p>挑这个数，不是因为它最真实，是因为它最顺口（笑）。7 倍说出去没人转，178 倍说出去没人信，21 倍刚刚好，又唬人又像那么回事。</p>
+
+    <p>更别说，这个对比里还藏了一刀没人替你算：缓存。</p>
+
+    <p>简单说，同一段 prompt 你反复发，Claude 第二次之后自动给你打折。Opus 的输入价缓存命中后直接砍到 0.5 美元，再开个批处理又是五折。真实账单里，很多场景的差距，远没有定价单上那么吓人。</p>
+
+    <p>「便宜 20 倍」这句话本身没错。错的是，它假装这是一个确定的数字，而不是一道你可以算出任意答案的应用题。</p>
+
+    <hr>
+
+    <h2>那个出逃的 25 人公司，Anthropic 根本没在看</h2>
+
+    <p>回到 Lindy。</p>
+
+    <p>它的故事是真的，CEO 说省几百万也是真的。一个 25 人的创业公司，AI 调用成本能压到每月省几百万美元，对它来说这确实是生死。我完全理解他为什么切。</p>
+
+    <p>问题是，Anthropic 在不在乎。</p>
+
+    <p>5 月 28 日，Anthropic 发了一份官方公告，宣布完成 Series H 融资：拿了 650 亿美元，估值 9650 亿美元，逼近一万亿。同一份公告里，它顺手披露了一个数字——年化营收 run-rate 这个月初刚跨过 <strong>470 亿美元。</strong></p>
+
+    <p>470 亿是什么概念。Lindy 那种公司，省到极致，一年也就给 Anthropic 贡献几千万美元的账单，还是往多了说。它整个切走，落到 470 亿的盘子里，是小数点后面的事。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="Anthropic 官方公告里，企业客户采用「仍在持续增长」，500 多家年消费超百万——出逃的那家 25 人公司，根本不在这张表上" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">Anthropic 官方公告里，企业客户采用「仍在持续增长」，500 多家年消费超百万——出逃的那家 25 人公司，根本不在这张表上</figcaption></figure>
+
+    <p>这份公告我反复读了几遍，最有意思的是它没说什么。</p>
+
+    <p>它说企业客户采用「持续增长」，说有 30 万家企业客户，说有 500 多家客户一年在它身上花超过 100 万美元。它通篇在炫耀的，是越来越多的大客户、越来越贵的合同。</p>
+
+    <p>它一个字都没提价格敏感的开发者。没提要不要降价，没提怎么留住中小客户，没提 DeepSeek。</p>
+
+    <p>一家公司在融资公告里着重夸什么，约等于它想要什么。Anthropic 想要的，写得明明白白——是 500 家一年花百万的金主，不是 5000 家一个月省百万的 Lindy。</p>
+
+    <p>Lindy 觉得自己在「抛弃 Claude」。但在 Anthropic 的财务报表里，这种抛弃连一个像样的扰动都算不上。</p>
+
+    <hr>
+
+    <h2>价格战打到最凶的时候，它把旗舰涨了一倍</h2>
+
+    <p>现在我们把两件事并在一起看。</p>
+
+    <p>一边，是 DeepSeek 把价格压到 Claude 的几十分之一，是 Lindy 这样的公司在出逃，是全网在喊「再不降价就完了」。</p>
+
+    <p>另一边，是 Anthropic 推出 Fable 5，定价每百万 token 输入 10 美元、输出 50 美元，是 Opus 的整整两倍。它全系四档价格，在价格战最凶的这半年里，没有任何一档跟着 DeepSeek 往下调过。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="DeepSeek 把价格压到地板的同时，Claude 的价格阶梯一路朝上，新旗舰 Fable 5 是 Opus 的两倍——没有任何一档下调" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">DeepSeek 把价格压到地板的同时，Claude 的价格阶梯一路朝上，新旗舰 Fable 5 是 Opus 的两倍——没有任何一档下调</figcaption></figure>
+
+    <p>正常逻辑里，一家被低价对手围攻的公司，要么降价跟，要么哭着喊护城河。Anthropic 两样都没干。它在涨价。</p>
+
+    <p>有人会说，Fable 5 涨价是因为它更强、训练成本更高，这是正常的旗舰定价，你别过度解读。</p>
+
+    <p>这话单看 Fable 5 一个点，成立。但你把方向连起来看就不成立了：在价格被打到地板的半年里，Anthropic 全系没有一档下调，新旗舰还翻倍，融资公告里通篇夸的是大客户和百万合同——这不是某一个孤立的定价动作，这是一个一以贯之的方向。</p>
+
+    <p>这个方向只有一个解释：它压根没想在便宜这个维度上跟 DeepSeek 打。</p>
+
+    <p>你以为它在价格战里挨打，其实它根本没进这个战场。</p>
+
+    <p>要是它真被打疼了，账面会先露馅——大客户掉单、合同砍价、营收增速下台阶。可它公告里摆出来的数是反的：470 亿还在涨，500 家百万级大客户还在加。一个真在失血的公司，体检报告不长这样。</p>
+
+    <p>它站在另一个战场。那个战场里，贵不是缺点，是身份。</p>
+
+    <hr>
+
+    <h2>被「欢迎离开」的客户，和被留下的客户</h2>
+
+    <p>所以所谓「出逃」，逃的到底是什么人。</p>
+
+    <p>逃的是价格敏感的人，是拿模型跑总结、跑分类、跑标准化批处理的人，是任务简单到 Haiku 都嫌杀鸡用牛刀、账单一涨就想换供应商的人。</p>
+
+    <p>这批人走了，对 Anthropic 来说不是失血，是体检。它们贡献的营收薄、要求的服务多、对价格还最敏感——在任何一个 SaaS 公司的内部测算里，这都是 ARPU 最低、最该被「优化」掉的那一档客户。它们走了，Anthropic 的客户结构反而更干净，人均更值钱。</p>
+
+    <p>那留下来的是谁。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_04.png" alt="价格敏感、任务标准化的客户被「欢迎离开」；要过合规、数据不能出境、跑硬任务的客户花钱留下——Anthropic 早就替你分好了类" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">价格敏感、任务标准化的客户被「欢迎离开」；要过合规、数据不能出境、跑硬任务的客户花钱留下——Anthropic 早就替你分好了类</figcaption></figure>
+
+    <p>留下来的，是要过 FedRAMP、过 SOC2 审查的企业，是数据一个字节都不能出境的金融和医疗，是任务硬到便宜模型一上就出错、宁可多花钱也要稳的团队。</p>
+
+    <p>对这批客户，DeepSeek 不是「便宜的选项」，是「不能用的选项」。</p>
+
+    <p>这不是我吹的。美国政府机构和十几个州已经明令禁止在公务设备上用 DeepSeek，它的隐私政策白纸黑字写着数据存在中国服务器，安全公司 Wiz 还扒出过它一个没加密的数据库，泄露了上百万条日志，里面有聊天记录和 API 密钥。</p>
+
+    <p>对一个要过合规审查的企业采购来说，这些不是减分项，是一票否决项。便宜几十倍也没用，因为这道门它根本进不来。</p>
+
+    <p>所以 Anthropic 的底气，从来不是「我比 DeepSeek 便宜」——它便宜不过，也不想便宜。它的底气是「我能进的那道门，DeepSeek 进不来」。在那道门后面，它想标多少价，标多少价。</p>
+
+    <hr>
+
+    <h2>一刀</h2>
+
+    <p>把这事捋直了说。</p>
+
+    <p>媒体的叙事是：开发者在抛弃 Claude，Anthropic 被价格战打得快不行了，再不降价就要完。</p>
+
+    <p>Anthropic 自己摆出来的两张纸是：营收 470 亿还在涨，大客户 500 家还在加，新旗舰定价翻倍，全系一档没降。</p>
+
+    <p>这两个故事不可能同时为真。要么是 Anthropic 在用一份假公告骗投资人，要么是媒体把一家 25 人公司的账单焦虑，包装成了行业的塌方。</p>
+
+    <p>我赌后者。</p>
+
+    <strong>Lindy 们省下的每月几百万，是真的；但它落进 470 亿的盘子里，连个响都听不见，也是真的。</strong>
+
+    <p>这个判断不是耍嘴皮子的事后诸葛，它能被证伪：要是接下来半年，Anthropic 真把 Sonnet 砍到一美元以下去硬刚 DeepSeek，那就是我看走眼了，它确实是被逼降价的。在那之前，账摆在这儿。</p>
+
+    <p>下次你再看到「某某出逃 DeepSeek 省了多少钱」的标题，先别急着替 Anthropic 着急。先低头算算自己：你是拿 Opus 在跑 Haiku 就能干的活，然后回头怪模型贵；还是你真的卡在了便宜模型过不去的那道合规线、那道任务难度线上。</p>
+
+    <p>如果是前者，你早该走了，Anthropic 巴不得你走。如果是后者，你压根没得选，跑去 DeepSeek 才是真的拿业务赌命。</p>
+
+    <strong>你以为你在抛弃它。其实从它官网那张定价页开始，它就在给你发好人卡了。</strong>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>「便宜 20 倍」是挑出来的口径——拿不同型号、比输入还是输出，从 7 倍到 178 倍都能算出来。真正的问题不是 DeepSeek 多便宜，是你算没算清自己是哪种客户。</p>
+    <p>价格敏感、任务标准化的那批人出逃，对 Anthropic 不是失血，是体检：客户结构更干净，人均更值钱。它在借价格战筛客户，不是被逼降价。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://platform.claude.com/docs/en/about-claude/pricing" target="_blank" rel="noopener">Anthropic 官方 API 定价页</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/news/series-h" target="_blank" rel="noopener">Anthropic Series H 融资官方公告</a></div>
+      <div class="footer-source-item"><a href="https://api-docs.deepseek.com/quick_start/pricing" target="_blank" rel="noopener">DeepSeek 官方 API 定价文档</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/06/26/openai-anthropic-new-ai-spending-reality-as-users-shift-to-efficiency.html" target="_blank" rel="noopener">CNBC：用户从「堆 token」转向效率（2026-06-26）</a></div>
+      <div class="footer-source-item"><a href="https://digitalpolicyalert.org/threads/investigations-and-restrictions-on-deepseek" target="_blank" rel="noopener">DigitalPolicyAlert：各国对 DeepSeek 的调查与限制</a></div>
+      <div class="footer-source-item"><a href="https://securityscorecard.com/blog/what-you-need-to-know-about-deepseek-security-issues-and-vulnerabilities/" target="_blank" rel="noopener">SecurityScorecard：DeepSeek 安全问题与漏洞分析</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
