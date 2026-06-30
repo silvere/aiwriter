@@ -25,3 +25,8 @@ venv/
 # 本地配置 & CI 临时文件
 /config.toml
 .stub-vault/
+
+# Node（本地渲染理解图临时装的 Playwright，CI 自行 npx 安装）
+node_modules/
+package.json
+package-lock.json
