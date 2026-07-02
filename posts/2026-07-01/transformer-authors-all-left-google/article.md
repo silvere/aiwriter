@@ -20,11 +20,7 @@
 
 ---
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🎨</div>
-  <div class="img-placeholder-label">概念图占位</div>
-  <details><summary>生成 Prompt</summary><pre>a one-way revolving door at a glass corporate headquarters entrance, several human silhouettes walking out, none walking in, cold early-morning light, flat minimalist editorial illustration, muted slate-blue palette with a single warm orange accent, lots of negative space, no text, no labels, clean background</pre></details>
-</div>
+![one-way revolving door glass corporate](images/concept_01.jpg)
 
 *人能被买进来，留不留得住是另一回事。*
 
