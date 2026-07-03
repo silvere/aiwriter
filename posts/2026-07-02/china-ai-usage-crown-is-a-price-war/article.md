@@ -20,11 +20,7 @@ Claude Opus，Anthropic 的旗舰闭源模型，同样跑一百万个输出 toke
 
 ---
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🎨</div>
-  <div class="img-placeholder-label">概念图占位</div>
-  <details><summary>生成 Prompt</summary><pre>a towering mountain of cheap green cabbages with one tiny paper price tag, beside a single premium bottle glowing under a spotlight in a glass case with a huge ornate price tag, conceptual contrast of cheap volume versus expensive scarcity, flat design, minimalist editorial illustration, tech magazine style, warm orange accent with muted grey, no text, no labels, clean background</pre></details>
-</div>
+![towering mountain cheap green cabbages](images/concept_01.jpg)
 
 ## 一、榜单登顶那天，价签是一毛八
 
