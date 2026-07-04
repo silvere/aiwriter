@@ -16,28 +16,9 @@ Dun & Bradstreet 的 CTO Mike Manos 最近说了一句话，被截图转发了�
 
 这不是孤例。同一时期，微软自己发布的《2026 Work Trend Index》调研了3.1万名员工，统计了 Microsoft 365 里的真实行为数据：平均每天被打断275次，收到153条 Teams 消息、117封邮件，晚上8点后召开的会议同比涨了16%。报告里管这个叫"无限工作日"——不是工作时长写进了合同，是工作边界自己先消失了。
 
-<div class="img-placeholder understanding" data-caption="微软 2026 年调研 3.1 万名员工的真实行为数据——工作日没有变长，是变得没有边界">
-  <div class="img-placeholder-icon">🧩</div>
-  <div class="img-placeholder-label">理解图占位</div>
-  <details><summary>理解图 HTML</summary><pre>
-&lt;div class="illustration"&gt;
-  &lt;div class="kicker"&gt;微软 2026 · 3.1 万人行为数据&lt;/div&gt;
-  &lt;h2&gt;一天被打断 275 次&lt;/h2&gt;
-  &lt;div class="sub"&gt;工作日没有变长，是边界先消失了&lt;/div&gt;
-  &lt;div class="row" style="align-items:center;gap:48px;margin-top:28px"&gt;
-    &lt;div class="bignum"&gt;275&lt;/div&gt;
-    &lt;div style="flex:1"&gt;
-      &lt;div class="legend"&gt;
-        &lt;div class="lg"&gt;&lt;div class="dot" style="background:var(--accent)"&gt;&lt;/div&gt;&lt;div&gt;&lt;div class="n"&gt;153&lt;/div&gt;&lt;div class="t"&gt;条 Teams 消息 / 天&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
-        &lt;div class="lg"&gt;&lt;div class="dot" style="background:var(--neutral)"&gt;&lt;/div&gt;&lt;div&gt;&lt;div class="n"&gt;117&lt;/div&gt;&lt;div class="t"&gt;封邮件 / 天&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
-        &lt;div class="lg"&gt;&lt;div class="dot" style="background:var(--neutral)"&gt;&lt;/div&gt;&lt;div&gt;&lt;div class="n"&gt;+16%&lt;/div&gt;&lt;div class="t"&gt;晚 8 点后会议同比&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
-      &lt;/div&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;
-  &lt;div class="punch"&gt;不是工作时长写进了合同，是&lt;b&gt;工作边界自己先消失了&lt;/b&gt;&lt;/div&gt;
-&lt;/div&gt;
-</pre></details>
-</div>
+![微软 2026 年调研 3.1 万名员工的真实行为数据——工作日没有变长，是变得没有边界](images/illus_01.png)
+
+*微软 2026 年调研 3.1 万名员工的真实行为数据——工作日没有变长，是变得没有边界*
 
 ## 两组数据，指向同一件事
 
@@ -53,33 +34,9 @@ Dun & Bradstreet 的 CTO Mike Manos 最近说了一句话，被截图转发了�
 
 省下来的时间，理论上有三个去处：自己拿去休息，被组织重新分配到更重要的事情上，或者被日常琐事默默吸走。现实是，几乎没有公司明确规定走哪一条——因为前两条都要开会、要重写考核标准，第三条什么都不用做，是默认选项。没人划线，时间就会自己流向那条不需要谁批准的路。
 
-<div class="img-placeholder understanding" data-caption="三条路只有一条不需要谁批准——所以省下的时间总往那条走">
-  <div class="img-placeholder-icon">🧩</div>
-  <div class="img-placeholder-label">理解图占位</div>
-  <details><summary>理解图 HTML</summary><pre>
-&lt;div class="illustration"&gt;
-  &lt;div class="kicker"&gt;省下来的时间去哪了&lt;/div&gt;
-  &lt;h2&gt;三条路，只有一条不用谁批准&lt;/h2&gt;
-  &lt;div class="sub"&gt;默认发生的那条，才是时间真正的去处&lt;/div&gt;
-  &lt;svg viewBox="0 0 900 320" width="100%" height="320" style="margin-top:12px"&gt;
-    &lt;circle cx="60" cy="160" r="10" fill="var(--ink)"/&gt;
-    &lt;path d="M70,160 C260,60 460,50 620,50" fill="none" stroke="var(--hair)" stroke-width="3"/&gt;
-    &lt;path d="M70,160 C260,160 460,160 620,160" fill="none" stroke="var(--hair)" stroke-width="3"/&gt;
-    &lt;path d="M70,160 C260,270 460,270 620,270" fill="none" stroke="var(--accent)" stroke-width="6"/&gt;
-    &lt;circle cx="620" cy="50" r="6" fill="var(--sub)"/&gt;
-    &lt;circle cx="620" cy="160" r="6" fill="var(--sub)"/&gt;
-    &lt;circle cx="620" cy="270" r="9" fill="var(--accent)"/&gt;
-    &lt;text x="640" y="46" font-size="20" fill="var(--ink)"&gt;自己拿去休息&lt;/text&gt;
-    &lt;text x="640" y="70" font-size="14" fill="var(--sub)"&gt;需要主动决定&lt;/text&gt;
-    &lt;text x="640" y="156" font-size="20" fill="var(--ink)"&gt;重新分配给要事&lt;/text&gt;
-    &lt;text x="640" y="180" font-size="14" fill="var(--sub)"&gt;需要开会、重写考核&lt;/text&gt;
-    &lt;text x="640" y="264" font-size="22" font-weight="700" fill="var(--accent)"&gt;被日常琐事默默吸走&lt;/text&gt;
-    &lt;text x="640" y="290" font-size="15" fill="var(--accent-deep)"&gt;默认发生，不需要谁批准&lt;/text&gt;
-  &lt;/svg&gt;
-  &lt;div class="punch"&gt;省下来的时间总往&lt;b&gt;不需要谁批准&lt;/b&gt;的那条路走&lt;/div&gt;
-&lt;/div&gt;
-</pre></details>
-</div>
+![三条路只有一条不需要谁批准——所以省下的时间总往那条走](images/illus_02.png)
+
+*三条路只有一条不需要谁批准——所以省下的时间总往那条走*
 
 微软自己的报告里其实承认了这一点：员工个人有没有用好 AI，只解释了整体影响的三分之一左右，剩下大头是组织有没有跟着重新设计工作流和考核方式。**技术已经交货了，账没人接**——没有一个部门的职责是"决定这次省下的时间归谁"，所以它会自动流向离它最近的下一件事，不需要谁推一把。
 
@@ -89,33 +46,9 @@ Dun & Bradstreet 的 CTO Mike Manos 最近说了一句话，被截图转发了�
 
 Klarna 是这个故事里能查到完整时间线的一个。2022年，这家瑞典金融科技公司开始用和 OpenAI 合作开发的 AI 客服工具；到2024年，裁撤了大约700个客服岗位，AI 峰值时处理了三分之二到四分之三的客户互动。看起来是一次教科书式的效率跃升。接下来发生的事情没有配图：客户满意度下降，同一个问题被重复咨询的次数上升。2026年初，CEO Sebastian Siemiatkowski 公开承认"走得太激进"，转向混合模式，重新招聘客服——面向学生、乡村劳动力、还有那些不愿意再跟机器人重复第三遍问题的老客户。
 
-<div class="img-placeholder understanding" data-caption="从裁员 700 人到重新招聘，Klarna 用了不到两年">
-  <div class="img-placeholder-icon">🧩</div>
-  <div class="img-placeholder-label">理解图占位</div>
-  <details><summary>理解图 HTML</summary><pre>
-&lt;div class="illustration"&gt;
-  &lt;div class="kicker"&gt;Klarna · AI 客服三年弧线&lt;/div&gt;
-  &lt;h2&gt;从裁员 700 人到重新招聘，用了不到两年&lt;/h2&gt;
-  &lt;div class="sub"&gt;冲上去，出问题，再拉回来&lt;/div&gt;
-  &lt;svg viewBox="0 0 940 260" width="100%" height="260" style="margin-top:16px"&gt;
-    &lt;line x1="60" y1="140" x2="880" y2="140" stroke="var(--hair)" stroke-width="3"/&gt;
-    &lt;circle cx="120" cy="140" r="9" fill="var(--sub)"/&gt;
-    &lt;circle cx="480" cy="140" r="9" fill="var(--sub)"/&gt;
-    &lt;circle cx="820" cy="140" r="12" fill="var(--accent)"/&gt;
-    &lt;text x="120" y="110" font-size="16" fill="var(--sub)" text-anchor="middle"&gt;2022&lt;/text&gt;
-    &lt;text x="120" y="180" font-size="17" fill="var(--ink)" text-anchor="middle"&gt;上线 AI 客服&lt;/text&gt;
-    &lt;text x="120" y="202" font-size="13" fill="var(--sub)" text-anchor="middle"&gt;与 OpenAI 合作开发&lt;/text&gt;
-    &lt;text x="480" y="110" font-size="16" fill="var(--sub)" text-anchor="middle"&gt;2024&lt;/text&gt;
-    &lt;text x="480" y="180" font-size="17" fill="var(--ink)" text-anchor="middle"&gt;裁员约 700 人&lt;/text&gt;
-    &lt;text x="480" y="202" font-size="13" fill="var(--sub)" text-anchor="middle"&gt;AI 峰值处理 2/3-3/4 客户互动&lt;/text&gt;
-    &lt;text x="820" y="100" font-size="16" font-weight="700" fill="var(--accent)" text-anchor="middle"&gt;2026 初&lt;/text&gt;
-    &lt;text x="820" y="180" font-size="18" font-weight="700" fill="var(--accent)" text-anchor="middle"&gt;转向混合模式&lt;/text&gt;
-    &lt;text x="820" y="202" font-size="13" fill="var(--accent-deep)" text-anchor="middle"&gt;CEO 认了："走得太激进"&lt;/text&gt;
-  &lt;/svg&gt;
-  &lt;div class="punch"&gt;从全力押注到&lt;b&gt;公开承认走得太激进&lt;/b&gt;，不到两年&lt;/div&gt;
-&lt;/div&gt;
-</pre></details>
-</div>
+![从裁员 700 人到重新招聘，Klarna 用了不到两年](images/illus_03.png)
+
+*从裁员 700 人到重新招聘，Klarna 用了不到两年*
 
 Klarna 没有做错什么违反常识的事。他们只是跟那些自我加速的员工一样，把省下来的成本和时间交给了默认选项——继续扩大 AI 覆盖，而不是先划一条"AI 到这里为止，剩下交给人"的线。区别是，员工的代价是自己更累，公司的代价是客户先用脚投票，账要两年后才算清楚。
 
