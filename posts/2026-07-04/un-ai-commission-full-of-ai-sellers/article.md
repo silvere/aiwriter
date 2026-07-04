@@ -16,11 +16,7 @@
 
 ---
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🎨</div>
-  <div class="img-placeholder-label">概念图占位</div>
-  <details><summary>生成 Prompt</summary><pre>a long conference table in a grand hall surrounded by many identical figures in business suits holding shovels and pickaxes, a few empty chairs at the far end, flat design, minimalist illustration, tech governance theme, warm orange and grey color palette, no text, no labels, clean white background</pre></details>
-</div>
+![long conference table grand hall](images/concept_01.jpg)
 
 ## 一、先把这张桌子上坐的是谁，一个一个念出来
 
@@ -34,32 +30,9 @@
 
 我不是说这些人不该有发言权。产业里最懂技术的就是他们，把他们全排除在外、让一群完全不懂的人拍脑袋定规矩，那才是灾难。问题不在于他们「在场」，问题在于他们「在哪个位子上在场」——他们不是来被咨询的，他们是坐在起草席上，给一件自己每天靠它赚钱的东西，定规矩。
 
-<div class="img-placeholder understanding" data-caption="芯片、云、大模型——AI 产业链上每个收钱的环节，都在这张“治理”桌上派了人；连共同主席本人，主业都是卖 AI。">
-  <div class="img-placeholder-icon">🧩</div>
-  <div class="img-placeholder-label">理解图占位</div>
-  <details><summary>理解图 HTML</summary><pre>
-&lt;div class="illustration"&gt;
-  &lt;div class="kicker"&gt;AI 向善全球委员会 · 部分创始成员&lt;/div&gt;
-  &lt;h2&gt;立规矩的桌子上，坐满了卖 AI 的人&lt;/h2&gt;
-  &lt;div class="sub"&gt;按“靠什么赚钱”给已确认在列的科技成员归类&lt;/div&gt;
-  &lt;div class="row" style="align-items:stretch;gap:16px;margin-top:28px"&gt;
-    &lt;div class="step" style="flex:1"&gt;
-      &lt;div class="label"&gt;卖铲子（芯片）&lt;/div&gt;
-      &lt;div class="desc"&gt;黄仁勋 · 英伟达&lt;br&gt;全世界的 AI 都先向他买算力&lt;/div&gt;
-    &lt;/div&gt;
-    &lt;div class="step" style="flex:1"&gt;
-      &lt;div class="label"&gt;卖机房（云）&lt;/div&gt;
-      &lt;div class="desc"&gt;安迪·贾西 · 亚马逊 AWS&lt;br&gt;AI 跑在谁的机房里，他收租&lt;/div&gt;
-    &lt;/div&gt;
-    &lt;div class="step" style="flex:1"&gt;
-      &lt;div class="label"&gt;开模型&lt;/div&gt;
-      &lt;div class="desc"&gt;Jack Clark · Anthropic&lt;br&gt;Aidan Gomez · Cohere&lt;/div&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;
-  &lt;div class="punch"&gt;共同主席 Marc Benioff，本职是卖 AI Agent 的 Salesforce CEO——&lt;b&gt;裁判席上，坐着最大的那个运动员&lt;/b&gt;&lt;/div&gt;
-&lt;/div&gt;
-</pre></details>
-</div>
+![芯片、云、大模型——AI 产业链上每个收钱的环节，都在这张“治理”桌上派了人；连共同主席本人，主业都是卖 AI。](images/illus_01.png)
+
+*芯片、云、大模型——AI 产业链上每个收钱的环节，都在这张“治理”桌上派了人；连共同主席本人，主业都是卖 AI。*
 
 ## 二、这个委员会能干嘛？答案是：它基本啥也强制不了
 
@@ -75,27 +48,9 @@
 
 一个连成员都罚不了的机构，去「治理」一个连开发者自己都控制不住的技术。它不是缰绳，它是一场关于「我们要不要考虑做一根缰绳」的圆桌讨论——而且发言的人里，一大半靠缰绳越松越好赚钱。
 
-<div class="img-placeholder understanding" data-caption="真监管能强制、能处罚；这个委员会只能发建议、撮合“自愿承诺”——姿态摆在了决策，权力留在了聊天。">
-  <div class="img-placeholder-icon">🧩</div>
-  <div class="img-placeholder-label">理解图占位</div>
-  <details><summary>理解图 HTML</summary><pre>
-&lt;div class="illustration"&gt;
-  &lt;div class="kicker"&gt;“治理” 这两个字，含金量差多少&lt;/div&gt;
-  &lt;h2&gt;有牙的监管，和这个委员会&lt;/h2&gt;
-  &lt;div class="vs" style="margin-top:26px"&gt;
-    &lt;div class="fact"&gt;
-      &lt;div class="tag fact"&gt;有约束力的监管&lt;/div&gt;
-      &lt;div class="desc"&gt;· 设强制义务，不做就违法&lt;br&gt;· 能罚款、能禁售、能追责&lt;br&gt;· 不签也得守&lt;/div&gt;
-    &lt;/div&gt;
-    &lt;div class="think"&gt;
-      &lt;div class="tag think"&gt;这个委员会（咨询性）&lt;/div&gt;
-      &lt;div class="desc"&gt;· 发建议、开工作组&lt;br&gt;· 撮合“自愿承诺”&lt;br&gt;· 不愿，就可以不做&lt;/div&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;
-  &lt;div class="punch"&gt;“自愿承诺”的意思是：&lt;b&gt;愿的时候承诺，不愿的时候，那就是不愿&lt;/b&gt;&lt;/div&gt;
-&lt;/div&gt;
-</pre></details>
-</div>
+![真监管能强制、能处罚；这个委员会只能发建议、撮合“自愿承诺”——姿态摆在了决策，权力留在了聊天。](images/illus_02.png)
+
+*真监管能强制、能处罚；这个委员会只能发建议、撮合“自愿承诺”——姿态摆在了决策，权力留在了聊天。*
 
 ## 三、最诚实的破绽：它连自己怎么运作，都不肯说清
 
@@ -121,24 +76,9 @@
 
 「AI for Good」这个名字起得是真好。但 good 这个词，从头到尾没人说清楚：**是 for 谁的 good。** 对一个每天靠 AI 卖越多赚越多的人来说，「向善」最舒服的定义，就是「别拦着我卖」。
 
-<div class="img-placeholder understanding" data-caption="行业够大就开演的老剧本：先说外行管不了，再搭个“负责任”的台子，最后定一套罚不了人的软规则。AI 只是最新一个演员。">
-  <div class="img-placeholder-icon">🧩</div>
-  <div class="img-placeholder-label">理解图占位</div>
-  <details><summary>理解图 HTML</summary><pre>
-&lt;div class="illustration"&gt;
-  &lt;div class="kicker"&gt;自我监管的三步老剧本&lt;/div&gt;
-  &lt;h2&gt;让被管的人，来写管人的规矩&lt;/h2&gt;
-  &lt;div class="row" style="margin-top:28px"&gt;
-    &lt;div class="step"&gt;&lt;div class="n"&gt;1&lt;/div&gt;&lt;div class="label"&gt;抢话语权&lt;/div&gt;&lt;div class="desc"&gt;“太专业，外行管不了，得我们内行来”&lt;/div&gt;&lt;/div&gt;
-    &lt;div class="arrow"&gt;→&lt;/div&gt;
-    &lt;div class="step"&gt;&lt;div class="n"&gt;2&lt;/div&gt;&lt;div class="label"&gt;搭中立的台&lt;/div&gt;&lt;div class="desc"&gt;名字带“负责任 / 向善 / 可持续”&lt;/div&gt;&lt;/div&gt;
-    &lt;div class="arrow"&gt;→&lt;/div&gt;
-    &lt;div class="step"&gt;&lt;div class="n"&gt;3&lt;/div&gt;&lt;div class="label"&gt;定软规则&lt;/div&gt;&lt;div class="desc"&gt;“自愿承诺 / 最佳实践”，罚不了人&lt;/div&gt;&lt;/div&gt;
-  &lt;/div&gt;
-  &lt;div class="punch"&gt;烟草演过，金融演过，现在轮到 AI——&lt;b&gt;只是这次的东西，跑得比谁都快&lt;/b&gt;&lt;/div&gt;
-&lt;/div&gt;
-</pre></details>
-</div>
+![行业够大就开演的老剧本：先说外行管不了，再搭个“负责任”的台子，最后定一套罚不了人的软规则。AI 只是最新一个演员。](images/illus_03.png)
+
+*行业够大就开演的老剧本：先说外行管不了，再搭个“负责任”的台子，最后定一套罚不了人的软规则。AI 只是最新一个演员。*
 
 ## 五、下次看到「联合国治理 AI」，先做一件小学生都会的事
 
