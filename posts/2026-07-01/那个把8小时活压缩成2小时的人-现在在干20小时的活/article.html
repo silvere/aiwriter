@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>那个把8小时活压缩成2小时的人，现在在干20小时的活</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI与职场</span>
+  <h1>那个把8小时活压缩成2小时的人，现在在干20小时的活</h1>
+  <div class="hero-meta">
+    <span>2026-07-01</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">Dun & Bradstreet 的 CTO Mike Manos 最近说了一句话，被截图转发了很多次："我把8小时的活压缩成2小时——但现在我能干20小时的活了。"大部分转发配文是"典型资本家嘴脸"。这个判断可能是错的，或者说，不完整。今年2月《哈佛商业评论》那篇论文，蹲了美国一家科技公司整整8个月，访谈了40多个人，发现的是另一件事：没人逼这些员工提速，是他们自己，在没人要求的情况下，把省下来的时间重新填满了。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>省下来的两小时，去哪了</h2>
+<p>论文的作者是 Aruna Ranganathan 和 Xingqi Maggie Ye，两位研究者蹲点观察一家美国科技公司整整8个月——每周去现场待两天，累计访谈超过40人。他们原本想验证一个大家都以为理所当然的假设：AI提效之后，管理层会不会逼员工干更多活。结果管理层什么都没说。一名员工用AI把一份报告从4小时压到40分钟之后，第一反应不是关电脑，是"那我再看看还能干点什么"。</p>
+<p>这跟"资本家逼你卷"的叙事不太一样——没有人下命令，也没有一条 KPI 明确要求把省下的三个多小时填满。研究者把这个现象叫作"自我加速"：<strong>省下的时间没有一个明确的归属，就会被最近的、最容易拿到手的下一个任务吸走。</strong></p>
+<p>这不是孤例。同一时期，微软自己发布的《2026 Work Trend Index》调研了3.1万名员工，统计了 Microsoft 365 里的真实行为数据：平均每天被打断275次，收到153条 Teams 消息、117封邮件，晚上8点后召开的会议同比涨了16%。报告里管这个叫"无限工作日"——不是工作时长写进了合同，是工作边界自己先消失了。</p>
+<div class="img-placeholder understanding" data-caption="微软 2026 年调研 3.1 万名员工的真实行为数据——工作日没有变长，是变得没有边界">
+  <div class="img-placeholder-icon">🧩</div>
+  <div class="img-placeholder-label">理解图占位</div>
+  <details><summary>理解图 HTML</summary><pre>
+&lt;div class="illustration"&gt;
+  &lt;div class="kicker"&gt;微软 2026 · 3.1 万人行为数据&lt;/div&gt;
+  &lt;h2&gt;一天被打断 275 次&lt;/h2&gt;
+  &lt;div class="sub"&gt;工作日没有变长，是边界先消失了&lt;/div&gt;
+  &lt;div class="row" style="align-items:center;gap:48px;margin-top:28px"&gt;
+    &lt;div class="bignum"&gt;275&lt;/div&gt;
+    &lt;div style="flex:1"&gt;
+      &lt;div class="legend"&gt;
+        &lt;div class="lg"&gt;&lt;div class="dot" style="background:var(--accent)"&gt;&lt;/div&gt;&lt;div&gt;&lt;div class="n"&gt;153&lt;/div&gt;&lt;div class="t"&gt;条 Teams 消息 / 天&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+        &lt;div class="lg"&gt;&lt;div class="dot" style="background:var(--neutral)"&gt;&lt;/div&gt;&lt;div&gt;&lt;div class="n"&gt;117&lt;/div&gt;&lt;div class="t"&gt;封邮件 / 天&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+        &lt;div class="lg"&gt;&lt;div class="dot" style="background:var(--neutral)"&gt;&lt;/div&gt;&lt;div&gt;&lt;div class="n"&gt;+16%&lt;/div&gt;&lt;div class="t"&gt;晚 8 点后会议同比&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="punch"&gt;不是工作时长写进了合同，是&lt;b&gt;工作边界自己先消失了&lt;/b&gt;&lt;/div&gt;
+&lt;/div&gt;
+</pre></details>
+</div>
+
+<h2>两组数据，指向同一件事</h2>
+<p>一个自然的质疑是：会不会只是硅谷一家公司的特例？研究样本才40多人，一家公司，样本量撑不住"知识工作者普遍如此"这句话。</p>
+<p>这个质疑成立，所以更值得看的是它和微软那份大样本数据的关系。一份是8个月的质性访谈，一份是3.1万人的行为日志，方法完全不同，指向的却是同一个结构：时间被压缩之后，没有自动流向休息。这两组数据摆在一起，比任何一份单独拿出来都更说明问题。</p>
+<p>还有一种更常见的反驳：思科和《财富》杂志都报道过，不少 CEO 私下承认，AI 对公司整体生产力和就业的影响并不明显。这跟"员工更忙"听起来是矛盾的——如果 AI 没让公司整体效率提上去，员工又忙什么呢？其实不矛盾。宏观层面的投资回报不明显，跟微观层面每个人的工作节奏被悄悄拉高，可以同时为真：钱没多赚，但活确实变多了。还有一组数字能说明这种错配——85%的邮件在15秒内被读完，但平均发出一封邮件，得先读掉四封。AI 把"写"这件事变快了，没让"读"变快，结果不是效率提升，是噪音变多。</p>
+<p>"更忙"这个体感，也不完全是错觉。加州大学欧文分校的 Gloria Mark 研究知识工作者的注意力已经二十年，她的数据显示，人均连续专注时长从2004年的约2.5分钟，降到2012年的75秒，最新的观测已经掉到47秒左右；一次被打断之后，平均要23分钟以上才能重新进入专注状态；打断里有44%不是外部造成的，是自己主动点开了下一个通知。AI 没有直接造成这一串下滑，但它把任务切得更碎、反馈来得更快，客观上给了注意力更多被打断的理由——这是"感觉更忙"的另一半解释，跟前面那份8个月的研究说的是两件互相咬合的事：一个解释了时间去哪了，一个解释了为什么人会主动打断自己。</p>
+<h2>问题不是 AI，是没人划过线</h2>
+<p>省下来的时间，理论上有三个去处：自己拿去休息，被组织重新分配到更重要的事情上，或者被日常琐事默默吸走。现实是，几乎没有公司明确规定走哪一条——因为前两条都要开会、要重写考核标准，第三条什么都不用做，是默认选项。没人划线，时间就会自己流向那条不需要谁批准的路。</p>
+<div class="img-placeholder understanding" data-caption="三条路只有一条不需要谁批准——所以省下的时间总往那条走">
+  <div class="img-placeholder-icon">🧩</div>
+  <div class="img-placeholder-label">理解图占位</div>
+  <details><summary>理解图 HTML</summary><pre>
+&lt;div class="illustration"&gt;
+  &lt;div class="kicker"&gt;省下来的时间去哪了&lt;/div&gt;
+  &lt;h2&gt;三条路，只有一条不用谁批准&lt;/h2&gt;
+  &lt;div class="sub"&gt;默认发生的那条，才是时间真正的去处&lt;/div&gt;
+  &lt;svg viewBox="0 0 900 320" width="100%" height="320" style="margin-top:12px"&gt;
+    &lt;circle cx="60" cy="160" r="10" fill="var(--ink)"/&gt;
+    &lt;path d="M70,160 C260,60 460,50 620,50" fill="none" stroke="var(--hair)" stroke-width="3"/&gt;
+    &lt;path d="M70,160 C260,160 460,160 620,160" fill="none" stroke="var(--hair)" stroke-width="3"/&gt;
+    &lt;path d="M70,160 C260,270 460,270 620,270" fill="none" stroke="var(--accent)" stroke-width="6"/&gt;
+    &lt;circle cx="620" cy="50" r="6" fill="var(--sub)"/&gt;
+    &lt;circle cx="620" cy="160" r="6" fill="var(--sub)"/&gt;
+    &lt;circle cx="620" cy="270" r="9" fill="var(--accent)"/&gt;
+    &lt;text x="640" y="46" font-size="20" fill="var(--ink)"&gt;自己拿去休息&lt;/text&gt;
+    &lt;text x="640" y="70" font-size="14" fill="var(--sub)"&gt;需要主动决定&lt;/text&gt;
+    &lt;text x="640" y="156" font-size="20" fill="var(--ink)"&gt;重新分配给要事&lt;/text&gt;
+    &lt;text x="640" y="180" font-size="14" fill="var(--sub)"&gt;需要开会、重写考核&lt;/text&gt;
+    &lt;text x="640" y="264" font-size="22" font-weight="700" fill="var(--accent)"&gt;被日常琐事默默吸走&lt;/text&gt;
+    &lt;text x="640" y="290" font-size="15" fill="var(--accent-deep)"&gt;默认发生，不需要谁批准&lt;/text&gt;
+  &lt;/svg&gt;
+  &lt;div class="punch"&gt;省下来的时间总往&lt;b&gt;不需要谁批准&lt;/b&gt;的那条路走&lt;/div&gt;
+&lt;/div&gt;
+</pre></details>
+</div>
+
+<p>微软自己的报告里其实承认了这一点：员工个人有没有用好 AI，只解释了整体影响的三分之一左右，剩下大头是组织有没有跟着重新设计工作流和考核方式。<strong>技术已经交货了，账没人接</strong>——没有一个部门的职责是"决定这次省下的时间归谁"，所以它会自动流向离它最近的下一件事，不需要谁推一把。</p>
+<p>这不只发生在员工个人身上。企业层面，同样的真空正在发生，只是代价更贵、暴露得更慢。</p>
+<h2>那家先裁员后回头找人的公司</h2>
+<p>Klarna 是这个故事里能查到完整时间线的一个。2022年，这家瑞典金融科技公司开始用和 OpenAI 合作开发的 AI 客服工具；到2024年，裁撤了大约700个客服岗位，AI 峰值时处理了三分之二到四分之三的客户互动。看起来是一次教科书式的效率跃升。接下来发生的事情没有配图：客户满意度下降，同一个问题被重复咨询的次数上升。2026年初，CEO Sebastian Siemiatkowski 公开承认"走得太激进"，转向混合模式，重新招聘客服——面向学生、乡村劳动力、还有那些不愿意再跟机器人重复第三遍问题的老客户。</p>
+<div class="img-placeholder understanding" data-caption="从裁员 700 人到重新招聘，Klarna 用了不到两年">
+  <div class="img-placeholder-icon">🧩</div>
+  <div class="img-placeholder-label">理解图占位</div>
+  <details><summary>理解图 HTML</summary><pre>
+&lt;div class="illustration"&gt;
+  &lt;div class="kicker"&gt;Klarna · AI 客服三年弧线&lt;/div&gt;
+  &lt;h2&gt;从裁员 700 人到重新招聘，用了不到两年&lt;/h2&gt;
+  &lt;div class="sub"&gt;冲上去，出问题，再拉回来&lt;/div&gt;
+  &lt;svg viewBox="0 0 940 260" width="100%" height="260" style="margin-top:16px"&gt;
+    &lt;line x1="60" y1="140" x2="880" y2="140" stroke="var(--hair)" stroke-width="3"/&gt;
+    &lt;circle cx="120" cy="140" r="9" fill="var(--sub)"/&gt;
+    &lt;circle cx="480" cy="140" r="9" fill="var(--sub)"/&gt;
+    &lt;circle cx="820" cy="140" r="12" fill="var(--accent)"/&gt;
+    &lt;text x="120" y="110" font-size="16" fill="var(--sub)" text-anchor="middle"&gt;2022&lt;/text&gt;
+    &lt;text x="120" y="180" font-size="17" fill="var(--ink)" text-anchor="middle"&gt;上线 AI 客服&lt;/text&gt;
+    &lt;text x="120" y="202" font-size="13" fill="var(--sub)" text-anchor="middle"&gt;与 OpenAI 合作开发&lt;/text&gt;
+    &lt;text x="480" y="110" font-size="16" fill="var(--sub)" text-anchor="middle"&gt;2024&lt;/text&gt;
+    &lt;text x="480" y="180" font-size="17" fill="var(--ink)" text-anchor="middle"&gt;裁员约 700 人&lt;/text&gt;
+    &lt;text x="480" y="202" font-size="13" fill="var(--sub)" text-anchor="middle"&gt;AI 峰值处理 2/3-3/4 客户互动&lt;/text&gt;
+    &lt;text x="820" y="100" font-size="16" font-weight="700" fill="var(--accent)" text-anchor="middle"&gt;2026 初&lt;/text&gt;
+    &lt;text x="820" y="180" font-size="18" font-weight="700" fill="var(--accent)" text-anchor="middle"&gt;转向混合模式&lt;/text&gt;
+    &lt;text x="820" y="202" font-size="13" fill="var(--accent-deep)" text-anchor="middle"&gt;CEO 认了："走得太激进"&lt;/text&gt;
+  &lt;/svg&gt;
+  &lt;div class="punch"&gt;从全力押注到&lt;b&gt;公开承认走得太激进&lt;/b&gt;，不到两年&lt;/div&gt;
+&lt;/div&gt;
+</pre></details>
+</div>
+
+<p>Klarna 没有做错什么违反常识的事。他们只是跟那些自我加速的员工一样，把省下来的成本和时间交给了默认选项——继续扩大 AI 覆盖，而不是先划一条"AI 到这里为止，剩下交给人"的线。区别是，员工的代价是自己更累，公司的代价是客户先用脚投票，账要两年后才算清楚。</p>
+<p>这件事在国内不需要翻译成另一套语言。36氪采访过一批离职后原岗位没有补人、剩下同事被要求"多用 AI"填空缺的一线员工——省下的不是时间，是一个招聘名额，缺口照样落回了留下来的人身上。同一份调查里，问职场人"AI 是不是让工作更卷了"，大约两成人选了"非常认同"，四成选"比较认同"，剩下四成不认同。态度并不是一边倒，这恰好说明这不是一句"AI 毁了打工人"就能概括的事——真正分裂的，是这段省下来的时间，究竟被谁认领了。</p>
+<h2>这两小时，是谁的</h2>
+<p>回到 Mike Manos 那句被转发的话："我把8小时的活压缩成2小时，但现在我能干20小时的活了。"这话听起来像一句战报，其实该问的是另一个问题：多出来的那十几个小时，是他自己想干的，还是没人问过他，就被填满了。</p>
+<p>大概率是后者，因为很少有人会在省下时间的第一分钟，主动为它划一条归属线。下一次 AI 帮你把一件事从两小时压到二十分钟，<strong>真正决定你会不会更忙的，不是 AI 干了多少活，是那多出来的一小时四十分钟，有没有一个主人。</strong>多数情况下没有——所以它去了它默认会去的地方：下一个任务。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>回到 Mike Manos 那句被转发的话："我把8小时的活压缩成2小时，但现在我能干20小时的活了。"这话听起来像一句战报，其实该问的是另一个问题：多出来的那十几个小时，是他自己想干的，还是没人问过他，就被填满了。</p>
+    <p>大概率是后者，因为很少有人会在省下时间的第一分钟，主动为它划一条归属线。下一次 AI 帮你把一件事从两小时压到二十分钟，真正决定你会不会更忙的，不是 AI 干了多少活，是那多出来的一小时四十分钟，有没有一个主人。多数情况下没有——所以它去了它默认会去的地方：下一个任务。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.microsoft.com/en-us/worklab/work-trend-index/agents-human-agency-and-the-opportunity-for-every-organization" target="_blank" rel="noopener">2026 Work Trend Index report: Agents, human agency, and opportunity</a></div>
+      <div class="footer-source-item"><a href="https://hbr.org/2026/02/ai-doesnt-reduce-work-it-intensifies-it" target="_blank" rel="noopener">AI Doesn't Reduce Work—It Intensifies It</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com/2026/03/10/ai-productivity-workers-workday-efficiency/" target="_blank" rel="noopener">The AI productivity paradox: More work, not less</a></div>
+      <div class="footer-source-item"><a href="https://www.digitalapplied.com/blog/klarna-reverses-ai-layoffs-replacing-700-workers-backfired" target="_blank" rel="noopener">Klarna Reverses AI Layoffs</a></div>
+      <div class="footer-source-item"><a href="https://allwork.space/2026/05/ai-has-created-a-workplace-arms-race-workers-cant-afford-to-opt-out-of/" target="_blank" rel="noopener">AI Has Created A Workplace Arms Race</a></div>
+      <div class="footer-source-item"><a href="https://blog.dropbox.com/topics/work-culture/gloria-mark-how-to-get-your-attention-span-back" target="_blank" rel="noopener">Behold, the 47-second workday（Gloria Mark）</a></div>
+      <div class="footer-source-item"><a href="https://36kr.com/p/3768764888658692" target="_blank" rel="noopener">AI如何改变打工人？（36氪）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
