@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>联合国成立委员会给 AI 立规矩，44 个委员里，坐满了卖 AI 的人</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 观察 · 治理拆解</span>
+  <h1>联合国成立委员会给 AI 立规矩，44 个委员里，坐满了卖 AI 的人</h1>
+  <div class="hero-meta">
+    <span>2026-07-04</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">7 月 8 日，联合国和 ITU 拉起一个「AI 向善全球委员会」，要让 AI「对所有人有益」。我把 44 名委员的名单查了一遍，发现两件事：坐在这张桌子上定规矩的，一大片自己就是卖 AI 的——卖芯片的、卖云的、开大模型的一个没落；而这个委员会是「咨询性」的，不具约束力，开完会最多发点建议、撮合几句「自愿承诺」。一桌卖 AI 的人，坐进一个管不动 AI 的委员会，商量 AI 该怎么管。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>a long conference table in a grand hall surrounded by many identical figures in business suits holding shovels and pickaxes, a few empty chairs at the far end, flat design, minimalist illustration, tech governance theme, warm orange and grey color palette, no text, no labels, clean white background</pre></details>
+</div>
+
+    <h2>一、先把这张桌子上坐的是谁，一个一个念出来</h2>
+
+    <p>名单摊开，我一个一个念给你听。</p>
+
+    <p>主席位子上坐着两个人。一个是卢旺达总统卡加梅（Paul Kagame），这个没问题，一国元首。另一个共同主席，叫 Marc Benioff——Salesforce 的董事长兼 CEO。Salesforce 是干嘛的？卖企业软件的，这两年把全公司身家都押在了 AI Agent 上，管它叫 Agentforce，逢人就卖。也就是说，这个「治理 AI」委员会的一号人物，本职工作就是卖 AI。</p>
+
+    <p>往下念，创始委员里的科技高管排成一长串：英伟达的黄仁勋，卖 GPU 的，全世界的 AI 都得先问他买铲子；亚马逊 CEO 安迪·贾西（Andy Jassy），AWS 卖云的，AI 跑在谁家机房里他收租；高通 CEO 安蒙（Cristiano Amon），也是卖芯片的。直接开大模型公司的，有 Anthropic 联合创始人 Jack Clark、Cohere 联合创始人 Aidan Gomez。微软总裁布拉德·史密斯（Brad Smith）、Google 那位主管技术与社会的高管 James Manyika，也都在座。再往边上看，印度三位首富也没缺席。</p>
+
+    <p>卖铲子的、卖机房的、开模型的，AI 这条产业链上每一个能收钱的环节，都在这张桌子上派了代表。</p>
+
+    <p>我不是说这些人不该有发言权。产业里最懂技术的就是他们，把他们全排除在外、让一群完全不懂的人拍脑袋定规矩，那才是灾难。问题不在于他们「在场」，问题在于他们「在哪个位子上在场」——他们不是来被咨询的，他们是坐在起草席上，给一件自己每天靠它赚钱的东西，定规矩。</p>
+
+    <div class="img-placeholder understanding" data-caption="芯片、云、大模型——AI 产业链上每个收钱的环节，都在这张“治理”桌上派了人；连共同主席本人，主业都是卖 AI。">
+  <div class="img-placeholder-icon">🧩</div>
+  <div class="img-placeholder-label">理解图占位</div>
+  <details><summary>理解图 HTML</summary><pre>
+&lt;div class="illustration"&gt;
+  &lt;div class="kicker"&gt;AI 向善全球委员会 · 部分创始成员&lt;/div&gt;
+  &lt;h2&gt;立规矩的桌子上，坐满了卖 AI 的人&lt;/h2&gt;
+  &lt;div class="sub"&gt;按“靠什么赚钱”给已确认在列的科技成员归类&lt;/div&gt;
+  &lt;div class="row" style="align-items:stretch;gap:16px;margin-top:28px"&gt;
+    &lt;div class="step" style="flex:1"&gt;
+      &lt;div class="label"&gt;卖铲子（芯片）&lt;/div&gt;
+      &lt;div class="desc"&gt;黄仁勋 · 英伟达&lt;br&gt;全世界的 AI 都先向他买算力&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="step" style="flex:1"&gt;
+      &lt;div class="label"&gt;卖机房（云）&lt;/div&gt;
+      &lt;div class="desc"&gt;安迪·贾西 · 亚马逊 AWS&lt;br&gt;AI 跑在谁的机房里，他收租&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="step" style="flex:1"&gt;
+      &lt;div class="label"&gt;开模型&lt;/div&gt;
+      &lt;div class="desc"&gt;Jack Clark · Anthropic&lt;br&gt;Aidan Gomez · Cohere&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="punch"&gt;共同主席 Marc Benioff，本职是卖 AI Agent 的 Salesforce CEO——&lt;b&gt;裁判席上，坐着最大的那个运动员&lt;/b&gt;&lt;/div&gt;
+&lt;/div&gt;
+</pre></details>
+</div>
+
+    <h2>二、这个委员会能干嘛？答案是：它基本啥也强制不了</h2>
+
+    <p>一个「治理」机构，最该被问的问题只有一个：你能强制谁做什么？</p>
+
+    <p>把这个问题拿去问「AI 向善全球委员会」，答案有点尴尬。它是咨询性的（advisory），不具约束力（non-binding）。用大白话说，它开完会，能做的事就三样：发点建议报告、召集几个工作组、撮合成员之间搞点「自愿承诺」（voluntary commitments）。</p>
+
+    <p>自愿承诺的意思是，愿的时候承诺，不愿的时候，那就是不愿。它跟法律的区别，跟你「计划明年开始健身」跟「跟健身房签了不去就扣钱的合同」的区别，是一样的。前者叫愿望，后者才叫约束。这个委员会发的所有东西，都属于前者。黄仁勋们坐在里面点头答应的任何一条，回头不做，没有任何机制能罚他一分钱。</p>
+
+    <p>有人会说，联合国的事本来就这样，软性对话总比没有强。这话对了一半。ITU 这套「AI for Good」不是新东西，2017 年就在日内瓦办第一届峰会了，主打一个每年把全世界的人拉到一起聊聊 AI 能怎么解决贫困、医疗、教育——聊了快十年，是个不错的论坛。</p>
+
+    <p>但这次不一样的地方，恰恰是它想显得「更有分量」了：从一年一度、谁来都行的大论坛，收缩成一个 44 人的常设小圈子，定期开会，主席副主席配齐。它把姿态摆成了「决策」，把权限留在了「聊天」。姿态升级、权力没升级，这中间的落差，就是问题所在。</p>
+
+    <p>一个连成员都罚不了的机构，去「治理」一个连开发者自己都控制不住的技术。它不是缰绳，它是一场关于「我们要不要考虑做一根缰绳」的圆桌讨论——而且发言的人里，一大半靠缰绳越松越好赚钱。</p>
+
+    <div class="img-placeholder understanding" data-caption="真监管能强制、能处罚；这个委员会只能发建议、撮合“自愿承诺”——姿态摆在了决策，权力留在了聊天。">
+  <div class="img-placeholder-icon">🧩</div>
+  <div class="img-placeholder-label">理解图占位</div>
+  <details><summary>理解图 HTML</summary><pre>
+&lt;div class="illustration"&gt;
+  &lt;div class="kicker"&gt;“治理” 这两个字，含金量差多少&lt;/div&gt;
+  &lt;h2&gt;有牙的监管，和这个委员会&lt;/h2&gt;
+  &lt;div class="vs" style="margin-top:26px"&gt;
+    &lt;div class="fact"&gt;
+      &lt;div class="tag fact"&gt;有约束力的监管&lt;/div&gt;
+      &lt;div class="desc"&gt;· 设强制义务，不做就违法&lt;br&gt;· 能罚款、能禁售、能追责&lt;br&gt;· 不签也得守&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="think"&gt;
+      &lt;div class="tag think"&gt;这个委员会（咨询性）&lt;/div&gt;
+      &lt;div class="desc"&gt;· 发建议、开工作组&lt;br&gt;· 撮合“自愿承诺”&lt;br&gt;· 不愿，就可以不做&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="punch"&gt;“自愿承诺”的意思是：&lt;b&gt;愿的时候承诺，不愿的时候，那就是不愿&lt;/b&gt;&lt;/div&gt;
+&lt;/div&gt;
+</pre></details>
+</div>
+
+    <h2>三、最诚实的破绽：它连自己怎么运作，都不肯说清</h2>
+
+    <p>前面这些还能替它辩解几句——产业总得参与嘛，非约束力也是国际组织的老规矩嘛。但有个地方，是这套「向善」叙事怎么都糊不过去的。</p>
+
+    <p>你去翻它的官方公告，会撞见一件怪事：这个要给全球 AI 定方向的委员会，通篇没讲清楚自己是怎么运作的。谁来拍板？钱从哪来？44 个人里谁的话更算数，有没有人握着否决权？开完会那些「建议」，按什么程序产生、对谁生效？——一个字没有。</p>
+
+    <p>它对外的姿态是「我们来负责任地治理 AI」，可它连自己内部这点权力怎么分，都不肯亮出来。一个连自家规矩都说不清的机构，你指望它替全世界厘清 AI 的规矩？</p>
+
+    <p>说白了，公开的其实只有两样东西：一张星光熠熠的名单，和一句「向善」的口号。名单负责让你觉得「这么多大人物都来了，肯定靠谱」，口号负责让你觉得「方向总归是对的」。至于这台机器到底怎么转、转出来的东西算不算数，没人告诉你。</p>
+
+    <strong>能给你看的都是海报，不给你看的才是合同。</strong> 而这场发布会办到现在，你手里只有海报。
+
+    <h2>四、这套玩法我们见过——只是以前换的是别的行业</h2>
+
+    <p>让被监管的人，坐进制定规矩的房间，还得让全世界觉得这是好事——这不是 AI 行业的发明，这是个用了上百年的老剧本。</p>
+
+    <p>哪个行业只要长得足够大、赚得足够狠、又开始被公众盯上，剧本就会自动开演。第一步，行业主动站出来说：这事太专业了，外行管不了，得我们内行一起来定规矩。第二步，拉上政府和国际组织，搭一个听起来很中立的台子，名字里一定带着「负责任」「向善」「可持续」这类词。第三步，在台子上定出一套以「自愿」「倡议」「最佳实践」为主的软规则——既显得管了，又什么都没真的管住。</p>
+
+    <p>烟草卖了几十年，一边被证明致命，一边靠着行业「自律」承诺拖了很多年才被真正上枷锁。金融也一样，最要命的那些资本规则，长期是让银行自己坐在桌边一起商量出来的，商量的结果你从 2008 年就见识过了。剧本的每一版结局都很像：等软规则终于被证明拦不住事的时候，损失已经发生完了，而当年坐在桌边「负责任」的那些人，早赚够了。</p>
+
+    <p>现在轮到 AI 了。同一套三步走，同样的「向善」话术，同样的一批既得利益者被请上台。区别只在于，这次的东西比烟草和次贷跑得快得多，也难收拾得多。</p>
+
+    <p>「AI for Good」这个名字起得是真好。但 good 这个词，从头到尾没人说清楚：<strong>是 for 谁的 good。</strong> 对一个每天靠 AI 卖越多赚越多的人来说，「向善」最舒服的定义，就是「别拦着我卖」。</p>
+
+    <div class="img-placeholder understanding" data-caption="行业够大就开演的老剧本：先说外行管不了，再搭个“负责任”的台子，最后定一套罚不了人的软规则。AI 只是最新一个演员。">
+  <div class="img-placeholder-icon">🧩</div>
+  <div class="img-placeholder-label">理解图占位</div>
+  <details><summary>理解图 HTML</summary><pre>
+&lt;div class="illustration"&gt;
+  &lt;div class="kicker"&gt;自我监管的三步老剧本&lt;/div&gt;
+  &lt;h2&gt;让被管的人，来写管人的规矩&lt;/h2&gt;
+  &lt;div class="row" style="margin-top:28px"&gt;
+    &lt;div class="step"&gt;&lt;div class="n"&gt;1&lt;/div&gt;&lt;div class="label"&gt;抢话语权&lt;/div&gt;&lt;div class="desc"&gt;“太专业，外行管不了，得我们内行来”&lt;/div&gt;&lt;/div&gt;
+    &lt;div class="arrow"&gt;→&lt;/div&gt;
+    &lt;div class="step"&gt;&lt;div class="n"&gt;2&lt;/div&gt;&lt;div class="label"&gt;搭中立的台&lt;/div&gt;&lt;div class="desc"&gt;名字带“负责任 / 向善 / 可持续”&lt;/div&gt;&lt;/div&gt;
+    &lt;div class="arrow"&gt;→&lt;/div&gt;
+    &lt;div class="step"&gt;&lt;div class="n"&gt;3&lt;/div&gt;&lt;div class="label"&gt;定软规则&lt;/div&gt;&lt;div class="desc"&gt;“自愿承诺 / 最佳实践”，罚不了人&lt;/div&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="punch"&gt;烟草演过，金融演过，现在轮到 AI——&lt;b&gt;只是这次的东西，跑得比谁都快&lt;/b&gt;&lt;/div&gt;
+&lt;/div&gt;
+</pre></details>
+</div>
+
+    <h2>五、下次看到「联合国治理 AI」，先做一件小学生都会的事</h2>
+
+    <p>下次再刷到「联合国出手治理 AI」这类标题、手指准备去点转发之前，先问三个问题，都是小学生级别的。</p>
+
+    <p>有没有牙？能不能强制、能不能处罚？如果答案是「发建议」「自愿承诺」，那它是个论坛，不是缰绳，别拿缰绳的标准去期待它。</p>
+
+    <p>桌上坐的是谁？把名单拉出来数一数，定规矩的和靠这门生意赚钱的，重合度有多高？重合得越狠，规矩就越可能是给自己量身裁的。</p>
+
+    <p>它自己藏了什么？连怎么决策、钱从哪来、谁说了算都不肯公开的机构，凭什么信它能替你厘清别人的权力？</p>
+
+    <p>三个问题问完，大部分「治理体」新闻会自己瘪下去。剩下没瘪的，才值得你认真对待。</p>
+
+    <p>而这件事最刺眼的地方，不用我总结，时间线自己会说话：几乎就在同一周、同一个日内瓦，联合国自己请来的那个独立 AI 科学家小组，刚发出警告——AI 的能力增长，已经跑在了科学理解和各国政府适应能力的前面。一个房间里，科学家说这东西快失控了；隔壁房间里，联合国把最会卖这东西的人请上桌，商量着发几条不具约束力的建议。</p>
+
+    <p>同一个联合国，一只手在拉警报，另一只手在递话筒。</p>
+
+    <p>这一次的「AI 向善全球委员会」，把最该上枷锁的人请进了铸枷锁的车间，还只塞给他们一把橡皮锤。它当然会开会，当然会发漂亮的报告，当然会有很多张握手的照片。</p>
+
+    <p>只是别搞错了——那不是缰绳收紧的声音，那是一桌卖缰绳的人，在商量缰绳该做多松。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>这一次的「AI 向善全球委员会」，把最该上枷锁的人请进了铸枷锁的车间，还只塞给他们一把橡皮锤。它当然会开会，会发漂亮的报告，会有很多张握手的照片。</p>
+    <p>只是别搞错了——那不是缰绳收紧的声音，是一桌卖缰绳的人，在商量缰绳该做多松。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.itu.int/en/mediacentre/Pages/PR-2026-07-02-AI-for-Good-Global-Commission.aspx" target="_blank" rel="noopener">ITU 官方新闻稿：AI for Good Global Commission 成立（2026-07-02，共同主席 Benioff/Kagame，常任副主席 Bogdan-Martin，40+ 创始成员，首次会议 7 月 8 日日内瓦）</a></div>
+      <div class="footer-source-item"><a href="https://www.salesforce.com/news/press-releases/2026/07/02/ai-for-good-global-commission-announcement/" target="_blank" rel="noopener">Salesforce 官方新闻稿：Global leaders launch AI for Good Global Commission to expand access, strengthen trust and accelerate impact（官方使命表述与成员构成）</a></div>
+      <div class="footer-source-item"><a href="https://commission.aiforgood.itu.int/" target="_blank" rel="noopener">AI for Good Global Commission 官方网站</a></div>
+      <div class="footer-source-item"><a href="https://www.axios.com/2026/07/01/un-ai-commission-ceos-world-leaders" target="_blank" rel="noopener">Axios 独家：UN launches "AI for Good" commission（CEO 与各国元首同桌，咨询性/非约束力定位）</a></div>
+      <div class="footer-source-item"><a href="https://aiforgood.itu.int/" target="_blank" rel="noopener">ITU AI for Good 平台官网（品牌起源于 2017 年，180+ 国家、3.7 万贡献者）</a></div>
+      <div class="footer-source-item"><a href="https://www.itu.int/en/ITU-D/Statistics/Pages/facts/default.aspx" target="_blank" rel="noopener">ITU Facts and Figures：全球约 22 亿人仍无法接入互联网</a></div>
+      <div class="footer-source-item"><a href="https://aninews.in/news/business/sunil-bharti-mittal-mukesh-ambani-and-lakshmi-mittal-among-44-founding-members-of-newly-launched-ai-for-good-global-commission20260703163704/" target="_blank" rel="noopener">ANI News：委员会共 44 名创始成员，含 Mukesh Ambani、Sunil Bharti Mittal、Lakshmi Mittal 等</a></div>
+      <div class="footer-source-item"><a href="https://www.business-standard.com/industry/news/mukesh-ambani-among-three-indians-on-ai-for-good-global-commission-126070301123_1.html" target="_blank" rel="noopener">Business Standard：Mukesh Ambani 等三名印度企业家进入 AI for Good 全球委员会</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
