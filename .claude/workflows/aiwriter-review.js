@@ -9,6 +9,7 @@ export const meta = {
 }
 
 // args: { articlePath, title, platform, audience, coreClaim, styleCard }
+if (typeof args === 'string') { try { args = JSON.parse(args) } catch (e) {} }  // 兜底：args 有时以 JSON 字符串传入
 if (!args || !args.articlePath) throw new Error('需要 args.articlePath（article.md 路径）')
 const ctx =
   `文章文件：${args.articlePath}（用 Read 读全文）\n` +

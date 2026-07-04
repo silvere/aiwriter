@@ -6,6 +6,7 @@ export const meta = {
 }
 
 // args: { briefs: [{ id, anchor, difficulty, work, caption, points, form }], workdir?: string }
+if (typeof args === 'string') { try { args = JSON.parse(args) } catch (e) {} }  // 兜底：args 有时以 JSON 字符串传入
 if (!args || !Array.isArray(args.briefs) || !args.briefs.length) throw new Error('需要 args.briefs（配图设计简报数组）')
 const workdir = args.workdir || '/tmp/aiwriter-ill'
 

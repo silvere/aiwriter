@@ -10,6 +10,7 @@ export const meta = {
 }
 
 // args: { topic: string, refs?: string, depth?: string, extra?: string }
+if (typeof args === 'string') { try { args = JSON.parse(args) } catch (e) {} }  // 兜底：args 有时以 JSON 字符串传入
 if (!args || !args.topic) throw new Error('需要 args.topic（研究主题）')
 const topic = args.topic
 const refs = args.refs || '无'
