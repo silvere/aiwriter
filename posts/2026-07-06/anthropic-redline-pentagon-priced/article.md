@@ -14,11 +14,7 @@
 
 ---
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🎨</div>
-  <div class="img-placeholder-label">概念图占位</div>
-  <details><summary>生成 Prompt</summary><pre>a single bold red line drawn across a formal government contract document, a hand with an eraser about to wipe the red line away, a small price tag hanging from the line, flat design, minimalist illustration, tech style, muted grey and red color palette, no text, no labels, clean white background</pre></details>
-</div>
+![single bold red line drawn](images/concept_01.jpg)
 
 ## 一、先看清这两条红线是什么，以及背后那张 2 亿美元的订单
 
