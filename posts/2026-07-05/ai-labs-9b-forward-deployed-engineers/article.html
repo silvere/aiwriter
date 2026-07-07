@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>卖你 AI 的四家大厂，凑了 90 亿美元，雇人替 AI 干活</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 商业观察</span>
+  <h1>卖你 AI 的四家大厂，凑了 90 亿美元，雇人替 AI 干活</h1>
+  <div class="hero-meta">
+    <span>2026-07-05</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">AI 这门生意，第一天打出的卖点就是「不用人」。两个月里，卖 AI 的四家大厂——OpenAI、Anthropic、AWS、微软——一共凑了 90 多亿美元，成立四家公司，干的是同一件事：把工程师一队一队派进你公司，替 AI 干活。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <p>6 月 30 日，AWS 掏出 10 亿美元，成立一个专门团队，活儿只有一样：把工程师派进客户公司，现场帮客户把 AI 跑起来。</p>
+
+    <p>两天后，7 月 2 日，微软宣布成立「Frontier Company」，25 亿美元，6000 个人，同一件事——派人进客户公司，守着 AI 干活。</p>
+
+    <p>往前翻两个月。5 月 4 日 Anthropic，拉上黑石、高盛，凑了 15 亿；5 月 11 日 OpenAI，40 多亿，TPG 领投。四家公司招牌上写着同一个词：Forward Deployed Engineer，前线部署工程师。</p>
+
+    <p>翻译过来是：卖你 AI 的人，改行了，改卖「能让 AI 开机的人」。</p>
+
+    <p>四家加起来，90 多亿美元。这笔钱不是拿去训更强的模型，是拿去雇人——雇一群人，坐进你的办公室，盯着他们卖给你的那个 AI，别让它当场趴窝。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图注：两个月，四家大厂，90 多亿美元，做同一件事：派人替 AI 干活" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：两个月，四家大厂，90 多亿美元，做同一件事：派人替 AI 干活</figcaption></figure><br></div></p>
+
+    <h2>这个词，不是 AI 行业发明的</h2>
+
+    <p>Forward Deployed Engineer 这个词，2026 年突然铺天盖地，但它不是新的。发明它的是 Palantir，时间是 2005 年前后，客户是 CIA、NSA 和美国陆军情报部门。</p>
+
+    <p>当年 Palantir 遇到一个死结：情报机构要做数据系统，但出于保密，客户没法跟供应商说清楚自己到底要什么。传统那套「先调研需求、回去远程开发、做完再交付」的做法，直接失灵——因为需求这一步就卡死了。</p>
+
+    <p>Palantir 的解法简单粗暴：不调研了，把工程师直接塞进客户的涉密机房，让他们蹲在现场，一边看客户怎么干活、一边试、一边改，边看边把系统搭出来。「Forward Deployed」本身是军语，指部署在作战区附近、随时能上的部队。到 2016 年前后，Palantir 内部这种全栈工程师的人数，一度超过了普通写产品的软件工程师。</p>
+
+    <p>记住这套打法成立的前提：<strong>客户连自己要什么都说不清，产品没法隔着一层交付，只能派活人蹲进去。</strong></p>
+
+    <p>二十年后，这套打法被搬到了「给企业装 AI」上。但搬的时候，病换了。Palantir 当年派人进去，是因为客户说不清自己要什么——问题出在需求侧，产品本身是能打的。这次四家派人进去，是因为产品已经卖出去了、却还跑不动——问题出在供给侧。</p>
+
+    <p>同样是派活人蹲进客户公司，Palantir 补的是「你到底要什么」，这四家补的是「我卖给你的东西，怎么才能开机」。前者叫定制交付，后者有个更难听的说法，叫兜底。四家大厂集体请出 FDE，等于集体承认了同一件事：AI 卖得出去，但落不了地——客户不会用、不敢用、用不好，得有原厂的人蹲在旁边扶着。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="图注：同一套打法，二十年只换了「客户搞不定」的那样东西" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：同一套打法，二十年只换了「客户搞不定」的那样东西</figcaption></figure><br></div></p>
+
+    <h2>90 亿美元，买的是工时</h2>
+
+    <p>四家用的是同一个词，但掏钱的姿势完全不同。</p>
+
+    <p>微软最直接，25 亿美元、6000 人，多数是内部转岗，攒成一个叫 Frontier 的运营单元，总裁 Rodrigo Kede Lima 在微软干了 6 年、此前负责美洲和亚洲区的企业业务。AWS 更省，10 亿美元全是亚马逊自己的钱，不融资、不设新公司，纯内部拉队伍。</p>
+
+    <p>OpenAI 和 Anthropic 掏不出这么多人，就用股权换。OpenAI 成立的「Deployment Company」是控股子公司，40 多亿美元里 TPG 领投，Advent、贝恩、博枫一堆 PE 跟着；人不够，转手把一家 2023 年才成立的伦敦咨询公司 Tomoro 买了，一次补进来 150 个部署工程师。Anthropic 更彻底，15 亿美元干脆和黑石、高盛、Hellman & Friedman 合资开公司，专门去它们投的那些公司里装 AI。</p>
+
+    <p>四家凑一块，一句话能概括：<strong>自己有人的用自己人，没人的花钱买人，买不起的出让股权换人。</strong> 90 亿美元，买的全是人力。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="图注：同一个词，四种掏钱姿势：有人用人，没人买人，买不起就出让股权" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：同一个词，四种掏钱姿势：有人用人，没人买人，买不起就出让股权</figcaption></figure><br></div></p>
+
+    <p>这些人进去干嘛，AWS 说得最具体：5 到 6 个工程师一队，进驻客户 45 天一轮，很多人本身就是 AWS 那些 AI 服务的开发者；走的时候留下知识图谱、运行手册和被培训过的客户员工，不按小时收咨询费。首批客户里有 Allen Institute、考克斯汽车、NBA、NFL、理光、西南航空。NFL 的首席信息官 Gary Brantley 原话是：「工程师和我们团队并肩开发，几周就上线到生产环境。」</p>
+
+    <p>「几周就上线」是一句夸奖。但你把它翻过来听：一个卖了好几年、号称能自动干活的 AI 产品，得靠供应商的原厂工程师蹲进你公司几周，才能上线。这不叫软件，这叫装修。</p>
+
+    <h2>模型这么神，为什么还要 6000 个人</h2>
+
+    <p>绕不开的一个问题：如果模型真像发布会上说的那样能自己干活，为什么还要 6000 个人蹲进客户公司？</p>
+
+    <p>数据早就把答案写出来了。MIT 一个叫 NANDA 的项目，2025 年 8 月发过一份报告，访谈了 150 位企业高管、调查了 350 名员工、扒了 300 个公开的部署案例，结论是：95% 的企业生成式 AI 试点，没产生任何可衡量的财务回报。同一份报告还有一组对照——从专业厂商采购、并且建立合作关系的，成功率约 67%；企业自己闷头搭的，成功率只有前者的三分之一。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_04.png" alt="图注：MIT NANDA：95% 的 AI 试点没回报，而“自己搞”比“找厂商扶”更容易失败" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：MIT NANDA：95% 的 AI 试点没回报，而“自己搞”比“找厂商扶”更容易失败</figcaption></figure>
+
+    <p>这份报告等于给四家大厂开了张药方：客户自己搞不定，得有人扶着。四家看懂了，于是花 90 亿，把「扶着」这件事做成了生意。</p>
+
+    <p>最诚实的一句话，是微软 CEO 纳德拉自己说的。他给 Frontier 站台时讲，「企业的未来，是人力资本和 token 资本相互复利的学习闭环」。这话包装得很漂亮，但拆开就是：光有 token（模型）不够，得配上人力，两样搅在一起才转得动。卖模型的人亲口告诉你，模型单独卖，转不动。</p>
+
+    <p>这里还藏着一个更别扭的位置。企业试点为什么失败？Gartner 分析师 Arun Chandrasekaran 的判断是，主因是企业「缺乏内部专业能力」。四家给 FDE 辩护，用的正是这条理由——你缺能力，我派人补。可他们补的方式，是让你把「建立内部能力」这件事，外包给了卖 AI 给你的那一方。裁判和运动员，这回是同一个人。</p>
+
+    <strong>一个需要 6000 人陪着才能开机的产品，有个更朴素的名字，叫半成品。</strong>
+
+    <h2>软件公司，正在把自己做成咨询公司</h2>
+
+    <p>四家大厂现在这个估值，是按软件算的。软件的账好看在哪：写一次卖一万份，多卖一份几乎不花钱，规模越大毛利越高，增长是指数的。资本市场愿意给 AI 公司几千亿上万亿的价钱，赌的就是这条曲线。</p>
+
+    <p>FDE 是另一条曲线。派一队人服务一个客户，再来一个客户，得再派一队人。人力密集、线性增长，多一单生意就多一单人力成本。这正是咨询公司、系统集成商几十年来的活法，也是它们市盈率一直上不去的原因——它们卖的不是软件，是工时。</p>
+
+    <p>Apollo 的高管 Scott Kleinman 有个判断：继软件之后，律所、会计、咨询这些专业服务业，是 AI 下一个要颠覆的领域。四家大厂集体扑向部署服务，看着像是在印证这句话——去抢传统咨询那块万亿市场。</p>
+
+    <p>但方向反了。它们抢下这块市场的方式，恰恰是承认自己的产品需要有人陪着才能用。软件的价签写的是「写一次卖一万份」，服务的价签写的是「一单人力换一单营收」。当一家 AI 公司的营收里，越来越大一块要靠 FDE 的工时来堆，它给自己贴的其实已经是服务业的价签，只是外面还挂着软件的吊牌——而吊牌和价签对不上的那天，账是要算的。</p>
+
+    <strong>不是 AI 要吃掉咨询，是卖 AI 的人先把自己做成了咨询。</strong>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>你买 AI，买的是「不用人」。他们卖 AI，靠的是「雇人」。90 亿美元，买的不是一个能自己干活的未来，是一支能把半成品扶上线的施工队。</p>
+    <p>这支施工队什么时候能撤，取决于模型什么时候真能自己开机——而愿意花 90 亿雇人的四家公司，显然自己都还没等到那一天。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://techcrunch.com/2026/07/02/microsoft-launches-its-own-ai-deployment-company-with-2-5-billion-commitment/" target="_blank" rel="noopener">Microsoft launches its own AI deployment company with $2.5 billion commitment</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/07/02/microsoft-commits-2point5-billion-6000-employees-ai-implementation-unit.html" target="_blank" rel="noopener">Microsoft commits $2.5 billion and 6,000 employees to new AI implementation unit</a></div>
+      <div class="footer-source-item"><a href="https://thenewstack.io/microsoft-frontier-forward-deployed/" target="_blank" rel="noopener">Microsoft, AWS and Anthropic are spending billions — and not on better models</a></div>
+      <div class="footer-source-item"><a href="https://openai.com/index/accelerating-the-next-phase-ai/" target="_blank" rel="noopener">OpenAI raises $122 billion to accelerate the next phase of AI</a></div>
+      <div class="footer-source-item"><a href="https://nanda.media.mit.edu/" target="_blank" rel="noopener">MIT NANDA — The GenAI Divide: State of AI in Business 2025</a></div>
+      <div class="footer-source-item"><a href="https://www.aboutamazon.com/news/aws" target="_blank" rel="noopener">AWS forward deployed engineering 组织与客户案例</a></div>
+      <div class="footer-source-item"><a href="https://fde.academy/" target="_blank" rel="noopener">Forward Deployed Engineers 的起源（Palantir）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
