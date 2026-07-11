@@ -1,0 +1,26 @@
+{
+  "skipWorkflowUsageWarning": true,
+  "permissions": {
+    "allow": [
+      "Workflow",
+      "Agent",
+      "Skill",
+      "WebSearch",
+      "WebFetch",
+      "Bash(python3 skills/scripts/*)",
+      "Bash(node skills/scripts/*)",
+      "Bash(pip3 install *)",
+      "Bash(mkdir *)",
+      "Bash(ls *)",
+      "Bash(aiwriter *)",
+      "Bash(git status*)",
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git fetch *)",
+      "Bash(git checkout *)",
+      "Bash(git push *)"
+    ]
+  }
+}
