@@ -30,11 +30,9 @@
 
 《灵活性陷阱》这篇论文，专门来捅这四个字。
 
-<div class="img-placeholder understanding" data-caption="图注：自回归一个字一个字排队写，扩散模型所有格子一起填——快是真的快，问题出在'先填哪个'的自由上">
-  <div class="img-placeholder-icon">🧩</div>
-  <div class="img-placeholder-label">理解图占位</div>
-  <details><summary>理解图 HTML</summary><pre>PENDING_ILLUS_01</pre></details>
-</div>
+![图注：自回归一个字一个字排队写，扩散模型所有格子一起填——快是真的快，问题出在'先填哪个'的自由上](images/illus_01.png)
+
+*图注：自回归一个字一个字排队写，扩散模型所有格子一起填——快是真的快，问题出在'先填哪个'的自由上*
 
 ## 二、任意顺序，是给"逃避思考"开的一条近路
 
@@ -52,11 +50,9 @@
 
 **任意顺序不是自由，是给逃避思考开的一条近路。**
 
-<div class="img-placeholder understanding" data-caption="图注：推理链上真正决定成败的是几个'岔路口'token；自回归被迫在路口做选择，扩散模型却绕开路口先填简单格子，探索就此崩塌">
-  <div class="img-placeholder-icon">🧩</div>
-  <div class="img-placeholder-label">理解图占位</div>
-  <details><summary>理解图 HTML</summary><pre>PENDING_ILLUS_02</pre></details>
-</div>
+![图注：推理链上真正决定成败的是几个'岔路口'token；自回归被迫在路口做选择，扩散模型却绕开路口先填简单格子，探索就此崩塌](images/illus_02.png)
+
+*图注：推理链上真正决定成败的是几个'岔路口'token；自回归被迫在路口做选择，扩散模型却绕开路口先填简单格子，探索就此崩塌*
 
 ## 三、解药是把自由收走：名字都懒得起，就叫 JustGRPO
 
@@ -70,11 +66,9 @@
 
 效果呢？论文给的数字很硬。JustGRPO 在小学数学题基准 GSM8K 上做到 89.1%，在更难的 MATH-500 上 45.1%。而那些专门为扩散模型设计的、花里胡哨的强化学习方法，ESPO 是 82.3% 和 39.0%，GDPO 是 82.8% 和 39.6%。一个"别整花的"的土办法，把一堆精心设计的花办法，全按在地上摩擦。
 
-<div class="img-placeholder understanding" data-caption="图注：GSM8K 与 MATH-500 上，把自由收回、老实走从左往右的 JustGRPO，反而全面压过专为扩散模型设计的花式方法">
-  <div class="img-placeholder-icon">🧩</div>
-  <div class="img-placeholder-label">理解图占位</div>
-  <details><summary>理解图 HTML</summary><pre>PENDING_ILLUS_03</pre></details>
-</div>
+![图注：GSM8K 与 MATH-500 上，把自由收回、老实走从左往右的 JustGRPO，反而全面压过专为扩散模型设计的花式方法](images/illus_03.png)
+
+*图注：GSM8K 与 MATH-500 上，把自由收回、老实走从左往右的 JustGRPO，反而全面压过专为扩散模型设计的花式方法*
 
 **为了让自由的模型学会思考，你得先在训练时，把自由收走。**
 
@@ -94,11 +88,9 @@
 
 这恰恰是最诚实的地方。英伟达是工程公司，不跟你谈情怀，它要的是省钱——不用从头训、复用 25 万亿 token 的沉淀、还能提速，这买卖划算。可正因为它只算账不谈情怀，它反而暴露了真相：2026 年最快的扩散语言模型，速度是真的，自立门户是假的。自回归不是被扔进历史垃圾堆的旧范式——至少眼下这栋跑得最快的新楼，地基还是它。
 
-<div class="img-placeholder understanding" data-caption="图注：双塔里那座自回归塔全程冻结，只训练去噪塔；2.1T 对 25T 的训练量差，说明扩散的速度是趴在自回归底座上借来的">
-  <div class="img-placeholder-icon">🧩</div>
-  <div class="img-placeholder-label">理解图占位</div>
-  <details><summary>理解图 HTML</summary><pre>PENDING_ILLUS_04</pre></details>
-</div>
+![图注：双塔里那座自回归塔全程冻结，只训练去噪塔；2.1T 对 25T 的训练量差，说明扩散的速度是趴在自回归底座上借来的](images/illus_04.png)
+
+*图注：双塔里那座自回归塔全程冻结，只训练去噪塔；2.1T 对 25T 的训练量差，说明扩散的速度是趴在自回归底座上借来的*
 
 ## 五、速度可以买，自由是幻觉
 
