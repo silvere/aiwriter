@@ -35,7 +35,8 @@ const results = await pipeline(
     `真·多序列数据才用 §6 ECharts（SVG 渲染器 + fonts.ready 后 setOption + animation:false），≤4 个数据点用大数字/比例条。\n\n` +
     `第三步，渲染并亲眼看：\n` +
     `  mkdir -p ${workdir} && 把片段存为 ${workdir}/${brief.id}.html，然后\n` +
-    `  python3 skills/scripts/render_illustration.py ${workdir}/${brief.id}.html ${workdir}/${brief.id}.png --width 1100 --scale 2\n` +
+    `  python3 skills/scripts/render_illustration.py ${workdir}/${brief.id}.html ${workdir}/${brief.id}.png --width 1100 --scale 1\n` +
+    `  （scale 1 足够过验收闸；最终高清渲染由 Step 7.4 fill_images.py 负责，这里的 PNG 只用于自查）\n` +
     `  用 Read 打开 PNG，过 §4.5 验收闸：遮住文字还剩信息吗？一图一主张吗？另查：文字溢出/截断、对齐、中文是否方块、图例是否可读。\n\n` +
     `第四步，不合格就改 HTML 重渲染，**最多再修 2 轮**（共渲染 ≤3 次）。仍不完美就在 notes 里说明取舍。\n\n` +
     `⛔ 硬约束：严禁调用 Agent/Task 派生子代理；不要联网搜索（一切素材来自简报与 spec）。\n\n` +

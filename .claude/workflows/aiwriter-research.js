@@ -17,6 +17,13 @@ const refs = args.refs || '无'
 const depth = args.depth || '快速了解'
 const extra = args.extra || ''
 
+// 搜索上限按 depth 缩放（搜索结果留存是研究阶段最大的 token 项）
+const cap = depth.includes('快速')
+  ? { search: 5, fetch: 3, verify: 6 }
+  : depth.includes('深度')
+    ? { search: 10, fetch: 8, verify: 8 }
+    : { search: 8, fetch: 6, verify: 8 }
+
 const FACTS_SCHEMA = {
   type: 'object',
   properties: {
@@ -53,7 +60,7 @@ const sweeps = await parallel(LENSES.map(l => () =>
     `你的视角（只做这一个视角，别的视角有别人负责）：${l.brief}\n` +
     `参考链接：${refs}\n研究深度：${depth}\n${extra ? '补充要求：' + extra + '\n' : ''}` +
     `⛔ 硬约束（最高优先级）：严禁调用 Agent/Task 等任何派生子代理的工具（嵌套曾炸出 100+ 代理）；` +
-    `WebSearch ≤8 次、WebFetch ≤6 次，到顶即停、用已有材料返回；同一数字核实一次就够。\n` +
+    `WebSearch ≤${cap.search} 次、WebFetch ≤${cap.fetch} 次，到顶即停、用已有材料返回；同一数字核实一次就够。\n` +
     `要求：每条事实必须带来源；文章可能直接引用的关键数字标 isKeyNumber=true；` +
     `拿不到一手来源的传闻不要收。不要写文章，只返回结构化事实。`,
     { label: `研究:${l.key}`, phase: '扫描', model: 'sonnet', effort: 'medium', agentType: 'general-purpose', schema: FACTS_SCHEMA }
@@ -64,8 +71,8 @@ const all = sweeps.filter(Boolean)
 if (!all.length) throw new Error('全部研究视角失败，检查网络/搜索工具')
 
 phase('核验')
-const keyNums = all.flatMap(s => s.findings).filter(f => f.isKeyNumber).slice(0, 8)
-log(`关键数字 ${keyNums.length} 条进入交叉核验（上限 8 条）`)
+const keyNums = all.flatMap(s => s.findings).filter(f => f.isKeyNumber).slice(0, cap.verify)
+log(`关键数字 ${keyNums.length} 条进入交叉核验（上限 ${cap.verify} 条）`)
 const VERDICT_SCHEMA = {
   type: 'object',
   properties: { confirmed: { type: 'boolean' }, note: { type: 'string', description: '≤60 字：核验依据或存疑原因' } },
@@ -75,8 +82,8 @@ const verdicts = await parallel(keyNums.map(f => () =>
   agent(
     `交叉核验这条关键数据是否属实、出处是否可靠：「${f.fact}」（来源：${f.source} ${f.url || ''}）。\n` +
     `用独立的 WebSearch 验证（换关键词、找第二来源）。找不到第二来源或数字对不上 → confirmed=false。拿不准也算 false。\n` +
-    `⛔ 硬约束：严禁调用 Agent/Task 派生子代理；WebSearch ≤3 次、WebFetch ≤2 次，到顶即停按现有证据下结论。`,
-    { label: '核验', phase: '核验', model: 'sonnet', effort: 'low', agentType: 'general-purpose', schema: VERDICT_SCHEMA }
+    `⛔ 硬约束：严禁调用 Agent/Task 派生子代理；WebSearch ≤2 次、WebFetch ≤1 次，到顶即停按现有证据下结论。`,
+    { label: '核验', phase: '核验', model: 'haiku', effort: 'low', agentType: 'general-purpose', schema: VERDICT_SCHEMA }
   )
 ))
 const checked = keyNums.map((f, i) => ({ fact: f.fact, source: f.source, ...(verdicts[i] || { confirmed: false, note: '核验失败' }) }))
