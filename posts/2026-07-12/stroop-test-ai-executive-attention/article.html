@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>一道快一百年前的颜色题，把最强的三个 AI 全考崩了</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 观察</span>
+  <h1>一道快一百年前的颜色题，把最强的三个 AI 全考崩了</h1>
+  <div class="hero-meta">
+    <span>2026-07-12</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">2026 年 6 月，一篇发表在 PNAS Nexus 的论文，把一道快一百年前的心理学题端到了最强的几个 AI 面前。字少时它们答得漂亮，字一多全崩了——GPT-4o 的正确率从 91% 一路滑到 15%。而论文的结论比分数更扎心：这不是哪个模型没调好，是这套架构，天生就缺这块。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、这道题，简单到不该有 AI 做不出来</h2>
+
+    <p>Stroop 任务的规则，简单到可以写在一张便利贴上：给你一串带颜色的字，你的任务只有一个——报墨水的颜色，别管字念什么。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="把同一行字读成&quot;蓝&quot;还是说成&quot;红&quot;，取决于你在跟哪个自己较劲。" style="max-width:100%;border-radius:12px"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">把同一行字读成"蓝"还是说成"红"，取决于你在跟哪个自己较劲。</figcaption></figure>
+
+    <p>难点全在"别管字念什么"这六个字上。因为读字对识字的人来说是自动的，你根本关不掉。当墨水是红的、字却是"蓝"的时候，你脑子里会同时冒出两个答案，一个来自眼睛看到的颜色，一个来自你憋不住的阅读本能。健康的成年人怎么处理这个冲突？会慢半拍，会偶尔卡壳，但正确率稳得很。这份"稳"，就是心理学说的执行控制——大脑里那个专门负责在两个答案打架时拍板的机制。</p>
+
+    <p>研究者做的事情，是把这道题改成 AI 能接的形式：把一串带颜色的词做成图片，喂给多模态模型，让它报颜色。词的数量从 1 个，一路加到 40 个。设了三种情况：字和颜色一致的（congruent）、不一致的（incongruent）、还有纯色块的对照组。</p>
+
+    <p>然后就是那个让人有点没绷住的结果。</p>
+
+    <p>OpenAI 的 GPT-4o，在 5 个词的短列表上，正确率 91%，挺好。加到 10 个词，掉到 57%。加到 40 个词，只剩 15%。Anthropic 的 Claude 3.5 Sonnet 也一样，短列表接近满分，一拉到 40 个词，崩到 24%。</p>
+
+    <p>能答对博士级难题的机器，栽在了"别看那个字"上——而且不是偶尔栽，是越考越栽。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="词一多，冲突条件下的正确率就直线跳水；不冲突的时候，它稳得像没事人。" style="max-width:100%;border-radius:12px"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">词一多，冲突条件下的正确率就直线跳水；不冲突的时候，它稳得像没事人。</figcaption></figure>
+
+    <hr>
+
+    <h2>二、它崩的方式，比崩本身更值得看</h2>
+
+    <p>如果故事只是"AI 做长题会出错"，那不算新闻，谁都会累。真正有意思的，是它崩的方式。</p>
+
+    <p>同样是 40 个词的长列表，只要字和颜色是一致的（比如红墨水写"红"），模型的正确率基本不掉，稳稳地贴着高位。一旦换成不一致的（红墨水写"蓝"），才开始跳水。也就是说，让它崩的从来不是"字多"，是"字多"加上"字和颜色对着干"。它不是记不住那么多词，是拦不住那个错的答案。</p>
+
+    <p>更说明问题的是混合列表：研究者把一致和不一致的词掺在一起，结果模型在那些对着干的词上，正确率掉到接近 0%。它在同一串里，对不冲突的词照样答对，偏偏对冲突的词几乎全错。这不是"看花了眼"，这是"看见了，但摁不住"。</p>
+
+    <p>还有一个数字很微妙：这种下滑，在词数只有 10 个左右的时候就开始了。研究者据此说了一句挺重的话——这些模型能用来做执行控制的有效窗口，比它们号称能处理的上下文长度，要短得多。</p>
+
+    <strong>你以为它的瓶颈是记性，其实它的瓶颈是定力。</strong>
+
+    <p>翻译成人话：它能"读进去"很长的东西，但它能"顶住干扰、按住冲动"的那段，短得可怜。前者是各家发布会天天秀的百万上下文，后者，没人在发布会上提过。</p>
+
+    <hr>
+
+    <h2>三、为什么这毛病，换个新模型也治不好</h2>
+
+    <p>看到这儿，正常人的第一反应是：GPT-4o、Claude 3.5，这都是老模型了，换最新的不就好了？</p>
+
+    <p>研究者早想到了。他们又补做了一组，用上了当时最新、最能"深度推理"的三个：GPT-5、Claude Opus 4.1、Gemini 2.5 Pro。结果是——全都躲不过。三个最强的脑子，在冲突条件下随着长度增加，正确率照样往随机水平滑。研究者的原话意思是：这个缺陷是架构层面的，不是发育层面的。换句话说，不是模型还小、还没长好，是它长成什么样，都缺这块。</p>
+
+    <p>为什么？问题出在 Transformer 那个叫"注意力"的核心机制上。它靠一个 softmax 给所有输入分权重，谁重要给谁多分一点。听着挺像人的注意力，其实差着一件关键的事：它只能给"读字"这个自动反应施加一个软约束——把它的权重调低一点，但调不到零。而人脑里那套执行控制，能下的是硬约束——直接一闸门把错误答案拦在外面。</p>
+
+    <p>软约束和硬约束的区别，在词少的时候看不出来，权重压一压也就够了。可当冲突信号越堆越多，那点被压低的权重会一点点漏出来，累积到某个点，就压垮了正确答案。这不是调参能修的漏，这是机制本身的形状决定的。研究者甚至把根子指到了更深的地方——模型嵌入空间的拓扑结构。</p>
+
+    <strong>在"注意力"这三个字上，Transformer 和你脑子里的注意力，压根是两回事。</strong>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="人脑靠一道硬闸门拦住错答案，Transformer 只能把它的权重往下压——压不到零，就总会漏。" style="max-width:100%;border-radius:12px"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">人脑靠一道硬闸门拦住错答案，Transformer 只能把它的权重往下压——压不到零，就总会漏。</figcaption></figure>
+
+    <p>所以"下一代模型就好了"这个念想，这篇论文是直接给否了。你可以把模型堆得更大、喂得更多、推理链拉得更长，但只要底下还是这套软约束的注意力，那个"顶不住冲突"的老毛病就还在原地。</p>
+
+    <hr>
+
+    <h2>四、这事，跟"让 AI 帮你干活"有什么关系</h2>
+
+    <p>聊到这儿你可能觉得，一个颜色测试而已，AI 又不靠数颜色赚钱，崩就崩呗。</p>
+
+    <p>问题恰恰在这。</p>
+
+    <p>这一年整个行业在卖什么？卖的是 agent——能无人值守、自己干一整天活的 AI。自己管数据库，自己跑客服，自己把一条工作流从头执行到尾，中间没人盯着。研究者自己就点破了这层：在这类全自动的场景里，agent 的输出就是最终动作，后面没有人这道缓冲垫了。它错了，就是真的错了，直接落到现实里。</p>
+
+    <p>而一个 agent 干活的过程是什么？是一段又长、又全是冲突信号的序列。工具返回的结果和它记着的目标对不上，用户的新指令和系统的旧设定对着干，这一步的观察推翻了上一步的判断——它每一步都在做"该信哪个、该摁住哪个"的选择。这正是 Stroop 任务在考的那件事：长序列里，顶住干扰，按住那个自动但错误的冲动。</p>
+
+    <p>而这篇论文量出来的是：这种顶不住，在冲突信号只有 10 个左右的时候就开始了。一个 agent 跑一整天，要处理的冲突信号，何止 10 个。</p>
+
+    <strong>我们正打算把公司交给一台在"别看那个字"上会崩的机器——它不是不聪明，它是定不住神。</strong>
+
+    <p>这不是说 agent 全是泡沫。加脚手架、加校验、加人盯着，都能把这个毛病压一压。但得清楚压的是什么：底下那个"顶不住长冲突"的地基没变，你搭的所有架子，都是在替它补那块它自己长不出来的执行控制。补得了一时的活，补不平架构的坑。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_04.png" alt="一整天的自动运行，就是一长串对着干的信号；没有人这道缓冲垫，错就直接落地。" style="max-width:100%;border-radius:12px"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">一整天的自动运行，就是一长串对着干的信号；没有人这道缓冲垫，错就直接落地。</figcaption></figure>
+
+    <hr>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>一百年前，心理学家用一行变了色的字，量出了人脑一个最朴素的本事：在诱惑面前，说不。一百年后，我们造出了能写代码、能解奥数、能陪你聊到深夜的机器，然后发现，它学不会这行字背后的那个说不。</p>
+    <p>它能读完一整本书，却顶不住十个字的干扰；它能算对最难的题，却按不住最傻的那个冲动。而我们要它去干的那些活——自己管钱、自己管数据、自己扛一整天——恰好，全是要定住神的活。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://academic.oup.com/pnasnexus/article/5/6/pgag149/8698838" target="_blank" rel="noopener">Deficient executive control in transformer attention（PNAS Nexus, 2026 年 6 月）</a></div>
+      <div class="footer-source-item"><a href="https://www.biorxiv.org/content/10.1101/2025.01.22.634394v2.full.pdf" target="_blank" rel="noopener">同一论文 bioRxiv 预印本全文（含实验数据）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
