@@ -2,6 +2,36 @@
 
 > 给 scheduled task 跑 /aiwriter 的场景。手工调用不受影响（手工调用时 PUA / 改进提示可能有价值）。
 
+## 2026-07：定时任务卡确认 + 第二轮 token 优化
+
+### 为什么定时跑会卡在"确认权限"
+
+三个独立原因，全部已处理：
+
+1. **Workflow 使用警告弹窗**（"Dynamic workflows run many subagents in parallel…"）。
+   查证官方文档（code.claude.com/docs/en/workflows.md、settings.md）：`skipWorkflowUsageWarning` **不是文档化的设置键**，不能指望它生效。官方机制有两个：
+   - 弹窗里选 **"Yes, and don't ask again for `<workflow 名>` in `<项目>`"** —— 按项目、按工作流记住，三个 aiwriter 工作流各点一次即可（跟账号走，fresh session 也认）。
+   - 用 **Routine（Claude Code on the web 的定时任务）** 跑：官方文档明确 "Routines run autonomously as full Claude Code cloud sessions: there is no permission-mode picker and no approval prompts during a run"。**如果每次都被弹窗问，说明任务不是以 Routine 方式跑的**（比如手动开 web session），改成 Routine 是根治办法。
+2. **权限 allow 清单有缺口**（已修 `.claude/settings.json`）：
+   - 补了 `Write` / `Edit`（配图代理写 HTML、主控逐节追加 article.md 都要用）；
+   - 补了 `WebFetch(domain:*)`（WebFetch 的规则语法是域名限定型）；
+   - 补了 `Bash(cat *)` / `Bash(cp *)`；
+   - 加了 `permissions.defaultMode: "acceptEdits"`（本地 CLI 跑时降低编辑确认；web 会话以 UI 下拉框为准）。
+3. **技能本身的三个"等用户批准"节点**（Step 0 / 2.5 / 3）在无人值守 session 里会永远等不到回复。
+   已在 aiwriter.md 加"autonomous mode 全局规则"：定时任务触发时三个节点自动推进，自主决策集中记入交付简报。
+
+### 第二轮 token 优化（已落地到三个 workflow 脚本）
+
+| 改动 | 位置 | 省多少 |
+|------|------|--------|
+| 审稿校验按批：每 5 条建议 1 个护稿人（原来每条 1 个代理、各自重读全文，≤16 次重读 → ≤4 次） | aiwriter-review.js | 最大项，长文省 ~15-25K/次 |
+| 废话刀降级 Sonnet（机械性筛弱段，不需要主控模型） | aiwriter-review.js | 主控模型为 Opus 级时明显 |
+| 研究搜索上限按 depth 缩放：快速了解 5/3、标准 8/6、深度 10/8（原来一律 8/6） | aiwriter-research.js | 精炼版文章省 ~10-15K/次 |
+| 数字核验降级 Haiku + 上限 WebSearch≤2/WebFetch≤1（原 Sonnet、3/2）；快速了解核验条数 8→6 | aiwriter-research.js | ~5-8K/次 |
+| 配图 QA 截图 scale 2→1（视觉输入 token 减半；最终高清渲染仍由 Step 7.4 fill_images.py 负责） | aiwriter-illustrations.js | 每图每轮省约一半图像 token |
+
+预算量级（子代理侧）从「研究 60-100K / 审稿 50-80K」降到「研究 40-80K / 审稿 35-60K」，见 aiwriter.md 编排表。
+
 ## 一次任务的 token 消耗分布（基线）
 
 | 来源 | 估算 | 性质 |

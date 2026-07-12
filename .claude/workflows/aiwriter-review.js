@@ -54,7 +54,7 @@ const KNIVES = [
   },
   {
     key: '废话刀',
-    model: null,
+    model: 'sonnet',
     prompt: 'Read skills/templates/review-cuts.md 的「第三刀：废话刀」。逐节标出最弱的 20%（注水/重复/空过渡/空洞形容词），检查每 150 字至少 1 个新信息，总结式结尾判删。',
   },
   {
@@ -98,27 +98,56 @@ const merged = Object.values(byKey)
 log(`五刀共 ${merged.length} 条去重后建议`)
 
 phase('校验')
-// 对抗校验：只校验 高/中（低直接列为可选项）；上限 16 条控 token
+// 对抗校验：只校验 高/中（低直接列为可选项）；上限 16 条控 token。
+// 每 5 条一批交给同一个护稿人（文章只需重读 1 次/批，而不是 1 次/条——这是本工作流最大的 token 项）
 const toVerify = merged.filter(f => f.severity !== '低').slice(0, 16)
 const optional = merged.filter(f => f.severity === '低')
+const BATCH = 5
+const batches = []
+for (let i = 0; i < toVerify.length; i += BATCH) batches.push(toVerify.slice(i, i + BATCH))
 const VETO_SCHEMA = {
   type: 'object',
-  properties: { refuted: { type: 'boolean' }, reason: { type: 'string', description: '≤60 字' } },
-  required: ['refuted', 'reason'],
+  properties: {
+    verdicts: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          index: { type: 'integer', description: '对应输入清单里的 index' },
+          refuted: { type: 'boolean' },
+          reason: { type: 'string', description: '≤60 字' },
+        },
+        required: ['index', 'refuted', 'reason'],
+      },
+    },
+  },
+  required: ['verdicts'],
 }
-const vetoes = await parallel(toVerify.map(f => () =>
+const batchResults = await parallel(batches.map((batch, bi) => () =>
   agent(
     `你是"护稿人"，立场是尽量驳回没必要的修改。\n${ctx}\n` +
-    `Read 文章后判断这条${f.knife}建议：定位「${f.quote}…」，问题「${f.issue}」，建议「${f.action}：${f.suggestion}」。\n` +
-    `执行它文章会更好还是更差/无所谓？对照风格备忘卡与 skills/templates/quotas.md 的硬配额。` +
+    `先 Read 文章一遍（只读这一遍），再逐条判断下面 ${batch.length} 条审稿建议：\n` +
+    JSON.stringify(batch.map((f, i) => ({ index: i, knife: f.knife, quote: f.quote, issue: f.issue, action: f.action, suggestion: f.suggestion }))) + '\n' +
+    `每条问：执行它文章会更好还是更差/无所谓？对照风格备忘卡与 skills/templates/quotas.md 的硬配额。` +
     `吹毛求疵、会伤害文气、或与配额冲突的 → refuted=true。真问题（事实错误、读者会关掉、明显注水）→ refuted=false。\n` +
-    `⛔ 硬约束：严禁调用 Agent/Task 派生子代理；只 Read 文章与模板，不要联网。`,
-    { label: `校验:${f.knife}`, phase: '校验', model: 'sonnet', effort: 'low', agentType: 'general-purpose', schema: VETO_SCHEMA }
+    `⛔ 硬约束：严禁调用 Agent/Task 派生子代理；只 Read 文章与模板，不要联网。\n` +
+    `verdicts 必须逐条返回，index 与输入对应，不许漏条。`,
+    { label: `校验:批${bi + 1}`, phase: '校验', model: 'sonnet', effort: 'low', agentType: 'general-purpose', schema: VETO_SCHEMA }
   )
 ))
-const confirmed = toVerify.filter((f, i) => vetoes[i] && !vetoes[i].refuted)
-const rejected = toVerify.filter((f, i) => !vetoes[i] || vetoes[i].refuted)
-  .map((f, idx) => ({ ...f, rejectReason: (vetoes[toVerify.indexOf(f)] || {}).reason || '校验失败' }))
+const vetoByGlobal = new Array(toVerify.length).fill(null)
+batchResults.forEach((res, bi) => {
+  if (!res) return
+  res.verdicts.forEach(v => {
+    const gi = bi * BATCH + v.index
+    if (gi >= bi * BATCH && gi < Math.min((bi + 1) * BATCH, toVerify.length) && !vetoByGlobal[gi]) vetoByGlobal[gi] = v
+  })
+})
+const confirmed = toVerify.filter((f, i) => vetoByGlobal[i] && !vetoByGlobal[i].refuted)
+const rejected = toVerify
+  .map((f, i) => ({ f, v: vetoByGlobal[i] }))
+  .filter(({ v }) => !v || v.refuted)
+  .map(({ f, v }) => ({ ...f, rejectReason: (v && v.reason) || '校验失败' }))
 
 log(`校验通过 ${confirmed.length} 条，驳回 ${rejected.length} 条，低优可选 ${optional.length} 条`)
 
