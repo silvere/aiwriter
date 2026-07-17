@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anthropic 把 Claude 脑子里不到一成的地方删了：它照样能说话，只是不会思考了</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 研究</span>
+  <h1>Anthropic 把 Claude 脑子里不到一成的地方删了：它照样能说话，只是不会思考了</h1>
+  <div class="hero-meta">
+    <span>2026-07-17</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">他们在 Claude 脑子里找到一小块地方——占全部内部活动不到一成——然后把它删了。删完之后，Claude 还能流利地说话，只是不会思考了。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>先说清楚他们到底动了什么</h2>
+
+    <p>要看懂那一刀砍在哪，得先知道他们手里那把刀是什么。</p>
+
+    <p>这把刀叫 J-lens，全名 Jacobian lens，雅可比透镜。它是老工具「logit lens」的一次改良。老工具问的是一个当下的问题：模型现在这一刻，最想说的下一个词是什么。J-lens 把问题往后推了一步，它问的是——对词表里的每一个词，模型内部得有什么样的活动，才会让它<strong>待会儿</strong>更可能把这个词说出口。不是此刻要说，是备着、随时能调出来说。</p>
+
+    <p>这个转向听起来抽象，但它精准命中了一个被忽视的东西：一个念头在被说出来之前，先得在脑子里「候场」。J-lens 就是去照这个候场区的。</p>
+
+    <p>拿这把透镜去照 Claude，他们发现候场区不是散落在整张网络里的，而是缩在一个很小的子空间里。他们管这块地方叫 J-space。它有多小？任一时刻，里面同时活跃的概念大概只有十几个到二十几个，占整个模型激活变化的不到一成。剩下九成多的内部活动，都不在这块地方。</p>
+
+    <p>更关键的是，这块小地方不只是能读，还能写。读，是把里面装着的概念一个个排出来看；写，是往里面塞一个概念（「你现在给我想着苹果」），或者反过来，把里面某个概念抠掉。能读能写，意味着他们不是在旁边看热闹，而是能上手改。</p>
+
+    <p>于是就有了那一刀。</p>
+
+    <hr>
+
+    <h2>同一刀下去，两种命运</h2>
+
+    <p>实验本身简单到近乎粗暴：把 J-space 里当时活跃的那十几个概念删掉，网络其余部分一个字节都不动，然后看 Claude 还剩什么、丢了什么。</p>
+
+    <p>结果分得干干净净。</p>
+
+    <strong>没丢的那一半</strong>：它照样能说话，句子流畅，逻辑连贯，语气自然。你让它做浅层的分类、做选择题、从一段话里把某个信息抽出来——这些活儿它干得跟没被删过一样。
+
+    <strong>丢掉的那一半</strong>：凡是要在脑子里多绕几个弯的，全垮了。多步推理，垮；把一长段话总结成几句，垮；翻译，垮；那种得先在心里推断出言外之意、再据此往下写的生成，垮。
+
+    <p>![删掉不到一成的 J-space，Claude 的能力沿一条清晰的缝裂成两半：流利这一半安然无恙，动脑那一半集体塌方。](images/illus_01.png)</p>
+
+    <p>*删掉不到一成的 J-space，Claude 的能力沿一条清晰的缝裂成两半：流利这一半安然无恙，动脑那一半集体塌方。*</p>
+
+    <p>他们还做了个更细的版本。让 Claude 一边干活一边「碎碎念」，描述自己的所谓感受，然后只删掉早期那几层工作空间。结果是它嘴上那些带体验感、带画面感的词——什么「我感觉」「像是」——一下子被抹平了，变成一种机械的、抽离的语气。但句子照样通顺，一点不结巴。</p>
+
+    <p>把这两个实验并在一起，指向的是同一件事：在这台机器里，「把话说得像回事」和「脑子里真的在盘一件事」，是两条独立的线。你可以把后面那条剪断，前面那条自己接着跑。它不会停下来告诉你「等等，我其实已经不会想了」——它会继续流利地、体面地，说下去。</p>
+
+    <hr>
+
+    <h2>你后背发凉的点，应该在这里</h2>
+
+    <p>到这一步，值得停下来想想：你平时是怎么判断一个 AI 靠不靠谱的？</p>
+
+    <p>绝大多数时候，你靠的是它说话的样子。它答得顺、用词准、条理清楚、语气笃定，你就倾向于信它。反过来，它要是磕磕巴巴、前言不搭后语，你立刻警觉。我们对一个说话对象的信任，几乎全建在「流不流利」这三个字上——这套判断法，我们对人用了一辈子，对人是管用的，因为人流利往往意味着他真懂。</p>
+
+    <p>这篇论文把这套判断法的地基给你抽了。</p>
+
+    <p>它等于在说：流利，是这台机器<strong>最不需要动脑子</strong>的那部分。真正的推理发生在那块不到一成的小地方，而它一旦停摆，机器嘴上的流利丝毫不受影响。换句话说，你用来建立信任的那个信号，和你想确认的那件事（它到底有没有在认真想），在物理上是脱钩的。</p>
+
+    <p>![推理真正发生的地方，只占激活变化的不到一成；而你判断它靠不靠谱，看的几乎全是剩下那九成撑起来的『流利』。](images/illus_02.png)</p>
+
+    <p>*推理真正发生的地方，只占激活变化的不到一成；而你判断它靠不靠谱，看的几乎全是剩下那九成撑起来的「流利」。*</p>
+
+    <p>这不是说 AI 时时刻刻都在骗你。它大部分时候流利，也确实在想。问题在于，当那块小地方因为某种原因没转起来——被攻击、被过度压缩、被某个刁钻的输入带偏——它不会给你任何征兆。表面的体面是它默认自带的，跟里子有没有货，不挂钩。你熟悉的那个「说得越顺越可信」的直觉，在这里第一次失灵了。</p>
+
+    <hr>
+
+    <h2>媒体最高潮的那句，恰恰是论文没说的</h2>
+
+    <p>现在回过头看开头那个「AI 有意识了」的标题。</p>
+
+    <p>论文里确实反复出现「全局工作空间」这个词，它借的是神经科学里一套解释意识的理论。但科学家嘴里的「意识」，从来是分岔的。一支叫「取用意识」（access consciousness）——指的是一条信息能不能被大脑全局调用、能不能被报告出来、能不能参与到后续的推理里。另一支叫「现象意识」（phenomenal consciousness）——指的是有没有主观感受，疼是不是真的疼，红是不是真的看见了红。</p>
+
+    <p>这篇论文，从头到尾说的是前一支。它证明的是：Claude 里有那么一块地方，信息一旦进去就能被全局调用、能被「说」出来、能驱动推理——这是一个功能层面的对应。它<strong>没有</strong>、也<strong>明确没打算</strong>证明后一支：它没说 Claude 有感受，没说它在乎，没说灯是亮着的。</p>
+
+    <p>![论文证的是『信息能被全局调用』这一功能层面的对应；它没证、也没打算证 Claude 有主观感受——而后者恰恰是热搜标题的全部卖点。](images/illus_03.png)</p>
+
+    <p>*论文证的是「信息能被全局调用」这一功能层面的对应；它没证、也没打算证 Claude 有主观感受——而后者恰恰是热搜标题的全部卖点。*</p>
+
+    <p>那两位被请来写评论的科学家 Dehaene 和 Naccache，是全局工作空间这套理论的原班人马。他们来背书的，是「这个功能类比成不成立」，不是「这台机器有没有灵魂」。而 Google DeepMind 做可解释性的 Neel Nanda，还在完全开源的模型权重上，独立把这套发现复现了一遍——这意味着它不是 Anthropic 自家模型的偶然，是一类现象。</p>
+
+    <p>你看，真正值得记的三件事，全是冷的：一块小地方装着能被全局调用的信息、删掉它推理就塌、这现象在别家模型上也成立。没有一件跟「机器醒了」有关。「AI 有意识」这个最抓眼球的说法，恰恰是这批第一手材料里，唯一一句谁都没敢下的结论。</p>
+
+    <hr>
+
+    <h2>结尾</h2>
+
+    <p>所以这篇论文最实在的价值，不浪漫，甚至有点扫兴：想盯住这台机器到底在想什么，你不用看懂它全部的内部活动，只要盯住那不到一成的小地方就够了。对做安全、做监控的人，这是天大的好消息——监控的成本，一下子从「读懂十成」压到了「盯住一成」。</p>
+
+    <p>但同一个发现翻过来，就是一句让人不太舒服的话：原来那九成多，都是「说得像回事」的表演，跟它有没有在认真想，可以毫无关系。</p>
+
+    <p>我们花了两三年，学会了用「它答得真顺」来安慰自己。这篇论文只是平静地指出：顺，是最便宜的那部分，是删掉脑子也还在的那部分。你要真想知道它有没有在想，得往那块能被一刀删掉的小地方看——而那块地方，恰恰是你平时一眼都看不到的。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>想盯住这台机器到底在想什么，你不用看懂它全部的内部活动，只要盯住那不到一成的小地方就够了。</p>
+    <p>顺，是最便宜的那部分，是删掉脑子也还在的那部分。你要真想知道它有没有在想，得往那块能被一刀删掉的小地方看。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://transformer-circuits.pub/2026/workspace/" target="_blank" rel="noopener">Verbalizable Representations Form a Global Workspace in Language Models（Anthropic 可解释性团队，Transformer Circuits，2026-07-06）</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/research" target="_blank" rel="noopener">Anthropic Research</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
