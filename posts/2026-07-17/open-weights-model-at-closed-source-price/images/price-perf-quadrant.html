@@ -1,0 +1,68 @@
+<div class="illustration">
+  <div class="kicker">涨价式开源 · 价格—性能象限</div>
+  <h2>K3 落进了一个此前无人认领的象限</h2>
+  <div class="sub">性能对标闭源第一梯队，价格也对标闭源，权重却是开源</div>
+
+  <svg viewBox="0 0 1000 560" width="100%" height="440" style="margin-top:10px">
+    <!-- quadrant background: top-right = previously empty -->
+    <rect x="510" y="50" width="390" height="230" fill="var(--accent-soft)" opacity="0.55"/>
+    <text x="525" y="68" text-anchor="start" font-size="15" fill="var(--accent-deep)" font-weight="600">此前无人占领</text>
+
+    <!-- axes -->
+    <line x1="120" y1="280" x2="900" y2="280" stroke="var(--hair)" stroke-width="2"/>
+    <line x1="120" y1="50" x2="120" y2="480" stroke="var(--hair)" stroke-width="2"/>
+    <!-- quadrant divider -->
+    <line x1="510" y1="50" x2="510" y2="480" stroke="var(--hair)" stroke-width="1.5" stroke-dasharray="5 6"/>
+    <line x1="120" y1="280" x2="900" y2="280" stroke="var(--hair)" stroke-width="1.5" stroke-dasharray="5 6"/>
+
+    <!-- axis end arrows -->
+    <path d="M900 480 L916 480 M910 474 L916 480 L910 486" stroke="var(--sub)" stroke-width="2" fill="none"/>
+    <path d="M120 50 L120 34 M114 40 L120 34 L126 40" stroke="var(--sub)" stroke-width="2" fill="none"/>
+
+    <!-- axis labels -->
+    <text x="908" y="504" text-anchor="end" font-size="16" fill="var(--sub)">价格 → 贵</text>
+    <text x="120" y="500" text-anchor="start" font-size="14" fill="var(--sub)">便宜</text>
+    <text x="70" y="40" text-anchor="middle" font-size="16" fill="var(--sub)" transform="rotate(-90 70 40)">性能 → 第一梯队门槛</text>
+    <text x="66" y="470" text-anchor="middle" font-size="14" fill="var(--sub)" transform="rotate(-90 66 470)">二线</text>
+
+    <!-- occupied quadrant tags -->
+    <text x="135" y="440" font-size="15" fill="var(--sub)" font-weight="600">便宜 · 够用</text>
+    <text x="525" y="270" font-size="15" fill="var(--sub)" font-weight="600">贵 · 最强（闭源）</text>
+
+    <!-- open cheap tier: DeepSeek, K2.6 -->
+    <circle cx="230" cy="360" r="15" fill="var(--neutral)"/>
+    <text x="230" y="392" text-anchor="middle" font-size="15" fill="var(--ink)">DeepSeek</text>
+
+    <circle cx="335" cy="330" r="15" fill="var(--neutral)"/>
+    <text x="335" y="362" text-anchor="middle" font-size="15" fill="var(--ink)">Kimi K2.6</text>
+    <text x="335" y="380" text-anchor="middle" font-size="13" fill="var(--sub)">（前代）</text>
+
+    <!-- closed source frontier: Claude Fable 5, GPT-5.6 Sol -->
+    <circle cx="705" cy="150" r="15" fill="var(--sub)"/>
+    <text x="705" y="182" text-anchor="middle" font-size="15" fill="var(--ink)">GPT-5.6 Sol</text>
+
+    <circle cx="760" cy="105" r="15" fill="var(--sub)"/>
+    <text x="760" y="90" text-anchor="middle" font-size="15" fill="var(--ink)">Claude Fable 5</text>
+
+    <!-- K3 : the point that shouldn't exist -->
+    <circle cx="855" cy="115" r="30" fill="none" stroke="var(--accent)" stroke-width="2" opacity="0.5"/>
+    <circle cx="855" cy="115" r="22" fill="var(--accent)"/>
+    <text x="855" y="122" text-anchor="middle" font-size="16" fill="#fff" font-weight="700">K3</text>
+    <text x="855" y="163" text-anchor="middle" font-size="16" fill="var(--accent-deep)" font-weight="700">Kimi K3</text>
+    <text x="855" y="181" text-anchor="middle" font-size="13" fill="var(--sub)">（权重开源）</text>
+
+    <!-- callout leader line + note -->
+    <path d="M832 128 L560 210" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="3 5" fill="none"/>
+    <text x="555" y="205" text-anchor="end" font-size="14" fill="var(--ink)" font-weight="600">≈$15/百万 token</text>
+    <text x="555" y="225" text-anchor="end" font-size="13" fill="var(--sub)">对标 Claude Sonnet 5</text>
+    <text x="555" y="243" text-anchor="end" font-size="13" fill="var(--sub)">较前代 K2.6 涨约 3–4 倍（据报道）</text>
+  </svg>
+
+  <div class="legend" style="margin-top:6px">
+    <div class="lg"><div class="dot" style="background:var(--sub)"></div><div class="t">闭源旗舰</div></div>
+    <div class="lg"><div class="dot" style="background:var(--neutral)"></div><div class="t">开源平替（前代）</div></div>
+    <div class="lg"><div class="dot" style="background:var(--accent)"></div><div class="t">Kimi K3</div></div>
+  </div>
+
+  <div class="punch">K3 把自己放进了一个空象限：性能对标闭源第一梯队，价格也对标闭源，权重却<b>开源</b>。</div>
+</div>
