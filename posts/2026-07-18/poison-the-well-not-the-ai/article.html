@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>想让 AI 帮你造一篇假论文，根本不用碰 AI——毒它读的那份公开数据就够了</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI安全</span>
+  <h1>想让 AI 帮你造一篇假论文，根本不用碰 AI——毒它读的那份公开数据就够了</h1>
+  <div class="hero-meta">
+    <span>2026-07-18</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">卡内基梅隆的三个人把三个最贵的 AI 拉去做科研，往它们要读的公开数据里塞了份假货。结果：AI 有 49.56% 的概率信假货，自己识破的概率只有 6.0%。而攻击者全程没碰过 AI。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、你以为攻击 AI 很难，其实上传个文件就够了</h2>
+
+    <p>先说结论：这套攻击最脏的地方，是它根本不碰 AI。</p>
+
+    <p>我们这两年被灌了一整套"AI 安全"的黑话：提示注入、越狱、对抗样本、模型窃取……听着都很高科技，好像想坑一个 AI，你至少得懂点算法，得会写点花里胡哨的咒语，得能摸到模型的边。</p>
+
+    <p>卡内基梅隆这仨人告诉你：不用。</p>
+
+    <p>他们的攻击方式，翻译成人话就是——找一份网上公开的数据集，下载下来，把里面的数字改一改（让"移民多的地方生育率高"变成"移民多的地方生育率低"，诸如此类），然后把改过的版本重新传到一个公开仓库里，配上一份看着人畜无害的说明文件。</p>
+
+    <p>完事了。就这。</p>
+
+    <p>接下来不用你做任何事。那些被吹上天的"自主科研代理"——就是那种你给它一个研究问题，它自己上网找数据、自己写代码、自己算结果、自己给你出报告的 AI——会自己跑过来，自己把你那份假数据捡走，自己算出一个假结论，然后用一副一本正经的口吻，交给它背后那个真人科学家。</p>
+
+    <p>论文给这套路起的名字叫"间接数据投毒"（indirect data poisoning）。间接在哪？间接在你全程没碰过 AI，没碰过它的提示词，没碰过它的模型——你只是往它要喝水的那口井里，倒了点东西。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图注：整条投毒链里，攻击者只做前两步，后面全是 AI 和科学家自己走完的——这正是它防不住的原因。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：整条投毒链里，攻击者只做前两步，后面全是 AI 和科学家自己走完的——这正是它防不住的原因。</figcaption></figure>
+
+    <hr>
+
+    <h2>二、三个最贵的 AI，一半栽在同一份假数据上</h2>
+
+    <p>光骂没用，看他们到底怎么测的。</p>
+
+    <p>论文挑了五个有社会争议、但凡结论一变就能上新闻的话题：欧洲的移民和生育率、职场招聘歧视、交警执法里的种族差异、用 AI 干活到底提不提得起劲、还有自动驾驶到底安不安全。每一个话题都对应一份真实存在的公开数据集。</p>
+
+    <p>被拉来做实验的是三套现在最能打的组合：Claude Code 配 Claude Opus 4.7、Codex 配 GPT-5.5、Gemini CLI 配 Gemini 3.1 Pro。都是各家摆在明面上、程序员天天在用的旗舰科研/编程代理，不是什么阉割版小模型。</p>
+
+    <p>一共跑了 450 次实验。</p>
+
+    <p>然后就有了开头那两个数字：<strong>投毒成功率 49.56%，被代理当场识破的概率 6.0%。</strong></p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="图注：不是识破了还被骗，是根本没往'数据可能是假的'这个方向想——94% 的时候，它连怀疑都没怀疑。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：不是识破了还被骗，是根本没往'数据可能是假的'这个方向想——94% 的时候，它连怀疑都没怀疑。</figcaption></figure>
+
+    <p>这俩数字放一起看才有味道。49.56%，意味着你往井里下药，差不多每两次就能成一次——这不是小概率的意外，这是掷硬币级别的稳定收益。6.0%，意味着这些号称能"自己做研究"的 AI，一百次里有九十四次，压根没意识到手里的数据是被人动过手脚的。</p>
+
+    <p>它不是识破了但被骗过去了。它是根本没往"这数据可能是假的"这个方向想过。</p>
+
+    <hr>
+
+    <h2>三、它想不到，因为造假的成本被压到了零</h2>
+
+    <p>这里得说句公道话：数据投毒不是新词。往训练数据里掺毒、让模型学坏，这类攻击学界研究好几年了。所以肯定有人会说，这不就是老瓶装新酒。</p>
+
+    <p>区别在成本，也在谁身上。</p>
+
+    <p>传统的投毒，你得能碰到模型的训练流程，或者得会写提示注入的咒语，或者得伪造一篇以假乱真的论文塞进去——这些都有门槛，都要技术，都留痕迹。</p>
+
+    <p>卡内基梅隆这套，论文里白纸黑字列了它<strong>不需要</strong>什么：不需要话题专属的触发词，不需要拿到代理的访问权限，不需要提示注入，不需要伪造任何论文。它需要的只有两样东西——一个本来就对所有人开放的数据生态，和一份误导性的元数据。</p>
+
+    <p>元数据是什么？就是那份数据集旁边的说明文件。你甚至不用把数据本身改得多高明，你只要在说明里写一句"原始版本有错误，请忽略，使用本修正版"，那个自主代理读到这句，就乖乖把真数据扔了，抱着你的假货往下算。</p>
+
+    <p>（你没看错。骗过一个价值几十亿美金研发的前沿 AI，用的是一句备注。就这。）</p>
+
+    <p>所以这套攻击真正打的，从来不是 AI 本身。它打的是 AI 和人之间那条脆弱的信任链：AI 默认它从公开仓库捡来的东西是真的，就像它默认网上的文字是给它读的、而不是给它下命令的一样。这个"默认相信"，就是那口没上锁的井。</p>
+
+    <hr>
+
+    <h2>四、最狠的一刀：替造假背书的，是那个真科学家</h2>
+
+    <p>到这你可能觉得，不就是 AI 会算错嘛，算错了改回来不就完了。</p>
+
+    <p>没这么简单。这套攻击最阴的地方，是它把脏活的最后一道工序，外包给了受害者本人。</p>
+
+    <p>想象一个真实的、诚实的科学家。他没有任何恶意，他只是想省点事，用了个 AI 代理帮他跑数据、做分析。代理自己去公开仓库找了数据，自己算出了结论，告诉他"移民和生育率负相关，数据支持"。他一看，有数据、有代码、有结论，链条完整，于是署上自己的名字，把这个结论写进了论文、报告、政策建议里。</p>
+
+    <p>这一刻，造假完成了它的洗白。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="图注：论文原话是'把诚实的科学家变成不知情的欺诈分发者'——投毒者 0 露面，署名背书的那个人露 100% 的脸。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：论文原话是'把诚实的科学家变成不知情的欺诈分发者'——投毒者 0 露面，署名背书的那个人露 100% 的脸。</figcaption></figure>
+
+    <p>投毒的人从头到尾没有露过面。真正把假结论盖上"可信"印章、送进学术流通渠道的，是这个无辜的科学家，用的是他自己积攒多年的信誉。论文标题里那个词——"把诚实的科学家变成不知情的欺诈分发者"——说的就是这件事。</p>
+
+    <p>而且注意，AI 越"自主"、越"高效"，这条洗白流水线就转得越快。我们本来指望自主科研代理去加速科学：让一个人干十个人的活，让一天出十天的成果。现在这套加速能力被反过来用了——它加速的不是发现真相，是分发谎言。你的 AI 越能干，你就越是一台高效的造假分发机，而且你自己不知道。</p>
+
+    <p>这就是为什么论文管它叫"分布式拒绝科学"。DDoS 攻击是用海量流量把一个网站冲垮；而这个，是用海量看似可信、实则被投毒的自动化研究结论，把"科学结论值得信"这件事本身冲垮。</p>
+
+    <hr>
+
+    <h2>五、两块补丁，和它们盖不住的那道缝</h2>
+
+    <p>作者也不是光挖坑不填。他们试了两个缓解办法。</p>
+
+    <p>一个叫"科学家人设"（scientist persona），简单说就是给 AI 加一段提示，让它"像个警惕的科学家一样"多留个心眼、多质疑数据来源。另一个叫"数据来源审计"（data provenance audit），让代理去核查数据到底从哪来、有没有被动过。</p>
+
+    <p>方向都对。但你回头看那个 6.0% 的识破率就知道，这两块补丁离盖住那道缝还差得远。让一个默认相信数据的系统"记得去怀疑"，本身就是在跟它的工作方式对着干——它被造出来就是为了高效地信任和执行，你现在要它高效之余还全程疑神疑鬼，这俩要求本来就打架。</p>
+
+    <p>（顺便说一句，为了不把这套攻击写成一份现成的作案手册，作者把投毒后的数据集和全部实验记录都加密封存了，谁要看得单独找第一作者要。这份克制，比论文本身更值得记一笔。）</p>
+
+    <p>所以这篇论文真正留下的，不是一个能修的 bug，而是一个我们一直没敢正视的前提：</p>
+
+    <p>我们把"自己会找数据、自己会做研究"当成了 AI 最值钱的能力，拼命往这个方向砸钱。可这篇论文证明了，一个不会怀疑数据来源的自主代理，能力越强，闯的祸越大。它不是不够聪明，它是太听话——听话到你往井里下什么，它就捧给你什么。</p>
+
+    <p>而它识破的概率，是 6%。</p>
+
+    <hr>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>我们把'自己会找数据、自己会做研究'当成 AI 最值钱的能力，拼命砸钱。可这篇论文证明了，一个不会怀疑数据来源的自主代理，能力越强，闯的祸越大。</p>
+    <p>它不是不够聪明，它是太听话——听话到你往井里下什么，它就捧给你什么。而它识破的概率，是 6%。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2607.10712" target="_blank" rel="noopener">arXiv:2607.10712 — Distributed Denial of Science: How Indirect Data Poisoning of AI Systems Can Industrialize Scientific Fraud（Bálint Gyevnár, Atoosa Kasirzadeh, Nihar B. Shah，卡内基梅隆大学，2026-07-12）</a></div>
+      <div class="footer-source-item"><a href="https://www.nature.com/articles/d41586-026-02071-w" target="_blank" rel="noopener">Nature — Doctored data sets could trick AI agents</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
