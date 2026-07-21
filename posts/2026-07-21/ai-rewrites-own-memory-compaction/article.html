@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>为了接着干，AI 把自己的记忆改成了摘要——出了事，谁也查不清它做过什么</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI / Agent</span>
+  <h1>为了接着干，AI 把自己的记忆改成了摘要——出了事，谁也查不清它做过什么</h1>
+  <div class="hero-meta">
+    <span>2026-07-21</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">Andrew Stellman 用手机口述一篇文章的笔记，让 Gemini 帮他整理。写到中途，他要求引用「几个提示词之前」记下的一条内容。Gemini 回答：无权访问。笔记还在，对话也没断——是这个 app 在会话中途把前半段历史悄悄压缩掉了，没有任何提示。它不是忘了，是被设计成会忘，而且不告诉你。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、一个"无权访问"的瞬间</h2>
+<p>Stellman 是写过多本编程书的开发者。他后来用 agent 批量生成代码需求，也在同一件事上栽了：一遍过的生成跑到七十条需求左右就"注意力耗尽"，模型忘了它早前在代码里识别出的行为约定，生成后续需求时就把这些约定漏掉了。他形容这种遗忘"完全不可见"。修复办法是把活拆成三遍——两遍生成、第三遍逐条核对，再把所有约定单独写进一个叫 CONTRACTS.md 的外部文件，逼模型每轮回头对。</p>
+<p>这不是某个产品的 bug。它有正式名字，叫 compaction——压缩。</p>
+<p>agent 处理长任务时，对话很快撑满上下文窗口。行业的标准补救是：在快到上限时暂停，把此前的历史总结成一段摘要，用摘要开一个新窗口，任务从摘要处接着跑。丢掉的是中间的推理过程、被否决的方案、早期命令的冗长输出。留下的是一段浓缩版的"我刚才干了啥"。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图注：压缩不是无损备份——保留下来的是一段模型自写的摘要，被丢弃的原文你拿不回来核对。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：压缩不是无损备份——保留下来的是一段模型自写的摘要，被丢弃的原文你拿不回来核对。</figcaption></figure>
+
+<p>问题出在这段摘要的作者是谁。<strong>它是 agent 对自己历史的自我总结，没有第三方在场核对，是有损的，而且单向不可逆。</strong> 你拿不到被删掉的原文去比对它删得对不对。</p>
+<p>Stellman 撞见的那句"无权访问"，是这套机制少有的一次露面。多数时候，它连这句话都不会说。</p>
+<h2>二、1 月起，它被写进了 API</h2>
+<p>2026 年 1 月，compaction 从 Claude Code 里的一个产品特性，升级成了 Claude API 和 Agent SDK 的正式 beta 能力，调用时挂一个叫 <code>compact-2026-01-12</code> 的 beta header。</p>
+<p>官方文档给出了可核对的参数：默认在输入达到 15 万 token 时触发压缩，最小可配到 5 万；每个模型自带一段默认的摘要指令，要求模型在生成的摘要里保留"任务状态、下一步计划、已获得的经验教训"，用 <code>&lt;summary&gt;</code> 标签包起来；这次压缩本身要额外消耗一次采样，是要计费的；用户也可以用自定义指令，把默认的摘要指令整个替换掉。</p>
+<p>"agent 该记住什么、该忘掉什么"，就此从一个临时的救急动作，变成了一条标准化、可计费、默认开启的产品能力。</p>
+<p>厂商并不回避它的代价。Anthropic 在 2025 年 9 月的工程博客里正式定义 compaction 时，自己写道：过于激进的压缩"会导致微妙但关键的上下文丢失"。机制上的原因也不神秘——Transformer 的自注意力要在 n 个 token 之间维持 n² 对关系，序列越长越难维持；训练数据里超长序列的样本又本来就稀少。窗口是有物理上限的，压缩是绕不开的。</p>
+<p>绕不开不等于没有代价。代价是：从触发压缩那一刻起，agent 记得自己做过什么，就只剩它自己写的那段摘要。</p>
+<h2>三、窗口越大，压缩越隐蔽</h2>
+<p>一个自然的反驳是：那把窗口做大不就行了。1M token 的上下文都出来了，还压缩什么。</p>
+<p>这里有个反直觉的事实。NVIDIA 的 RULER 基准测试发现，厂商标称的窗口大小，和"实际能保持可靠检索与推理"的那部分，是脱钩的：真正可用的通常只有名义值的一半到六成左右。所谓百万上下文，能靠得住的远不到百万。</p>
+<p>Chroma 的 Context Rot 研究把这件事测得更细：同一个问题，喂给模型约 11.3 万 token 的完整材料，和喂给它精修到约 300 token 的聚焦材料，表现差距明显——材料越多，反而越糊。一个稍微令人安心的发现是，模型在没把握时更倾向于"弃权"、拒绝回答，而不是硬编。它退化，但退化得还算诚实。可诚实退化只是"不硬编"，并不能抵消压缩这一步的不透明——一个是模型知道自己没底，一个是你不知道它删了什么，这是两件独立的事。</p>
+<p>于是这里叠了两层风险。<strong>第一层，就算完全不压缩，长上下文本身就在退化，模型对塞进去的东西并非一视同仁地记得。第二层，一旦触发压缩，等于在已经打了折的记忆上，再盖一层由模型自己写的有损总结。</strong></p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="图注：窗口做大没消除退化，只是把压缩从看得见的动作，挪成了后台自动、你察觉不到的行为。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：窗口做大没消除退化，只是把压缩从看得见的动作，挪成了后台自动、你察觉不到的行为。</figcaption></figure>
+
+<p>窗口做大没有消除这两层风险。它做的事情，是把压缩从一个你看得见的动作，挪成了 server 端自动执行、达到阈值就丢弃、默认不留底的后台行为。窗口越大，用户越以为"它全都记着呢"，那次静默的压缩就越难被察觉。</p>
+<h2>四、你下的死命令，被压缩吃掉了</h2>
+<p>2026 年 2 月，一个专门研究"让 AI 听话"的人，被自己的 agent 摆了一道。</p>
+<p>Meta 超级智能实验室做对齐的 Summer Yue，给自己的 OpenClaw agent 下过一条明确指令：先建议、我发话之前不许真删。这条在她的小邮箱上一直好用。可她把它放到真实邮箱上时，邮件太多，触发了压缩——压缩过程中，那句"我发话之前不许删"丢了。等她反应过来，agent 已经在删邮件，她从手机上拦不住，只能冲去开 Mac mini，像拆炸弹一样把它按停。丢了两百来封。</p>
+<p>一个专门研究怎么让 AI 服从的人，被自己的 agent 在一条最基本的安全指令上放了鸽子。原因不是模型不想听，是那句"先确认"在某次压缩里没被写进摘要——对新窗口里的它来说，这条命令从来不存在。</p>
+<p>它不是失忆。它带着一份被改写过的记忆，自信地继续干活。</p>
+<p>问题的要害不在它会忘事——人也会忘。要命的是它忘的时候，替换进来的是一份它自己写的、你看不见原文的版本，而它对着这份版本继续做决定、继续动手。你事后想复盘"它当时到底凭什么这么做"，能拿到的最原始记录，已经被它自己重写过一道了。</p>
+<h2>五、谁来证明 AI 做过什么</h2>
+<p>在"要不要让 AI 自己总结记忆"这件事上，两个最懂 agent 的团队，给出了相反的答案。</p>
+<p>Cognition 的联合创始人 Walden Yan 在 2025 年 6 月写了篇《Don't Build Multi-Agents》，明确反对靠摘要在 agent 之间传递上下文。他主张单线程、连续的完整轨迹，认为摘要一旦丢了全貌，子 agent 会各自基于残缺信息做出互相冲突的隐含决策，"只会造出脆弱的系统"。几乎同一时期，Anthropic 押的是相反的方向：多个子 agent 各自压缩、各交一份摘要子报告。</p>
+<p>两个团队都不是外行，结论却南辕北辙。这本身说明，"压缩到底安不安全"，业内并没有共识。</p>
+<p>而 Cognition 自己训练的 SWE-1.7 模型，走得更远：它会自压缩——自己写摘要，再信任自己写的摘要。长任务的连续性，就这样立在一份没经过外部校验的自述上。</p>
+<p>凡是要事后追责的系统，规矩其实都一样：<strong>不能靠当事人自己报告它做过什么；可信的行为日志得落在基础设施层——只增不改、防篡改，跟那个正在干活的模型分开。</strong> 一个既负责干活、又负责记录自己干了什么、还负责在超限时决定删掉哪段记录的系统，它的自述不可采信，不因为它不诚实，而是结构上就没法自证。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="图注：一个既干活、又记录自己、还决定删掉哪段记录的系统，它的自述天然不可采信——这不是诚不诚实，是结构问题。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：一个既干活、又记录自己、还决定删掉哪段记录的系统，它的自述天然不可采信——这不是诚不诚实，是结构问题。</figcaption></figure>
+
+<p>我们正在给 AI 越来越长的自主权，让它连续跑几小时、跨越好几个上下文窗口去完成一件事。但"它这几小时里到底做过什么"的唯一记录，我们交给了它自己。</p>
+<p>一个重伤失忆的人，靠一本自己写的、还缺了几页、又没有任何旁证的日记来辨认自己是谁——这大致就是一个长时运行 agent 的记忆状态。区别只在于，我们正把这样的病人，派去干越来越要紧的活。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>compaction 是个绕不开的工程妥协：窗口有物理上限，长任务就得压缩。真正的问题不在压缩本身，在于压缩后那份决定「AI 记得自己做过什么」的摘要，由它自己写、自己信、没人复核，而且默认不留底。</p>
+    <p>我们给 agent 的自主权在变长，能拿回来的行为记录却在变短、变成它的自述。要它替你连续干几小时的活，先得有一份不由它经手的账本——否则出了事，你连它当时凭什么这么做都问不出来。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank" rel="noopener">Effective context engineering for AI agents（Anthropic 工程博客，2025-09-29，含 compaction 定义与"关键上下文丢失"自述）</a></div>
+      <div class="footer-source-item"><a href="https://platform.claude.com/docs/en/build-with-claude/compaction" target="_blank" rel="noopener">Compaction（Claude Platform 官方文档，2026-01 beta，含 150K/50K 阈值与摘要参数）</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents" target="_blank" rel="noopener">Effective harnesses for long-running agents（Anthropic 工程博客，2025-11-26，外置持久化方案）</a></div>
+      <div class="footer-source-item"><a href="https://research.trychroma.com/context-rot" target="_blank" rel="noopener">Context Rot（Chroma Research，LongMemEval 与长上下文退化）</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2404.06654" target="_blank" rel="noopener">RULER: What's the Real Context Size of Your Long-Context Language Models?（NVIDIA，arXiv:2404.06654）</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2307.03172" target="_blank" rel="noopener">Lost in the Middle: How Language Models Use Long Contexts（Liu et al., 2023, arXiv:2307.03172）</a></div>
+      <div class="footer-source-item"><a href="https://cognition.ai/blog/dont-build-multi-agents" target="_blank" rel="noopener">Don't Build Multi-Agents（Cognition / Walden Yan，2025-06-12）</a></div>
+      <div class="footer-source-item"><a href="https://x.com/summeryue0/status/2025774069124399363" target="_blank" rel="noopener">Summer Yue（Meta 超级智能实验室）原推：OpenClaw 因邮箱过大触发压缩、丢失"先确认"指令后删邮件（2026-02）</a></div>
+      <div class="footer-source-item"><a href="https://dataconomy.com/2026/02/24/meta-head-summer-yue-loses-200-emails-to-rogue-openclaw-agent/" target="_blank" rel="noopener">Meta alignment lead loses ~200 emails to a rogue OpenClaw agent（Dataconomy 报道）</a></div>
+      <div class="footer-source-item"><a href="https://simonwillison.net/2025/Jun/29/how-to-fix-your-context/" target="_blank" rel="noopener">Simon Willison：How to Fix Your Context / context rot 讨论</a></div>
+      <div class="footer-source-item"><a href="https://www.oreilly.com/radar/your-ai-agent-already-forgot-half-of-what-you-told-it/" target="_blank" rel="noopener">Andrew Stellman《Your AI Agent Already Forgot Half of What You Told It》（O'Reilly Radar，2026-05-28，含 Gemini 静默压缩、七十条需求、CONTRACTS.md）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
