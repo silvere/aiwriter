@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>25 万篇假癌症论文被 AI 一次揪出，可最受同行欢迎的，恰恰是这些假的</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI / 科研诚信</span>
+  <h1>25 万篇假癌症论文被 AI 一次揪出，可最受同行欢迎的，恰恰是这些假的</h1>
+  <div class="hero-meta">
+    <span>2026-07-22</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">一个澳大利亚统计学家用 AI 扫完 264 万篇癌症论文，标红了 261,245 篇。真正吓人的不是数量——是这些被标红的论文，被引用的次数是正常论文的两倍。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、这个 AI 抓的不是造假，是文风</h2>
+
+    <p>先把事情说清楚，别被"AI 揪出 25 万篇假论文"这种标题带沟里去。</p>
+
+    <p>干这事的人叫 Adrian Barnett，昆士兰科技大学的统计学家。他的东西发在《英国医学杂志》上，编号 BMJ 2026;392:e087581，白纸黑字，谁都能查。他没干什么惊天动地的事，他训练了一个 BERT——一个学语言规律的模型——喂给它的，是一批已经被期刊撤稿、坐实了跟"论文工厂"有关的假论文，让它去记这些假论文长什么样。</p>
+
+    <p>记的是什么？是文风。是那些工厂流水线上反复出现的措辞、句式、套路。Barnett 自己在论文里把话说得很死：这个工具指出来的，是"可疑"，不是"造假"；是"长得像不像假的"，不是"到底是不是假的"。这两件事，差着一条人命关天的距离。</p>
+
+    <p>然后他把这台机器放出去，扫了 1999 到 2024 年间的 2,647,471 篇癌症论文。标红了 261,245 篇，占 9.87%，置信区间卡在 9.83% 到 9.90% 之间——统计学家干活，连误差都要给你算得明明白白。这台机器在测试里，认已知假论文的准确率是 91%，换一批外部数据是 93%，判"好人"的特异度超过 96%。</p>
+
+    <p>数字之外，还有一条更难看的曲线：世纪初，被标红的癌症论文占比大概 1%；到 2022 年，这个数字爬过了 16%。二十年，翻了十几倍。</p>
+
+    <p>它测的不是造假，是文风。可一个行业里，"长得像假货"的东西二十年从 1% 涨到 16%，这本身就是一份判决书。</p>
+
+    <p>![图注：这台 AI 学的是被撤稿假论文的"语言指纹"，扫完 264 万篇癌症研究，标红了差不多每十篇里的一篇。](images/illus_01.png)</p>
+
+    <hr>
+
+    <h2>二、真正吓人的，是造假的被引用了两倍</h2>
+
+    <p>如果假论文只是躺在角落里没人看，那还算科学界的体面——垃圾进了垃圾桶，至少分类是对的。</p>
+
+    <p>问题是它们没进垃圾桶。Barnett 顺手比了一下引用：那些被标红的论文，被别人引用的次数，最高能到正常论文的两倍。而且这个差距，在论文发表后的头几年最大，之后才慢慢缩小。</p>
+
+    <p>翻译成人话：一篇可疑论文刚出生的时候，比一篇老实巴交的真论文，更抢手。</p>
+
+    <p>你得明白引用在科研里是什么。它不是点赞，它是硬通货。引用数决定一个博士能不能毕业，决定一个讲师能不能转副教授，决定一个课题组下一笔经费拿不拿得到，决定一本期刊的影响因子是往上走还是往下掉。整个学术界的账本，就是拿引用来记的。</p>
+
+    <p>现在这本账告诉你：最会来事的那批论文，账面最漂亮。</p>
+
+    <strong>在科学的记分牌上，造假的一方，得分更高。</strong>
+
+    <p>一个真研究员，招人、跑实验、等三个月养细胞、被审稿人打回来改五遍，熬一年出一篇。工厂那头，扒公共数据库、套标准化的分析模板、让大模型写引言和讨论、拿软件批量画图，一天出一沓。你让这两拨人在"引用数"这一个指标上赛跑，结果早就写好了。老实人跑不过流水线，这不是意外，这是设计。</p>
+
+    <p>![图注：我们以为假论文是没人看的边缘垃圾，数据说它们刚发表那几年的引用量是真论文的两倍——在科研的硬通货上，造假的一方赢了。](images/illus_02.png)</p>
+
+    <hr>
+
+    <h2>三、顶刊的江湖地位，一半是假论文互相点赞刷出来的</h2>
+
+    <p>赢，是有办法的。</p>
+
+    <p>Barnett 扒引用来源的时候发现一件更绝的事：这些可疑论文，特别爱引用另一些可疑论文。它们抱团。以《Molecular Cancer》和《Journal of Experimental & Clinical Cancer Research》这两本肿瘤分子领域的期刊为例——都是影响因子高到能让人换一套职业生涯的顶刊——它们收到的引用里，有 57% 来自被标红的论文。</p>
+
+    <p>一多半。这两本顶刊的江湖地位，一多半是被"疑似造假"的论文互相引用刷出来的。而期刊本身，可能到现在都不知道自己是被谁抬上轿子的。</p>
+
+    <p>这就是行话里说的"引用卡特尔"：一群假论文，你引我、我引你、你再引它，围成一个圈，把这个圈里所有人的引用数和这本期刊的影响因子一起顶上去。Barnett 的原话是，这是"协同的引用操纵"，正在给分子肿瘤学这一整个领域的期刊指标注水。</p>
+
+    <strong>影响因子这把尺子，量到最后，量出来的不是谁做得好，是谁最会刷。</strong>
+
+    <p>而且这事没有国界，也没有阶层豁免。这套模型标红了 36% 署名来自中国的癌症论文——这个数字后面站着的是全球最大的"发论文"压力池。但别急着甩锅给某一个地方：连全球排名前 10% 的顶级期刊，都没能在这台机器面前干干净净地过关。论文工厂不挑客户，它只挑肯付钱、又急着要一行简历的人。这种人，哪儿都有。</p>
+
+    <p>![图注：两本肿瘤顶刊收到的引用里，57% 来自被标红的论文——所谓影响因子，一多半是假论文围成一个圈互相引用刷出来的。](images/illus_03.png)</p>
+
+    <hr>
+
+    <h2>四、AI 能把它标红，可它一篇都撤不掉</h2>
+
+    <p>到这儿，你可能觉得，抓出来了就好办了，撤了不就完了。</p>
+
+    <p>撤不了。</p>
+
+    <p>这 25 万篇，最老的已经在文献库里躺了二十多年。这二十多年里，它们被真论文引用过，被写进过综述，被塞进过临床指南，被拿去申请过经费，甚至可能左右过某个病人的用药方案。一篇论文一旦发出去、被别人引上，它就长进了整棵知识树的根系里。你现在拿把 AI 的手电筒照见它是脏的，可你没有那把能把它连根拔掉的铲子。</p>
+
+    <p>撤稿这件事有多难，看行业自己的战绩就知道。2024 年 Wiley 处理 Hindawi 那批论文工厂产物，是学术出版史上最大的一次撤稿，前后撤了八千多篇，关掉了 19 本期刊，自己认赔三四千万美元的年收入。那已经是全行业能拿出来的最狠的一次动作了——可它连一年的假论文产量都追不平。八千对二十五万，你算算这个比例。</p>
+
+    <p>更别提这里面还有一层黑色幽默：造这些假论文的，和这台抓假论文的，用的是同一类技术。工厂那边早就用上大模型批量写引言、编数据、造引用了。造假的一方永远用着更新一代的模型，查假的一方永远慢一拍——因为你得先等假货攒够了、被撤稿了，才能拿它去训练你的检测器。这是一场结构性地注定要落后半步的追赶。</p>
+
+    <p>所以 Barnett 这台机器，最大的价值不是"抓假",是"报数"。它把一个所有人都隐约知道、但没人敢量的窟窿，第一次量了出来：将近一成，261,245 篇，还在涨。</p>
+
+    <p>科学一直被当成一套能自我纠错的系统——错了会被人发现，发现了会被改正。这台 AI 干的，恰恰是拆穿了这套叙事最体面的那一半：错的确实能被发现了，AI 一次能发现二十五万个。可发现之后呢？没有下文。</p>
+
+    <strong>科学没有撤销键。AI 能让你看清水有多脏，它擦不掉。</strong>
+
+    <p>你现在知道了，每十篇癌症研究里，可能有一篇写得像假的；你也知道了，最会来事的那些，恰恰混得最好。知道完了，你还得接着在这套账本里过日子——因为除了这套脏账，你也没有别的账本可用。就这。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>AI 一次能发现二十五万个错误，可发现之后没有下文：这些论文最老的已经在文献库里躺了二十多年，被引、被写进综述、被塞进临床指南。</p>
+    <p>科学没有撤销键。AI 能让你看清水有多脏，它擦不掉。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12853418/" target="_blank" rel="noopener">Machine learning based screening of potential paper mill publications in cancer research（BMJ 原文，PMC 全文）</a></div>
+      <div class="footer-source-item"><a href="https://www.nature.com/articles/d41586-026-01908-8" target="_blank" rel="noopener">Paper mill cancer studies get double the number of citations as genuine papers（Nature 报道）</a></div>
+      <div class="footer-source-item"><a href="https://www.qut.edu.au/news?id=203173" target="_blank" rel="noopener">New tool exposes scale of fake research flooding cancer science（QUT 官方发布）</a></div>
+      <div class="footer-source-item"><a href="https://www.sciencedaily.com/releases/2026/07/260714225538.htm" target="_blank" rel="noopener">AI flags more than 250,000 suspicious cancer research papers（ScienceDaily）</a></div>
+      <div class="footer-source-item"><a href="https://www.biorxiv.org/content/10.1101/2025.08.29.673016v2.full" target="_blank" rel="noopener">Revealing the Paper Mill Iceberg: AI-Based Screening of Cancer Research Publications（bioRxiv 预印本）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
