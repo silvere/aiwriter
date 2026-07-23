@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>美国人把 58% 的 token 喂给了中国模型，却把 88% 的账单付给了自己人</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 行业观察</span>
+  <h1>美国人把 58% 的 token 喂给了中国模型，却把 88% 的账单付给了自己人</h1>
+  <div class="hero-meta">
+    <span>2026-07-23</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">OpenRouter 上，美国公司调用的 token 有 58% 流向中国模型，标题都在喊「反超」。但企业真金白银的 API 采购市场上，DeepSeek 只占 1%，美国三家吃掉 88%。两个数字都是真的——一个数的是调用量，一个数的是钱。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>58% 是真的，这一年确实塌方了</h2>
+
+    <p>先把这个数字说清楚，别急着高兴，也别急着不服。</p>
+
+    <p>OpenRouter 是个模型中转站：你办一把 API 钥匙，就能调用上百个厂商的模型，OpenAI、Anthropic、谷歌、DeepSeek、通义千问，随便切，还能比价。开发者图它省事，2026 年 5 月它融资时披露，月处理量已经到了约 100 万亿 token。这个体量，足够当一个观察窗口。</p>
+
+    <p>窗口里的景象，对美国模型确实不好看。2025 年上半年，中国模型在美国公司调用里的占比还是 4.5%；2026 年 2 月 8 日之后，这个数字每周稳稳站在 30% 以上，最高见过 46%；到 7 月，58%，峰值 63%。换个更狠的口径——不分调用方国籍、只看全平台——美国模型自己的 token 份额，从一年前的约 70% 掉到了约 30%。2026 年 2 月 9 日到 15 日那一周，中国模型在全平台的周 token 量是 4.12 万亿，第一次压过美国模型的 2.94 万亿。光 DeepSeek 一家，平台份额约 17.6%，吐出来的 token 比谷歌加 OpenAI 加起来还多。</p>
+
+    <p>这个方向是实打实的，不是营销通稿刷出来的。美国开发者用中国模型，用得越来越顺手，这点没得洗。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图注：一年时间，中国模型在美国公司调用里的占比从 4.5% 冲到 58%——这个方向是真的。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：一年时间，中国模型在美国公司调用里的占比从 4.5% 冲到 58%——这个方向是真的。</figcaption></figure>
+
+    <h2>但「用得多」不等于「选了它当主力」</h2>
+
+    <p>问题出在，58% 这个数，量的是「谁在被大量调用」，不是「谁被谁选成了看家的那个」。这两件事，被标题党一锅烩了。</p>
+
+    <p>先看这个 58% 是谁贡献的。OpenRouter 上泡着的，并不是「美国企业」。摩根大通、沃尔玛这种巨头要用 AI，要么私有部署，要么直接和 OpenAI、微软 Azure 签企业协议，走的是能坐下来谈价的专线，根本不从公共中转站按量零买。真正天天挂在 OpenRouter 上的，是没有议价权、也懒得挨个和厂商签约的独立开发者、初创团队和个人玩家。把「美国企业正在抛弃 OpenAI」这句话，还原成「一群对价格敏感的散户开发者，发现了更便宜的够用货」，气势立刻就泄了一半。</p>
+
+    <p>再看这些 token 是被拿去干什么活的。OpenRouter 自己的排行显示，吃掉平台绝大部分 token 的，是命令行里的编程 agent 和各种自动化工具——这类工具干一个任务甩出去几百万 token 是家常便饭，OpenRouter 官方博客有篇文章标题直接就叫《DeepSeek V4 正在赚走 agentic token 份额》。另一大块是角色扮演、AI 陪聊、创意写作——OpenRouter 那份百万亿 token 的用量研究里说，这类消费级用途的占比「超出了很多人的预期」。</p>
+
+    <p>这些活有个共同点：要么高度自动化、按量狂刷，要么价格敏感、图个便宜够用。中国开源模型便宜多少？多家媒体测算，比 OpenAI、Anthropic 的旗舰便宜六到九成（这个口径很粗，各家测法不一，当量级看就行，别当审计报告读）。同样一块钱，中国模型能吐的 token 是美国旗舰的几十倍。</p>
+
+    <p>所以 token 份额暴涨，第一层意思从来不是「它更好」，是「它更便宜，而且正好被派去干了最费 token 的那批活」。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="图注：便宜六到九成，就被塞进编程 agent、批量生成、陪聊这些按量狂刷的活里——涨上去的是耗材用量，不一定是信任。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：便宜六到九成，就被塞进编程 agent、批量生成、陪聊这些按量狂刷的活里——涨上去的是耗材用量，不一定是信任。</figcaption></figure>
+
+    <h2>钱去哪了：量的第一名和利润的第一名，是两拨人</h2>
+
+    <p>调用量是一张记分牌，收入是另一张。这两张牌，在 OpenRouter 上就已经对不上了。</p>
+
+    <p>有人在同一个平台上算过账：Anthropic 的 token 量份额只有约 12%，可它拿走的收入份额接近一半。这个「接近一半」目前主要来自单一信源，我不把它当钉死的精确数，但方向是价格差直接决定的数学结果——一个 token 卖你几十倍的价，量少、收入高是必然，不需要任何情怀来解释。</p>
+
+    <p>换到企业正式采购这张更硬的表上，反差更刺眼。Menlo Ventures 在 2025 年底发布的《企业生成式 AI 现状》报告，抽的是企业级 LLM API 的真实采购与使用。结果是：Anthropic 40%、OpenAI 27%、谷歌 21%，美国三家合计 88%。DeepSeek，年初闹出那么大动静，企业份额 1%。而企业一年砸在 AI 上的钱，从 2023 年的 115 亿美元涨到了 2025 年的 370 亿美元，翻了三倍多——这笔快速膨胀的预算，几乎没往中国模型这边流。</p>
+
+    <p>两个市场，并排长着。一个是「谁便宜谁赢」的商品化层：代码补全、批量生成、陪聊，中国开源模型在这里称王，量大管饱。另一个是要可靠性、要合规、要企业级支持、要最强推理的高端层，还在心甘情愿付溢价，定价权还攥在美国手里。OpenRouter 那 58% 的量，落在第一个市场；Menlo 那 88% 的钱，落在第二个市场。</p>
+
+    <strong>58% 是省钱省出来的，不是打赢打出来的。</strong>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="图注：同一场竞争，两张记分牌——OpenRouter 调用量中国模型占 58%，企业采购市场 DeepSeek 只占 1%，美国三家合计 88%。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：同一场竞争，两张记分牌——OpenRouter 调用量中国模型占 58%，企业采购市场 DeepSeek 只占 1%，美国三家合计 88%。</figcaption></figure>
+
+    <h2>别把装机量当利润</h2>
+
+    <p>全球每卖十台手机，七台是安卓，可手机行业的利润大头，长期躺在苹果的口袋里。量的霸主和利润的霸主，从来可以是两拨人。把 token 的「装机量」当成利润来读，是自己骗自己。</p>
+
+    <p>更能说明问题的，是中国厂商自己的动作。2026 年，阿里把通义千问的旗舰型号从开源转成了闭源付费 API，4 月还砍掉了给开发者的免费编程调用额度。免费开源是攻城的云梯，攻进城之后，梯子是要收起来的——连最积极开源的那家，都不打算永远靠免费把量堆下去。</p>
+
+    <p>OpenRouter 自己也提醒过别过度解读。它的官方博客写过，DeepSeek 的份额一度被上下夹击、跌到 5% 左右，几个月后才回到近 20%，起起伏伏，不是一条单向碾压的直线。平台创始人的说法是，「挑单一模型的时代已经结束了」——他卖的是「随便你用谁都行」，不是「中国赢了」。</p>
+
+    <p>中国大模型这一年在 OpenRouter 上的窜升，是实打实的：便宜、开源、够用，这条路走通了，值得认。但「58%」这个数字，量的是省下来的钱，不是拿下来的心智。哪天企业采购那张表上，DeepSeek 从 1% 变成两位数，再喊「反超」也不迟。</p>
+
+    <p>在那之前，这 58% 最诚实的读法是：美国人找到了一件干粗活的廉价工具，然后把最贵的那批活，还是留给了自己人。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>量的第一名和利润的第一名，从来可以是两拨人。58% 量的是省下来的钱，不是拿下来的心智。</p>
+    <p>美国人找到了一件干粗活的廉价工具，然后把最贵的那批活，还是留给了自己人。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.benzinga.com/markets/tech/26/07/60543652/chinese-ai-models-overtake-us-rivals-as-token-share-among-american-firms-hits-record-58" target="_blank" rel="noopener">Chinese AI Models Overtake US Rivals as Token Share Among American Firms Hits Record 58%（Benzinga，引 The Kobeissi Letter）</a></div>
+      <div class="footer-source-item"><a href="https://finance.yahoo.com/technology/ai/articles/chinese-ai-models-now-capture-020440715.html" target="_blank" rel="noopener">Chinese AI Models Now Capture Up to 46% of US Enterprise Token Usage（Yahoo Finance）</a></div>
+      <div class="footer-source-item"><a href="https://officechai.com/ai/share-of-us-models-being-used-on-openrouter-has-collapsed-from-70-to-30-over-the-past-year/" target="_blank" rel="noopener">Share of US Models on OpenRouter Has Collapsed From 70% to 30%（OfficeChai）</a></div>
+      <div class="footer-source-item"><a href="https://app.dealroom.co/news/note/chinese-ai-models-overtake-us-peers-in-token-consumption-openrouter-data-shows" target="_blank" rel="noopener">Chinese AI models overtake US peers in token consumption, OpenRouter data shows（Dealroom）</a></div>
+      <div class="footer-source-item"><a href="https://openrouter.ai/blog/insights/deepseek-v4-adoption" target="_blank" rel="noopener">DeepSeek V4 Is Earning Agentic Token Share（OpenRouter 官方博客）</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/html/2601.10088v1" target="_blank" rel="noopener">State of AI: An Empirical 100 Trillion Token Study with OpenRouter（arXiv）</a></div>
+      <div class="footer-source-item"><a href="https://menlovc.com/perspective/2025-the-state-of-generative-ai-in-the-enterprise/" target="_blank" rel="noopener">2025: The State of Generative AI in the Enterprise（Menlo Ventures）</a></div>
+      <div class="footer-source-item"><a href="https://aiweekly.co/alerts/alibaba-pushes-qwen-toward-paid-apis-after-open-source-surge" target="_blank" rel="noopener">Alibaba pushes Qwen toward paid APIs after open-source surge（AI Weekly）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
