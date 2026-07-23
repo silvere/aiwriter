@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>梁文锋刷屏 72 小时：有人求证，有人等辟谣，没人等到回应</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 行业观察</span>
+  <h1>梁文锋刷屏 72 小时：有人求证，有人等辟谣，没人等到回应</h1>
+  <div class="hero-meta">
+    <span>2026-07-23</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">《梁文锋四小时投资人会议实录》刷屏三天，被拆成战略课件、截成金句图、捧成中国故事。第一财经拿着它去向 DeepSeek 求证，截至发稿，官方未有回应；微博上有人断言一看就是 AI 写的、坐等辟谣，辟谣也没有来。文档里说了什么不重要，没有一方愿意出来确认才是正题——以及沉默这件事本身，值多少钱。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一份谁都在转、谁都没认的实录</h2>
+<p>刷屏第三天，终于有人去求证了。回应是：没有回应。</p>
+<p>《梁文锋四小时投资人会议实录》，近四小时对话压成 118 条问答，腾讯科技整理发布，编辑说明写的是「文本尽可能保留原意，仅略作编辑」。片段 6 月下旬就在圈内流转，整理版 7 月 21 日前后一出，三天烧遍全网：富途把它拆成战略课件，券商群把它截成金句图，《黑神话：悟空》制作人冯骥发文说「大半夜看得我荡气回肠」，媒体把这句浓缩成标题——「这就是中国故事」。</p>
+<p>被引用最多的几句，都带着圣经体的干净：「最强的模型也会开源，因为看不到闭源有什么必然的好处」「克制是一种战略，用来换取做成 AGI 的概率」「只要我能保持团队的稳定性，我一定能做成 AGI」。</p>
+<p>质疑也有，但方向说明了问题。英语教师何凯文在微博上写：「一看就是 AI 写的。坐等辟谣。」第一财经就交流会内容向 DeepSeek 求证，截至发稿未获回应。也就是说，这份材料被全网当逐字原话引用了三天，而它的三个关键相关方——DeepSeek 官方、梁文锋本人、被期待出场的「辟谣」——集体缺席。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图注：实录刷屏 72 小时，每一环都在传播，没有一环在确认。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：实录刷屏 72 小时，每一环都在传播，没有一环在确认。</figcaption></figure>
+
+<h2>没人有动机出来确认</h2>
+<p>按惯常剧本，公司内部沟通外流，公关部门要么辟谣要么灭火。DeepSeek 两样都没做，连「不予置评」四个字都省了。</p>
+<p>这场会议的背景是 DeepSeek 成立以来第一轮外部融资。据多家媒体报道，总额超 500 亿元人民币，投前估值约 3675 亿元，出资方名单里有腾讯的 100 亿、宁德时代的 50 亿、网易京东 IDG 各 30 亿，梁文锋个人跟了 200 亿。连这些数字也没有官方版本——500 亿量级的融资，DeepSeek 同样没出面确认过；市场传公司在筹备内地 IPO，一样查无官方说法。什么都不说，是这家公司此刻的统一姿态。</p>
+<p>在这个节点上，一份把创始人塑造成「克制的理想主义者」的文档满天飞，每一条转发都在替公司做投资者教育——不花一分钱，不落一个字的官方口径，将来内容出了偏差，还可以指出这只是转述稿。辟谣是成本，沉默是资产。</p>
+<p>媒体这边的账更简单。「梁文锋」三个字在 7 月下旬就是流量本身，新浪、网易、凤凰、IT 之家在 22 日到 23 日集中转载，没有一家等到官方确认——等确认的那家会错过整个热点周期。</p>
+<p>还有第三本账：情绪。冯骥那句评论把一份融资会议纪要推出了科技圈，变成民族叙事的素材。到这一步，文档真不真已经不重要了，重要的是它足够好哭。</p>
+<h2>失真已经开始</h2>
+<p>当真引用是有代价的，围绕 DeepSeek 的二手信息已经有现成的失真样本。V4 发布后，曾有技术解读文章把 API 价格写成 0.3 美元每百万 token；DeepSeek 官网挂出的定价是 0.435 到 0.87 美元。一个打开官网就能核对的数字，尚且传成这样——一份没有官方版本可核对的转述稿，失真只会更快。</p>
+<p>连反方也在用同一份材料打架。钛媒体的分析说，「克制」人设是人才流失、产品停滞之下的现实所迫，DeepSeek 是「用模型时代的思维打生态时代的仗」。这刀够锋利，但它批判的对象，同样是那份未经确认的转述稿。正方反方吵得热闹，引的是同一份没人认领的稿子。</p>
+<h2>把它当广告读，别当实录读</h2>
+<p>这份文档大概率不是伪造的——腾讯科技的整理有编辑说明，多家机构的转载有来源链条，内容与 DeepSeek 历次公开动作对得上。问题从来不是「假不假」，是「准不准」，以及「谁从不准里受益」。</p>
+<p>四小时的对话压成 118 条问答，每一次压缩都是一次编辑，每一次编辑都有立场。你读到的「克制」，可能是原话，可能是整理者的提炼，也可能是传播链条集体挑选的结果——三种情况读起来一模一样。</p>
+<p>所以实用的读法只有一种：把它当一份写得很好的战略广告读。广告里有真实信息，值得看；但没人会把广告词当合同条款引用。<strong>在任何一方出来背书之前，这份文档的每一句金句，法律效力约等于一张海报。</strong></p>
+<p>哪天 DeepSeek 官方逐条确认或更正，或者梁文锋公开认领，这篇作废。到目前为止，他们选择了对自己最有利的做法——什么都不说，让你们接着转。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>把它当一份写得很好的战略广告读：广告里有真实信息，值得看；但没人会把广告词当合同条款引用。</p>
+    <p>哪天 DeepSeek 官方逐条确认或更正，或者梁文锋公开认领，这篇作废。在那之前，沉默仍在增值。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://news.qq.com/rain/a/20260722A0FZM500" target="_blank" rel="noopener">梁文锋四小时投资人会议实录（腾讯新闻）</a></div>
+      <div class="footer-source-item"><a href="https://www.163.com/dy/article/L2H3RL9A05568W0A.html" target="_blank" rel="noopener">第一财经向 DeepSeek 求证未获回应（网易转载）</a></div>
+      <div class="footer-source-item"><a href="https://finance.sina.com.cn/tech/roll/2026-07-23/doc-iniitzpk7739837.shtml" target="_blank" rel="noopener">冯骥评《梁文锋四小时投资人会议实录》（新浪科技）</a></div>
+      <div class="footer-source-item"><a href="https://www.sina.cn/news/detail/5323803601144310.html" target="_blank" rel="noopener">梁文锋融资会议内容疑 AI 写（新浪新闻）</a></div>
+      <div class="footer-source-item"><a href="https://news.futunn.com/post/76458063/liang-wenfeng-s-four-hour-investor-meeting-transcript-4-hours" target="_blank" rel="noopener">梁文锋四小时投资人会议实录转载（富途）</a></div>
+      <div class="footer-source-item"><a href="https://api-docs.deepseek.com/" target="_blank" rel="noopener">DeepSeek API 官方定价文档</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
