@@ -32,33 +32,9 @@ XLANG 今年又出了 OSWorld 2.0。这回不玩短平快，它布置 108 个长
 
 **同样一批模型，题从四分钟换成一个半小时，全球最强就从"超过人类"掉回了五题错四题。** 短活里那个所向披靡的选手，一到真实长度的工作面前，交出的是一张不及格到刺眼的卷子。这两个数字——72.6% 和 20.6%——中间隔的不是模型代差，是"考试"和"上班"的差别。
 
-<div class="img-placeholder understanding" data-caption="越过人类线的是短任务；换成长程真活，全球最强重新跌回 20.6%">
-  <div class="img-placeholder-icon">🧩</div>
-  <div class="img-placeholder-label">理解图占位</div>
-  <details><summary>理解图 HTML</summary><pre>
-&lt;div class="illustration" data-caption="越过人类线的是短任务；换成长程真活，全球最强重新跌回 20.6%"&gt;
-  &lt;div class="kicker"&gt;OSWORLD · 计算机操作智能体基准&lt;/div&gt;
-  &lt;h2&gt;同一批模型，把题变长，从“超过人类”跌回两成&lt;/h2&gt;
-  &lt;div class="sub"&gt;同一套基准，任务时长从几分钟拉长到一个半小时&lt;/div&gt;
-  &lt;svg viewBox="0 0 1000 460" width="100%" height="380" style="margin-top:20px" xmlns="http://www.w3.org/2000/svg"&gt;
-    &lt;line x1="60" y1="172" x2="940" y2="172" stroke="#717584" stroke-width="2" stroke-dasharray="7,7"/&gt;
-    &lt;text x="940" y="158" text-anchor="end" font-size="16" fill="#717584"&gt;人类基线 72.36%&lt;/text&gt;
-    &lt;rect x="200" y="171" width="180" height="199" rx="6" fill="#9AA4B2"/&gt;
-    &lt;polygon points="290,148 278,171 302,171" fill="#E0792B"/&gt;
-    &lt;text x="290" y="145" text-anchor="middle" font-size="44" font-weight="800" fill="#23262B"&gt;72.6&lt;tspan font-size="22"&gt;%&lt;/tspan&gt;&lt;/text&gt;
-    &lt;text x="290" y="98" text-anchor="middle" font-size="15" fill="#717584"&gt;开源智能体 Agent S · 首次越线&lt;/text&gt;
-    &lt;text x="290" y="392" text-anchor="middle" font-size="17" font-weight="700" fill="#23262B"&gt;OSWorld（短任务）&lt;/text&gt;
-    &lt;text x="290" y="414" text-anchor="middle" font-size="14" fill="#717584"&gt;一道任务，人干约 4 分钟&lt;/text&gt;
-    &lt;rect x="620" y="314" width="180" height="56" rx="6" fill="#E0792B"/&gt;
-    &lt;text x="710" y="284" text-anchor="middle" font-size="64" font-weight="800" fill="#E0792B"&gt;20.6&lt;tspan font-size="28"&gt;%&lt;/tspan&gt;&lt;/text&gt;
-    &lt;text x="710" y="220" text-anchor="middle" font-size="15" fill="#717584"&gt;全球最强 Claude Opus 4.8&lt;/text&gt;
-    &lt;text x="710" y="392" text-anchor="middle" font-size="17" font-weight="700" fill="#23262B"&gt;OSWorld 2.0（长程真活）&lt;/text&gt;
-    &lt;text x="710" y="414" text-anchor="middle" font-size="14" fill="#717584"&gt;一件任务，人干中位 1.6 小时&lt;/text&gt;
-  &lt;/svg&gt;
-  &lt;div class="punch"&gt;同样的模型，题从四分钟换成一个半小时，最强的它从超过人类掉回&lt;b&gt;五题错四题&lt;/b&gt;&lt;/div&gt;
-&lt;/div&gt;
-</pre></details>
-</div>
+![越过人类线的是短任务；换成长程真活，全球最强重新跌回 20.6%](images/illus_01.png)
+
+*越过人类线的是短任务；换成长程真活，全球最强重新跌回 20.6%*
 
 ## 它不是不够聪明，是记不住事
 
@@ -70,48 +46,9 @@ OSWorld 2.0 的数据说，不是。
 
 它栽的地方是：**没法把一开始定下的规矩，和半路捡到的事实，一起扛到第 300 步。** 论文对这件事的结论下得很干脆——瓶颈是状态，不是智力。
 
-<div class="img-placeholder understanding" data-caption="失败几乎不因缺知识，而因长程中丢了状态——约束、中途信息、该问的、该核对的">
-  <div class="img-placeholder-icon">🧩</div>
-  <div class="img-placeholder-label">理解图占位</div>
-  <details><summary>理解图 HTML</summary><pre>
-&lt;div class="illustration" data-caption="失败几乎不因缺知识，而因长程中丢了状态——约束、中途信息、该问的、该核对的"&gt;
-  &lt;div class="kicker"&gt;OSWORLD 2.0 · 失败拆解&lt;/div&gt;
-  &lt;h2&gt;它不是不会做，是记不住&lt;/h2&gt;
-  &lt;div class="sub"&gt;一件任务要连续几百步才能交付，撑不住的是记忆，不是操作本身&lt;/div&gt;
-  &lt;svg viewBox="0 0 1000 480" width="100%" height="440" style="margin-top:20px" xmlns="http://www.w3.org/2000/svg"&gt;
-    &lt;line x1="70" y1="260" x2="900" y2="260" stroke="#9AA4B2" stroke-width="3"/&gt;
-    &lt;polygon points="900,250 924,260 900,270" fill="#9AA4B2"/&gt;
-    &lt;circle cx="70" cy="260" r="6" fill="#9AA4B2"/&gt;
-    &lt;text x="70" y="296" text-anchor="middle" font-size="15" fill="#717584"&gt;开始&lt;/text&gt;
-    &lt;text x="924" y="296" text-anchor="end" font-size="15" fill="#717584"&gt;交付 · 约 318 次工具调用&lt;/text&gt;
-    &lt;line x1="230" y1="246" x2="230" y2="112" stroke="#D7DCE3" stroke-width="2"/&gt;
-    &lt;rect x="125" y="40" width="210" height="72" rx="10" fill="#F0ECE4" stroke="#D7DCE3"/&gt;
-    &lt;text x="230" y="68" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B"&gt;丢掉早已确认的&lt;/text&gt;
-    &lt;text x="230" y="92" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B"&gt;约束&lt;/text&gt;
-    &lt;circle cx="230" cy="260" r="14" fill="#E0792B"/&gt;
-    &lt;text x="230" y="265" text-anchor="middle" font-size="14" font-weight="800" fill="#fff"&gt;1&lt;/text&gt;
-    &lt;line x1="430" y1="274" x2="430" y2="368" stroke="#D7DCE3" stroke-width="2"/&gt;
-    &lt;rect x="325" y="368" width="210" height="72" rx="10" fill="#F0ECE4" stroke="#D7DCE3"/&gt;
-    &lt;text x="430" y="396" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B"&gt;漏掉中途才出现&lt;/text&gt;
-    &lt;text x="430" y="420" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B"&gt;的信息&lt;/text&gt;
-    &lt;circle cx="430" cy="260" r="14" fill="#E0792B"/&gt;
-    &lt;text x="430" y="265" text-anchor="middle" font-size="14" font-weight="800" fill="#fff"&gt;2&lt;/text&gt;
-    &lt;line x1="630" y1="246" x2="630" y2="112" stroke="#D7DCE3" stroke-width="2"/&gt;
-    &lt;rect x="525" y="40" width="210" height="72" rx="10" fill="#F0ECE4" stroke="#D7DCE3"/&gt;
-    &lt;text x="630" y="68" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B"&gt;该问用户时&lt;/text&gt;
-    &lt;text x="630" y="92" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B"&gt;选择猜&lt;/text&gt;
-    &lt;circle cx="630" cy="260" r="14" fill="#E0792B"/&gt;
-    &lt;text x="630" y="265" text-anchor="middle" font-size="14" font-weight="800" fill="#fff"&gt;3&lt;/text&gt;
-    &lt;line x1="830" y1="274" x2="830" y2="368" stroke="#D7DCE3" stroke-width="2"/&gt;
-    &lt;rect x="725" y="368" width="210" height="72" rx="10" fill="#F0ECE4" stroke="#D7DCE3"/&gt;
-    &lt;text x="830" y="409" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B"&gt;干完不核对&lt;/text&gt;
-    &lt;circle cx="830" cy="260" r="14" fill="#E0792B"/&gt;
-    &lt;text x="830" y="265" text-anchor="middle" font-size="14" font-weight="800" fill="#fff"&gt;4&lt;/text&gt;
-  &lt;/svg&gt;
-  &lt;div class="punch"&gt;每个动作它都会，串不起一小时——&lt;b&gt;瓶颈是状态，不是智力&lt;/b&gt;&lt;/div&gt;
-&lt;/div&gt;
-</pre></details>
-</div>
+![失败几乎不因缺知识，而因长程中丢了状态——约束、中途信息、该问的、该核对的](images/illus_02.png)
+
+*失败几乎不因缺知识，而因长程中丢了状态——约束、中途信息、该问的、该核对的*
 
 把这句话翻成人话：它更像一个记性只有三分钟的临时工。每一个孤立动作都干得漂亮，可你上午交代的三条规矩，到下午它一条都想不起来；这一步捡到的关键信息，走两步就掉了。不是手笨，是脑子留不住东西。一件一小时的活之所以能把它逼到 20 分，不是因为里面有哪一步超纲，而是因为一小时里要同时记住、更新、核对的东西太多，多到它中途就散架了。
 
