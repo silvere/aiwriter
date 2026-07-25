@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>全球最强的 AI，做一件一小时的活只做对两成——不是它笨，是它记不住</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 行业观察</span>
+  <h1>全球最强的 AI，做一件一小时的活只做对两成——不是它笨，是它记不住</h1>
+  <div class="hero-meta">
+    <span>2026-07-25</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">今年上半年，一个开源智能体第一次在电脑操作基准上超过了人类：72.6% 对 72.36%。同一个做这个基准的实验室，转头把题换成人要干一个多小时的真活，全球最强的 AI 只做对了 20.6%。模型没变笨，变的只是题——这落差，才是「AI 能不能替你干活」的真正答案。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>"超过人类"那天，超过的是一道四分钟的题</h2>
+
+    <p>先说那个刷屏的里程碑。</p>
+
+    <p>基准叫 OSWorld，港大 XLANG 实验室做的，NeurIPS 2024 收录。它给智能体开一台真的电脑——Ubuntu、Windows、macOS 都行——里面装着真的 LibreOffice、Chrome、VS Code、GIMP，然后布置 369 道真实任务：改个表格、导个文件、在浏览器里点几下把事办了。评分不看它嘴上说得对不对，只看最后活儿有没有干成。这一点很关键，它堵死了 AI 最擅长的那条路——光说不练。</p>
+
+    <p>刚发布的时候，最强的模型只能做对 12.24%，人类基线是 72.36%。这个差距大到让人觉得，让 AI 自己操作电脑这事，短期内没戏。一年前，最高分还在 20% 上下晃。然后一年多时间，分数一路往上蹿，直到今年上半年，Simular 那个开源的 Agent S 拿到 72.6%，第一次压过了 72.36% 的人类线。</p>
+
+    <p>于是所有人都在说同一句话：AI 会用电脑了，而且超过人类了。</p>
+
+    <p>这句话一半是真的，一半是话术。真正被超过的，是 OSWorld 这道题，不是"用电脑"这件事。一道 OSWorld 任务，人干起来平均就是点几下、分把钟的量级；这种长度的活，本来就最容易被针对性地训出来。分数是实验室这三年一点点垒上去的成就，智能体只是最后踩着这个台阶跳了过去。把"越过这道题的及格线"翻译成"AI 达到人类水平"，是这一年最省事、也最误导人的一次四舍五入。</p>
+
+    <h2>同一个实验室，转头把全球最强按回 20 分</h2>
+
+    <p>戳破这个四舍五入的，不是唱反调的评论员，是做原题的那拨人自己。</p>
+
+    <p>XLANG 今年又出了 OSWorld 2.0。这回不玩短平快，它布置 108 个长程工作流，每一个都是从头到尾的一整件真事。一件事有多长？他们的说明写得很直白：人来干，中位数要一个半小时上下；换 Claude Opus 4.7 开满血思考去跑，平均要 318 次工具调用才能摸到头。这已经不是"点几下"，是一场需要连续作战一个多小时、几百步不出戏的耐力赛。</p>
+
+    <p>结果一出来，所有"超过人类"的气氛瞬间散了。</p>
+
+    <p>在 500 步的预算里，跑得最好的是 Claude Opus 4.8，开最大思考、还带上批量工具调用，最后成绩是——完成率 20.6%，部分分 54.8%。GPT-5.5 更省 token，但也就在 13% 附近趴着。没有任何一个系统，把完成率做到过 21%。</p>
+
+    <strong>同样一批模型，题从四分钟换成一个半小时，全球最强就从"超过人类"掉回了五题错四题。</strong> 短活里那个所向披靡的选手，一到真实长度的工作面前，交出的是一张不及格到刺眼的卷子。这两个数字——72.6% 和 20.6%——中间隔的不是模型代差，是"考试"和"上班"的差别。
+
+    <div class="img-placeholder understanding" data-caption="越过人类线的是短任务；换成长程真活，全球最强重新跌回 20.6%">
+  <div class="img-placeholder-icon">🧩</div>
+  <div class="img-placeholder-label">理解图占位</div>
+  <details><summary>理解图 HTML</summary><pre>
+&lt;div class="illustration" data-caption="越过人类线的是短任务；换成长程真活，全球最强重新跌回 20.6%"&gt;
+  &lt;div class="kicker"&gt;OSWORLD · 计算机操作智能体基准&lt;/div&gt;
+  &lt;h2&gt;同一批模型，把题变长，从“超过人类”跌回两成&lt;/h2&gt;
+  &lt;div class="sub"&gt;同一套基准，任务时长从几分钟拉长到一个半小时&lt;/div&gt;
+  &lt;svg viewBox="0 0 1000 460" width="100%" height="380" style="margin-top:20px" xmlns="http://www.w3.org/2000/svg"&gt;
+    &lt;line x1="60" y1="172" x2="940" y2="172" stroke="#717584" stroke-width="2" stroke-dasharray="7,7"/&gt;
+    &lt;text x="940" y="158" text-anchor="end" font-size="16" fill="#717584"&gt;人类基线 72.36%&lt;/text&gt;
+    &lt;rect x="200" y="171" width="180" height="199" rx="6" fill="#9AA4B2"/&gt;
+    &lt;polygon points="290,148 278,171 302,171" fill="#E0792B"/&gt;
+    &lt;text x="290" y="145" text-anchor="middle" font-size="44" font-weight="800" fill="#23262B"&gt;72.6&lt;tspan font-size="22"&gt;%&lt;/tspan&gt;&lt;/text&gt;
+    &lt;text x="290" y="98" text-anchor="middle" font-size="15" fill="#717584"&gt;开源智能体 Agent S · 首次越线&lt;/text&gt;
+    &lt;text x="290" y="392" text-anchor="middle" font-size="17" font-weight="700" fill="#23262B"&gt;OSWorld（短任务）&lt;/text&gt;
+    &lt;text x="290" y="414" text-anchor="middle" font-size="14" fill="#717584"&gt;一道任务，人干约 4 分钟&lt;/text&gt;
+    &lt;rect x="620" y="314" width="180" height="56" rx="6" fill="#E0792B"/&gt;
+    &lt;text x="710" y="284" text-anchor="middle" font-size="64" font-weight="800" fill="#E0792B"&gt;20.6&lt;tspan font-size="28"&gt;%&lt;/tspan&gt;&lt;/text&gt;
+    &lt;text x="710" y="220" text-anchor="middle" font-size="15" fill="#717584"&gt;全球最强 Claude Opus 4.8&lt;/text&gt;
+    &lt;text x="710" y="392" text-anchor="middle" font-size="17" font-weight="700" fill="#23262B"&gt;OSWorld 2.0（长程真活）&lt;/text&gt;
+    &lt;text x="710" y="414" text-anchor="middle" font-size="14" fill="#717584"&gt;一件任务，人干中位 1.6 小时&lt;/text&gt;
+  &lt;/svg&gt;
+  &lt;div class="punch"&gt;同样的模型，题从四分钟换成一个半小时，最强的它从超过人类掉回&lt;b&gt;五题错四题&lt;/b&gt;&lt;/div&gt;
+&lt;/div&gt;
+</pre></details>
+</div>
+
+    <h2>它不是不够聪明，是记不住事</h2>
+
+    <p>看到 20.6% 这个数，大部分人的第一反应是：AI 还是不够聪明。</p>
+
+    <p>OSWorld 2.0 的数据说，不是。</p>
+
+    <p>他们把智能体是怎么崩的一条条拆开看，发现失败几乎不出这四种：早早跟你确认过的约束，干着干着就丢了；任务中途才冒出来的新信息，它视而不见；到了该回头问你一句的岔路口，它不问，它猜；活干完了，它不核对，直接交。你把这四条连起来看会发现，没有一条是"这道题它不会做"。每一个单独的动作，它都会——填表它会填，改文件它会改，点按钮它会点。</p>
+
+    <p>它栽的地方是：<strong>没法把一开始定下的规矩，和半路捡到的事实，一起扛到第 300 步。</strong> 论文对这件事的结论下得很干脆——瓶颈是状态，不是智力。</p>
+
+    <div class="img-placeholder understanding" data-caption="失败几乎不因缺知识，而因长程中丢了状态——约束、中途信息、该问的、该核对的">
+  <div class="img-placeholder-icon">🧩</div>
+  <div class="img-placeholder-label">理解图占位</div>
+  <details><summary>理解图 HTML</summary><pre>
+&lt;div class="illustration" data-caption="失败几乎不因缺知识，而因长程中丢了状态——约束、中途信息、该问的、该核对的"&gt;
+  &lt;div class="kicker"&gt;OSWORLD 2.0 · 失败拆解&lt;/div&gt;
+  &lt;h2&gt;它不是不会做，是记不住&lt;/h2&gt;
+  &lt;div class="sub"&gt;一件任务要连续几百步才能交付，撑不住的是记忆，不是操作本身&lt;/div&gt;
+  &lt;svg viewBox="0 0 1000 480" width="100%" height="440" style="margin-top:20px" xmlns="http://www.w3.org/2000/svg"&gt;
+    &lt;line x1="70" y1="260" x2="900" y2="260" stroke="#9AA4B2" stroke-width="3"/&gt;
+    &lt;polygon points="900,250 924,260 900,270" fill="#9AA4B2"/&gt;
+    &lt;circle cx="70" cy="260" r="6" fill="#9AA4B2"/&gt;
+    &lt;text x="70" y="296" text-anchor="middle" font-size="15" fill="#717584"&gt;开始&lt;/text&gt;
+    &lt;text x="924" y="296" text-anchor="end" font-size="15" fill="#717584"&gt;交付 · 约 318 次工具调用&lt;/text&gt;
+    &lt;line x1="230" y1="246" x2="230" y2="112" stroke="#D7DCE3" stroke-width="2"/&gt;
+    &lt;rect x="125" y="40" width="210" height="72" rx="10" fill="#F0ECE4" stroke="#D7DCE3"/&gt;
+    &lt;text x="230" y="68" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B"&gt;丢掉早已确认的&lt;/text&gt;
+    &lt;text x="230" y="92" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B"&gt;约束&lt;/text&gt;
+    &lt;circle cx="230" cy="260" r="14" fill="#E0792B"/&gt;
+    &lt;text x="230" y="265" text-anchor="middle" font-size="14" font-weight="800" fill="#fff"&gt;1&lt;/text&gt;
+    &lt;line x1="430" y1="274" x2="430" y2="368" stroke="#D7DCE3" stroke-width="2"/&gt;
+    &lt;rect x="325" y="368" width="210" height="72" rx="10" fill="#F0ECE4" stroke="#D7DCE3"/&gt;
+    &lt;text x="430" y="396" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B"&gt;漏掉中途才出现&lt;/text&gt;
+    &lt;text x="430" y="420" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B"&gt;的信息&lt;/text&gt;
+    &lt;circle cx="430" cy="260" r="14" fill="#E0792B"/&gt;
+    &lt;text x="430" y="265" text-anchor="middle" font-size="14" font-weight="800" fill="#fff"&gt;2&lt;/text&gt;
+    &lt;line x1="630" y1="246" x2="630" y2="112" stroke="#D7DCE3" stroke-width="2"/&gt;
+    &lt;rect x="525" y="40" width="210" height="72" rx="10" fill="#F0ECE4" stroke="#D7DCE3"/&gt;
+    &lt;text x="630" y="68" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B"&gt;该问用户时&lt;/text&gt;
+    &lt;text x="630" y="92" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B"&gt;选择猜&lt;/text&gt;
+    &lt;circle cx="630" cy="260" r="14" fill="#E0792B"/&gt;
+    &lt;text x="630" y="265" text-anchor="middle" font-size="14" font-weight="800" fill="#fff"&gt;3&lt;/text&gt;
+    &lt;line x1="830" y1="274" x2="830" y2="368" stroke="#D7DCE3" stroke-width="2"/&gt;
+    &lt;rect x="725" y="368" width="210" height="72" rx="10" fill="#F0ECE4" stroke="#D7DCE3"/&gt;
+    &lt;text x="830" y="409" text-anchor="middle" font-size="16" font-weight="700" fill="#23262B"&gt;干完不核对&lt;/text&gt;
+    &lt;circle cx="830" cy="260" r="14" fill="#E0792B"/&gt;
+    &lt;text x="830" y="265" text-anchor="middle" font-size="14" font-weight="800" fill="#fff"&gt;4&lt;/text&gt;
+  &lt;/svg&gt;
+  &lt;div class="punch"&gt;每个动作它都会，串不起一小时——&lt;b&gt;瓶颈是状态，不是智力&lt;/b&gt;&lt;/div&gt;
+&lt;/div&gt;
+</pre></details>
+</div>
+
+    <p>把这句话翻成人话：它更像一个记性只有三分钟的临时工。每一个孤立动作都干得漂亮，可你上午交代的三条规矩，到下午它一条都想不起来；这一步捡到的关键信息，走两步就掉了。不是手笨，是脑子留不住东西。一件一小时的活之所以能把它逼到 20 分，不是因为里面有哪一步超纲，而是因为一小时里要同时记住、更新、核对的东西太多，多到它中途就散架了。</p>
+
+    <p>这才是那个 20.6% 真正的含义。它量的不是这些模型有多蠢，是它们能把一件事从头连贯地扛多久。而这个"扛多久"，恰恰是答题分数从来测不到的地方。</p>
+
+    <h2>别看它答题多少分，看它扛不扛得住一小时</h2>
+
+    <p>所以，如果你正琢磨着让 AI 替你干点真活，这两个基准合起来给了一条特别实用的判断线。</p>
+
+    <p>别再信"超过人类""考了多少分"这类话。那些分数背后，大概率是一道四分钟的题——它测的是单个动作准不准，不是一件事扛不扛得完。真正该问的只有一个问题：你三分钟前给它定的规矩，到它干到第 300 步的时候，还记得吗？OSWorld 2.0 干的事，本质上就是把"你的活"标准化成了可打分的长程任务，而它给出的答案是：到今天为止，最强的那个也就扛住两成。</p>
+
+    <p>有人会说，20.6% 是今天的数，OSWorld 一代当年不也从 20% 干到了 85%，2.0 早晚被刷穿。这个乐观有道理，但不能直接把曲线画直了往上接。一代涨得快，恰恰因为任务短、结构简单，能被针对性地后训练一遍遍打磨；2.0 卡住的是长程状态保持，这不是多喂几轮数据就线性往上走的东西，它是记忆和环境脚手架的架构问题。更别说，出题的人还在继续把题往难里改——他们的活，就是不让你把曲线画直。</p>
+
+    <p>一年多以前，AI 连一道四分钟的电脑操作题都只能做对一成二。今天它能超过人类做这种题了，这是真进步，值得承认。但当有人拿着"超过人类"四个字来跟你谈替代、谈裁员、谈交给它自己跑的时候，你可以回他一句：<strong>换一件一小时的真活，全球最强的它，也就做对两成。而它做不对，多半不是因为它笨，是因为它记不住你开头说的话。</strong></p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>一年多以前，AI 连一道四分钟的电脑操作题都只能做对一成二。今天它能超过人类做这种题了，这是真进步，值得承认。</p>
+    <p>但当有人拿着「超过人类」来跟你谈替代、谈裁员时，你可以回一句：换一件一小时的真活，全球最强的它也就做对两成——而它做不对，多半不是因为它笨，是因为它记不住你开头说的话。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2404.07972" target="_blank" rel="noopener">OSWorld: Benchmarking Multimodal Agents for Open-Ended Tasks in Real Computer Environments（arXiv 2404.07972，NeurIPS 2024）</a></div>
+      <div class="footer-source-item"><a href="https://os-world.github.io/" target="_blank" rel="noopener">OSWorld 项目主页（XLANG Lab）</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2606.29537" target="_blank" rel="noopener">OSWorld 2.0: Benchmarking Computer Use Agents on Long-Horizon Real-World Tasks（arXiv 2606.29537）</a></div>
+      <div class="footer-source-item"><a href="https://osworld-v2.xlang.ai/" target="_blank" rel="noopener">OSWorld 2.0 项目主页</a></div>
+      <div class="footer-source-item"><a href="https://xlang.ai/" target="_blank" rel="noopener">XLANG Lab（香港大学 NLP 组）</a></div>
+      <div class="footer-source-item"><a href="https://www.simular.ai/articles/simulars-computer-use-agent-outperforms-humans" target="_blank" rel="noopener">Simular：计算机操作智能体超过人类（Agent S 72.6% vs 人类 72.36%）</a></div>
+      <div class="footer-source-item"><a href="https://xlang.ai/blog/osworld-verified" target="_blank" rel="noopener">XLANG Lab：OSWorld-Verified 说明</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
