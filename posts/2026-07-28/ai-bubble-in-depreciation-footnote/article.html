@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>一台服务器该折旧 4 年还是 6 年，藏着 AI 是不是泡沫的答案</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 商业观察</span>
+  <h1>一台服务器该折旧 4 年还是 6 年，藏着 AI 是不是泡沫的答案</h1>
+  <div class="hero-meta">
+    <span>2026-07-28</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">2025 年 11 月，一个久违的名字又出现在做空者名单上——Michael Burry，就是《大空头》里那个提前赌垮美国房市、当年被同行骂成疯子的基金经理。这一次，他没有做空哪家公司的产品，也没唱衰哪项技术，他瞄准的是一行几乎没人会读的东西：财报附注里的「服务器折旧年限」。一个会计名词，凭什么值得一位传奇空头专门开枪？因为在他看来，判断这轮 AI 到底是真投资还是大泡沫，答案不在模型多强、算力多猛，而恰恰藏在这行没人读的小字里。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一行没人读的附注，凭空变出 37 亿</h2>
+<p>2022 年年中，微软悄悄改了一个数字。</p>
+<p>它把数据中心里服务器和网络设备的账面使用寿命，从 4 年拉长到了 6 年。没有发布会，没有新闻稿，只在季度财报的附注里写了一句：得益于软件效率的提升，这些设备能用得更久了。</p>
+<p>这个改动的分量，得先弄懂「折旧」是怎么回事。一台服务器几万美元，公司不能在买下的当年就把这笔钱全记成成本，而要摊到它的可用年头里，一年记一点——这就是折旧。摊 4 年，每年扣的多；摊 6 年，每年扣的少。设备没变、电费没变、跑的活也没变，只是账上「每年该扣多少」这个数变小了，省下来的那一截，直接变成了利润。</p>
+<p>微软这一改，效果立竿见影：光是 2023 财年，这个动作就给营业利润凭空添了约 37 亿美元，其中头一个季度就贡献了约 11 亿。几乎同一时间，谷歌也把服务器寿命改成了 6 年，同样因此少提了数十亿美元的折旧。</p>
+<p><img alt="图注：同一台服务器，账面多折两年，每年扣的折旧就少一截——这一截，就成了利润" src="images/illus_01.png" /></p>
+<p><em>图注：同一台服务器，账面多折两年，每年扣的折旧就少一截——这一截，就成了利润</em></p>
+<p><strong>设备没换，活没变，利润却多出一大块——差别只在账本上那一个数字。</strong></p>
+<p>而这里最要命的地方在于：它没有任何造假。会计准则（GAAP）本来就允许管理层根据自己的判断，去修改「使用寿命」这样的会计估计。一个 CFO 说「我认为这批机器能多用两年」，审计师几乎无从反驳——这是判断，不是事实。</p>
+<p>所以当 Burry 后来跳出来，说这是「现代最常见的欺诈手段之一」时，他其实撞上了一个尴尬的事实：他指控的这一切，从头到尾，完全合法。</p>
+<h2>Burry 的那一枪：1760 亿，和一个合法的漏洞</h2>
+<p>2025 年 11 月，Burry 先做了件反常的事。他注销了自己基金 Scion 的投资顾问注册——从此不必再定期向监管报告，却不影响此前每个季度已经交上去的持仓文件。然后，他跑到一个新开的博客上，起名叫「Cassandra Unchained」——挣脱枷锁的卡珊德拉，那个在神话里说真话却没人肯信的预言者。</p>
+<p>然后他甩出了一个数字。他测算，到 2028 年，这些科技巨头靠着把折旧年限拉长，会累计少记约 1760 亿美元的折旧费用。换句话说，这 1760 亿会换上「利润」的名字，出现在本不该有它的地方。</p>
+<p>他押了真金白银。三季度末的持仓文件显示，他买入了做空英伟达约 1.87 亿美元、做空 Palantir 约 9.12 亿美元的看跌期权。一个赌 AI 芯片、一个赌 AI 软件，赌的都是「现在的账，好看得不真实」。</p>
+<p>但 Burry 这一枪，打在一个奇怪的位置。他喊的是「欺诈」，可他列举的每一个动作——微软改 6 年、谷歌改 6 年——都是财报里披露过、审计师签过字、完全合规的会计估计变更。没有人藏账，没有人伪造凭证。</p>
+<p>真正让人不安的，恰恰不是有人在造假。造假会被抓，会被罚，会有人进监狱。而是这一切根本不需要造假：一个合法的数字选择，就足以让整个行业的利润，凭空好看起来。</p>
+<p>问题在于：服务器到底能用几年，这件事，未必真的存在一个标准答案。</p>
+<h2>同一块芯片，两本相反的账</h2>
+<p>就在微软和谷歌把服务器寿命改长、对外宣布「能用 6 年」的同时，亚马逊往相反的方向走了。</p>
+<p>2024 年 1 月，亚马逊才把一部分服务器的寿命从 5 年延长到 6 年，光这一下，就给当年的营业利润添了约 32 亿美元。结果仅仅一年之后，2025 年初，它又把同一批机器的寿命缩回了 5 年。理由写在年报里，一字未改：「技术发展的步伐在加快，尤其是人工智能和机器学习领域。」这一缩，2025 年的营业利润要减少约 7 亿。</p>
+<p>同一批机器，同一家公司，隔了一年，判断就反了过来。</p>
+<p>云计算创业公司这边更直白。同样是英伟达的 GPU，CoreWeave 按 6 年折旧，它的同行 Nebius 按 4 年折。差这两年，摊到一个上万张卡的集群上，一年的账面费用能差出几千万美元。同一代芯片，一个说六年，一个说四年，谁的利润率好看，一目了然。</p>
+<p><img alt="图注：技术条件相同，账本却相反——折旧年限从来不是技术判断，是立场判断" src="images/illus_02.png" /></p>
+<p><em>图注：技术条件相同，账本却相反——折旧年限从来不是技术判断，是立场判断</em></p>
+<p>连买家自己都承认这里面有矛盾。微软 CEO 纳德拉在一档播客里说得很坦白：他不愿意「被困在某一代芯片上，背着它四五年的折旧」。翻成大白话就是——他也怕手里的卡还没折完，就已经过时了。</p>
+<p>如果「能用几年」真是一道纯技术题，那么同样的技术、同样的芯片摆在面前，答案不该南辕北辙。它之所以能相反，是因为它从一开始就不是技术题，而是立场题：你想让今年的利润好看，就把年限拉长；你想给往后留点余地，就把它缩短。</p>
+<p>你可能会说，折旧不过是账面数字，一分钱现金流都不动——年限拉长，公司口袋里的钱一块没多，这算哪门子泡沫？没错，它确实不动现金。可也正因为不动现金，它才是一场纯粹的表态：一家公司敢把服务器折旧拉到六年，等于当着所有人的面下注，这些卡六年后还在创造价值、不会那么快被淘汰。账面利润好不好看是果，敢不敢赌这些芯片不过时，才是因。</p>
+<p>可一块冷冰冰的芯片，它的寿命，怎么会因人而异？</p>
+<h2>一块 GPU 的三条命</h2>
+<p>因为一块 GPU，其实同时活着三条不一样的命。</p>
+<p>第一条是「技术寿命」。当它站在最前线训练大模型时，寿命短得残酷——也就两三年，英伟达的新架构一发布，它就从冠军变成了千年老二。</p>
+<p>第二条是「经济寿命」。当它退到二线去跑推理——也就是回答你问 AI 的每一个问题——对性能没那么苛刻，它还能再干上好几年，五年、七年都有可能。</p>
+<p>第三条，才是账本上那条「折旧寿命」，被各家公司定在 4 到 6 年之间。</p>
+<p>而英伟达，正在亲手把前两条命的差距越拉越大。它把代际更新踩得越来越快：Ampere（2020）、Hopper（2022）、Blackwell（2024），到 2026 年的 Rubin，一代压着一代往前赶。前沿越卷，一块卡「当冠军」的日子就越短，可它「还能凑合用」的日子，并没跟着一起缩短。</p>
+<p><img alt="图注：训练时值两三年，推理时值五到七年，账本却只能填一个数——填哪条都不算错，也都不算对" src="images/illus_03.png" /></p>
+<p><em>图注：训练时值两三年，推理时值五到七年，账本却只能填一个数——填哪条都不算错，也都不算对</em></p>
+<p>这就是为什么 Burry 和英伟达永远吵不出结果——他们说的，根本不是同一条命。英伟达 CFO 科莱特·克雷斯回击 Burry 时说：多亏了 CUDA，我们六年前出货的 A100，今天还在满负荷运转。（顺带一提，A100 其实是 2020 年发布的，到她说这话时才五年半，她也顺手把年头往长里说了。）她没说错。但那块满负荷运转的 A100，跑的是推理，不是训练。它物理上还在转，不等于它还在创造当年那份价值。</p>
+<p>账本没有选择，它必须在这三条命里挑一条，填进那个空格。填哪条都不算错，也都不算对。这不是会计的失职，而是会计面对一个没有标准答案的问题时，唯一能做的事——押一个数。</p>
+<p>而这，还只是那些已经在机房里转起来的卡。真正更大的一笔账，还没开始记。</p>
+<h2>折旧墙：更大的账还没开始记</h2>
+<p>另一位做空传奇吉姆·查诺斯，盯的就是这笔还没记的账。</p>
+<p>巨头们为 AI 砸下的钱，很大一部分此刻还趴在财报的一个科目里，叫「在建工程」。厂房没盖完、机器没装机的资产，按会计规则暂时不必计提折旧。可一旦这些数据中心建成、GPU 插上电、正式投入使用，沉睡的折旧费用会集中涌出来——查诺斯把它叫作一堵正在逼近的「折旧墙」。</p>
+<p>也就是说，我们今天在财报上看到的这些漂亮的 AI 利润，享受的还是「折旧管够便宜」的红利期。那几千亿美元的在建算力，账单只是被推迟了，并没有消失。等它们集中转固的那一天，同一个问题会以更大的规模重演一遍：这些卡，到底该按几年折？</p>
+<p>所以 Burry 那一枪，瞄准的根本不是哪一家公司，而是一个我们都默认了的假设：AI 的成败，写在模型的参数里，写在跑分榜的名次上。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>真正的答案，也许就藏在那行几乎没人会读的附注里：一个可以被选择的数字。</p>
+    <p>当一个可以被选择的数字，成了判断整个行业是赚是亏的支点，我们其实一直在用一个主观的估计，去给一个客观的问题投票——那就是，这些芯片，到底会不会像它们看上去的那样，很快过时。而这一次，投票的结果，要好几年后才揭晓。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2025/11/14/ai-gpu-depreciation-coreweave-nvidia-michael-burry.html" target="_blank" rel="noopener">CNBC：AI 圈都在问的问题——GPU 多久会折旧完？（2025-11-14）</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2025/11/20/nvidia-refutes-big-short-investor-burrys-bear-case-what-the-company-says.html" target="_blank" rel="noopener">CNBC：英伟达反驳「大空头」Burry 的看空逻辑（2025-11-20）</a></div>
+      <div class="footer-source-item"><a href="https://www.theregister.com/off-prem/2024/02/02/amazon-extends-the-life-of-its-servers-to-six-years/835320" target="_blank" rel="noopener">The Register：亚马逊把服务器寿命延长到六年（2024-02-02）</a></div>
+      <div class="footer-source-item"><a href="https://www.calcbench.com/blog/post/blogger141924366623734345/On-Amazon-and-Server-Lifespans" target="_blank" rel="noopener">Calcbench：关于亚马逊与服务器寿命</a></div>
+      <div class="footer-source-item"><a href="https://www.dwarkesh.com/p/satya-nadella-2" target="_blank" rel="noopener">Dwarkesh Patel 播客：Satya Nadella 专访（2025-11-12）</a></div>
+      <div class="footer-source-item"><a href="https://wccftech.com/coreweave-crwv-depreciates-its-gpus-over-6-years-while-its-competitor-nebius-uses-a-4-year-depreciation-period/" target="_blank" rel="noopener">wccftech：CoreWeave 按 6 年折旧 GPU，同行 Nebius 用 4 年</a></div>
+      <div class="footer-source-item"><a href="https://www.sec.gov/Archives/edgar/data/1018724/000101872425000004/amzn-20241231.htm" target="_blank" rel="noopener">Amazon FY2024 10-K（SEC）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
