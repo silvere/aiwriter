@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>王虹、邓煜双双拿下菲尔兹奖：这场全民狂欢里，谁在抢着邀功？</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">科技人文</span>
+  <h1>王虹、邓煜双双拿下菲尔兹奖：这场全民狂欢里，谁在抢着邀功？</h1>
+  <div class="hero-meta">
+    <span>2026-07-29</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">丘成桐说王虹'甚至超过许多男数学家'——这句话在夸她，句子内部却装着偏见本身。这场全民狂欢里真正该被追问的，不是他们有多厉害，是谁在抢着邀功。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、先把问题说清楚：他们到底解决了什么</h2>
+<p>大部分报道停在"这是大新闻"，没有一篇讲清楚这两个问题到底难在哪。补上这一课，才有资格谈后面的事。</p>
+<p>王虹和加拿大英属哥伦比亚大学的乔什·扎尔（Josh Zahl）合作证明的，是三维挂谷猜想。这里要先拆开两个容易被混为一谈的东西：1917年，日本数学家挂谷宗一提出一个几何问题——一根长度为1的针，在平面上360度转一圈，扫过的面积最小能有多小？这是"挂谷针问题"，早已解决。今天被叫作"挂谷猜想"的，是另一件事：如果一个集合在每个方向上都包含一条单位线段（这样的集合叫挂谷集），这个集合能被压缩得多"薄"——用数学语言说，它的维数是不是仍然等于所在空间的维数，也就是说，这个集合虽然看起来稀疏，实际测量出的"占空间程度"能不能被压得比整个空间更低。二维情形1971年就解决了：答案是不能被压低。三维情形悬置了半个多世纪，直到王虹和扎尔给出证明：同样不能。莱斯大学数学家内茨·卡茨（Nets Katz）的评价是"百年一遇"（once in a century）。</p>
+<p>邓煜和密歇根大学的扎希尔·哈尼（Zaher Hani）、马骁合作解决的，是希尔伯特第六问题的一个受限版本。1900年希尔伯特提出23个问题，第六个要求"物理学的公理化"，其中一个子问题是：能不能从牛顿力学的微观粒子系统，严格推导出宏观的玻尔兹曼方程？1975年，奥斯卡·兰福德（Oscar Lanford）证明了这件事——但只在极短的时间窗口内成立。此后五十年，把"极短时间"推广到"任意长时间"，一直是这个领域最深的坎。邓煜团队做的，是首次建立起从牛顿力学系统，到玻尔兹曼方程，再到欧拉方程和纳维-斯托克斯方程的完整长时间推导链条——用数学的方式，回答了"为什么可逆的微观世界，会涌现出不可逆的宏观热力学"这个问题的一部分。</p>
+<p>这两个证明，一个关于空间能被压缩到多小，一个关于时间箭头从哪里生出来。放在一起看，比"两个中国人拿了奖"这句话有意思得多。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图：王虹解决的是空间维度问题（集合能被压缩得多薄），邓煜解决的是时间维度问题（不可逆性从哪里涌现）。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图：王虹解决的是空间维度问题（集合能被压缩得多薄），邓煜解决的是时间维度问题（不可逆性从哪里涌现）。</figcaption></figure>
+
+<h2>二、第一层邀功：把成就装进"天才"的模子里</h2>
+<p>先把"邀功"这个词说准：它指的是急着找到一个可以把这份成就据为己有、或者用来证明自己一贯正确的主体——不管这个主体是一个人的天赋、一个民族的荣光，还是一种立场。三层邀功共享同一个心理动力：比起搞清楚事情本身，更想要一个现成的、能往自己身上贴的结论。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="图：三层邀功争夺的对象不同，但共享同一个冲动——找一个可以居功的主体。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图：三层邀功争夺的对象不同，但共享同一个冲动——找一个可以居功的主体。</figcaption></figure>
+
+<p>第一层最省事：把两个人都塞进"竞赛神童"模子。邓煜确实符合这个模子——2006年国际数学奥林匹克金牌保送北大，在北大数学系读了两年后转学麻省理工完成本科，自述"有点社恐""喜欢自己一个人"，是一份现成的天才叙事素材。</p>
+<p>王虹的路径和这个模子对不上。她16岁以653分考进北大，天赋毋庸置疑，但她走的不是竞赛保送、从小被专门认证为"数学天才"的那条路——读的是地球与空间科学学院，大二才自学转进数学系；后来在法国读研期间，她一度花了半年时间转向建筑学、还去事务所实习了一个月，最后才决定回到数学；她自己形容，在人才云集的数学学院里，自己是个"小透明"。</p>
+<p>把这两条性质不同的路径，硬塞进同一个"天才"模子，抹掉的恰恰是最有信息量的那部分——一个人是靠什么走过"我是不是不够擅长这件事"的自我怀疑期，比"她从小就是天才"这句话，值钱得多。营销号选择讲后者，不是因为后者更真实，是因为后者更省事：不用解释，直接感叹就行——这正是"邀功"心态的第一种表现：把复杂路径压扁成一句可以转发的赞叹。</p>
+<h2>三、第二层邀功：把成就装进"民族"的账本</h2>
+<p>第二层邀功更隐蔽。获奖之后，舆论场里出现了两种声音，方向相反，逻辑相同：一种是"中国数学的伟大突破"，把两位现在分别任教于纽约大学和芝加哥大学的数学家，收编进"为国争光"的叙事；另一种更刺耳，质疑"他们在国外工作，还算不算中国数学家"，暗示他们该"回国"才算数。</p>
+<p>凤凰网"风声"专栏的一篇评论把这层逻辑拆穿了：多少位诺贝尔奖得主全职加入中国的高校和研究机构，从没有人追问他们"忠诚"够不够；反过来，中国人在海外做出成就，却总要先自证一遍"没有忘本"。这不是爱国，是一种地理决定论——好像一个人的贡献，非要绑定在他此刻的工位坐标上才算数。真正该被追问的，不是"他们该不该回国"，是这种追问本身，暴露的是一种深层的不自信：仿佛不把成就攥在自己手里邀功，这份成就就不算数。</p>
+<h2>四、第三层邀功最隐蔽：连想打破偏见的人，都在用偏见的语言</h2>
+<p>前两层邀功争的是"这份成就该记在谁头上"，第三层邀功争的东西不一样——它要占用的不是成就本身，而是这件事能不能证明"我们已经很进步了"。这层最隐蔽，因为它常常藏在最善意的表扬里。</p>
+<p>丘成桐评价王虹时说，她的能力"甚至超过许多男数学家"，希望她能证明"女孩子也可以将数学念好"。这句话的动机大概率是真心的欣赏——但它的句法结构出卖了一个默认设置：要证明女性能把数学学好，参照系仍然是男性；夸赞一个女数学家优秀，仍然要靠"比男的还强"这个比较级来完成，而不是就事论事地说她解决了一个悬置半个世纪的问题。这不是要苛责丘成桐个人，而是这句话被当作"数学界已经足够多元、足够进步"的例证时，没有人停下来看一眼它内部的悖论：一句用来展示进步的话，句子本身还在替旧逻辑的语法站台。想要为"进步"邀功的人，最容易忽略的，恰恰是自己说话时用的还是旧词典。</p>
+<h2>五、真正的伯乐，是没人能拎出来邀功的东西</h2>
+<p>三层邀功，指向的都是同一个冲动：找到一个可以居功的主体——某个人的天赋、某个民族的荣光、某种进步立场——然后把这份成就据为己有。凤凰网另一篇评论问了一个更准确的问题："谁是真正的伯乐？"给出的答案是：不是北大，不是任何一个培养计划，是过去几十年的开放本身——是让一个16岁考进地空学院、后来在异国读研期间转向建筑又转回数学的年轻人，能够自由地转专业、出国、进入全球学术共同体这件事本身。这个答案的狠劲在于：它没有一个可以被拎出来颁奖的对象。开放不是一个人，不是一个机构，没法上台领奖，也就没法被任何一方独占。</p>
+<p>这份"没人能独占"的属性，甚至延伸到了证明本身。邓煜团队的工作也不是一个可以被供起来的完美神话——2025年4月，就有同行发表评论文章，对证明里一个关键设定提出了技术性质疑，认为它是否真正触及问题最初设想的物理情形，还有讨论空间。截至目前，这场学术争议还没有定论。这恰好是"邀功"逻辑的反面：没有人能把这个证明单方面宣布为盖棺定论的神迹，它还悬在同行审视的过程里，随时可能被继续推敲、修正——而这正是数学共同体健康运转的样子，不是瑕疵。</p>
+<p>丘成桐那句"超过许多男数学家"，最该被记住的不是它证明了什么，而是它暴露了什么：就算是最想打破套路的人，也很容易在无意间，把自己嘴里的话，说回旧套路本身。这篇文章同样逃不掉这个陷阱——写这些文字的人，此刻大概率也在某处，把一个更复杂的现实，压扁成了一个方便转发的判断。真正对得起这场"百年一遇"的，从来不是找到一个可以邀功的立场，是愿意为一件事多花五分钟，把它讲得准确一点。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>三层邀功指向同一个冲动：找一个可以居功的主体，把这份成就据为己有。真正的伯乐是过去几十年的开放本身——一个没法被任何一方独占的东西。</p>
+    <p>真正对得起这场'百年一遇'的，从来不是找到一个可以邀功的立场，是愿意为一件事多花五分钟，把它讲得准确一点。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.math.ubc.ca/news-events/news/mar-4-2025-josh-zahl-and-hong-wang-prove-kakeya-conjecture-three-dimensions" target="_blank" rel="noopener">Josh Zahl and Hong Wang Prove the Kakeya Conjecture in Three Dimensions (UBC)</a></div>
+      <div class="footer-source-item"><a href="https://www.quantamagazine.org/once-in-a-century-proof-settles-maths-kakeya-conjecture-20250314/" target="_blank" rel="noopener">'Once in a Century' Proof Settles Math's Kakeya Conjecture (Quanta Magazine)</a></div>
+      <div class="footer-source-item"><a href="https://en.wikipedia.org/wiki/Hong_Wang" target="_blank" rel="noopener">Hong Wang (Wikipedia)</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2503.01800" target="_blank" rel="noopener">Hilbert's sixth problem: derivation of fluid equations via Boltzmann's kinetic theory (arXiv)</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/pdf/2504.06297" target="_blank" rel="noopener">Comment on "Hilbert's Sixth Problem..." by Deng, Hani, and Ma (arXiv)</a></div>
+      <div class="footer-source-item"><a href="https://www.simonsfoundation.org/2026/07/23/2026-fields-medals-awarded-to-four-of-worlds-top-mathematicians/" target="_blank" rel="noopener">2026 Fields Medals Awarded to Four of World's Top Mathematicians (Simons Foundation)</a></div>
+      <div class="footer-source-item"><a href="https://www.thepaper.cn/newsDetail_forward_33645576" target="_blank" rel="noopener">中国数学家王虹、邓煜双双获得菲尔兹奖，均系北大校友（澎湃新闻）</a></div>
+      <div class="footer-source-item"><a href="https://news.ifeng.com/c/8v1N00AaxlK" target="_blank" rel="noopener">风声｜王虹、邓煜同获菲尔兹奖，谁是真正的伯乐？（凤凰网）</a></div>
+      <div class="footer-source-item"><a href="https://news.ifeng.com/c/8v1JiU8l1DY" target="_blank" rel="noopener">王虹、邓煜获奖后，有些声音略显刺耳（凤凰网）</a></div>
+      <div class="footer-source-item"><a href="https://news.sciencenet.cn/htmlnews/2026/7/568839.shtm" target="_blank" rel="noopener">对话菲尔兹奖首位华人得主：王虹和邓煜是伟大的突破（科学网）</a></div>
+      <div class="footer-source-item"><a href="https://www.bjnews.com.cn/detail/1785025211129602.html" target="_blank" rel="noopener">从大学同窗到菲尔兹"双星" 王虹与邓煜的数学追梦路（新京报）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
