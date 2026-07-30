@@ -55,7 +55,10 @@ async function main() {
 
   let browser;
   try {
-    browser = await chromium.launch({ args: ["--no-sandbox", "--disable-dev-shm-usage"] });
+    const launchOpts = { args: ["--no-sandbox", "--disable-dev-shm-usage"] };
+    // 允许通过环境变量指定 Chromium 可执行文件（用于预装浏览器与 playwright 版本不匹配的环境）
+    if (process.env.PW_EXECUTABLE_PATH) launchOpts.executablePath = process.env.PW_EXECUTABLE_PATH;
+    browser = await chromium.launch(launchOpts);
   } catch (e) {
     console.error("Chromium 启动失败（可能未 `playwright install chromium`，可降级）: " + e.message);
     process.exit(2);
