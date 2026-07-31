@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>告诉李抗美「老李走了」的，不是老李的家人，是一群拍纪录片的陌生人</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">法律与社会</span>
+  <h1>告诉李抗美「老李走了」的，不是老李的家人，是一群拍纪录片的陌生人</h1>
+  <div class="hero-meta">
+    <span>2026-08-01</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">老李去世的消息，最先传到的不是李抗美，是拍摄纪录片的导演团队。她缺的不是一个愿意通知她的人，是一张能让她自动被通知的纸。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>导语</h2>
+<p>老李去世的消息，最先传到的不是李抗美，是拍摄纪录片的导演团队——他们在一个清晨接到通知，随即赶往洛阳，敲开李抗美家的门时，她还在厨房里张罗一条刚买的鱼，完全不知道自己已经不用再等了。把这件事告诉她的人，不是老李的家人，是一群举着摄像机的陌生人。网上多数评论把这件事读成一个凉薄故事：一个不管李抗美死活的女儿，一个被辜负了18年的女人。这个读法有它的道理，但它遮住了一个更冷、也更值得深究的事实：李抗美缺的不是一个愿意通知她的人，是一张能让她自动被通知的纸。</p>
+<h2>一、18年，一场没有名分的搭伴</h2>
+<p>李抗美是河南人，老李是上海人。2008年，两人在洛阳相识，都经历过婚姻的结束，觉得投契，决定搭伴走过余生。此后18年，他们在上海一起生活：老李陪她看牙、治腰，带她去海洋馆、金茂大厦、迪士尼，每天早上一句"早上好"，记得提醒她量血压、看天气。这段关系里没有登记结婚，纪录片《前浪》第二季用整整一集讲这件事，标题是《李抗美的决定》。</p>
+<p>六年前，老李查出癌症。第一反应不是让李抗美留下照顾，是主动提出分手，把她送回洛阳——他不想拖累她。两年前，老李病重，李抗美主动从洛阳赶回上海，重新接过照顾他的担子，一直到他被送进安宁病房、医生评估生存期只剩38天左右。</p>
+<p>就是在这最后的38天里，李抗美做出了她的决定：离开。她给出的理由是腰不好要回洛阳治疗、合租房要续租得签半年合同。真正的理由，纪录片和后续报道都指向同一处：没有名分，留在这里，身份尴尬。走的前一晚，她把老李给她的钱分成两份，悄悄把一份塞进他的枕套里，两人拉钩约定，她会尽快回来。老李去世那天，导演团队一早接到消息，专程飞去洛阳，敲开她家门时，她还完全不知情。</p>
+<h2>二、评论区在骂老李女儿，但真正该被追问的不是她一个人</h2>
+<p>这段故事传开后，评论区几乎一边倒地把矛头指向老李的女儿：男友都不在了，连一声都不肯知会照顾了他18年的人，这也太凉薄。这个指控情绪上很好理解——目前能看到的记录里，确实没有出现"女儿主动联系李抗美"这件事，最后接到消息、赶去报信的，是这部纪录片的摄制组，不是老李的家人。</p>
+<p>但把这件事完全归咎于一个人的凉薄，其实低估了问题的深度。李抗美不是妻子，没有法定的知情权、探视权、决策参与权；她能不能被及时告知，能不能在病房里留下，能不能参与后事安排，全部取决于家属这一方愿不愿意——而这一次，连"愿不愿意"这个问题都没有被认真面对过，事情最后是靠一群恰好在场记录的陌生人补上的。一个人的选择或许可以被谴责，但一个连基本知情权都要靠运气兜底的结构，值得被谴责的范围要大得多。</p>
+<h2>三、这不是没有工具，是工具在另一集里</h2>
+<p>巧的是，《前浪》第二季第一集《我在天堂等你》讲的正是这件事的解法：意定监护。这项制度写在《民法典》第33条里，允许一个具备完全民事行为能力的成年人，提前指定一个人——不一定是配偶，不一定有血缘关系——在自己丧失或部分丧失行为能力时，作为自己的监护人。这个人可以参与医疗决策、安排日常照护；至于身后事怎么办，监护关系本身随监护对象离世而终止，需要另外在协议或遗嘱里写明，但这至少给了协商的起点，而不是像李抗美这样，连协商的资格都没有。李抗美和老李，恰好是这项制度设计出来要覆盖的那类关系：没有婚姻，却承担了婚姻该承担的责任。</p>
+<p>但节目组把这两件事分成了两集来讲，好像它们是两个不同的社会议题——一集讲制度，一集讲感情。目前能看到的报道也基本延续了这个分法：要么专门介绍意定监护这项新制度，要么专门写李抗美的故事，很少有人把两者接在一起问一句：如果李抗美和老李当年办过这份协议，故事会不会不一样。</p>
+<p>答案不是简单的"会"或"不会"。意定监护协议如果当年在公证处办过、并且在医院备案，李抗美本可以在老李的病房里，堂堂正正地做医疗决策的参与者，而不是一个随时可能被请出去的外人——她也更有理由被列为第一顺位的知情人，而不必依赖家属想不想得起她。但意定监护解决不了另一件事：继承。协议不会自动让她拥有老李的遗产份额，那需要另立遗嘱或者遗赠扶养协议——如果她图的是这个，这张纸帮不了她；但她图的从来不是这个，她要的只是"在场"的资格，而这恰恰是意定监护能给的。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图：意定监护给的是'生前在场'的资格，不是'身后财产'的安排——这条界线，协议本身跨不过去。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图：意定监护给的是'生前在场'的资格，不是'身后财产'的安排——这条界线，协议本身跨不过去。</figcaption></figure>
+
+<h2>四、她缺的不是感情的名分，是没人告诉她</h2>
+<p>这里绕回最该问的问题：为什么这样一对本该是意定监护制度典型受益人的伴侣，最后什么都没办成？</p>
+<p>不是因为他们不需要。18年的陪伴，医院里的进进出出，恰恰是这项制度设计出来要解决的场景。合理的猜测是：他们大概率根本不知道这项制度存在，或者知道了也不清楚具体怎么办。这不是苛责李抗美——一个70岁、要靠退休金过日子的老人，没有义务主动去研究民法典第33条。真正该被追问的，是这项已经生效多年的制度，为什么没有在她最需要的时候，出现在她的生活里。</p>
+<p>这不是纸面上的担忧。民政部社会福利中心与北京市老龄协会联合做过一份1611人样本的调查：近八成老人担心自己未来的照护问题，长期空巢的约四成，无子女或失独的约四成——这是一大批人，理论上正需要一份意定监护协议来兜底，却大概率从没听说过这四个字。制度写好了，但民政部门、居委会这些和老年人接触最密切的机构，对这项制度的知晓和推广普遍不足，没有一条稳定的通道能把它送到真正需要的人手里。谁最需要知道这件事？恰恰是那些没有律师朋友、不常刷法律科普、每天操心的是腰疼和房租的普通老人——而这群人，往往也是离这类信息最远的人。</p>
+<h2>五、下一个"李抗美"，缺的也会是同一张纸</h2>
+<p>李抗美最后回了洛阳，逐渐找回了自己的生活节奏，踢毽球、逛公园、喝羊肉汤。这个结尾算不上一个圆满的答案，但至少是她自己选的。真正令人不安的，不是这一段感情有没有修成正果，是下一个处境相似的老人，大概率还是不会知道，除了"留下忍受尴尬"和"离开等一个陌生人来敲门告诉你消息"之外，本来还有第三条路。</p>
+<p>意定监护写进法律已经好几年，公证处办一份协议的费用不算高。真正缺的从来不是这张纸，是让这张纸能出现在该出现的地方——出现在社区医院的候诊室，出现在居委会的公告栏，出现在像李抗美这样的人，真正会看到的地方。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>李抗美不是妻子，没有法定的知情权、探视权、决策参与权。一个连基本知情权都要靠运气兜底的结构，值得被谴责的范围要大得多。</p>
+    <p>意定监护写进法律已经好几年。真正缺的从来不是这张纸，是让这张纸能出现在该出现的地方——出现在像李抗美这样的人，真正会看到的地方。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://m.thepaper.cn/newsDetail_forward_33632700" target="_blank" rel="noopener">纪录片《前浪2》｜第二集《李抗美的决定》他们用18年，完成了最长情的陪伴（澎湃新闻）</a></div>
+      <div class="footer-source-item"><a href="https://www.sina.cn/news/detail/5324114176773248.html" target="_blank" rel="noopener">李抗美病房谈分手（新浪新闻）</a></div>
+      <div class="footer-source-item"><a href="https://news.qq.com/rain/a/20260722A0DJ2H00" target="_blank" rel="noopener">纪录片《前浪》第二季｜第二集《李抗美的决定》导演手记（腾讯新闻）</a></div>
+      <div class="footer-source-item"><a href="https://news.qq.com/rain/a/20260726A0A35300" target="_blank" rel="noopener">意定监护、老年情感困境：《前浪2》关注老龄化社会的新问题（腾讯新闻）</a></div>
+      <div class="footer-source-item"><a href="https://m.bjnews.com.cn/detail/1697803955168880.html" target="_blank" rel="noopener">近八成老人"愁养老"，意定监护如何实现？（新京报）</a></div>
+      <div class="footer-source-item"><a href="http://www.news.cn/politics/2023-10/21/c_1129929059.htm" target="_blank" rel="noopener">被动陷入监护缺失怎么办？《老年人意定监护服务指引》（新华网）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
