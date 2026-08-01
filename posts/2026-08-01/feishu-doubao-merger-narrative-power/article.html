@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>一年前，飞书CEO说要打破「一成不变」；一年后，被打破的是飞书自己</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">科技与组织</span>
+  <h1>一年前，飞书CEO说要打破「一成不变」；一年后，被打破的是飞书自己</h1>
+  <div class="hero-meta">
+    <span>2026-08-01</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">这次合并证明的不是字节有多爱AI，是在一家大公司内部，讲故事的业务，天然比赚钱的业务更有资格改写别人的组织架构。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>导语</h2>
+<p>2025年7月11日，晚点对飞书CEO谢欣做了一次专访。他说，飞书想做的是"下一代Office"，工作方式的改变会重塑组织，"飞书存在的意义，就是为了打破这种一成不变"。他把这个愿景，锚定在2030年。54周后，2026年7月30日，字节跳动一封内部信宣布：飞书产品团队并入豆包，谢欣本人，转为向豆包负责人赵祺汇报。多数报道把这条新闻写成"字节AI战略再升级"。这条判断没有错，但它漏掉了故事里最扎实的部分——这次合并证明的不是字节有多爱AI，是在一家大公司内部，讲故事的业务，天然比赚钱的业务更有资格改写别人的组织架构。</p>
+<h2>一、这次调整到底动了什么</h2>
+<p>先把架构讲清楚。这次调整分两条线：产品线上，飞书产品团队整体并入豆包，成立新的豆包产品团队，由豆包负责人赵祺牵头，飞书原负责人谢欣向他汇报，飞书从此不再是一个独立业务单元；GTM线上，飞书的市场、销售、客服团队和火山引擎的对应团队合并，成立一个新组织叫"创造力服务平台"，由火山引擎负责人谭待牵头。字节官方给出的说法是"加强豆包、飞书、火山引擎在企业生产力场景的协同"。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图：飞书没有被保留为独立单元，而是被拆分吸收进另外两条线。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图：飞书没有被保留为独立单元，而是被拆分吸收进另外两条线。</figcaption></figure>
+
+<p>三个当事人的履历值得对照着看。谭待2008年加入百度，做过首席架构师，2020年加入字节任火山引擎总裁，一路把火山引擎做成了字节内部数得上号的核心业务板块。赵祺是北大计算机博士，早年在豆瓣、豌豆荚待过，也做过"车来了"的联合创始人，2017年加入字节，先后负责增长中台、穿山甲，2022年转岗做过一段时间HR，直到2025年9月才接手豆包产品——距离这次重组，只有十个月。谢欣的履历最老，他是张一鸣在酷讯的老上司，2016年就主笔了飞书前身Lark的产品说明书。三个人的资历排下来，反而是履历最浅、执掌产品线时间最短的赵祺，成了统领另外两条线负责人的那个。</p>
+<h2>二、被合并的一方，恰恰是更赚钱的那个</h2>
+<p>这是整件事最反直觉的地方。按媒体测算，飞书2025年营收超过30亿元，2026年第二季度ARR同比增速超过100%——这是一门已经跑通、正在加速的生意，客户在续费，收入在增长。如果按常规商业逻辑，一门已经被验证、正盈利增长的现金流业务，通常拥有更大的组织话语权，它能用自己的报表证明自己，不需要靠故事撑着。这次调整反过来了：更确定赚钱的飞书，被并入了豆包。</p>
+<p>豆包这边的数字，性质完全不同。字节自己披露的口径是，公司大模型业务ARR达到40亿美元，官方表述称这个数字超过国内其他大模型公司的总和——但字节没有拆分出豆包、火山引擎API调用、企业版各自占多少，这40亿美元衡量的与其说是一门业务的确定盈利，不如说是字节想让外界相信"我们在AI这件事上跑在最前面"的声量。豆包对外承担的，是字节在"中国要不要有自己的ChatGPT"这场全民关注的叙事里的位置，这场叙事目前决定着资本和舆论怎么给一家AI公司估值，而飞书这门扎实的SaaS生意，从来不是这场叙事的主角。</p>
+<p>声量的差距，用户规模上更直观。据第三方数据，豆包APP的月活在2026年初就已经突破2.27亿；而飞书作为协同办公赛道的一员，月活量级在3000万上下，即便算上钉钉、企业微信这两个更大的同类产品，整个协同办公赛道的想象力，也很难和一款单季度就能新增几千万用户的AI应用相比。据知情人士估算，飞书团队约4000人，年人力成本在32亿到40亿元之间，和刚过30亿元的营收大致处于同一量级，盈利空间存疑——这门生意扎实，但扎实本身，从来不构成让全公司都跟着讲你的故事的理由。</p>
+<h2>三、一年前，他说要打破"一成不变"</h2>
+<p>回到开头那场专访，完整看一遍谢欣当时说了什么，会更清楚这次调整的分量。他说"我一直觉得Office是非常伟大的产品"，"飞书想做的，是下一代Office，而Office有上万人"；他说"工作方式的改变，本质上也会影响甚至重塑组织"；他还专门强调，"飞书存在的意义——就是为了打破这种一成不变"。同一次专访里，他把飞书的多维表格功能形容成"至少领先钉钉12个月"。</p>
+<p>这里不去揣测谢欣本人现在心里怎么想——没人能替他说他愿不愿意、服不服气，这篇文章也不打算做这种廉价的心理分析。但两个时间点摆在一起，事实本身已经足够说话：一年前，他公开定义了"飞书存在的意义"，把它讲成一场要用十年去打破陈规的运动；一年后，飞书这个业务实体本身，成了被重新安排的对象。他没有被开除，他还在牵头产品，只是从对一个独立业务负责，变成向另一个业务的负责人汇报。这不是失败，但也很难说是他一年前设想的那种"打破一成不变"。</p>
+<h2>四、这不是字节一家的剧本</h2>
+<p>把镜头拉远一点，这个模式在别处也在发生。2026年，微软把Copilot的商业版和消费版团队合并，统一交给一个人负责，目的是让公司围绕AI首席科学家Mustafa Suleyman，把资源和叙事都收拢到"超级智能"这条主线上；据传后续企业版和消费版Copilot会合并成一个App，和Teams、Microsoft 365捆绑收费——Teams本身没有被裁掉，但它作为独立故事的位置，正在被Copilot这个更大的叙事吸收。Salesforce用277亿美元收购Slack之后，走的也是类似路线：Slack现在更多被描述成Agentforce这套AI体系的"入口"，而不是一个独立发展的产品。</p>
+<p>这几个案例放在一起，能看出一条共同的逻辑：不是AI故事讲得好的业务，靠自己的实力吞并了赚钱的业务；是每家公司内部，都需要一个业务去承担"我们没有落后于这场全球AI竞赛"这场叙事，而承担这个角色的业务，会自然而然地获得比它财务表现更大的组织权重，直到有一天，它开始重新安排别人的汇报关系。</p>
+<p>这里有两个合理的反驳，都值得正面接住。第一个是：赵祺去年9月才接手豆包，十个月就把它做成了字节对外最重的一张牌，这会不会单纯是他个人能力过硬，公司只是"能者上"，跟"故事重不重要"没有关系。这个反驳站得住一半——赵祺确实有增长和商业化的成功履历，这不是空穴来风的空降。但换个问法就露出破绽：为什么公司选择让一个执掌产品线只有十个月的人，去统领一个执掌了近十年、履历深得多的同事，而不是反过来？答案不在赵祺个人能力有多强，在于他现在手里的这张牌，是这个时间点上公司最需要讲好的那个故事。能力决定了他能不能接住这张牌，但不是这张牌本身为什么会被递到他手里。</p>
+<p>第二个反驳更实在：飞书人力成本和营收本来就贴得很近，把GTM团队并进火山引擎，本身就是降本增效的常规操作，不需要"叙事权力"这个中介概念来解释。这个反驳同样只说对了一半——它能解释为什么飞书的销售和客服团队要并出去省钱，却解释不了为什么飞书的产品团队，连同它的负责人，要整体划进另一个业务的名下，而不是继续独立运营、只是精简人力。省钱能解释"合并GTM"，解释不了"谁向谁汇报"。</p>
+<h2>五、组织权力天平往哪边倾斜，从来不是由谁更赚钱决定的</h2>
+<p>这大概是这次调整留给旁观者最有用的一课。飞书的问题从来不是做得不够好——它增长着、盈利模式在跑通，这些都是真的。它的问题是，它所在的赛道，不是这个时代资本和舆论最想听的那个故事。而豆包所在的赛道，恰好是。</p>
+<p>下一次看到一家公司内部把"赚钱的部门"并进"讲故事的部门"，不用急着相信官宣稿里那句"战略协同"。真正决定谁并入谁的，往往不是谁的报表更好看，是谁站在了这个时代最需要被讲述的那个故事里。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>飞书的问题从来不是做得不够好——它增长着、盈利模式在跑通。它的问题是，它所在的赛道，不是这个时代资本和舆论最想听的那个故事。</p>
+    <p>下一次看到一家公司内部把「赚钱的部门」并进「讲故事的部门」，真正决定谁并入谁的，往往不是谁的报表更好看，是谁站在了这个时代最需要被讲述的那个故事里。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.caixin.com/2026-07-30/102469448.html" target="_blank" rel="noopener">字节跳动调整AI业务架构 大模型业务ARR为40亿美元（财新网）</a></div>
+      <div class="footer-source-item"><a href="https://www.huxiu.com/article/4879565.html" target="_blank" rel="noopener">飞书年入30亿，还是被豆包"收编"了（虎嗅网）</a></div>
+      <div class="footer-source-item"><a href="https://www.ichaoqi.com/guandian/2026/0731/84519.html" target="_blank" rel="noopener">飞书走出字节核心圈：一场酝酿了十个月的收编（潮起网）</a></div>
+      <div class="footer-source-item"><a href="https://finance.sina.cn/stock/jdts/2026-07-30/detail-inikqupy9647929.d.html" target="_blank" rel="noopener">聊聊字节的AI调整：两个关键人物和一个新方向（新浪财经）</a></div>
+      <div class="footer-source-item"><a href="https://www.bianews.com/news/details?id=215813" target="_blank" rel="noopener">专访飞书CEO谢欣：Office是一个伟大的产品，而我们想做新时代的Office（晚点/编程随想转载）</a></div>
+      <div class="footer-source-item"><a href="https://finance.sina.com.cn/tech/roll/2026-07-16/doc-inihyiym7998599.shtml" target="_blank" rel="noopener">飞书2025年营收超过30亿元（新浪科技）</a></div>
+      <div class="footer-source-item"><a href="https://9fzt.com/9fztgw_1_top/85377bb4a9c7b68abf6c56632d7818fe.html" target="_blank" rel="noopener">消息称飞书Q2 ARR同比增长超100%（九方智投）</a></div>
+      <div class="footer-source-item"><a href="https://windowsnews.ai/article/microsoft-reorganizes-copilot-teams-under-single-leadership-to-fix-fragmentation-and-accelerate-in-h.405425" target="_blank" rel="noopener">Microsoft Reorganizes Copilot Teams Under Single Leadership</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
