@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stack Overflow 的问答量跌回了 2008 年，它的营收却在逆势上涨</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 与商业</span>
+  <h1>Stack Overflow 的问答量跌回了 2008 年，它的营收却在逆势上涨</h1>
+  <div class="hero-meta">
+    <span>2026-08-01</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">2024 年 5 月，开发者 Ben Ui 删改自己写在 Stack Overflow 上的高赞答案以示抗议，不到一小时就被封号七天——网站说，这些话一旦发布就成了「集体成果」，你无权收回。他撞上的不是一条社区规则，而是一个正在全球程序员身上同时发生、却几乎没人抬头看的转折：喂大了今天所有 AI 的那口井，正在被抽干。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、他删不掉自己写下的那句话</h2>
+<p>促使他动手的，是几周前的一笔交易。2024 年 5 月，Stack Overflow 宣布把自己十五年积攒的问答档案授权给 OpenAI，用来训练模型。对很多老用户来说，这一下把一件他们一直没细想的事摆到了脸上：我十年前熬夜写下、分文没取的那些答案，正被打包卖去，训练一个将来可能让我丢掉饭碗的东西。</p>
+<p>Ben Ui 的反应很直接——那就把答案删了，让它失去被喂进模型的价值。在他看来这事没什么可绕的：我熬夜免费写下的东西，凭什么被人打包卖去，喂一个将来可能抢我饭碗的机器，而我连删都删不掉？他不是唯一这么想的人，那几天不少用户尝试了同样的操作。结果他们发现，删除这个动作，在 Stack Overflow 上并不真正存在。你可以点"编辑"，但版主会在几分钟到几小时内把内容回滚，理由是保护"社区共同财产"；坚持删的，账号被暂停。</p>
+<p>这里藏着一个大多数人从没读过的条款：你在 Stack Overflow 发的每一个字，都附带一份"永久的、不可撤销的"授权。也就是说，从你按下发布键的那一刻起，那句话在法律意义上就不再完全归你。平时没人在乎这行小字，直到有人想拿回自己的话，才发现门早就锁上了，而且钥匙从一开始就不在自己手里。</p>
+<p>Ben Ui 最后没能删掉那段话。它照旧躺在服务器上，照旧被喂进了那个让他不想再写下去的模型。一个人对着一台机器的沉默抗议，就这么被无声地覆盖了。</p>
+<p>而他之所以突然想删，是因为他隐约感觉到了一件更大的事：这口井，快没水了。</p>
+<hr />
+<h2>二、一口花了十五年才灌满的井，三年就见了底</h2>
+<p>Stack Overflow 是过去十五年里全世界程序员的公共记忆。谁遇到报错，先去搜一搜，八成有人早在几年前就踩过同一个坑，还把解法一步步写清楚了。这些答案没人付钱，纯靠一群人图个"被认可"和"帮到别人"，一条一条堆出来。到 2014 年前后，这里每个月能接住二十多万个新问题。</p>
+<p>然后是 2025 年 12 月：整个 Stack Overflow 全月的新提问，只有 <strong>3,862 个</strong>——同比再砍掉约八成，一路跌回 2008 年它刚建站时的水平。十五年攒起来的势头，三年就被抹平了。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图注：月提问量从 2014 年峰值的 20 万+ 跌到 2025 年 12 月的 3,862，等于抹平了建站以来十五年的增长" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：月提问量从 2014 年峰值的 20 万+ 跌到 2025 年 12 月的 3,862，等于抹平了建站以来十五年的增长</figcaption></figure>
+
+<p>要把时间线摆正，才不至于误读。提问量的下滑，不是从那笔数据交易开始的，而是从 2022 年 11 月 ChatGPT 上线那天。开发者们发现，与其去论坛发帖、等一个可能几小时后才来的回答，不如直接问聊天框，三秒钟就给你一段能跑的代码。到 2023 年 7 月，Stack Overflow 已经在慌忙自救，推出自己的生成式产品；同年 10 月，它裁掉了 28% 的员工。也就是说，危机在数据交易之前就来了——把档案卖给 OpenAI，是一家现金流吃紧的公司被逼出来的动作，不是什么深谋远虑的生意。</p>
+<p>真正要命的是这个循环：开发者不再回来提问，因为答案已经在 ChatGPT 里了；而 ChatGPT 之所以答得出来，恰恰是因为它学过这群人过去十几年写下的每一个答案。人们停止往井里加水的那一刻，正是因为有人从井里抽水抽得又快又便宜。井还在被用，只是没人往里续了。</p>
+<p>于是就有了一个诡异的画面：井快见底了，公司却偏偏在这个时候，把井水装进瓶子，摆上了货架。</p>
+<hr />
+<h2>三、社区死了，尸体却卖了个好价钱</h2>
+<p>按常理，一个网站的活跃度跌回建站水平，离关门也就不远了。Stack Overflow 却没有。提问量趋近于零的这两三年，它的营收反而在逆势上涨。</p>
+<p>秘密就在那几笔数据交易。2024 年 2 月先给了 Google，5 月轮到 OpenAI，加上卖给企业客户的内部知识库产品，Stack Overflow 找到了新的活法——它不再靠活人来这里问问题挣广告费，而是把过去十五年沉淀下来的那座答案档案，整个打包，按次收费卖给模型公司。</p>
+<p>这笔账算得很清楚，也很冷。这家公司真正值钱的资产，早就不是那个活着的、还在互相帮忙的社区，而是这群人多年无偿劳动沉淀下来、如今再没人来补写的那批档案。社区活着的时候，它是负担——要养服务器、养版主、挨骂；社区死了，它反倒成了一批可以反复收费的存货。</p>
+<p>经济学里管这个叫"公地悲剧"，但通常的版本讲的是过度使用：一片谁都能放牧的草原，因为每个人都想多放几头羊，最后被啃成秃地。Stack Overflow 演的是它的续集——<strong>围栏立起来、开始收门票的那一天，草原上已经没有草了。</strong> 承担成本的是十几年间无偿写答案的人，收走全部收益的是模型公司，中间那道激励就这么断了：既然写下的东西会被免费拿去喂一个跟你抢饭吃的模型，还删不掉，那何必再写。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="图注：贡献者无偿写、模型公司免费拿走再收费卖，写下的东西还删不掉——激励一断，没人再往井里加水" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：贡献者无偿写、模型公司免费拿走再收费卖，写下的东西还删不掉——激励一断，没人再往井里加水</figcaption></figure>
+
+<p>这事也不只发生在 Stack Overflow 一家。MIT 一个专门追踪训练数据来源的团队做过审计：短短一年里，那些被 AI 训练集视作最优质的网络数据源，超过 28% 已经用技术手段挂出了"禁止抓取"的牌子。论坛、博客、问答站，一扇接一扇地关门。喂大了这一代 AI 的公共知识池，正在从四面八方同时收紧。</p>
+<hr />
+<h2>四、明天的 AI，会不会撞上一道"知识断层"</h2>
+<p>到这里，有人会说：井干了又怎样，模型都学完了，往后用合成数据不就行了。</p>
+<p>这话对一半。已经写下的旧知识，模型确实学得差不多了。问题在还没被写下来的那部分。今天新出的编程语言、新发布的框架，一旦大家习惯了遇事直接问 AI、而不再去公开的地方讨论，那么关于这些新东西的人类经验，就再也不会像过去那样，一条一条沉淀成公开可查的档案。可以想见的一种后果是：未来的模型会对成熟的老技术越来越权威，对最前沿的新技术越来越吃力——中间隔着一道谁也没写过的"知识断层"。这一步目前还是推断，没有哪份研究把它坐实，我得把话说在明处。</p>
+<p>顺着这个担忧，很多人会搬出"模型崩溃"这个词。2024 年《自然》上有篇被反复引用的论文说，如果让模型一代代只吃自己生成的内容，错误会累积、罕见信息会永久丢失，几轮之后输出就退化成一堆不相干的胡话——好比一张纸反复复印，越印越糊。</p>
+<p>但这个词被用得太狠了，得泼一盆冷水。斯坦福的 Rylan Schaeffer 专门写过一篇文章，标题就叫《模型崩溃并不是你以为的那个意思》。他数了数，学界对"模型崩溃"至少有八种互相打架的定义；那些最吓人的预言，几乎都建立在"只用合成数据、把人类数据全扔掉、还不做任何筛选"这类现实中根本不会发生的假设上。真实的 AI 实验室，一直在把人类数据和合成数据掺着用、层层过滤。所以模型会不会因为近亲繁殖而变傻，远没有传言那么板上钉钉。</p>
+<p>真正确定无疑的，其实是一件朴素得多、也不需要靠模型崩溃论来撑腰的事：<strong>人类公开写下新知识的那股动力，正在被一点点抽走。</strong> 这一条不用争论，它有数字——每月 3,862 个问题，就是它跌下来时留在地上的刻度。</p>
+<hr />
+<h2>五、一根正在被锯的树枝</h2>
+<p>回到 Ben Ui。他删不掉的那段话，如今成了某个模型答话时普普通通的一块料；而正是这样的机器，让他不想再写——他少写一条，模型将来就少学一条。</p>
+<p>一边嫌 AI 的答案靠不住、一边照用不误，是很多开发者眼下的常态；但没人再回到那个能把知识一条条补写清楚的地方。用的人越来越多，往井里加水的人越来越少，这中间的缺口，没有任何东西在填。</p>
+<p><strong>AI 正坐在一根它自己在锯的树枝上。</strong> 锯子很快，树枝很粗，一时半会儿还听不见响。每月只剩 3,862 个新问题，是这些年里最清楚的一次提醒——往井里加水的人，正一个接一个地离开。树枝会不会断、什么时候断，没人说得准；但锯，还在拉。</p>
+<hr />
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>一边嫌 AI 的答案靠不住、一边照用不误，是很多开发者眼下的常态；但没人再回到那个能把知识一条条补写清楚的地方。用的人越来越多，往井里加水的人越来越少，这中间的缺口，没有任何东西在填。</p>
+    <p>AI 正坐在一根它自己在锯的树枝上。锯子很快，树枝很粗，一时半会儿还听不见响。每月只剩 3,862 个新问题，是这些年里最清楚的一次提醒——往井里加水的人，正一个接一个地离开。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.devclass.com/" target="_blank" rel="noopener">Stack Overflow monthly questions fall to 2008 levels</a></div>
+      <div class="footer-source-item"><a href="https://www.tomshardware.com/" target="_blank" rel="noopener">Stack Overflow users protest OpenAI data deal</a></div>
+      <div class="footer-source-item"><a href="https://www.nature.com/articles/s41586-024-07566-y" target="_blank" rel="noopener">AI models collapse when trained on recursively generated data</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2503.03150" target="_blank" rel="noopener">Model Collapse Does Not Mean What You Think</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2407.14933" target="_blank" rel="noopener">Consent in Crisis: The Rapid Decline of the AI Data Commons</a></div>
+      <div class="footer-source-item"><a href="https://techcrunch.com/2021/06/02/" target="_blank" rel="noopener">Prosus to acquire Stack Overflow for $1.8B</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
