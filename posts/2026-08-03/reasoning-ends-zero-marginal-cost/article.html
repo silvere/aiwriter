@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>一道题“想”掉 4560 美元：AI 正在终结软件的“零成本”时代</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 深度观察</span>
+  <h1>一道题“想”掉 4560 美元：AI 正在终结软件的“零成本”时代</h1>
+  <div class="hero-meta">
+    <span>2026-08-03</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">2026 年 6 月 1 日，GitHub Copilot 换了计费方式。此前你每月付 10 美元，写多少代码用多少；这天起，改成按 token 计量，用超了另算。<br><br>第一批账单出来，有开发者在 Reddit 上晒图：上个月 29 美元，这个月接近 750 美元。他没多写代码，用法也没变。变的是，他调用的模型开始“思考”了——在给出答案之前，先在后台生成一大段你根本看不见的推理过程，而这段过程，按最贵的输出价，一个字一个字地收钱。<br><br>这不是一次普通涨价。这是软件行业默认了三十年的一个假设，第一次不成立了。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、那笔看不见的账</h2>
+<p>过去的大模型只做一件事：你问一句，它答一句，中间没有停顿。2024 年 9 月 OpenAI 发布 o1 之后，主流模型多了一道工序——回答之前，先在内部"想"。它会生成一长串推理过程（业内叫思维链），推翻、重来、再推翻，最后才吐出你看到的那几行答案。</p>
+<p>关键在计费。这段推理过程默认不展示给你，但它照样是模型生成的 token，照样按输出价计费，还照样占用上下文窗口。简单粗暴地说，你为一堆自己看不见的字付了钱，而且是按最贵的那档付。这笔隐藏开销，会让一次调用的实际成本，比普通对话模型放大约 3 到 10 倍。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图注：你付的钱，大部分花在了自己看不见的那段「思考」上" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：你付的钱，大部分花在了自己看不见的那段「思考」上</figcaption></figure>
+
+<p>痛感最先落在离账单最近的人身上。Copilot 那位开发者的账单翻了 25 倍；多份材料一致提到，当 Copilot 调用推理模型而不是普通补全模型时，背后的成本能高出 10 到 50 倍。Cursor 干脆把最烧算力的功能改成按 token 计价，还在供应商成本上加了约 20% 的溢价来对冲风险。这些公司不是想涨价，是扛不住了。</p>
+<p>所以问题不是"AI 变贵了"。问题是，"思考"这个动作，第一次有了明码标价。</p>
+<h2>二、4560 美元一道题</h2>
+<p>2024 年 12 月，OpenAI 拿当时最强的推理模型 o3 去刷一个叫 ARC-AGI 的基准。这个基准的题目是彩色方块拼成的图形谜题，专门设计得让一个没受过训练的人凭直觉就能解出来。o3 也解出来了，准确率 87.5%，超过人类平均。</p>
+<p>代价是多少？按 ARC Prize 官方后来重算的口径，高算力模式下，平均每道题烧掉约 4560 美元。同一批题，换成低算力模式，每题约 26 美元，准确率掉到 75.7%。也就是说，为了把成绩从 75.7 提到 87.5，每道题的成本涨了约 175 倍。而一个普通人解同样一道题，成本大约 5 美元。基准的创建者 François Chollet 说得很克制：成本高昂，眼下还谈不上经济划算。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="图注：多拿 12 个百分点，每道题的账单翻了约 175 倍" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：多拿 12 个百分点，每道题的账单翻了约 175 倍</figcaption></figure>
+
+<p>让我意外的不是它贵——刷榜本来就不计成本。是它把一件抽象的事第一次变具体了：AI 的"思考"，原来可以逐笔算钱，而且上不封顶。你想让它多聪明一点点，就得为它多"想"的每一秒买单。</p>
+<p>这背后是一次范式转向。过去几年，模型变强靠的是"训练时"堆算力——把模型做大、把数据喂多。o1 之后，增长的主轴挪到了"推理时"：不改模型，让它在回答前多想一会儿。OpenAI 负责这条线的研究员 Noam Brown 的立场很直接，大意是思考本就该更贵，未来甚至该让模型想上几小时、几周。这话没错——真要把模型能力推过人类专家，多想几乎是唯一的路。只是它顺带说明了一件事：<strong>从此，"想得更久"和"花得更多"，是同一件事的两种说法。</strong></p>
+<p>4560 美元买到的，从来不是那道题的答案。买到的是"让机器想了很久"这件事本身。</p>
+<h2>三、零边际成本，那个吃下世界的假设</h2>
+<p>这件事动摇的，不是一张账单，是软件行业赖以立身的根本前提。</p>
+<p>过去三十年，软件是一门好生意，靠的是一条铁律：开发一次，无限复制。第一份产品的成本可能上亿，但多服务一个用户、多处理一个请求，成本几乎为零。这就是所谓的"零边际成本"。它撑起了整个行业普遍 80% 到 90% 的毛利率，也是"软件正在吃掉世界"这句话背后的财务前提——只要用户涨，利润就摊薄成本、越滚越厚。</p>
+<p>推理模型把这条铁律拆了。它让每一次调用都变成一次真实的算力消耗：你每服务一个用户，模型就得重新"想"一遍，重新烧一遍钱。边际成本不再趋近于零，而是实打实地变正了。反映到财报上，据 ICONIQ 今年 1 月的调查，AI 原生公司的毛利率约为 52%，另一家机构 Bessemer 给出的数字是 65% 上下——无论哪个，都离成熟软件公司的八九十个点很远。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="图注：每多服务一个用户就多烧一次算力，八九十个点的毛利神话，塌到了五六十" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：每多服务一个用户就多烧一次算力，八九十个点的毛利神话，塌到了五六十</figcaption></figure>
+
+<p>最能说明问题的，是造模型的公司自己也在这条线上挣扎。据报道，OpenAI 2024 年营收约 37 亿美元、净亏约 51 亿；到 2025 年营收涨到约 130 亿，亏损却不降反增。另一个信号来自 Anthropic：它在推出 Opus 4.5 的思考强度参数时给过一组数据——效果打平的前提下，把强度从高调到中，能省下约 76% 的输出 token。连亲手教模型"思考"的人，都在算怎么让它少想一点、又不掉链子。</p>
+<p>根基一旦松动，接下来的问题只有一个：降价，能不能把成本重新压回去？</p>
+<h2>四、"变便宜"是个陷阱</h2>
+<p>乐观的人会说：能。</p>
+<p>过去几年，同等能力的 AI，单位价格确实在飞快下降——有测算称大约每年降十倍，GPT-4 级别的能力，从 2023 年到 2026 年年中，每百万 token 的价格跌了几十倍。照这个势头，"思考"再贵，单价也会很快被打到几乎可以忽略。所以他们说，为思考付费只是暂时的阵痛。</p>
+<p>这话对了一半，也错了一半。错的那一半，有个一百多年前就有的名字，叫杰文斯悖论：一样东西用起来越便宜，人们反而会用得越凶，总消耗不降反升。放到 AI 上就是——单价一降，大家立刻把省下的钱拿去让模型想得更多、重试得更频繁、上下文喂得更长，再养一堆全天候待命的 agent。省下的那点钱，转头就被更凶的用量吃回去了。结果往往是，单价降了一个数量级，总账单不降反升，甚至涨得更快。</p>
+<p>而且，"多想"未必换来"更好"。2026 年 4 月有一篇论文，标题就叫《过度思考有害》，它发现推理模型去算"9900 加 1"这种小学题，也能烧掉好几千个思考 token；更麻烦的是，想得太多，模型有时会把本来答对的题，反复推翻成错的。你不但多付了钱，还买回来一个更差的答案。</p>
+<p>所以真正不可逆的，从来不是钱多钱少。<strong>是"边际成本从零变成正"这个性质的改变——从此，"思考"这件事，有了自己的计价单位。</strong>单价可以降，计价器却装上去了，卸不下来。</p>
+<h2>五、谁在给"思考"定价</h2>
+<p>计价器一旦装上，有些问题就绕不过去了。</p>
+<p>第一个问题是公平。当"让模型多想想"变成一次要花钱的决策，深度思考就悄悄变成了一件买得起的人才配拥有的事。一个能随便烧算力的巨头，和一个精打细算的小团队、一个穷国的研究者，从此不在同一条起跑线上。过去我们担心 AI 拉大贫富差距，盯的是谁会失业；现在得再加一条——谁付得起让机器替自己"想得更深"。</p>
+<p>第二个问题更该往上问一层：既然每一次"想"都要付费，这笔钱到底流向了谁、又换回了什么？卖算力和卖模型的，当然希望你相信思考越多越值得。但诺奖经济学家 Daron Acemoglu 算过一笔更大的账：他估算 AI 未来十年对美国 GDP 的拉动，只有大约 1.1% 到 1.6%，并提醒人们，围绕 AI 的增长叙事，很多是卖方讲给自己听的。把两头摆在一起——一边是刷一道题就要 4560 美元的"思考"，一边是十年个位数的回报——那句"让模型多想想"，就不只是一个技术选项，而是一笔要问值不值的账。</p>
+<p>这不是说推理模型没有价值，它当然有。只是我们在欢呼 AI 终于学会"思考"的时候，没人愿意补上后半句。<strong>这是人类历史上第一次，"想一想"这三个字后面，跟着一张账单。</strong></p>
+<hr />
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>推理模型让 AI 学会了“思考”，也第一次给“思考”装上了计价器：想得越久，对应的账单越贵。软件靠“零边际成本”吃下世界的时代，正在结束。</p>
+    <p>单价还会降，但计价器一旦装上就卸不下来。真正的问题不再是 AI 能不能想，而是——这一次，谁付得起让它想得更深。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://arcprize.org/blog/oai-o3-pub-breakthrough" target="_blank" rel="noopener">ARC Prize 官方：OpenAI o3 在 ARC-AGI 上的突破与成本</a></div>
+      <div class="footer-source-item"><a href="https://openai.com/index/learning-to-reason-with-llms/" target="_blank" rel="noopener">OpenAI：Learning to reason with LLMs（o1 发布，2024 年 9 月）</a></div>
+      <div class="footer-source-item"><a href="https://economics.mit.edu/sites/default/files/2024-04/The%20Simple%20Macroeconomics%20of%20AI.pdf" target="_blank" rel="noopener">Daron Acemoglu：《The Simple Macroeconomics of AI》（MIT，2024）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
