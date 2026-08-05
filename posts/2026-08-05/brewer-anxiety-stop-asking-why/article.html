@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>他研究焦虑十几年，真正让恐慌停下来的，是他终于不再问「为什么」</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">心理与思想</span>
+  <h1>他研究焦虑十几年，真正让恐慌停下来的，是他终于不再问「为什么」</h1>
+  <div class="hero-meta">
+    <span>2026-08-05</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">一个每天研究焦虑机制的精神科医生，也会被自己的惊恐发作放倒。真正让恐慌停下来的那一刻，不是他终于想通了为什么会这样，是他终于停止了追问为什么。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>导语</h2>
+<p>贾德森·布鲁尔（Judson Brewer）是一名精神科医生，也是研究成瘾和焦虑的神经科学家——按理说，全世界没几个人比他更懂焦虑发作时大脑里到底在发生什么。但在耶鲁大学的住院医师宿舍里，他还是被自己的惊恐发作放倒过。一个每天研究这件事、能在脑海里画出神经回路图的人，遇到自己的恐慌，脑子里的知识没帮上任何忙。真正让恐慌停下来的那一刻，不是他终于想通了自己为什么会这样——是他终于停止了追问为什么。</p>
+<h2>一、一个关于肠胃的意外发现</h2>
+<p>故事要从更早的地方讲起。布鲁尔在圣路易斯华盛顿大学读医学博士联读期间，被肠易激综合征折磨了很多年，胃肠道时常绞痛、紊乱，看了不少医生也没能根治。后来他才弄明白，这种病和压力直接挂钩——压力上来，肠胃先崩溃。他抱着死马当活马医的心态开始学冥想，起初只是想让自己放松一点，没指望能解决什么根本问题。结果症状真的消失了。</p>
+<p>这段经历埋下了一颗种子，但当时他并没有把它当回事：一个学医的人，遇到冥想能缓解自己的躯体症状，最直接的反应是"有点意思"，而不是"我发现了什么"。真正让这件事变得重要，是很多年后发生的另一件事。</p>
+<h2>二、住院医师的深夜，专家自己也扛不住</h2>
+<p>博士毕业后，布鲁尔进入耶鲁大学接受精神科住院医师训练。这是医生这个职业里压力最集中的几年之一：轮班、值夜、随时可能被叫醒去处理急症，还要在极短的时间里对着病人做出判断——一个刚毕业的新人，却被要求表现得什么都懂。长期睡眠不足叠加这种"必须全知全能"的心理重压，压垮了他。他开始出现惊恐发作。</p>
+<p>这里最扎心的细节是：他是精神科医生，他清楚地知道自己正在经历的是什么——心跳加速、呼吸发紧、大脑里那种"要出大事了"的警报，这些机制他每天都在教科书和病人身上见到。可这份清楚的认知，没有让恐慌少发作一次。知道一件事情发生的原因，和这件事情停下来，中间没有任何一条自动生效的因果关系——这一点，是他自己用身体验证出来的。</p>
+<h2>三、把病人的循环、自己的循环、实验室的数据，接到了一起</h2>
+<p>布鲁尔真正的转折，发生在很多年之后。他的实验室长期研究习惯是怎么形成的：一个触发信号出现，人做出某个行为，行为带来某种奖励感，这个回路重复几次，习惯就刻进去了——抽烟、暴食、刷手机，都是这个结构。多年临床工作里，他一直觉得自己在焦虑病人身上漏掉了什么关键的东西，直到某一天，他把这套"触发-行为-奖励"的习惯回路，套在了焦虑本身上——焦虑不是一个需要被解释的孤立情绪，它本身就是一个会自我强化的习惯循环：一点不安触发了"想清楚到底哪里不对"这个念头，这个念头带来一种"我在处理问题"的虚假掌控感当作奖励，于是循环继续转动，越转越大。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图：打断循环不必对抗它，只需要在'追问为什么'的地方停下，换成'带着好奇心观察当下感觉'。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图：打断循环不必对抗它，只需要在'追问为什么'的地方停下，换成'带着好奇心观察当下感觉'。</figcaption></figure>
+
+<p>这个结构，佛教心理学里有个专门的词，叫papañca，常被译成"概念增殖"或者"戏论"——一个念头勾连出下一个念头，越滚越大，最后完全脱离了最初那个感觉本身。现代心理学里，这种模式有个更常见的名字，反刍思考、灾难化想象，说的是同一件事：不是感觉本身在伤害你，是你对着这个感觉不停地转圈想，圈子转出来的东西才是真正折磨人的部分。</p>
+<p>认知行为疗法的创始人阿伦·贝克晚年也专门写过一篇文章，比较佛教和他自己开创的疗法。他的态度并不干脆，甚至有点自相拉扯：一方面他提到，正念这一派习惯把自己和认知行为疗法区分开——前者盯着念头本身生灭的过程，不评判内容对错；后者盯着念头的内容，去纠正"这个想法对不对、合不合理"；但另一方面他自己又补了一句，说这个"看着念头"的过程，和认知行为疗法里"抽离"技术做的事情，其实看起来很像。连CBT的创始人自己都没法把这条线画得很干净，这至少说明一件事："关注内容"还是"关注过程"，不是两条互不相干的路，布鲁尔和病人们练的，更接近后一种取向——不去判断这个焦虑念头对不对，只是看着它怎么来、怎么走。</p>
+<h2>四、把"停止追问"变成一个可以教给别人的动作</h2>
+<p>布鲁尔没有停在这个洞察上自我感动，他把它设计成了具体的临床方法，拿去做了严格检验。2011年，他和团队做了一项针对吸烟者的对照实验：正念训练组和美国肺脏协会的标准戒烟项目相比，训练结束17周后的戒烟率是31%比6%，差距有统计学意义。同一年，他的团队在《美国科学院院刊》上发表了一项脑成像研究：经验丰富的冥想者在专注、慈心等多种冥想状态下，大脑里负责"自我参照"的核心区域——内侧前额叶皮层和后扣带回皮层——活跃程度明显低于不冥想的对照组。人在琢磨"这件事对我意味着什么"的时候，恰恰是这几块区域最活跃的时候。</p>
+<p>这套机制后来被他用在了自己开发的"解绑焦虑"训练项目上——这部分不是论文数据，是项目参与者留下的用户反馈，但很能说明这套方法具体在做什么："当我真的经历一次完整的惊恐发作时，往内看，那种感觉就自己消融掉了——我在看我正在感受的东西，而不是纠结于我为什么会有这种感受。"另一位参与者说，训练之初自己完全不信"好奇心"这种东西能有什么用，直到某天感觉到一阵恐慌袭来，第一反应变成了"嗯，有意思"，"这一下子就把恐慌的劲儿卸掉了"。这不是"想开了""看淡了"这种模糊的安慰话，是一个具体的、可以重复练习的动作替换：把"这是为什么"换成"现在感觉到了什么"。</p>
+<h2>五、这不是解脱，是一个被诚实标注过边界的工具</h2>
+<p>先把一个容易被误解的地方说清楚："不追问为什么"不等于"假装问题不存在"。布鲁尔教的这个动作，是主动把注意力转向感觉本身，老老实实地看着它——不是把注意力移开、假装什么都没发生。前者是直面，后者才是逃避，两者看起来都是"不去想为什么"，方向却完全相反。</p>
+<p>也要老实说清楚另一件事：布鲁尔做的，是把佛教修行里的一部分具体机制拿出来，剥掉宗教语境，改造成可以在诊室里教、可以用随机对照实验去验证的临床技术。批评的声音一直都在——旧金山州立大学教授、同时也是受戒僧人的罗纳德·珀泽（Ronald Purser）就长期提醒，这种改造抽走了佛教作为一套完整解脱论、伦理体系的核心，只留下一个能帮人在职场里少焦虑一点的自助工具，某种程度上是把结构性的压力问题，简化成了"你还不够会观察自己"这种个人责任。也有心理学者指出，正念疗法相对于运动、健康教育这类主动对照手段，实际效果优势并不像宣传里那么明确。</p>
+<p>这些提醒是对的，本文也不打算假装"学会不问为什么"就等于修完了整套佛法。但布鲁尔从自己的惊恐发作里提炼出来的这一个具体动作——不去追问"为什么会这样"，转而只是带着好奇心去观察"现在感觉到了什么"——已经被反复检验过，而且不需要神经科学背景也能上手。下一次恐慌袭来的时候，与其在脑子里继续追问原因，不如试着只是看着这个感觉本身。停止提问，有时候比得到答案更管用。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>布鲁尔从自己的惊恐发作里提炼出来的这一个具体动作——不追问为什么，转而带着好奇心观察当下感觉——已经被反复检验过，不需要专业背景也能上手。</p>
+    <p>下一次恐慌袭来的时候，与其在脑子里继续追问原因，不如试着只是看着这个感觉本身。停止提问，有时候比得到答案更管用。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://mbsrcollaborative.com/history-of-mbsr" target="_blank" rel="noopener">History of MBSR — MBSR Collaborative</a></div>
+      <div class="footer-source-item"><a href="https://www.brownalumnimagazine.com/articles/2024-03-27/jud-brewer-anxiety-loop" target="_blank" rel="noopener">The Anxiety Hacker | Brown Alumni Magazine</a></div>
+      <div class="footer-source-item"><a href="https://en.wikipedia.org/wiki/Judson_A._Brewer" target="_blank" rel="noopener">Judson A. Brewer - Wikipedia</a></div>
+      <div class="footer-source-item"><a href="https://pubmed.ncbi.nlm.nih.gov/21723049/" target="_blank" rel="noopener">PubMed</a></div>
+      <div class="footer-source-item"><a href="https://www.pnas.org/content/108/50/20254" target="_blank" rel="noopener">PNAS</a></div>
+      <div class="footer-source-item"><a href="https://tricycle.org/magazine/tangled-thought/" target="_blank" rel="noopener">Tangled in Thought - Tricycle</a></div>
+      <div class="footer-source-item"><a href="https://www.nyccognitivetherapy.com/uploads/6/3/4/5/6345727/buddhism_and_cognitive_therapy.pdf" target="_blank" rel="noopener">全文PDF</a></div>
+      <div class="footer-source-item"><a href="https://ronpurser.com/mcmindfulness" target="_blank" rel="noopener">Ronald Purser - McMindfulness</a></div>
+      <div class="footer-source-item"><a href="https://journals.sagepub.com/doi/abs/10.1177/1745691620968771" target="_blank" rel="noopener">SAGE</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
