@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>英伟达给一家没产品的公司打了50亿，这笔钱绕一圈，又变回了它自己的订单</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI与商业</span>
+  <h1>英伟达给一家没产品的公司打了50亿，这笔钱绕一圈，又变回了它自己的订单</h1>
+  <div class="hero-meta">
+    <span>2026-08-06</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">英伟达打给 SSI 的这 50 亿，绕一圈，会以订单的形式，变回英伟达自己的营收。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>导语</h2>
+
+    <p>先说一家公司。它成立于 2024 年 6 月，到今天满打满算两年出头，大约 50 个人。它没有发布过任何产品，没有 App，没有 API，没有一行能对外收费的代码，官方公开承诺"在造出安全的超级智能之前不发布任何东西"。翻它的财务，收入这一栏写着零。就这么一家公司，估值 320 亿美元。7 月 27 日，英伟达宣布再给它投 50 亿美元——注意是"再"，因为去年那轮 20 亿的融资里，英伟达已经投过一次了。这家公司叫 SSI，Safe Superintelligence，创始人是从 OpenAI 出走的伊利亚·苏茨克维。所有报道都在讲苏茨克维的天才、讲"安全超级智能"的宏大愿景。但这笔钱最有意思的地方，报道里几乎没人说破：英伟达打给 SSI 的这 50 亿，绕一圈，会以订单的形式，变回英伟达自己的营收。</p>
+
+    <h2>一、先把这家拿钱的公司看清楚</h2>
+
+    <p>苏茨克维是谁不用多介绍，AlexNet 的作者之一，深度学习这波浪潮最上游的那几个人里的一个，从 OpenAI 出来单干，光凭这份履历，融资不难。难的是他给这家公司立的规矩：不发产品，不做迭代，不搞商业化，一门心思憋一个"安全超级智能"，憋出来之前对外什么都不给。</p>
+
+    <p>这套打法在投资圈叫"直球"（straight-shot），听着很酷，翻译成人话就是：在一个说不清哪年能到的终点之前，这家公司不产生任何收入。</p>
+
+    <p>然后我们看它的融资曲线。2024 年 9 月，成立三个月，融 10 亿，估值 50 亿。2025 年 4 月，融 20 亿，估值直接跳到 320 亿——这一轮的投资方里就有英伟达和谷歌。2026 年 7 月，英伟达单独再追加 50 亿。两年，一件东西没卖出去，估值翻了六倍多，累计募了大约 70 亿美元现金。</p>
+
+    <strong>一家公司值多少钱，和它卖过多少东西，在 2026 年可以完全没有关系。</strong>
+
+    <p>这句话本身不新鲜，风投行业向来为"未来"付钱。真正值得盯着看的是这次投钱的人是谁。红杉、a16z 投 SSI，是财务投资，赌苏茨克维赌对了能几十倍退出，天经地义。但英伟达不是财务投资人，英伟达是卖芯片的。一个卖铲子的，为什么要往一个还没开始挖矿、明确说了短期不打算挖矿的矿工兜里，塞两次钱？</p>
+
+    <p>英伟达自己在新闻稿里给的说法很体面。黄仁勋说："伊利亚从 AlexNet 开始就在现代 AI 的地基上做出了根本性的突破，我们很期待看到 SSI 在我们的 Vera Rubin 平台上跑出新的突破。"苏茨克维那边接得也顺："我们有值得规模化的研究成果，一台大的英伟达计算机能让我们把它跑起来……我们对押注 Vera Rubin 平台很有信心。"</p>
+
+    <p>翻译一下这两句官话的交集，就一个词：<strong>Vera Rubin</strong>——英伟达下一代的旗舰芯片平台。英伟达给 SSI 的这 50 亿，附带的条件是 SSI 部署 Vera Rubin 系统，把自己的算力"提升一个数量级"。</p>
+
+    <p>钱和货，在同一份新闻稿里，握了手。</p>
+
+    <h2>二、这 50 亿是怎么变回英伟达营收的</h2>
+
+    <p>把这笔交易拆成两个动作看，就清楚了。</p>
+
+    <p>动作一，英伟达从自己账上掏出 50 亿美元，打给 SSI，换来 SSI 的一部分股权。这笔钱在英伟达的报表上，记成一笔"投资"。</p>
+
+    <p>动作二，SSI 拿着这笔钱（以及别的钱），去采购英伟达的 Vera Rubin 系统。这笔采购在英伟达的报表上，记成"营收"。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="钱从英伟达出发，绕一圈以订单的形式回到英伟达的营收表；中间那家公司，一件产品都没卖过。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">钱从英伟达出发，绕一圈以订单的形式回到英伟达的营收表；中间那家公司，一件产品都没卖过。</figcaption></figure>
+
+    <p>这个环，英伟达在别处玩得更直白。2025 年 9 月，英伟达和 OpenAI 签的那份意向书里，条款写得明明白白：英伟达将向 OpenAI 投资最多 1000 亿美元，随 OpenAI 每部署 1 吉瓦（GW）算力分批到账；OpenAI 则用英伟达的系统部署至少 10GW、相当于几百万块 GPU。英伟达官方对这套结构的描述是——OpenAI 用现金向英伟达买芯片，英伟达用现金买 OpenAI 的非控股股权。</p>
+
+    <p>两笔现金，方向相反，金额挂钩，写在同一份协议里。你付我买卡的钱，我付你股权的钱，谁也没占谁便宜，但账面上，一边多了千亿营收的想象空间，一边多了千亿估值的注脚。</p>
+
+    <strong>供应商亲自下场，掏钱给买家去买自己的东西，这不是生意的润滑剂，这就是生意本身。</strong>
+
+    <h2>三、这不是一笔买卖，是一条流水线</h2>
+
+    <p>如果只有 SSI 一家，你还可以说这是英伟达对老朋友的偏爱。问题是，这样的对象排起来是一长串。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="2025 到 2026，英伟达对外投资和承诺采购的一手名单——每一笔都绑着一份「你得买我的系统」。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">2025 到 2026，英伟达对外投资和承诺采购的一手名单——每一笔都绑着一份「你得买我的系统」。</figcaption></figure>
+
+    <p>这里面最露骨的是 CoreWeave 那一笔。CoreWeave 是家 AI 云服务商，买英伟达的卡搭数据中心，再把算力租出去。英伟达先投了它约 20 亿股权，然后又和它签了一份 63 亿美元的协议：如果 CoreWeave 建起来的算力，现有客户没租满，英伟达自己把剩下的买单。</p>
+
+    <p>一个卖芯片的，一边给你钱买它的芯片，一边承诺"你用我的芯片建的东西如果卖不出去，我兜底"。这已经不是投资了，这是给需求上保险，保的是自己的营收。</p>
+
+    <p>单看数字，英伟达在上一个财年里向私营公司投了 175 亿美元，官方口径是"主要支持早期创业公司"。这是它自己交给美国证监会的文件里写的数。而它的营收有多大？2027 财年第一季度（截至 2026 年 4 月 26 日）总营收 816 亿美元，其中数据中心业务 752 亿。营收是投资的四倍多，看着投资只是零头。</p>
+
+    <p>但零头不是重点。重点是那 61%——英伟达自己披露，四个直接客户，每个都贡献超过 10% 的营收，加起来占了六成一。你再把上面那张名单摆过来对一眼：这几个大客户里，有好几个的买卡钱，是英伟达先垫进去的。营收高度集中在少数几个买家，而这几个买家，又高度依赖英伟达的投资和担保活着。</p>
+
+    <p>这条链子转得越快，账面越好看，也越像一个只能往前不能停的东西。</p>
+
+    <h2>四、这套打法上一次登场，主角叫朗讯</h2>
+
+    <p>垫钱给客户买自己的设备，好把销售额做上去——这个玩法不是英伟达发明的。上一次它大规模登场，是在 2000 年前后的电信业，主角是一家叫朗讯（Lucent Technologies）的公司。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="朗讯用「借钱给客户买自己设备」把营收冲上顶点，也用同一招把自己送进坑里；六年后营收剩三成。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">朗讯用「借钱给客户买自己设备」把营收冲上顶点，也用同一招把自己送进坑里；六年后营收剩三成。</figcaption></figure>
+
+    <p>朗讯当年做的事，逐字对得上今天：它给买不起设备的电信客户提供贷款，让他们拿这笔钱来买朗讯的交换机、路由器，有时候连安装都替你包了。靠这招，它的账面销售额冲得极猛，华尔街看着漂亮。到 1999 年，朗讯营收冲到 379 亿美元，一度是全美市值最高的公司之一。它累计承诺出去的客户贷款，高达 81 亿美元。</p>
+
+    <p>然后周期转向了。它借了 20 亿给一家叫 WinStar 的电信运营商，WinStar 撑不住了，来要最后一笔 9000 万的续贷，朗讯拒了，WinStar 直接破产。这种事一多，那些"销售额"露出了本来面目——它们不是卖出去的钱，是借出去、收不回来的钱。2001 到 2002 两年，朗讯为坏账计提了大约 35 亿美元。2001 那一个财年，它亏了 160 亿美元，裁掉三分之二的员工。到 2002 年，营收从峰值的 379 亿掉到 118 亿，只剩三成，市值蒸发了约 2500 亿美元。</p>
+
+    <p>我不是说英伟达就是下一个朗讯。两者有本质区别：英伟达的芯片现在是真的抢手，数据中心是真的在满负荷跑，全球算力是真的短缺——这些需求里有一大块是结结实实的真需求，不是印出来的。朗讯当年的电信设备可没这个待遇。</p>
+
+    <p>但朗讯的教训不在"设备卖不动"，在别的地方：当供应商亲自下场给买家垫钱，它自己账上的"营收"和"投资"，就和买家的偿付能力绑死了。买家还得起，这笔生意皆大欢喜；买家还不起，垫出去的钱不会消失，它会换个名字，从"营收"变成"坏账"，回到供应商自己的报表上。SSI 这样的对象尤其值得记着——一家零收入的公司，它拿什么还？它还的是苏茨克维那个终点能不能到。</p>
+
+    <h2>五、真正该担心的，是你分不清哪部分是真的</h2>
+
+    <p>这套循环玩到今天，已经大到监管和空头都开始盯着看了。做空过 2008 年次贷的迈克尔·伯里，最近直接开炮，说英伟达这种"循环开支"已经到了"圣经级别的规模"，还点出英伟达的五年期信用违约互换（相当于市场给它买的"违约保险"）年内涨了近九成。国际货币基金组织和国际清算银行，也都把 AI 领域的循环融资列进了系统性风险的提示里。</p>
+
+    <p>当然有人不同意。有华尔街策略师说得也在理："循环融资是个信号，不是判决"，背后是实打实、长期存在的全球算力短缺。这话没错。算力短缺是真的，英伟达的芯片是真的好，这些都不假。</p>
+
+    <p>问题恰恰出在"真的"和"印的"混在了一起、而且账面上长得一模一样。当英伟达给 OpenAI 千亿、给 SSI 两次共几十亿、给 CoreWeave 的过剩算力兜底，这些钱变成的订单，确实会出现在营收里，和一个素不相识的客户真金白银下的单，记在同一栏，一个数，分不出彼此。</p>
+
+    <strong>需求可以是真的，也可以是供应商自己印的；在报表上，这两种需求，长得一模一样。</strong>
+
+    <p>所以回到开头那家公司。SSI 值不值 320 亿，苏茨克维能不能造出安全超级智能，这些我不知道，也没人现在知道。我只知道一件确定的事：英伟达打给它的 50 亿，会有很大一部分，变成英伟达自己的一笔营收，出现在某个季度的财报里，被算进那个"数据中心业务同比增长 92%"的漂亮数字。</p>
+
+    <p>那个数字里，有多少是全世界真的需要算力，有多少是英伟达先把钱塞给买家、再自己买回来的——没有一个投资者能拆得开。而拆不开这件事，比任何一次单独的暴跌，都更值得担心。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>SSI 值不值 320 亿、苏茨克维能不能造出安全超级智能，现在没人知道。能确定的只有一件：英伟达打给它的 50 亿，会有很大一部分变成英伟达自己的一笔营收，算进那个「数据中心同比增长 92%」的漂亮数字里。</p>
+    <p>那个数字里，有多少是全世界真的需要算力，有多少是英伟达先把钱塞给买家再自己买回来的——没人拆得开。而拆不开这件事，比任何一次单独的暴跌都更值得担心。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://nvidianews.nvidia.com/news/ilya-sutskevers-safe-superintelligence-inc-and-nvidia-announce-long-term-strategic-partnership" target="_blank" rel="noopener">Ilya Sutskever's Safe Superintelligence Inc. and NVIDIA Announce Long-Term Strategic Partnership（NVIDIA Newsroom, 2026-07-27）</a></div>
+      <div class="footer-source-item"><a href="https://nvidianews.nvidia.com/news/openai-and-nvidia-announce-strategic-partnership-to-deploy-10gw-of-nvidia-systems" target="_blank" rel="noopener">OpenAI and NVIDIA Announce Strategic Partnership to Deploy 10 Gigawatts of NVIDIA Systems（NVIDIA Newsroom, 2025-09-22）</a></div>
+      <div class="footer-source-item"><a href="https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-first-quarter-fiscal-2027" target="_blank" rel="noopener">NVIDIA Announces Financial Results for First Quarter Fiscal 2027（NVIDIA Newsroom）</a></div>
+      <div class="footer-source-item"><a href="https://nvidianews.nvidia.com/news/nvidia-and-intel-to-develop-ai-infrastructure-and-personal-computing-products" target="_blank" rel="noopener">NVIDIA and Intel to Develop AI Infrastructure and Personal Computing Products（NVIDIA Newsroom）</a></div>
+      <div class="footer-source-item"><a href="https://www.sec.gov/Archives/edgar/data/0001045810/000104581026000052/nvda-20260426.htm" target="_blank" rel="noopener">NVIDIA CORP Form 10-Q, FY2027 Q1（SEC EDGAR，私营公司投资额与客户集中度）</a></div>
+      <div class="footer-source-item"><a href="https://www.calcalistech.com/ctechnews/article/hjfywdtajl" target="_blank" rel="noopener">Safe Superintelligence raises $2B at $32B valuation—with no product yet（CTech）</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2025/12/29/nvidia-takes-5-billion-stake-in-intel-under-september-agreement.html" target="_blank" rel="noopener">Nvidia takes $5 billion stake in Intel under September agreement（CNBC, 2025-12-29）</a></div>
+      <div class="footer-source-item"><a href="https://www.benzinga.com/markets/equities/26/07/60749765/michael-burry-warns-nvidias-overreaching-is-pushing-circular-spending-to-biblical-proportions-amid-surge-in-credit-default-swaps" target="_blank" rel="noopener">Michael Burry Warns Nvidia's 'Overreaching' Is Pushing Circular Spending to 'Biblical Proportions'（Benzinga）</a></div>
+      <div class="footer-source-item"><a href="https://time.com/archive/6931645/how-the-once-luminous-lucent-got-into-double-trouble/" target="_blank" rel="noopener">How the Once-Luminous Lucent Got Into Double Trouble（TIME）</a></div>
+      <div class="footer-source-item"><a href="https://www.technologyreview.com/2005/02/01/231676/how-lucent-lost-it/" target="_blank" rel="noopener">How Lucent Lost It（MIT Technology Review）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
