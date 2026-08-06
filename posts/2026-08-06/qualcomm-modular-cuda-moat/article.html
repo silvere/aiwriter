@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>英伟达真正的护城河从来不是芯片，是CUDA——高通花39亿，买下了那个发誓要填平它的人</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 行业观察</span>
+  <h1>英伟达真正的护城河从来不是芯片，是CUDA——高通花39亿，买下了那个发誓要填平它的人</h1>
+  <div class="hero-meta">
+    <span>2026-08-06</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">这个夏天 AI 圈最贵的软件收购，主角是高通——一家你印象里做手机芯片的公司。它花约 39 亿美元、一分现金没掏、纯靠印股票，买下了一家夹在芯片和模型中间、你根本不会注意到的软件公司 Modular。而 Modular 成立那天就发誓要干掉的，正是英伟达的 CUDA。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图注：高通买的既不是最上面的模型，也不是最下面的芯片，是夹在中间、把任意芯片喂饱模型的那层软件。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：高通买的既不是最上面的模型，也不是最下面的芯片，是夹在中间、把任意芯片喂饱模型的那层软件。</figcaption></figure>
+
+    <h2>一、先搞清楚高通买了个啥：一家把自己定义成"AI 变速箱"的公司</h2>
+
+    <p>Modular 这家公司，2022 年由 Chris Lattner 创办。这个名字后面第五节再细说，你现在只要知道他是编译器领域的一尊神就行。</p>
+
+    <p>它做的东西，官方自己的说法是"AI 的统一计算层"，他们甚至给自己起了个更狂的外号——"AI 的 hypervisor"。产品有三样：一门叫 Mojo 的编程语言（Python 的语法、C/C++ 的速度）、一个叫 MAX 的推理引擎（对外提供和 OpenAI 兼容的接口）、还有一个管大规模部署的控制面 Mammoth。到被收购前，它一共融了大约 3.8 亿美元，最近一轮 2.5 亿美元，估值 16 亿。</p>
+
+    <p>这一堆术语你不用记。你只要抓住它想解决的那个具体问题：今天你想跑 AI，摆在面前的路只有两条。要么绑死英伟达的 CUDA，享受它十几年攒下的现成生态；要么换一家便宜的芯片，然后把自己的代码几乎重写一遍去适配。</p>
+
+    <p>Modular 想做的，就是那层"翻译"——让任意一家的芯片都能高效地跑模型，你不用为了换芯片重写代码，也就不用被单一厂商摁在地上摩擦。</p>
+
+    <strong>芯片是发动机，模型是司机，Modular 做的是那台没人会拍照发朋友圈的变速箱。</strong>没人关心变速箱长什么样，但没有它，再猛的发动机也只是原地轰油门，一米都走不了。
+
+    <p>高通花 39 亿买的，就是这台变速箱。不是发动机，不是司机，是中间那个把动力传下去的东西。</p>
+
+    <h2>二、这层没人看得见的软件，凭什么值 39 亿？因为它就是英伟达护城河的本体</h2>
+
+    <p>要理解这笔钱花得值不值，你得先接受一个反常识的事实：英伟达那么贵、那么难被取代，真正的原因不是它的芯片。</p>
+
+    <p>是 CUDA。</p>
+
+    <p>大部分人对英伟达的理解停留在"它家显卡最快"。这话没错，但它不是问题的核心。真正让全世界的 AI 公司换不掉英伟达的，是 CUDA 这层软件——一套积累了十几年的编程生态。你写的每一行 AI 代码、你用的每一个库、每一个工具，几乎都是长在 CUDA 上面的。你想换一家芯片，芯片本身的性能也许别人能追平，但你那一整套已经焊死在 CUDA 上的软件资产，搬不走。</p>
+
+    <p>所以英伟达真正的护城河，从来不是"我的芯片比你快多少"，而是"你已经离不开我了"。芯片的领先可以被追平，软件生态的粘性追不平。这是两种完全不同的护城河，后者深得多。</p>
+
+    <strong>英伟达卖的从来不是显卡，是"你离不开它"这件事。</strong>
+
+    <p>而 Modular 从第一天起要砸的，就是这条河。它要做一层厂商中立的软件，让 CUDA 不再是唯一那条路——你想用别家芯片？可以，代码不用重写，性能也不打折。谁掌握了这层软件，谁就有资格在英伟达的收费站旁边，另开一条路。</p>
+
+    <p>一层能绕开英伟达护城河的软件，值不值 39 亿？在 2026 年这个所有人都被英伟达按着交过路费的年份，这个价格甚至算便宜的。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="图注：换掉英伟达难，难的不是找一块更快的芯片，是搬走那套十几年长在 CUDA 上的软件资产。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：换掉英伟达难，难的不是找一块更快的芯片，是搬走那套十几年长在 CUDA 上的软件资产。</figcaption></figure>
+
+    <hr>
+
+    <h2>三、那高通图什么？它要一把绕开 CUDA 的钥匙</h2>
+
+    <p>搞清楚了 Modular 的价值，高通的动机就一目了然了。</p>
+
+    <p>高通是做什么的？做手机芯片、做边缘设备上的 NPU 起家的。它现在眼馋数据中心和 AI 推理这块大蛋糕，想挤进去。但它面前横着一堵墙，这堵墙不是"造不出好芯片"——高通造芯片的本事不缺——而是"没有 CUDA 那样的软件生态"。它就算造出再好的 AI 芯片，也没有开发者愿意为它重写一遍代码。芯片再好，没人用得顺手，等于废铁。</p>
+
+    <p>自己从头造一层能对抗 CUDA 的软件生态，要多久？十年起步，而且大概率造到一半就被英伟达的生态惯性拖死了。</p>
+
+    <p>于是高通做了那个最简单的决定：不自己造，直接买。买下 Modular，等于一次性买来一层"既能把我自己的芯片喂饱、又号称支持所有厂商"的现成软件。</p>
+
+    <p>Lattner 本人在收购完成那天，公开说的原话是：这次收购"加速了 Modular 的使命——为所有厂商的硬件提供统一的 AI 软件，超越今天这个碎片化的生态。数据中心是解耦的、异构的，它们理应配得上高质量的软件"。</p>
+
+    <p>翻译成大白话：高通买的不是一家公司，<strong>是一张绕开英伟达收费站的月票。</strong>别人还在收费站排队交过路费，高通直接把修路队买回了家。</p>
+
+    <h2>四、最精明的一手：这笔买卖本身，就是一场"零成本"</h2>
+
+    <p>再看这笔交易的结构，你会更佩服高通的算盘。</p>
+
+    <p>全股票交易。没有现金。高通最多增发 1920 万股自己的股票，把这笔账付掉。协议 6 月 21 日签，7 月 29 日就完成了交割。</p>
+
+    <p>这是这几年最聪明的收购打法：在自家股价高企的时候，不动用一分现金，用估值被 AI 叙事顶得老高的自家股票，去换一支硅谷最贵的编译器天团。买家印张纸，卖家拿了纸，账面上皆大欢喜。</p>
+
+    <strong>自己造这层软件要十年，买现成的只要印一张纸。</strong>
+
+    <p>当然，全股票也有另一层潜台词：高通赌的是 Modular 的价值会跟着高通一起涨，用股票把双方绑上同一条船。卖方拿的不是落袋为安的现金，是一张和高通命运挂钩的船票。这既是信任，也是绑定。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="图注：全股票交易，现金支出为零——高通用被 AI 叙事顶高的自家股票，换回了一支编译器天团。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：全股票交易，现金支出为零——高通用被 AI 叙事顶高的自家股票，换回了一支编译器天团。</figcaption></figure>
+
+    <hr>
+
+    <h2>五、最讽刺的一层：发誓要砸烂"厂商绑架"的人，进了一家芯片厂的编制</h2>
+
+    <p>现在该说回 Chris Lattner 了。</p>
+
+    <p>这个人的履历，在做底层软件的圈子里近乎神话。LLVM、Clang 是他做的——今天半个软件世界的编译器都建在上面；苹果的 Swift 语言是他做的；Google 那套给 AI 用的编译器框架 MLIR，也是他牵头的。他一辈子干的事，就是给不同的硬件写那层"翻译",让上层的人不用管底下的芯片长什么样。</p>
+
+    <p>他 2022 年创办 Modular 的初心，白纸黑字写着：把开发者从"必须选 CUDA"的绑架里解放出来，做一层真正厂商中立的软件。这是一个反垄断色彩极浓的叙事，一个屠龙者的故事。</p>
+
+    <p>四年后的结局是：他成了高通的执行副总裁，头衔叫"先进 AI 软件与平台"。一家芯片厂的高管。</p>
+
+    <p>那句"厂商中立"，现在还成立吗？</p>
+
+    <p>嘴上，Modular 说会继续支持所有厂商的硬件，一个字没改。但你得看清一件事：当这层软件的老板变成了高通的 EVP、它的研发经费由高通结算、它的 KPI 写在高通的财报里——"中立"这两个字的含金量，还剩多少，你自己掂量。一层软件说自己不偏袒任何芯片，可它的东家就是一家芯片厂，这本身就是个需要每天自证的姿势。</p>
+
+    <strong>屠龙的少年最后没有变成龙，他被龙收编了，还发了条推特说"这加速了我们的使命"。</strong>使命当然还在，只是使命现在有 KPI 了。
+
+    <p>但话说回来，也得给 Lattner 一句公道话。纯中立的中间件，可能压根就没有独立活下去的路。英伟达用免费的 CUDA 把整个生态锁死，你一个想收费的中立软件层，拿什么跟"免费"打？最后的结局往往只有两个：要么在理想主义里慢慢饿死，要么被某一家硬件厂收编，当成它攻打对手的武器。Lattner 选了后者。这不一定是背叛，更可能是那层软件唯一能规模化活下去的方式。</p>
+
+    <p>只是这个选择本身，已经把话说得很清楚了：在 AI 这场战争里，纯粹中立的第三方软件，是站不住的。你迟早要选一个东家。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_04.png" alt="图注：一个立志让 AI 摆脱厂商绑架的人，四年后成了一家芯片厂的高管。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：一个立志让 AI 摆脱厂商绑架的人，四年后成了一家芯片厂的高管。</figcaption></figure>
+
+    <hr>
+
+    <h2>结论</h2>
+
+    <p>所以别再盯着模型多考了几分、芯片做到了几纳米了。</p>
+
+    <p>这个夏天真正把 AI 战争的底牌翻给你看的，不是哪个大模型刷新了榜单，是一家做手机芯片的公司，愿意增发 39 亿美元的股票，去买一层夹在中间、你平时根本不会多看一眼的软件。</p>
+
+    <p>因为所有玩家都终于想明白了同一件事：模型会被追平，芯片会被追平，唯一追不平的，是那层把芯片和模型焊死在一起的软件生态。英伟达靠它称王，高通想靠买它翻盘，而那个最想亲手砸烂它的人，最终成了这场围绕它的战争里，一枚被买走的、最贵的棋子。</p>
+
+    <p>你以为你在围观一家手机芯片公司搞了笔收购。其实你在看整个行业，第一次这么坦白地承认：真正的收费站，从来都不在你看得见的地方。</p>
+
+    <p>就这。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>别再盯着模型多考了几分、芯片做到几纳米了。这个夏天真正把 AI 战争底牌翻给你看的，是一家做手机芯片的公司，愿意增发 39 亿美元股票，去买一层夹在中间、你平时根本不会多看一眼的软件。</p>
+    <p>因为所有玩家都想明白了：模型会被追平，芯片会被追平，唯一追不平的，是那层把芯片和模型焊死的软件生态。真正的收费站，从来都不在你看得见的地方。就这。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.modular.com/blog/qualcomm-completes-acquisition-of-modular" target="_blank" rel="noopener">Modular 官方公告：Qualcomm Completes Acquisition of Modular</a></div>
+      <div class="footer-source-item"><a href="https://www.prnewswire.com/news-releases/qualcomm-completes-acquisition-of-modular-302837286.html" target="_blank" rel="noopener">高通官方新闻稿：Qualcomm Completes Acquisition of Modular（PR Newswire）</a></div>
+      <div class="footer-source-item"><a href="https://x.com/clattner_llvm/status/2082470088364753289" target="_blank" rel="noopener">Chris Lattner 本人 X 声明</a></div>
+      <div class="footer-source-item"><a href="https://www.modular.com/blog/modular-raises-250m-to-scale-ais-unified-compute-layer" target="_blank" rel="noopener">Modular 官方：Modular Raises $250M to Scale AI's Unified Compute Layer</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
