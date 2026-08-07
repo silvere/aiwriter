@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenAI 两千美元解出十道数学难题，但最狠的一刀，是把'判对错'这件事从人类手里拿走了</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI与科学</span>
+  <h1>OpenAI 两千美元解出十道数学难题，但最狠的一刀，是把'判对错'这件事从人类手里拿走了</h1>
+  <div class="hero-meta">
+    <span>2026-08-07</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">8 月 1 日 OpenAI 甩出的十个数学证明，最值得记住的不是 AI 会做题了，而是这些证明没有一个人类完整读过，判它们对不对的是一台编译器。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>导语</h2>
+<p>先说结论里最反常识的一部分：8 月 1 日 OpenAI 甩出来的这十个数学证明，最值得记住的不是"AI 会做数学题了"，而是这些证明从头到尾没有一个人类完整读过，判它们对不对的，是一台编译器。你去 GitHub 上把那个叫 <code>openai/ten-proofs</code> 的仓库翻开，里面躺着十个 Lean 文件，其中解决群论那道题的 <code>NonSoficGroup.lean</code>，光代码就三万四千多行。三万四千行是什么概念？一个数学家一辈子读的论文加起来可能都没这么长。没有人逐行读它，也没有人打算逐行读它——大家的做法是，把它丢进 Lean 4 编译器，等一个二元结果：通过，或者不通过。所有媒体都在惊呼 AI 多聪明，惊呼两千美元多便宜。真正被这件事悄悄换掉的，是那个当了三百多年数学终审裁判的人类（笑）。</p>
+<h2>一、先把这事儿本身说清楚，不吹也不黑</h2>
+<p>OpenAI 8 月 1 日发的公告叫《数学与理论计算机科学的十项进展》，主角是它还没发布的下一代模型 Astra——注意，是内部版本，你现在买不到，也没有定价。这个内部模型干的事，是在十个数学和理论计算机的公开问题上给出了新结果，并且每一个都配了一份机器可验证的 Lean 证明，全部开源挂在 GitHub 上，用的还是宽松的 Apache-2.0 许可证。</p>
+<p>这十道题不是随便凑的。翻仓库的 README，逐条列得清清楚楚：高维球堆积密度的渐近上界改进、二进制码的更强上界、构造出一个"非索非群"、Connes 刚性相关猜想的一个反例、计算积和式的算术电路下界、量子博弈的指数级平行重复、格上最近向量问题的困难性、凸体体积的一个尖锐上界，外加三道 Erdős 老爷子留下的组合难题（题号 146、180、183）。领域横跨几何、群论、量子复杂度、密码学、极值组合——摊子铺得相当开。</p>
+<p>其中最招人的两个招牌，一个是群论里的"非索非群"。这个概念是数学家格罗莫夫 1999 年前后提出来的，之后"是不是所有的群都能被有限置换逼近"这个问题就一直挂在那儿，快三十年没人解决。Astra 说它构造出了一个不能被这么逼近的群。另一个是高维球堆积的密度上界——别误会，这不是维亚佐夫斯卡拿菲尔兹奖的那个"精确解出 8 维和 24 维"的工作，而是一个关于足够高维、渐近意义上的上界。这个方向上一次实质性的进展，还得追溯到 1978 年苏联那对搭档给出的界。快半个世纪了。</p>
+<p>到这儿为止，都是硬事实，仓库里能查证的那种。被淹没在欢呼声里、真正有意思的东西，从下面才开始。</p>
+<h2>二、真正的主角不是 Astra，是那个叫 Lean 的编译器</h2>
+<p>数学这个行当，几百年来靠一套很"人"的机制运转：你证明了一个东西，写成论文，投给期刊，编辑找几个同领域的专家（这就是所谓同行评审），他们花几个月、有时候几年，一行一行读你的推导，挑毛病，最后判断——这个证明，能不能把我说服。</p>
+<p>注意这套机制的本质：一个证明"对不对"，取决于"有没有把足够多的聪明人说服"。它是社会性的，是靠信任堆出来的。历史上出过不少乌龙，某个证明被顶级期刊接收、大家都觉得对，过几年才发现中间有个洞。人会累，会走神，会碍于情面，会看走眼。</p>
+<p>Lean 把这套东西整个掀翻了。Lean 是一个形式化证明系统，你把证明的每一步都翻译成它能理解的、严格到变态的形式语言，然后它的可信内核会去检查：从公理出发，这一串推导是不是每一步都严丝合缝。检查的结果只有两种，通过或者不通过，没有"我觉得大概对"，没有"这一步有点跳跃但应该能补上"。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图注：同一个问题——'这个证明对不对'——三百年来问的是人，现在问的是一台编译器，几秒钟给你一个通过或不通过。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：同一个问题——'这个证明对不对'——三百年来问的是人，现在问的是一台编译器，几秒钟给你一个通过或不通过。</figcaption></figure>
+
+<p>这意味着什么？意味着验证一个证明，不再需要那几位稀缺的、忙得要死的顶级专家。任何人，只要把那份 Lean 证书跑一遍编译器，就能独立确认它成立。信任的来源从"某个权威说它对"，变成了"编译器说它对"。数学界过去最贵、最堵的那个环节——靠人评审——被一段程序绕过去了。</p>
+<p><strong>几百年来，一个数学证明的最终裁判是人；从这十个文件开始，最终裁判是编译器。</strong> 这才是这件事真正的分水岭，比"AI 会做题"重得多。</p>
+<h2>三、三万四千行，一个人类从头读到尾的都没有</h2>
+<p>裁判换成机器，代价是证明本身变得人类读不了了。</p>
+<p>再回到那个 <code>NonSoficGroup.lean</code>。三万四千四百四十行 Lean 代码，里面定义了一堆诸如 <code>UnitaryRepresentation</code>、<code>KazhdanPair</code>、<code>HasPropertyT</code> 之类的结构，环环相扣。这东西的存在目的不是给人读的，是给编译器读的。你让格罗莫夫本人来，让任何一个在世的顶级群论专家来，逐行读完并独立确认这三万四千行里没有一处逻辑跳跃——现实里没有人会这么干，因为这件事已经交给编译器了，人去逐行读纯属浪费生命。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="图注：三万四千行 Lean 代码，人类读它的方式不是'读'，是让编译器替自己读——证明还在，读者从人变成了机器。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：三万四千行 Lean 代码，人类读它的方式不是'读'，是让编译器替自己读——证明还在，读者从人变成了机器。</figcaption></figure>
+
+<p>那人类数学家在这套新流程里干嘛？干翻译。今年 5 月，Astra 的上一个成果——推翻了埃尔德什的单位距离猜想——出来之后，包括菲尔兹奖得主高尔斯（Timothy Gowers）和诺加·阿隆（Noga Alon）在内的九位数学家，专门凑一块儿写了一篇论文（arXiv:2605.20695），干的活就是把那个机器生成的证明，"消化成一个简短的、人类可以核实的版本"。九个顶级大脑，围着一个机器吐出来的证明，做注解、做溯源、翻成人能读的版本。高尔斯本人对那个单位距离的证明评价极高，说他会毫不犹豫地推荐它上《数学年刊》——但那是对五月那道题说的，别跟八月这十道混为一谈。</p>
+<p>顺带说一句，机器丢出来的东西是真能激起数学界反应的，不是自嗨。八月一号公告之后第三天，就有数学家挂出了跟进的论文（arXiv:2608.02025，讨论无挠的非索非群）。人类没闲着，只是活儿变了：<strong>从"证明给你看"，变成了"解释给你听机器证了个啥"。</strong></p>
+<h2>四、OpenAI 只让你看分子，分母它自己收着</h2>
+<p>现在说说那个被媒体念叨得最欢的"两千美元"。</p>
+<p>这个数字来自 OpenAI 研究员诺姆·布朗（Noam Brown）在 X 上的说法：生成这全部十个突破的证明，加起来的算力成本不到两千美元（按另一款已发布模型 Sol 的 API 价格折算的）。听着确实炸——十道悬了几十年的难题，两千块，一顿好点的饭钱。媒体标题里"每道题两千美元""平均一道两百"什么口径都有，反正怎么便宜怎么来。</p>
+<p>但同一个人，在同一串帖子里还说了另外半句话，这半句话媒体基本没转：他们也试过别的重大问题，没成功，包括千禧年大奖那个级别的难题，一个都没搞定。换句话说，两千美元是十个"成功案例"的成本。分子给你看得清清楚楚，分母——试了多少道、失败了多少道、烧了多少算力在那些无声无息的失败上——他没说，你也查不到。</p>
+<p>这套叙事你熟不熟？把成功的样本挑出来，标上一个惊人的低价，分母那部分安静地留在抽屉里。<strong>任何时候有人只给你看命中率的分子，不给你看分母，你都该多问一句：那没打中的呢。</strong> AI 领域的批评者加里·马库斯（Gary Marcus）给这次事件写的文章标题就一句话戳破了姿态——《OpenAI 那个了不起的、但被严重夸大的新模型 Astra》。了不起和被夸大，一个都不少。</p>
+<p>这不是说这十个成果是假的——它们是真的，仓库里躺着，编译器验过。这是说，"两千美元解十道难题"这个被反复传播的爽点，是一个精心修剪过的分子，跟这十个证明本身的分量，是两码事。</p>
+<h2>五、编译器判得了"对不对"，判不了"这题值不值得做"</h2>
+<p>夸完 Lean、拆完营销，得给这件事一个诚实的边界，不然就成了另一种吹。</p>
+<p>Lean 编译器担保的，到底是什么？是"从公理出发，到你写下的这行形式化陈述，中间每一步逻辑都没错"。局部的推理漏洞，一个都跑不过它。这是它的全部本事，也是它货真价实的本事。</p>
+<p>但它管不了另外一件同样要命的事：你写下的那行形式化陈述，是不是当年那道题本身？把一个用人话描述的数学问题，翻译成 Lean 能读的形式语言，这一步翻译对不对、忠不忠实，编译器不负责——那还是人的判断。万一翻译的时候悄悄改了个条件，把一道难题变成了一道简单题，编译器照样给你打"通过"，它只认它读到的那行陈述，不认你心里那道题。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="图注：机器接管了'验算'，没接管'提问'——这道形式化陈述是不是原来那道题、这道题值不值得解，编译器一个字都答不了。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：机器接管了'验算'，没接管'提问'——这道形式化陈述是不是原来那道题、这道题值不值得解，编译器一个字都答不了。</figcaption></figure>
+
+<p>所以数学家没被裁掉，只是他们最值钱的那部分能力，被逼着往上游挪了。逐行验算这件事，交给机器了；剩下的活儿——提出一个值得解的好问题、判断一个结果在整个数学版图里意味着什么、确认形式化的陈述忠实于原来那道题——这些编译器碰都碰不了，反而更稀缺了。今年 6 月，国际数学联盟背书的《莱顿宣言》里几千位数学家（陶哲轩、舒尔茨、阿伦森都在其中）担心的，恰恰是这一层：当一个证明不再是某个人的作品，而是一个没人完全理解的算法产物，出了错谁负责，对了又该算谁的功劳。他们没要求禁止 AI，要求的是在"验证、署名、披露"这些事上把规矩立清楚。</p>
+<h2>结尾</h2>
+<p>把这几层叠起来看，8 月 1 日这件事的真正形状就出来了：AI 解出十道难题是表皮，两千美元是被修剪过的营销分子，而里子是——数学第一次把"这个证明成不成立"的终审权，从人类手里，交给了一台编译器。</p>
+<p>三万四千行代码，没人读，机器说对，它就是对的。这句话里藏着一个所有靠"专家评审"运转的行业迟早都要面对的问题：当验证可以被机器几秒钟完成，那些靠"我读过、我把关、我说了算"吃饭的人，价值到底还剩在哪儿。数学给出的答案暂时是——剩在提问那一端。至于别的行业轮到自己的时候，答案是不是也这么体面，那就是另一回事了（笑）。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>AI 解出十道难题是表皮，两千美元是被修剪过的营销分子，里子是——数学第一次把'这个证明成不成立'的终审权，从人类手里交给了一台编译器。</p>
+    <p>三万四千行代码没人读，机器说对它就是对的。当验证能被机器几秒完成，那些靠'我读过、我把关、我说了算'吃饭的人，价值到底还剩在哪儿。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://openai.com/index/ten-advances-in-mathematics/" target="_blank" rel="noopener">Ten advances in mathematics and theoretical computer science（OpenAI 官方公告）</a></div>
+      <div class="footer-source-item"><a href="https://github.com/openai/ten-proofs" target="_blank" rel="noopener">openai/ten-proofs（Lean 证明开源仓库，含 NonSoficGroup.lean 等十个文件）</a></div>
+      <div class="footer-source-item"><a href="https://x.com/polynoamial/status/2083470822258467194" target="_blank" rel="noopener">Noam Brown 关于成本与失败尝试的说明（X/@polynoamial）</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2605.20695" target="_blank" rel="noopener">Remarks on the disproof of the unit distance conjecture（九位数学家伴随论文，arXiv:2605.20695）</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2608.02025" target="_blank" rel="noopener">A torsion-free non-sofic group（后续跟进论文，arXiv:2608.02025）</a></div>
+      <div class="footer-source-item"><a href="https://garymarcus.substack.com/p/openais-amazing-but-vastly-oversold" target="_blank" rel="noopener">OpenAI's amazing — but vastly oversold — new model Astra（Gary Marcus）</a></div>
+      <div class="footer-source-item"><a href="https://leidendeclaration.ai/" target="_blank" rel="noopener">Leiden Declaration on AI and Mathematics（国际数学联盟背书）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
