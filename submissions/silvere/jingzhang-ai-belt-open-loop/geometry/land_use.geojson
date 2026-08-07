@@ -1,0 +1,1322 @@
+{
+  "type": "FeatureCollection",
+  "name": "land_use_topology_partition",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "LU-001",
+      "properties": {
+        "id": "LU-001",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 256721.767,
+        "land_use_code": "05",
+        "name_zh": "南门户智能商务用地",
+        "design_note_zh": "西直门外大街界面,城市客厅门户"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34070000000001,
+              39.93899999999999
+            ],
+            [
+              116.34056227958217,
+              39.94396074595945
+            ],
+            [
+              116.34604314150954,
+              39.94399179144567
+            ],
+            [
+              116.3460906600539,
+              39.93900021410458
+            ],
+            [
+              116.34070000000001,
+              39.93899999999999
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-002",
+      "properties": {
+        "id": "LU-002",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 94797.566,
+        "land_use_code": "1401",
+        "name_zh": "遗址公园南端绿地",
+        "design_note_zh": "绿脉南起点·百年京张纪念绿地"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.3460906600539,
+              39.93900021410458
+            ],
+            [
+              116.34604314150954,
+              39.94399179144567
+            ],
+            [
+              116.34804198568112,
+              39.9440030491031
+            ],
+            [
+              116.34808946566979,
+              39.93900022979255
+            ],
+            [
+              116.3460906600539,
+              39.93900021410458
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-003",
+      "properties": {
+        "id": "LU-003",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 344879.666,
+        "land_use_code": "0701",
+        "name_zh": "南门户居住用地",
+        "design_note_zh": "存量居住,更新完善配套"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.3553,
+              39.939
+            ],
+            [
+              116.34808946566979,
+              39.93900022979255
+            ],
+            [
+              116.34804198568112,
+              39.9440030491031
+            ],
+            [
+              116.35530001033683,
+              39.9440436371272
+            ],
+            [
+              116.3553,
+              39.939
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-004",
+      "properties": {
+        "id": "LU-004",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 306699.145,
+        "land_use_code": "05",
+        "name_zh": "大钟寺智能原生消费用地",
+        "design_note_zh": "智能终端首发·内容消费·国际路演"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34040014296616,
+              39.949799822182996
+            ],
+            [
+              116.34598753409115,
+              39.94983147746338
+            ],
+            [
+              116.34604314150954,
+              39.94399179144567
+            ],
+            [
+              116.34056227958217,
+              39.94396074595945
+            ],
+            [
+              116.34040014296616,
+              39.949799822182996
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-005",
+      "properties": {
+        "id": "LU-005",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 110779.805,
+        "land_use_code": "1403",
+        "name_zh": "大钟寺站前广场用地",
+        "design_note_zh": "轨道站四象限缝合广场"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34604314150954,
+              39.94399179144567
+            ],
+            [
+              116.34598753409115,
+              39.94983147746338
+            ],
+            [
+              116.34798654819956,
+              39.94984273743686
+            ],
+            [
+              116.34804198568112,
+              39.9440030491031
+            ],
+            [
+              116.34604314150954,
+              39.94399179144567
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-006",
+      "properties": {
+        "id": "LU-006",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 193864.64,
+        "land_use_code": "0802",
+        "name_zh": "大钟寺数据要素科研用地",
+        "design_note_zh": "数据要素与数字资产研发"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34804198568112,
+              39.9440030491031
+            ],
+            [
+              116.34798654819956,
+              39.94984273743686
+            ],
+            [
+              116.35148482525157,
+              39.94986235945678
+            ],
+            [
+              116.3515399653429,
+              39.94402266708702
+            ],
+            [
+              116.34804198568112,
+              39.9440030491031
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-007",
+      "properties": {
+        "id": "LU-007",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 209907.738,
+        "land_use_code": "05",
+        "name_zh": "大钟寺商务服务用地",
+        "design_note_zh": "领军企业总部与商务服务"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.35530001033683,
+              39.9440436371272
+            ],
+            [
+              116.3515399653429,
+              39.94402266708702
+            ],
+            [
+              116.35148482525157,
+              39.94986235945678
+            ],
+            [
+              116.35530001609067,
+              39.94988363871534
+            ],
+            [
+              116.35530001033683,
+              39.9440436371272
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-008",
+      "properties": {
+        "id": "LU-008",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 411191.334,
+        "land_use_code": "0701",
+        "name_zh": "缝合区居住用地",
+        "design_note_zh": "存量小区渐进更新"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.3401874250797,
+              39.957458609778186
+            ],
+            [
+              116.34591457227994,
+              39.957491065417415
+            ],
+            [
+              116.34598753409115,
+              39.94983147746338
+            ],
+            [
+              116.34040014296616,
+              39.949799822182996
+            ],
+            [
+              116.3401874250797,
+              39.957458609778186
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-009",
+      "properties": {
+        "id": "LU-009",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 145303.816,
+        "land_use_code": "1401",
+        "name_zh": "遗址公园缝合段绿地",
+        "design_note_zh": "慢行断点缝合示范段"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34598753409115,
+              39.94983147746338
+            ],
+            [
+              116.34591457227994,
+              39.957491065417415
+            ],
+            [
+              116.34791380936034,
+              39.95750232842929
+            ],
+            [
+              116.34798654819956,
+              39.94984273743686
+            ],
+            [
+              116.34598753409115,
+              39.94983147746338
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-010",
+      "properties": {
+        "id": "LU-010",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 534212.323,
+        "land_use_code": "0702",
+        "name_zh": "缝合区社区服务用地",
+        "design_note_zh": "AI社区服务嵌入"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.35530001609067,
+              39.94988363871534
+            ],
+            [
+              116.34798654819956,
+              39.94984273743686
+            ],
+            [
+              116.34791380936034,
+              39.95750232842929
+            ],
+            [
+              116.35530001352406,
+              39.957543640739466
+            ],
+            [
+              116.35530001609067,
+              39.94988363871534
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-011",
+      "properties": {
+        "id": "LU-011",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 412400.541,
+        "land_use_code": "0802",
+        "name_zh": "学院南科研用地",
+        "design_note_zh": "孵化与中试空间"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.33997909275297,
+              39.96495742188477
+            ],
+            [
+              116.34584310732468,
+              39.964990661743805
+            ],
+            [
+              116.34591457227994,
+              39.957491065417415
+            ],
+            [
+              116.3401874250797,
+              39.957458609778186
+            ],
+            [
+              116.33997909275297,
+              39.96495742188477
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-012",
+      "properties": {
+        "id": "LU-012",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 142268.933,
+        "land_use_code": "1401",
+        "name_zh": "遗址公园学院南段绿地"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34591457227994,
+              39.957491065417415
+            ],
+            [
+              116.34584310732468,
+              39.964990661743805
+            ],
+            [
+              116.34784256280267,
+              39.965001927731294
+            ],
+            [
+              116.34791380936034,
+              39.95750232842929
+            ],
+            [
+              116.34591457227994,
+              39.957491065417415
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-013",
+      "properties": {
+        "id": "LU-013",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 528118.316,
+        "land_use_code": "0701",
+        "name_zh": "学院南人才居住用地",
+        "design_note_zh": "人才公寓与青年社区"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.3553,
+              39.965
+            ],
+            [
+              116.35530001352406,
+              39.957543640739466
+            ],
+            [
+              116.34791380936034,
+              39.95750232842929
+            ],
+            [
+              116.34784256280267,
+              39.965001927731294
+            ],
+            [
+              116.35529651152565,
+              39.96504362325558
+            ],
+            [
+              116.3553,
+              39.965
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-014",
+      "properties": {
+        "id": "LU-014",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 1027402.019,
+        "land_use_code": "0802",
+        "name_zh": "中段科研走廊用地",
+        "design_note_zh": "高校成果外溢承接"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.3397,
+              39.97500000000001
+            ],
+            [
+              116.34024557616414,
+              39.98345893425363
+            ],
+            [
+              116.34566671217098,
+              39.983489665023924
+            ],
+            [
+              116.34584310732468,
+              39.964990661743805
+            ],
+            [
+              116.33997909275297,
+              39.96495742188477
+            ],
+            [
+              116.3397,
+              39.97500000000001
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-015",
+      "properties": {
+        "id": "LU-015",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 350930.814,
+        "land_use_code": "1401",
+        "name_zh": "遗址公园中段绿地",
+        "design_note_zh": "线性公园主段"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34584310732468,
+              39.964990661743805
+            ],
+            [
+              116.34566671217098,
+              39.983489665023924
+            ],
+            [
+              116.34766670671416,
+              39.98350093835399
+            ],
+            [
+              116.34784256280267,
+              39.965001927731294
+            ],
+            [
+              116.34584310732468,
+              39.964990661743805
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-016",
+      "properties": {
+        "id": "LU-016",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 614128.865,
+        "land_use_code": "0701",
+        "name_zh": "中段居住用地",
+        "design_note_zh": "存量居住更新"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34784256280267,
+              39.965001927731294
+            ],
+            [
+              116.34766670671416,
+              39.98350093835399
+            ],
+            [
+              116.35116669953193,
+              39.98352058364957
+            ],
+            [
+              116.35134161225365,
+              39.96502156023144
+            ],
+            [
+              116.34784256280267,
+              39.965001927731294
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-017",
+      "properties": {
+        "id": "LU-017",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 579614.34,
+        "land_use_code": "0804",
+        "name_zh": "中段教育科研用地",
+        "design_note_zh": "校地共享创新设施"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.35529651152565,
+              39.96504362325558
+            ],
+            [
+              116.35134161225365,
+              39.96502156023144
+            ],
+            [
+              116.35116669953193,
+              39.98352058364957
+            ],
+            [
+              116.35381732133423,
+              39.98353539113353
+            ],
+            [
+              116.35529651152565,
+              39.96504362325558
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-018",
+      "properties": {
+        "id": "LU-018",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 479014.476,
+        "land_use_code": "0802",
+        "name_zh": "原点社区近校科研用地",
+        "design_note_zh": "近校孵化·开源协作"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34089093957387,
+              39.993462603654926
+            ],
+            [
+              116.34557129529512,
+              39.993489125668624
+            ],
+            [
+              116.34566671217098,
+              39.983489665023924
+            ],
+            [
+              116.34024557616414,
+              39.98345893425363
+            ],
+            [
+              116.34089093957387,
+              39.993462603654926
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-019",
+      "properties": {
+        "id": "LU-019",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 189692.794,
+        "land_use_code": "1403",
+        "name_zh": "开源广场用地",
+        "design_note_zh": "成果发布与开发者社区客厅"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34566671217098,
+              39.983489665023924
+            ],
+            [
+              116.34557129529512,
+              39.993489125668624
+            ],
+            [
+              116.3475715814331,
+              39.99350040296929
+            ],
+            [
+              116.34766670671416,
+              39.98350093835399
+            ],
+            [
+              116.34566671217098,
+              39.983489665023924
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-020",
+      "properties": {
+        "id": "LU-020",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 331962.357,
+        "land_use_code": "0702",
+        "name_zh": "原点社区服务用地",
+        "design_note_zh": "人才服务与社区配套"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34766670671416,
+              39.98350093835399
+            ],
+            [
+              116.3475715814331,
+              39.99350040296929
+            ],
+            [
+              116.35107208454325,
+              39.99352005518416
+            ],
+            [
+              116.35116669953193,
+              39.98352058364957
+            ],
+            [
+              116.34766670671416,
+              39.98350093835399
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-021",
+      "properties": {
+        "id": "LU-021",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 225916.018,
+        "land_use_code": "0701",
+        "name_zh": "原点社区人才居住用地",
+        "design_note_zh": "人才特区居住配套"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.3533,
+              39.989999999999995
+            ],
+            [
+              116.35381732133423,
+              39.98353539113353
+            ],
+            [
+              116.35116669953193,
+              39.98352058364957
+            ],
+            [
+              116.35107208454325,
+              39.99352005518416
+            ],
+            [
+              116.35349353892734,
+              39.99353358763284
+            ],
+            [
+              116.3533,
+              39.989999999999995
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-022",
+      "properties": {
+        "id": "LU-022",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 552635.733,
+        "land_use_code": "0804",
+        "name_zh": "学院路科教用地",
+        "design_note_zh": "校区园区界面开放"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34169999999999,
+              40.006
+            ],
+            [
+              116.34177157329304,
+              40.007467605610074
+            ],
+            [
+              116.34543763126666,
+              40.00748836987791
+            ],
+            [
+              116.34557129529512,
+              39.993489125668624
+            ],
+            [
+              116.34089093957387,
+              39.993462603654926
+            ],
+            [
+              116.34169999999999,
+              40.006
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-023",
+      "properties": {
+        "id": "LU-023",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 265570.456,
+        "land_use_code": "1401",
+        "name_zh": "遗址公园科教段绿地"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34557129529512,
+              39.993489125668624
+            ],
+            [
+              116.34543763126666,
+              40.00748836987791
+            ],
+            [
+              116.34743832588305,
+              40.00749965273935
+            ],
+            [
+              116.3475715814331,
+              39.99350040296929
+            ],
+            [
+              116.34557129529512,
+              39.993489125668624
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-024",
+      "properties": {
+        "id": "LU-024",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 845917.906,
+        "land_use_code": "0802",
+        "name_zh": "学院路科研转化用地",
+        "design_note_zh": "实验室与转化平台"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.35349353892734,
+              39.99353358763284
+            ],
+            [
+              116.3475715814331,
+              39.99350040296929
+            ],
+            [
+              116.34743832588305,
+              40.00749965273935
+            ],
+            [
+              116.35426074398407,
+              40.00753786785313
+            ],
+            [
+              116.35349353892734,
+              39.99353358763284
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-025",
+      "properties": {
+        "id": "LU-025",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 275455.718,
+        "land_use_code": "0802",
+        "name_zh": "众智园全栈创新用地",
+        "design_note_zh": "全栈自主创新加速"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34218627469566,
+              40.01596995872591
+            ],
+            [
+              116.34535643231402,
+              40.01598791061021
+            ],
+            [
+              116.34543763126666,
+              40.00748836987791
+            ],
+            [
+              116.34177157329304,
+              40.007467605610074
+            ],
+            [
+              116.34218627469566,
+              40.01596995872591
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-026",
+      "properties": {
+        "id": "LU-026",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 161239.515,
+        "land_use_code": "1403",
+        "name_zh": "治理广场用地",
+        "design_note_zh": "AI安全治理展示与标准工作坊"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34543763126666,
+              40.00748836987791
+            ],
+            [
+              116.34535643231402,
+              40.01598791061021
+            ],
+            [
+              116.34735737507505,
+              40.01599919684892
+            ],
+            [
+              116.34743832588305,
+              40.00749965273935
+            ],
+            [
+              116.34543763126666,
+              40.00748836987791
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-027",
+      "properties": {
+        "id": "LU-027",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 571830.553,
+        "land_use_code": "05",
+        "name_zh": "众智园产业服务用地",
+        "design_note_zh": "算力服务与企业服务平台"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.35426074398407,
+              40.00753786785313
+            ],
+            [
+              116.34743832588305,
+              40.00749965273935
+            ],
+            [
+              116.34735737507505,
+              40.01599919684892
+            ],
+            [
+              116.35472668222656,
+              40.01604046518089
+            ],
+            [
+              116.35426074398407,
+              40.00753786785313
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-028",
+      "properties": {
+        "id": "LU-028",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 209833.744,
+        "land_use_code": "0802",
+        "name_zh": "众智园北科研用地",
+        "design_note_zh": "国家级平台与重点实验室预留"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34255226172223,
+              40.02347203439436
+            ],
+            [
+              116.34528475743062,
+              40.023487505126205
+            ],
+            [
+              116.34535643231402,
+              40.01598791061021
+            ],
+            [
+              116.34218627469566,
+              40.01596995872591
+            ],
+            [
+              116.34255226172223,
+              40.02347203439436
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-029",
+      "properties": {
+        "id": "LU-029",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 142270.355,
+        "land_use_code": "1401",
+        "name_zh": "遗址公园北段绿地",
+        "design_note_zh": "绿脉北端衔接清河"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34535643231402,
+              40.01598791061021
+            ],
+            [
+              116.34528475743062,
+              40.023487505126205
+            ],
+            [
+              116.34728591923067,
+              40.02349879434557
+            ],
+            [
+              116.34735737507505,
+              40.01599919684892
+            ],
+            [
+              116.34535643231402,
+              40.01598791061021
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-030",
+      "properties": {
+        "id": "LU-030",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 541097.758,
+        "land_use_code": "16",
+        "name_zh": "众智园东留白用地",
+        "design_note_zh": "战略留白,待官方条件确认后深化"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.35472668222656,
+              40.01604046518089
+            ],
+            [
+              116.34735737507505,
+              40.01599919684892
+            ],
+            [
+              116.34728591923067,
+              40.02349879434557
+            ],
+            [
+              116.35513788908828,
+              40.02354275607473
+            ],
+            [
+              116.35472668222656,
+              40.01604046518089
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "LU-031",
+      "properties": {
+        "id": "LU-031",
+        "layer": "LAND_USE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 357166.377,
+        "land_use_code": "1402",
+        "name_zh": "清河防护绿带",
+        "design_note_zh": "清河低碳创新廊·滨水界面"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34270000000001,
+              40.0265
+            ],
+            [
+              116.3553,
+              40.0265
+            ],
+            [
+              116.35513788908828,
+              40.02354275607473
+            ],
+            [
+              116.34255226172223,
+              40.02347203439436
+            ],
+            [
+              116.34270000000001,
+              40.0265
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

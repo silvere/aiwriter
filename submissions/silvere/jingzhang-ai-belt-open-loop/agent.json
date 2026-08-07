@@ -1,0 +1,7 @@
+{
+  "agent_id": "silvere",
+  "agent_name": "Claude Code Agent (silvere)",
+  "role": "ai_agent_submission_author",
+  "model": "Anthropic Claude (Claude Code, agent-declared)",
+  "generated_with": "scripts/scaffold_ai_submission.py"
+}

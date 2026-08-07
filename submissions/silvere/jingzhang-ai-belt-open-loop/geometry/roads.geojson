@@ -1,0 +1,418 @@
+{
+  "type": "FeatureCollection",
+  "name": "roads_design",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "ROAD-001",
+      "properties": {
+        "id": "ROAD-001",
+        "layer": "ROAD_CENTERLINE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "road_class": "secondary",
+        "name_zh": "大钟寺南街(概念)",
+        "length_m_declared": 1259.6
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            116.34056227958217,
+            39.94396074595945
+          ],
+          [
+            116.35530001033683,
+            39.9440436371272
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ROAD-002",
+      "properties": {
+        "id": "ROAD-002",
+        "layer": "ROAD_CENTERLINE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "road_class": "branch",
+        "name_zh": "大钟寺北街(概念)",
+        "length_m_declared": 1273.4
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            116.34040014296616,
+            39.949799822182996
+          ],
+          [
+            116.35530001609067,
+            39.94988363871534
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ROAD-003",
+      "properties": {
+        "id": "ROAD-003",
+        "layer": "ROAD_CENTERLINE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "road_class": "branch",
+        "name_zh": "缝合一街(概念)",
+        "length_m_declared": 1291.4
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            116.3401874250797,
+            39.957458609778186
+          ],
+          [
+            116.35530001352406,
+            39.957543640739466
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ROAD-004",
+      "properties": {
+        "id": "ROAD-004",
+        "layer": "ROAD_CENTERLINE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "road_class": "branch",
+        "name_zh": "学院南街(概念)",
+        "length_m_declared": 1308.8
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            116.33997909275297,
+            39.96495742188477
+          ],
+          [
+            116.35529651152565,
+            39.96504362325558
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ROAD-005",
+      "properties": {
+        "id": "ROAD-005",
+        "layer": "ROAD_CENTERLINE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "road_class": "secondary",
+        "name_zh": "中段共享街(概念)",
+        "length_m_declared": 1159.3
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            116.34024557616414,
+            39.98345893425363
+          ],
+          [
+            116.35381732133423,
+            39.98353539113353
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ROAD-006",
+      "properties": {
+        "id": "ROAD-006",
+        "layer": "ROAD_CENTERLINE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "road_class": "branch",
+        "name_zh": "原点南街(概念)",
+        "length_m_declared": 1076.4
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            116.34089093957387,
+            39.993462603654926
+          ],
+          [
+            116.35349353892734,
+            39.99353358763284
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ROAD-007",
+      "properties": {
+        "id": "ROAD-007",
+        "layer": "ROAD_CENTERLINE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "road_class": "secondary",
+        "name_zh": "原点北街(概念)",
+        "length_m_declared": 1066.5
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            116.34177157329304,
+            40.007467605610074
+          ],
+          [
+            116.35426074398407,
+            40.00753786785313
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ROAD-008",
+      "properties": {
+        "id": "ROAD-008",
+        "layer": "ROAD_CENTERLINE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "road_class": "branch",
+        "name_zh": "众智园南街(概念)",
+        "length_m_declared": 1070.7
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            116.34218627469566,
+            40.01596995872591
+          ],
+          [
+            116.35472668222656,
+            40.01604046518089
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ROAD-009",
+      "properties": {
+        "id": "ROAD-009",
+        "layer": "ROAD_CENTERLINE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "road_class": "branch",
+        "name_zh": "遗址公园西路(概念)",
+        "length_m_declared": 9716.1,
+        "design_note_zh": "公园西侧服务性道路"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            116.3460906600539,
+            39.93900021410458
+          ],
+          [
+            116.34525595786162,
+            40.02650011077656
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ROAD-010",
+      "properties": {
+        "id": "ROAD-010",
+        "layer": "ROAD_CENTERLINE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "road_class": "branch",
+        "name_zh": "遗址公园东路(概念)",
+        "length_m_declared": 9715.8,
+        "design_note_zh": "公园东侧服务性道路"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            116.34808943638497,
+            39.93900331582929
+          ],
+          [
+            116.34725731483286,
+            40.02650015815967
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ROAD-011",
+      "properties": {
+        "id": "ROAD-011",
+        "layer": "ROAD_CENTERLINE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "road_class": "secondary",
+        "name_zh": "东集散路(概念)",
+        "length_m_declared": 9713.6,
+        "design_note_zh": "东侧南北集散通道"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            116.35158716150094,
+            39.93902293035824
+          ],
+          [
+            116.35075969032503,
+            40.02650015790264
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ROAD-012",
+      "properties": {
+        "id": "ROAD-012",
+        "layer": "ROAD_CENTERLINE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "road_class": "greenway",
+        "name_zh": "京张绿脉步行骑行道(概念)",
+        "length_m_declared": 9703.5,
+        "design_note_zh": "贯通南北的主慢行走廊"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            116.34708964567439,
+            39.939044115989816
+          ],
+          [
+            116.34625730521417,
+            40.02643006322233
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ROAD-013",
+      "properties": {
+        "id": "ROAD-013",
+        "layer": "ROAD_CENTERLINE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "road_class": "transit_connection",
+        "name_zh": "大钟寺站接驳(概念)",
+        "length_m_declared": 700.0,
+        "design_note_zh": "轨道站与绿脉/广场的接驳通道"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            116.34260477831631,
+            39.946976850509934
+          ],
+          [
+            116.35079522640511,
+            39.947023004847594
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ROAD-014",
+      "properties": {
+        "id": "ROAD-014",
+        "layer": "ROAD_CENTERLINE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "road_class": "transit_connection",
+        "name_zh": "原点社区接驳(概念)",
+        "length_m_declared": 700.0,
+        "design_note_zh": "轨道站与绿脉/广场的接驳通道"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            116.34260230126361,
+            39.98847683061835
+          ],
+          [
+            116.35079770346589,
+            39.98852302452758
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ROAD-015",
+      "properties": {
+        "id": "ROAD-015",
+        "layer": "ROAD_CENTERLINE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "road_class": "transit_connection",
+        "name_zh": "众智园接驳(概念)",
+        "length_m_declared": 700.0,
+        "design_note_zh": "轨道站与绿脉/广场的接驳通道"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            116.34260089630767,
+            40.01197681935993
+          ],
+          [
+            116.3507991084264,
+            40.01202303566608
+          ]
+        ]
+      }
+    }
+  ]
+}

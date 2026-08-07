@@ -1,0 +1,465 @@
+{
+  "type": "FeatureCollection",
+  "name": "public_space_design",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "PUB-001",
+      "properties": {
+        "id": "PUB-001",
+        "layer": "PUBLIC_SPACE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 110779.805,
+        "public_space_type": "plaza",
+        "name_zh": "大钟寺站前广场用地"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34604314150954,
+              39.94399179144567
+            ],
+            [
+              116.34598753409115,
+              39.94983147746338
+            ],
+            [
+              116.34798654819956,
+              39.94984273743686
+            ],
+            [
+              116.34804198568112,
+              39.9440030491031
+            ],
+            [
+              116.34604314150954,
+              39.94399179144567
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "PUB-002",
+      "properties": {
+        "id": "PUB-002",
+        "layer": "PUBLIC_SPACE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 189692.794,
+        "public_space_type": "plaza",
+        "name_zh": "开源广场用地"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34566671217098,
+              39.983489665023924
+            ],
+            [
+              116.34557129529512,
+              39.993489125668624
+            ],
+            [
+              116.3475715814331,
+              39.99350040296929
+            ],
+            [
+              116.34766670671416,
+              39.98350093835399
+            ],
+            [
+              116.34566671217098,
+              39.983489665023924
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "PUB-003",
+      "properties": {
+        "id": "PUB-003",
+        "layer": "PUBLIC_SPACE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 161239.515,
+        "public_space_type": "plaza",
+        "name_zh": "治理广场用地"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34543763126666,
+              40.00748836987791
+            ],
+            [
+              116.34535643231402,
+              40.01598791061021
+            ],
+            [
+              116.34735737507505,
+              40.01599919684892
+            ],
+            [
+              116.34743832588305,
+              40.00749965273935
+            ],
+            [
+              116.34543763126666,
+              40.00748836987791
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "PUB-004",
+      "properties": {
+        "id": "PUB-004",
+        "layer": "PUBLIC_SPACE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 19600.0,
+        "public_space_type": "pocket_plaza",
+        "name_zh": "南门户纪念广场",
+        "design_note_zh": "百年京张时间轴入口·AI朝圣起点"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.3471870115727,
+              39.94086499204882
+            ],
+            [
+              116.34717502954229,
+              39.94212579064439
+            ],
+            [
+              116.34881300345647,
+              39.942135002301654
+            ],
+            [
+              116.34882495542853,
+              39.94087420329697
+            ],
+            [
+              116.3471870115727,
+              39.94086499204882
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "PUB-005",
+      "properties": {
+        "id": "PUB-005",
+        "layer": "PUBLIC_SPACE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 16900.0,
+        "public_space_type": "pocket_plaza",
+        "name_zh": "学院南创享广场",
+        "design_note_zh": "孵化中试展示与社区共享"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34224491293736,
+              39.96041031797325
+            ],
+            [
+              116.342233694806,
+              39.96158105441885
+            ],
+            [
+              116.34375510003404,
+              39.96158967715342
+            ],
+            [
+              116.34376629222257,
+              39.96041894035225
+            ],
+            [
+              116.34224491293736,
+              39.96041031797325
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "PUB-006",
+      "properties": {
+        "id": "PUB-006",
+        "layer": "PUBLIC_SPACE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 16900.0,
+        "public_space_type": "pocket_plaza",
+        "name_zh": "中段校地共享广场",
+        "design_note_zh": "校园界面开放节点"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.35124473683925,
+              39.96941037609886
+            ],
+            [
+              116.35123366866962,
+              39.97058111282299
+            ],
+            [
+              116.35275527613811,
+              39.97058961902385
+            ],
+            [
+              116.35276631835305,
+              39.96941888194897
+            ],
+            [
+              116.35124473683925,
+              39.96941037609886
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "PUB-007",
+      "properties": {
+        "id": "PUB-007",
+        "layer": "PUBLIC_SPACE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 16900.0,
+        "public_space_type": "pocket_plaza",
+        "name_zh": "科教转化广场",
+        "design_note_zh": "实验室开放日与成果展示"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34224448809984,
+              39.99941031844831
+            ],
+            [
+              116.3422332544663,
+              40.000581046992856
+            ],
+            [
+              116.34375552489689,
+              40.00058967667159
+            ],
+            [
+              116.34376673253698,
+              39.999418947771275
+            ],
+            [
+              116.34224448809984,
+              39.99941031844831
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "PUB-008",
+      "properties": {
+        "id": "PUB-008",
+        "layer": "PUBLIC_SPACE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 25600.0,
+        "public_space_type": "pocket_plaza",
+        "name_zh": "清河低碳广场",
+        "design_note_zh": "滨水低碳算力体验"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.3510697627356,
+              40.02027430919387
+            ],
+            [
+              116.35105611205788,
+              40.021715203163645
+            ],
+            [
+              116.35293025697258,
+              40.02172568340458
+            ],
+            [
+              116.35294386823395,
+              40.02028478890311
+            ],
+            [
+              116.3510697627356,
+              40.02027430919387
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "PUB-009",
+      "properties": {
+        "id": "PUB-009",
+        "layer": "PUBLIC_SPACE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 75876.58,
+        "public_space_type": "park_active_zone",
+        "name_zh": "遗址公园南活力段",
+        "design_note_zh": "线性公园中承载活动与展示的活力段"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34603362084634,
+              39.94499173769155
+            ],
+            [
+              116.34599553342083,
+              39.94899152263387
+            ],
+            [
+              116.3479945230832,
+              39.9490027822742
+            ],
+            [
+              116.34803249411318,
+              39.94500299574555
+            ],
+            [
+              116.34603362084634,
+              39.94499173769155
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "PUB-010",
+      "properties": {
+        "id": "PUB-010",
+        "layer": "PUBLIC_SPACE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 94846.397,
+        "public_space_type": "park_active_zone",
+        "name_zh": "遗址公园开源活力段",
+        "design_note_zh": "线性公园中承载活动与展示的活力段"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34564286243695,
+              39.98598953022378
+            ],
+            [
+              116.34559515399943,
+              39.990989260546144
+            ],
+            [
+              116.34759536722501,
+              39.99100053685405
+            ],
+            [
+              116.34764292986512,
+              39.986000804546386
+            ],
+            [
+              116.34564286243695,
+              39.98598953022378
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "PUB-011",
+      "properties": {
+        "id": "PUB-011",
+        "layer": "PUBLIC_SPACE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 113816.133,
+        "public_space_type": "park_active_zone",
+        "name_zh": "遗址公园治理活力段",
+        "design_note_zh": "线性公园中承载活动与展示的活力段"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34542330455456,
+              40.00898828885236
+            ],
+            [
+              116.34536598692848,
+              40.01498796465717
+            ],
+            [
+              116.34736690049053,
+              40.014999250498526
+            ],
+            [
+              116.34742404295348,
+              40.00899957230971
+            ],
+            [
+              116.34542330455456,
+              40.00898828885236
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

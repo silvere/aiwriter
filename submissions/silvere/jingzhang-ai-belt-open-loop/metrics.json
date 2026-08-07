@@ -1,0 +1,251 @@
+{
+  "schema_version": "0.1.0",
+  "units": {
+    "length": "m",
+    "area": "sqm"
+  },
+  "metrics": {
+    "site_area_sqm": {
+      "status": "known",
+      "value": 11412825.386,
+      "unit": "sqm",
+      "source_files": [
+        "geometry/site_boundary.geojson"
+      ],
+      "formula": "polygon_area(submitted_site_boundary) @EPSG:4548",
+      "confidence": "high",
+      "assumptions": [
+        "基于 provisional boundary 计算,官方边界发布后需重算"
+      ]
+    },
+    "key_area_count": {
+      "status": "known",
+      "value": 3,
+      "unit": "count",
+      "source_files": [
+        "geometry/key_areas.geojson"
+      ],
+      "formula": "count(KEY_AREA features)",
+      "confidence": "high",
+      "assumptions": []
+    },
+    "key_area_total_sqm": {
+      "status": "known",
+      "value": 3692893.005,
+      "unit": "sqm",
+      "source_files": [
+        "geometry/key_areas.geojson"
+      ],
+      "formula": "sum(polygon_area(key_areas)) @EPSG:4548",
+      "confidence": "medium",
+      "assumptions": [
+        "基于 provisional boundary 计算,官方边界发布后需重算"
+      ]
+    },
+    "green_space_area_sqm": {
+      "status": "known",
+      "value": 1498300.279,
+      "unit": "sqm",
+      "source_files": [
+        "geometry/green_space.geojson"
+      ],
+      "formula": "union_area(green_space) @EPSG:4548",
+      "confidence": "medium",
+      "assumptions": [
+        "基于 provisional boundary 计算,官方边界发布后需重算"
+      ]
+    },
+    "green_ratio": {
+      "status": "known",
+      "value": 0.131282,
+      "unit": "ratio",
+      "source_files": [
+        "geometry/green_space.geojson",
+        "geometry/site_boundary.geojson"
+      ],
+      "formula": "green_space_area_sqm / site_area_sqm",
+      "confidence": "medium",
+      "assumptions": [
+        "基于 provisional boundary 计算,官方边界发布后需重算"
+      ]
+    },
+    "public_space_area_sqm": {
+      "status": "known",
+      "value": 557612.113,
+      "unit": "sqm",
+      "source_files": [
+        "geometry/public_space.geojson"
+      ],
+      "formula": "union_area(public_space) @EPSG:4548",
+      "confidence": "medium",
+      "assumptions": [
+        "基于 provisional boundary 计算,官方边界发布后需重算"
+      ]
+    },
+    "public_space_ratio": {
+      "status": "known",
+      "value": 0.048858,
+      "unit": "ratio",
+      "source_files": [
+        "geometry/public_space.geojson",
+        "geometry/site_boundary.geojson"
+      ],
+      "formula": "public_space_area_sqm / site_area_sqm",
+      "confidence": "medium",
+      "assumptions": [
+        "基于 provisional boundary 计算,官方边界发布后需重算"
+      ]
+    },
+    "building_footprint_area_sqm": {
+      "status": "known",
+      "value": 197818.149,
+      "unit": "sqm",
+      "source_files": [
+        "geometry/buildings.geojson"
+      ],
+      "formula": "union_area(building_footprints) @EPSG:4548",
+      "confidence": "medium",
+      "assumptions": [
+        "建筑基底为概念布局,非现状测绘,待权属和现状数据校准"
+      ]
+    },
+    "building_count": {
+      "status": "known",
+      "value": 92,
+      "unit": "count",
+      "source_files": [
+        "geometry/buildings.geojson"
+      ],
+      "formula": "count(BUILDING_FOOTPRINT features)",
+      "confidence": "medium",
+      "assumptions": []
+    },
+    "road_centerline_length_m": {
+      "status": "known",
+      "value": 50454.9,
+      "unit": "m",
+      "source_files": [
+        "geometry/roads.geojson"
+      ],
+      "formula": "sum(length(road_centerlines)) @EPSG:4548",
+      "confidence": "medium",
+      "assumptions": [
+        "基于 provisional boundary 计算,官方边界发布后需重算"
+      ]
+    },
+    "research_land_area_sqm": {
+      "status": "known",
+      "value": 4576139.117,
+      "unit": "sqm",
+      "source_files": [
+        "geometry/land_use.geojson"
+      ],
+      "formula": "sum(area(land_use where code in 0802,0804)) @EPSG:4548",
+      "confidence": "medium",
+      "assumptions": [
+        "基于 provisional boundary 计算,官方边界发布后需重算"
+      ]
+    },
+    "residential_land_area_sqm": {
+      "status": "known",
+      "value": 2988810.214,
+      "unit": "sqm",
+      "source_files": [
+        "geometry/land_use.geojson"
+      ],
+      "formula": "sum(area(land_use where code in 0701,0702)) @EPSG:4548",
+      "confidence": "medium",
+      "assumptions": [
+        "基于 provisional boundary 计算,官方边界发布后需重算"
+      ]
+    },
+    "commercial_land_area_sqm": {
+      "status": "known",
+      "value": 1345159.202,
+      "unit": "sqm",
+      "source_files": [
+        "geometry/land_use.geojson"
+      ],
+      "formula": "sum(area(land_use where code=05)) @EPSG:4548",
+      "confidence": "medium",
+      "assumptions": [
+        "基于 provisional boundary 计算,官方边界发布后需重算"
+      ]
+    },
+    "phase1_area_sqm": {
+      "status": "known",
+      "value": 4306730.991,
+      "unit": "sqm",
+      "source_files": [
+        "geometry/phasing.geojson"
+      ],
+      "formula": "polygon_area(PHASE-1) @EPSG:4548",
+      "confidence": "medium",
+      "assumptions": [
+        "基于 provisional boundary 计算,官方边界发布后需重算"
+      ]
+    },
+    "ai_scenario_card_count": {
+      "status": "known",
+      "value": 12,
+      "unit": "count",
+      "source_files": [
+        "proposal.md"
+      ],
+      "formula": "count(scenario cards in proposal.md AI 场景章节)",
+      "confidence": "high",
+      "assumptions": []
+    },
+    "renewal_project_count": {
+      "status": "known",
+      "value": 10,
+      "unit": "count",
+      "source_files": [
+        "proposal.md",
+        "geometry/phasing.geojson"
+      ],
+      "formula": "count(renewal projects in 更新项目清单)",
+      "confidence": "high",
+      "assumptions": []
+    },
+    "floor_area_ratio": {
+      "status": "unknown",
+      "value": null,
+      "unit": "ratio",
+      "source_files": [
+        "brief/site-package/ranges/planning_limits.json"
+      ],
+      "formula": "total_floor_area_sqm / official_site_area_sqm",
+      "confidence": "unknown",
+      "assumptions": [],
+      "reason": "官方控规容积率条件缺失,概念层数建议不构成强度结论",
+      "required_for_formal_submission": true
+    },
+    "building_height_m": {
+      "status": "unknown",
+      "value": null,
+      "unit": "m",
+      "source_files": [
+        "brief/site-package/ranges/planning_limits.json"
+      ],
+      "formula": "max(building_height)",
+      "confidence": "unknown",
+      "assumptions": [],
+      "reason": "官方高度管控(含航空、景观、文保)条件缺失",
+      "required_for_formal_submission": true
+    },
+    "building_density": {
+      "status": "unknown",
+      "value": null,
+      "unit": "ratio",
+      "source_files": [
+        "brief/site-package/ranges/planning_limits.json"
+      ],
+      "formula": "building_footprint_area_sqm / official_site_area_sqm",
+      "confidence": "unknown",
+      "assumptions": [],
+      "reason": "现状建筑底数与官方边界缺失,概念基底不能推导审定密度",
+      "required_for_formal_submission": true
+    }
+  }
+}

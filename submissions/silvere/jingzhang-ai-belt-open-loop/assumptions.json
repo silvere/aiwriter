@@ -1,0 +1,35 @@
+{
+  "schema_version": "0.1.0",
+  "assumptions": [
+    {
+      "id": "A-CONTROLS-001",
+      "status": "pending_professional_confirmation",
+      "statement": "官方控规条件(容积率、高度、密度、退线)、道路红线、权属、市政管线与工程约束均缺失,须由官方附件与专业团队确认后方可用于法定用途。",
+      "impact": "强度类指标全部置为 unknown;建筑、道路、市政内容仅为概念建议,不构成审定指标或工程结论。"
+    },
+    {
+      "id": "A-BOUNDARY-001",
+      "status": "provisional",
+      "statement": "site boundary、三处重点区与统筹研究范围均使用仓库登记的临时粗略边界(provisional_constraint, official_boundary=false),由公告文字四至与面积约束推出。",
+      "impact": "全部面积与比例指标为 provisional 边界下的复算值;官方 polygon 发布后,边界、用地分区、各图层与 metrics 须按登记公式全链路重算。"
+    },
+    {
+      "id": "A-BUILDINGS-001",
+      "status": "agent_generated_concept",
+      "statement": "92 处建筑基底为概念布局,不基于现状建筑测绘;拆改留分类(retain/renovate/new_build)为方法示意,不构成地块级拆改留结论。",
+      "impact": "building_footprint_area_sqm 与 building_count 仅度量布局意图;现状建筑底数为最大数据缺口。"
+    },
+    {
+      "id": "A-CASES-001",
+      "status": "background_knowledge",
+      "statement": "第三章 7 个全球 AI 创新生态案例为智能体通识知识的背景性概述,未附一手来源。",
+      "impact": "案例仅供启发与机制转译,不进入正式评分证据链,正式宣传使用前须专业团队核实。"
+    },
+    {
+      "id": "A-CULTURE-001",
+      "status": "pending_expert_review",
+      "statement": "京张铁路与中关村历史文化表述基于公开史料常识,导视与传播文本使用前须文史专家复核。",
+      "impact": "文化叙事、地标命名与导视文案为概念建议,不作为史实结论发布。"
+    }
+  ]
+}

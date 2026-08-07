@@ -1,0 +1,293 @@
+{
+  "type": "FeatureCollection",
+  "name": "green_space_design",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "GREEN-001",
+      "properties": {
+        "id": "GREEN-001",
+        "layer": "GREEN_SPACE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 94797.566,
+        "green_type": "park_green",
+        "name_zh": "遗址公园南端绿地"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.3460906600539,
+              39.93900021410458
+            ],
+            [
+              116.34604314150954,
+              39.94399179144567
+            ],
+            [
+              116.34804198568112,
+              39.9440030491031
+            ],
+            [
+              116.34808946566979,
+              39.93900022979255
+            ],
+            [
+              116.3460906600539,
+              39.93900021410458
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "GREEN-002",
+      "properties": {
+        "id": "GREEN-002",
+        "layer": "GREEN_SPACE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 145303.816,
+        "green_type": "park_green",
+        "name_zh": "遗址公园缝合段绿地"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34598753409115,
+              39.94983147746338
+            ],
+            [
+              116.34591457227994,
+              39.95749106541742
+            ],
+            [
+              116.34791380936034,
+              39.95750232842929
+            ],
+            [
+              116.34798654819956,
+              39.94984273743686
+            ],
+            [
+              116.34598753409115,
+              39.94983147746338
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "GREEN-003",
+      "properties": {
+        "id": "GREEN-003",
+        "layer": "GREEN_SPACE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 142268.933,
+        "green_type": "park_green",
+        "name_zh": "遗址公园学院南段绿地"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34591457227994,
+              39.95749106541742
+            ],
+            [
+              116.34584310732468,
+              39.964990661743805
+            ],
+            [
+              116.34784256280267,
+              39.965001927731294
+            ],
+            [
+              116.34791380936034,
+              39.95750232842929
+            ],
+            [
+              116.34591457227994,
+              39.95749106541742
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "GREEN-004",
+      "properties": {
+        "id": "GREEN-004",
+        "layer": "GREEN_SPACE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 350930.814,
+        "green_type": "park_green",
+        "name_zh": "遗址公园中段绿地"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34584310732468,
+              39.964990661743805
+            ],
+            [
+              116.34566671217098,
+              39.983489665023924
+            ],
+            [
+              116.34766670671416,
+              39.98350093835399
+            ],
+            [
+              116.34784256280267,
+              39.965001927731294
+            ],
+            [
+              116.34584310732468,
+              39.964990661743805
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "GREEN-005",
+      "properties": {
+        "id": "GREEN-005",
+        "layer": "GREEN_SPACE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 265570.456,
+        "green_type": "park_green",
+        "name_zh": "遗址公园科教段绿地"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34557129529512,
+              39.993489125668624
+            ],
+            [
+              116.34543763126666,
+              40.00748836987791
+            ],
+            [
+              116.34743832588305,
+              40.00749965273935
+            ],
+            [
+              116.3475715814331,
+              39.99350040296929
+            ],
+            [
+              116.34557129529512,
+              39.993489125668624
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "GREEN-006",
+      "properties": {
+        "id": "GREEN-006",
+        "layer": "GREEN_SPACE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 142270.355,
+        "green_type": "park_green",
+        "name_zh": "遗址公园北段绿地"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34535643231402,
+              40.01598791061021
+            ],
+            [
+              116.34528475743062,
+              40.023487505126205
+            ],
+            [
+              116.34728591923067,
+              40.02349879434557
+            ],
+            [
+              116.34735737507505,
+              40.01599919684892
+            ],
+            [
+              116.34535643231402,
+              40.01598791061021
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "GREEN-007",
+      "properties": {
+        "id": "GREEN-007",
+        "layer": "GREEN_SPACE",
+        "source_type": "agent_generated_design",
+        "confidence": "medium",
+        "geometry_role": "design_proposal",
+        "area_sqm_declared": 357166.377,
+        "green_type": "protective_green",
+        "name_zh": "清河防护绿带"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              116.34270000000001,
+              40.0265
+            ],
+            [
+              116.3553,
+              40.0265
+            ],
+            [
+              116.35513788908828,
+              40.02354275607473
+            ],
+            [
+              116.34255226172223,
+              40.02347203439436
+            ],
+            [
+              116.34270000000001,
+              40.0265
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
