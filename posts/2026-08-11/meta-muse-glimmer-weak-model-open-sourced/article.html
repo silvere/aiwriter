@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meta 高调宣布“重返开源”那天，真正能打的旗舰模型，却选择不开源</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">科技与产业</span>
+  <h1>Meta 高调宣布“重返开源”那天，真正能打的旗舰模型，却选择不开源</h1>
+  <div class="hero-meta">
+    <span>2026-08-11</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">8月10日，扎克伯格发了一篇长文，宣布Meta“重新拥抱开源”，同时把用了三代的Llama品牌换成了一个新名字：Muse。当天一起放出的是两个模型——30B的Muse Glimmer，和更强的旗舰Muse Spark 1.2。热闹的通稿标题几乎都在讲同一件事：“Meta重返开源阵营”。但独立测评机构Artificial Analysis的头对头数据说的是另一件事：真正开放权重、任何人都能下载运行的Glimmer，在综合智能指数上只拿到35分，跑不过它自己点名对标的两个中国开源模型；而拿到57分、明显更能打的Spark 1.2，发布当天恰恰没有开源。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>导语</h2>
+<p>8月10日，扎克伯格发了一篇长文，宣布Meta"重新拥抱开源"，同时把用了三代的Llama品牌换成了一个新名字：Muse。当天一起放出的是两个模型——30B的Muse Glimmer，和更强的旗舰Muse Spark 1.2。热闹的通稿标题几乎都在讲同一件事："Meta重返开源阵营"。但独立测评机构Artificial Analysis的头对头数据说的是另一件事：真正开放权重、任何人都能下载运行的Glimmer，在综合智能指数上只拿到35分，跑不过它自己点名对标的两个中国开源模型——Qwen3.6-27B的38分和Kimi K2.5的36分；而拿到57分、明显更能打的Spark 1.2，发布当天恰恰没有开源，只能按每百万token 0.78美元的价格通过API调用。</p>
+<h2>一、改名之外，两个模型走了两条完全不同的路</h2>
+<p>Muse Glimmer是一个30B的稠密模型，主打本地agent场景，能在一台配单张消费级显卡的Mac或PC上跑起来，采用Apache 2.0许可证——这是本次发布里最实打实的一步：Apache 2.0没有月活门槛，不需要签署Meta自定义的许可协议，直接终结了Llama Community License时代那道"月活超过7亿必须单独找Meta谈商业授权"的限制。Muse Spark 1.2则是另一回事：官方只说"未来几周内"开源，发布当天仅通过付费API提供。</p>
+<p>两个模型，一个开源一个不开源，一个是这次发布里的配角，一个才是真正的旗舰——这个安排本身有点反常。往常"重返开源"的叙事习惯让人默认：既然要展示诚意，那放出来的应该是能打的那个。这次刚好反过来。</p>
+<h2>二、官方说"表现强劲"，独立测评给出了不同的数字</h2>
+<p>Meta自己的博客对Glimmer的表述是，相比Gemma4-31B和Qwen3.6-27B"表现强劲"，在多项常用基准上有亮眼成绩。这个说法本身没有编造数据，只是选择性地摆出了对自己有利的那几项。Artificial Analysis Intelligence Index是一个独立第三方的综合评分体系，不由Meta控制，也不由任何一家参评公司控制。在这套体系里，Glimmer的综合分是35，Qwen3.6-27B是38，Kimi K2.5是36——其中Glimmer和Qwen3.6-27B的参数规模最接近（30B对27.8B），Glimmer参数更多，综合分反而更低。</p>
+<p>Spark 1.2这边情况反过来：在xhigh（评测机构设定的最高推理强度档位）模式下综合拿到57分，明显压过DeepSeek V4 Pro的45分。但DeepSeek V4 Pro是完全开放权重的模型，Spark不是；DeepSeek V4 Pro每百万token收费0.18美元，Spark收费0.78美元，价格超过四倍。<strong>分数低的那个开源，分数高的那个不开源还更贵</strong>——跑分和开放程度、跑分和价格，这两组关系在Meta这次发布里恰好都是反着来的。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图：分数越高的模型，Meta 反而没有开源；真正开源的 Glimmer，分数是五个里最低的。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图：分数越高的模型，Meta 反而没有开源；真正开源的 Glimmer，分数是五个里最低的。</figcaption></figure>
+
+<p><em>图：分数越高的模型，Meta 反而没有开源；真正开源的 Glimmer，分数是五个里最低的。</em></p>
+<h2>三、许可证这道题，Meta这次确实做对了</h2>
+<p>把这次发布全盘归为"公关表演"并不公平。Llama Community License当年被开源社区反复诟病的核心，就是那道月活7亿的商业授权门槛——按这个门槛，任何做大了的公司理论上都得回头找Meta单独谈判，这和开源本该有的自由使用精神相悖，Open Source Initiative此前也公开质疑过这一点。这次换成Apache 2.0，没有门槛、不需要额外协议，是实打实的让步。</p>
+<p>许可证宽松，不等于技术追平——这是这轮通稿最容易让人上当的地方。一个模型可以在许可证条款上完全大方，同时在跑分上落后于对手，两件事互不证明。</p>
+<h2>四、真正的旗舰，走的是另一条路</h2>
+<p>这还不只是Spark 1.2这一款"当前旗舰"的选择。Meta内部真正对标GPT-5.4、Gemini 3.1 Pro这个级别的下一代旗舰模型代号Avocado，由前Scale AI创始人、被Meta以143亿美元的交易挖来的首席AI官Alexandr Wang负责，在新组建的部门TBD Lab里研发。据《The Information》报道的内部备忘录，Avocado已经完成预训练，跑分全面超过Meta此前做出的所有模型。但多家科技媒体的报道都指向同一个方向：Avocado大概率会以闭源形式发布，原因是"管理安全风险、保护技术细节"。也就是说，这次真正拿去打舆论战的Glimmer只是一个30B的agent模型，Meta真正押注的下一代旗舰，走的反而是闭源路线。</p>
+<p>还有一个更具体的细节：据彭博社和多家媒体报道，Avocado的训练过程用到了阿里的Qwen模型。时间线倒转过来看挺意外——2023年，Qwen团队公开致谢过Llama训练流程给自己的启发；三年后，角色刚好换了个位置。开源大旗打得越响，越不代表这家公司真正的技术底牌押在开源上，Meta这次的选择，恰好是两件事同时成立的样本。</p>
+<h2>五、下次看到"Meta重返开源"，先问这两句</h2>
+<p>这次发布本身没有虚假宣传——Meta没有编造任何一个数字，Apache 2.0的许可证让步也是真实的。问题在于，"重返开源"这四个字被贴在了整个发布上，而不是被准确地贴在Glimmer这一个、跑分并不占优的模型身上。下次再看到类似标题，先问两句：开源的具体是哪一个模型，它的独立测评分数和同类竞品比是领先还是落后？公司真正押注的旗舰模型，走的是不是同一条开放路线？<strong>"重返开源"从来不是一句可以整体打包相信的话，得先拆开看，是哪个模型在开源，哪个模型在收费墙后面。</strong></p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>这次发布本身没有虚假宣传——Meta没有编造任何一个数字，Apache 2.0的许可证让步也是真实的。问题在于，“重返开源”这四个字被贴在了整个发布上，而不是被准确地贴在Glimmer这一个、跑分并不占优的模型身上。</p>
+    <p>“重返开源”从来不是一句可以整体打包相信的话，得先拆开看，是哪个模型在开源，哪个模型在收费墙后面。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://research.meta.ai/blog/introducing-muse-glimmer-open-agentic-model" target="_blank" rel="noopener">Introducing Muse Glimmer（Meta 官方研究博客）</a></div>
+      <div class="footer-source-item"><a href="https://artificialanalysis.ai/models/comparisons/muse-glimmer-vs-qwen3-6-27b" target="_blank" rel="noopener">Muse Glimmer vs Qwen3.6-27B（Artificial Analysis）</a></div>
+      <div class="footer-source-item"><a href="https://artificialanalysis.ai/models/comparisons/muse-spark-1-2-vs-deepseek-v4-pro" target="_blank" rel="noopener">Muse Spark 1.2 vs DeepSeek V4 Pro（Artificial Analysis）</a></div>
+      <div class="footer-source-item"><a href="https://www.theregister.com/ai-and-ml/2026/08/10/zuck-rekindles-open-weights-llama-drama-with-muse-glimmer/5285666" target="_blank" rel="noopener">Zuck rekindles open-weights Llama drama with Muse Glimmer（The Register）</a></div>
+      <div class="footer-source-item"><a href="https://abcnews.com/Technology/wireStory/zuckerberg-manifesto-pushes-open-source-approach-ai-meta-135519669" target="_blank" rel="noopener">Zuckerberg manifesto pushes open-source approach to AI（ABC News / AP）</a></div>
+      <div class="footer-source-item"><a href="https://tech.yahoo.com/ai/meta-ai/articles/role-reversal-meta-adopts-qwen-093000433.html" target="_blank" rel="noopener">Role reversal: Meta adopts Qwen（Yahoo Tech）</a></div>
+      <div class="footer-source-item"><a href="https://www.engadget.com/ai/meta-is-reportedly-working-on-a-new-ai-model-called-avocado-and-it-might-not-be-open-source-215426778.html" target="_blank" rel="noopener">Meta is reportedly working on a new AI model called 'Avocado' and it might not be open source（Engadget）</a></div>
+      <div class="footer-source-item"><a href="https://www.latent.space/p/ainews-muse-glimmer-and-spark-open" target="_blank" rel="noopener">AINews: Muse Glimmer and Spark（latent.space）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
