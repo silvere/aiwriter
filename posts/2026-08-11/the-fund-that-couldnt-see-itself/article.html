@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>他给基金取名"态势感知"，用 4 倍杠杆押上 450 亿——爆仓那天才发现，唯一没被感知到的那格态势，是他自己</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 商业观察</span>
+  <h1>他给基金取名"态势感知"，用 4 倍杠杆押上 450 亿——爆仓那天才发现，唯一没被感知到的那格态势，是他自己</h1>
+  <div class="hero-meta">
+    <span>2026-08-11</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">2026 年 7 月 30 日，一支一度接近 450 亿美元的基金，把全部公开股票折价卖给了 Citadel。卖家是那个写下"你们都没看清 AI"的二十多岁天才——他方向可能没赌错，死在杠杆结算的从来不是你对不对，是你能不能扛到你对的那天。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、他卖的不是选股，是"我比你们都清醒"</h2>
+
+    <p>先把这个人怎么起来的，用一手数字摆一遍。</p>
+
+    <p>2024 年 6 月，还是前 OpenAI 员工的 Aschenbrenner 发布了那份 165 页的《Situational Awareness: The Decade Ahead》。核心论点就三条：AGI 在 2027 年出现"惊人地可信"；算力集群会从百亿美元级冲到万亿美元级；以及最关键的那句底色——<strong>几乎没人意识到即将发生什么，而我意识到了。</strong></p>
+
+    <p>写完没多久，他把这份判断做成了一支对冲基金，还是叫 Situational Awareness。种子资金大约 2.25 亿美元，出资名单一个比一个响：Stripe 的 Collison 兄弟、GitHub 前 CEO Nat Friedman、Daniel Gross。这些人投的不是一个二十多岁年轻人的选股履历——他压根没什么履历——投的是那份长文里的世界观：AI 是本世纪最大的一次重新定价，而这个小孩，看起来比华尔街所有人都更早看懂了它。</p>
+
+    <p>然后规模就开始坐火箭。据其提交的 13F 备案，到 2025 年底，他的美股账面规模已经到了约 55.2 亿美元——一年涨了大约 22 倍。到 2026 年上半年，规模冲破 200 亿，7 月初一度摸到约 450 亿美元。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="两年从 2.25 亿冲到约 450 亿，再用几天跌回约 100 亿——涨了两年的东西，跌只用了几天。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">两年从 2.25 亿冲到约 450 亿，再用几天跌回约 100 亿——涨了两年的东西，跌只用了几天。</figcaption></figure>
+
+    <p>你把这条曲线看明白，就懂了一件事：他真正的产品从来不是选股能力，是那份"我看清了别人没看清的东西"的叙事。正是这份叙事，让顶级出资人排队进场，也让他有底气把杠杆一路加上去。<strong>清醒，是他募到钱的燃料。清醒过头，是后面那颗雷的引信。</strong></p>
+
+    <h2>二、+439% 不是本事，4 倍杠杆才是</h2>
+
+    <p>2026 年上半年，这支基金的费后净收益是 <strong>+439%</strong>。半年翻了四倍多。这个数字一出来，几乎所有财经号都在喊"当代最强对冲基金"。</p>
+
+    <p>先别急着跪。把 439% 这个数字拆开看，你会发现里面藏着一个被欢呼声盖住的字：杠杆。</p>
+
+    <p>据多家报道，这支基金的杠杆最高用到了约 <strong>4 倍</strong>。这是什么意思？意思是他每有 1 块钱本金，就在市场上押着约 4 块钱的仓位。所以当他看对了、标的涨了，赚的不是 1 份，是 4 份——439% 里，有很大一块不是"他判断有多准"，是"他在准确判断上又借了 3 块钱"。</p>
+
+    <p>这就是杠杆最容易骗人的地方。<strong>同一个判断，1 倍杠杆下你是个投资人，4 倍杠杆下你是个赌徒——区别不在你看得准不准，在你输得起输不起。</strong> 顺风的时候，这两者长得一模一样，都在数钱，都被夸有远见。只有风向变的那一刻，你才知道自己到底是哪一种。</p>
+
+    <p>他押的是什么？据 13F 披露，多头高度集中在 AI 基建和半导体：SK Hynix、CoreWeave、Nebius、美光这一类"卖铲子"的公司；空头则做空以 Adobe 为代表的软件股。逻辑非常自洽，甚至可以说漂亮：AI 的算力需求是真金白银的确定性，而传统 SaaS 会被 AI 吃掉。看多确定性，看空被颠覆者。</p>
+
+    <p>问题是，这套逻辑是"未来五年会怎样"的逻辑，可 4 倍杠杆结算的，是"今天收盘怎样"。<strong>杠杆不放大你的对错，它放大你"来不及等"这件事。</strong> 你可以在一份 165 页长文里从容地讨论 2027 年的 AGI，但你的经纪商不看你的长文，他每天收盘按市价给你算一次账——扛不住，就请立刻补钱，或者立刻走人。</p>
+
+    <h2>三、他赌的从来不是"AI 会赢"，是"AI 按他的时间表赢"</h2>
+
+    <p>7 月，风向变了。</p>
+
+    <p>据报道，那个月市场发生了一次轮动：资金开始抛售涨了太久的 AI 基建和半导体股，转头回补被人做空到便宜的软件股。就这么一次寻常的高低切换，精准地踩中了他两条腿——做多的那批基建股在跌，做空的那批软件股在涨。多空双杀，两条腿同时踩空。</p>
+
+    <p>放在没有杠杆的账户里，这也就是一次难受的回撤，扛一扛，等叙事重新兑现。但在约 4 倍杠杆下，亏损被放大，迅速吃穿保证金。经纪商不跟你讲 AGI，直接催缴。补不上，就只能清仓。7 月 30 日，他把全部公开持仓折价打包卖给了 Citadel。据报道单月回撤约 <strong>67%</strong>，规模从约 450 亿砸到约 100 亿。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="四倍杠杆下，一次寻常的市场轮动，几天就能结清一支基金——方向可以慢慢对，保证金却要每天结。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">四倍杠杆下，一次寻常的市场轮动，几天就能结清一支基金——方向可以慢慢对，保证金却要每天结。</figcaption></figure>
+
+    <p>注意，到这一步都没人能证明他"看错了 AI"。AI 基建是不是长期超级周期？很可能就是。SK Hynix 们两年后会不会比现在还高？完全有可能。他的长文叙事，到今天可能一个字都没被推翻。</p>
+
+    <p>可这重要吗？不重要了。因为<strong>他赌的从来不是"AI 会赢"，是"AI 会按他的时间表赢"。</strong> 方向对、时机错，在没有杠杆的世界里叫"拿得住就行"；在 4 倍杠杆的世界里，叫死刑。市场只要在他扛不住的那几天里跟他反着走一次，哪怕之后立刻掉头证明他是对的，也已经跟他没关系了——他的仓位在证明来临之前，就已经被结清了。</p>
+
+    <p>长期趋势判断正确，和短期仓位活得下来，是两件可以同时成立、也可以同时要命的事。他把前者写了 165 页，把后者，交给了 4 倍杠杆。</p>
+
+    <h2>四、"看清全局"的基金，唯一没看清那一格</h2>
+
+    <p>现在回到那个名字：Situational Awareness，态势感知。</p>
+
+    <p>这个词的反讽，浓到不用你多说。他因为在 OpenAI 内部提交备忘录、警示"公司对安全风险意识不足"（据他本人说法）而被解雇，塑造的人设是"我比一整个机构更早看到风险"。他写长文、开基金，卖的全是同一件事——对局势的超前感知。</p>
+
+    <p>结果呢？一支管着近 450 亿美元、名叫"态势感知"的基金，栽在了金融里最古老、最不需要什么先知能力就能看到的那个风险上：杠杆集中度，和保证金机制。<strong>他把万亿美元级的宏大态势感知得清清楚楚，唯独没感知到自己那张 4 倍杠杆的资产负债表。</strong></p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="他看清的是别人还没意识到的长期大势，没看清的是自己脚下最基础的那格杠杆风险。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">他看清的是别人还没意识到的长期大势，没看清的是自己脚下最基础的那格杠杆风险。</figcaption></figure>
+
+    <p>故事还有个更黑色幽默的尾巴。爆仓才过了几天，8 月 5 日前后，Bloomberg 报道他又出手了——拿出约 4 亿美元，投进一家未公开名字、由 Sequoia 参投的私营公司。华尔街这边刚把他判成"史诗级爆仓"，硅谷那边已经排队递支票。</p>
+
+    <p>这个反差本身就说明了一切：在硅谷的价值体系里，他从没输过——因为他卖的确定性叙事，跟他基金的净值曲线，本来就是两回事。基金可以清零，叙事不会。这也是为什么他能几天内满血复活：给他钱的人，买的从来不是他的风控，是他那句"我比你们都先看到未来"。</p>
+
+    <p>所以这事对屏幕前的你，到底有什么用？</p>
+
+    <p>如果你也在这轮 AI 里下注——买股票也好、All in 创业也好、押上全部身家转行也好——记住这个二十多岁天才用 450 亿美元换来的一课：<strong>方向对，不等于你能活到它兑现那天。</strong> 一个正确的长期判断，配上你扛不住的仓位和时机，得到的不是回报，是提前出局。</p>
+
+    <p>杠杆结算的从来不是你对不对，是你能不能扛到你对的那天。那个逢人就说"你们都没看清"的人，最后就栽在这句话上——他什么都看清了，除了自己撑不到验证那天。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>方向对，不等于你能活到它兑现那天。一个正确的长期判断，配上你扛不住的仓位和时机，得到的不是回报，是提前出局。</p>
+    <p>杠杆结算的从来不是你对不对，是你能不能扛到你对的那天。那个逢人就说"你们都没看清"的人，最后就栽在这句话上——他什么都看清了，除了自己撑不到验证那天。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/07/30/leopold-aschenbrenners-hedge-fund-is-facing-steep-ai-losses.html" target="_blank" rel="noopener">Leopold Aschenbrenner's hedge fund is facing steep AI losses（CNBC，2026-07-30，峰值/剩余 AUM、7 月回撤、致投资者信口径）</a></div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/07/31/leopold-aschenbrenner-situational-awareness-fund-fire-sale.html" target="_blank" rel="noopener">Leopold Aschenbrenner Situational Awareness fund: $45B to fire sale（CNBC，2026-07-31，450 亿→折价清仓）</a></div>
+      <div class="footer-source-item"><a href="https://www.bloomberg.com/news/articles/2026-07-30/aschenbrenner-hedge-fund-situational-awareness-seeks-capital-after-loss-ft-says" target="_blank" rel="noopener">Aschenbrenner hedge fund seeks capital after loss, FT says（Bloomberg，2026-07-30，向 Citadel 清仓日期）</a></div>
+      <div class="footer-source-item"><a href="https://www.bloomberg.com/news/articles/2026-08-05/situational-awareness-returns-to-investing-with-400-million-bet" target="_blank" rel="noopener">Situational Awareness Returns to Investing With $400 Million Bet（Bloomberg，2026-08-05，4 亿美元投私营公司）</a></div>
+      <div class="footer-source-item"><a href="https://www.disruptionbanking.com/2026/07/30/can-the-situational-awareness-hedge-fund-raise-capital-after-its-439-h1-gain/" target="_blank" rel="noopener">Can the Situational Awareness Hedge Fund Raise Capital After its 439% H1 Gain?（Disruption Banking，2026-07-30，上半年 +439% 净收益）</a></div>
+      <div class="footer-source-item"><a href="https://www.techtimes.com/articles/322285/20260730/citadel-buys-situational-awareness-portfolio-4x-leverage-ends-ai-funds-1000-run.htm" target="_blank" rel="noopener">Citadel Buys Situational Awareness Portfolio; 4x Leverage Ends AI Fund's 1000% Run（TechTimes，2026-07-30，约 4 倍杠杆、Citadel 接盘、持仓）</a></div>
+      <div class="footer-source-item"><a href="https://situational-awareness.ai/" target="_blank" rel="noopener">SITUATIONAL AWARENESS: The Decade Ahead（Aschenbrenner 本人长文原文，2024-06，开篇原句与核心论点）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
