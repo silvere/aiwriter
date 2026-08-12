@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>一个 App 上线，全世界开始用同一批词写字——我们正在失去认出一个人的能力</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 深度观察</span>
+  <h1>一个 App 上线，全世界开始用同一批词写字——我们正在失去认出一个人的能力</h1>
+  <div class="hero-meta">
+    <span>2026-08-12</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">有一条曲线，可以精确到某一天开始拐弯。那天是 2022 年 11 月 30 日——ChatGPT 上线的日子。从那天起，全世界写字的人，慢慢开始用同一批词。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、一条精确到某一天的曲线</h2>
+<p>德国图宾根大学的一个团队，扒了近些年发表在 PubMed 上的 1500 万篇医学论文摘要，只做一件事：数词频。</p>
+<p>他们发现，有一批英文词的使用频率，在 2023 年之后不是缓慢爬升，是几乎垂直地弹起来。delve（钻研）、showcase（展现）、meticulous（一丝不苟）、underscore（强调）——这些词，医生和科学家从前不是不用，是用得没这么整齐划一。其中 "delves" 一词，2024 年的出现频率是 ChatGPT 之前基线的 28 倍。另一个更直白的数：delve 在 PubMed 摘要里的原始出现次数，2020 年 349 次，2023 年 2847 次，一年翻了七倍还多。</p>
+<p>这项研究发在 2025 年的《科学·进展》上。他们据此估算，到 2024 年，至少 13.5% 的医学论文摘要经过了大模型的手——每七篇里就有一篇。在某些国家、某些期刊的子样本里，这个比例接近四成。</p>
+<p>关键不在数字大小，在曲线的形状。语言当然一直在变，但语言的演化以十年、百年计，是无数人各写各的、慢慢漂移出来的。它不会精确对齐一个 App 的上线日。</p>
+<p>标点也一样。有人分析了 OpenAlex 上一万篇生态学论文摘要，发现 em-dash——就是这种长破折号——的相对使用频率，2021 到 2025 年间翻了一倍不止，是所有标点里涨得最猛的。破折号本是个很个人的东西，有人爱用，有人一辈子不用一个。现在它开始变得均匀。</p>
+<p><strong>这不是语言在演化，是一个产品在改写语言。</strong></p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图注：delve 在 PubMed 摘要的词频，2020 年 349 次、2023 年 2847 次——拐点精确落在 ChatGPT 上线之后。自然演化不会这样。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：delve 在 PubMed 摘要的词频，2020 年 349 次、2023 年 2847 次——拐点精确落在 ChatGPT 上线之后。自然演化不会这样。</figcaption></figure>
+
+<h2>二、当机器开始判断谁是机器</h2>
+<p>问题的另一半，从一个高中生的成绩单开始。</p>
+<p>2025 年 10 月，加州帕洛阿尔托一个姓 Kato 的高中生交了篇《萨勒姆的女巫》读后感。批改软件 Turnitin 给出判决：76% 由 AI 生成。他没用 AI。这篇作业被要求重写，重写后拿了个 D，他那门课的学期成绩，从 A- 高分段掉到了 C。</p>
+<p>为了自证，他的家人翻出 1162 页材料——草稿、改动记录、时间戳，2026 年 5 月 5 日在加州北区联邦法院把学区告了。诉状里有个更扎的细节：在那个班上，男生被 Turnitin 判定或处罚的概率，是女生的四到五倍；此外还有至少一名亚裔学生，遭遇了一模一样的事。而 Turnitin 自己承认，它给出的百分比有正负 15 个点的误差——那个 76%，真实值可能落在 61% 到 91% 之间任何位置。一个连自己都说不准的数字，改写了一份成绩单。</p>
+<p>这不是孤例。几个月前，纽约州一个法官刚裁定过一起类似的案子。Adelphi 大学认定大一新生 Orion Newby 用 AI 作弊，依据是 Turnitin 判他的作业"100% 由 AI 写成"。可 Newby 用另外两个检测器——Grammarly 和 ZeroGPT——一测，结论都是"人类写作"。同一篇文章，三个工具三个答案。法官 Randy Sue Marber 在 2026 年 1 月 28 日的裁决里用了很重的词：学校的认定"没有合理依据、缺乏理性"。</p>
+<p>这些检测器为什么会错得这么离谱？斯坦福的一个团队 2023 年就给过答案。他们拿七款主流 AI 检测器，去测 91 篇非母语者写的托福作文，平均 61.3% 被判成 AI 生成；而同样的检测器去测美国学生的作文，几乎不会误判。更说明问题的是后面这步：当研究者把托福作文里的词换成更"地道"、更复杂的表达，误判率立刻从 61.3% 掉到 11.6%。</p>
+<p>也就是说，这些检测器抓的根本不是"AI"，是"不够标准的表达"。</p>
+<p>这里藏着一个绕不过去的悖论。AI 检测器的原理，是判断一段文字有没有"偏离正常"——太规整、太好预测，就判成机器。可当越来越多的文字本身就出自机器、或经机器润色，"正常"这个坐标系，就被 AI 自己一点点挪走了。<strong>检测器靠"偏离正常"抓 AI；可当 AI 开始定义什么叫正常，它就再也抓不住了。</strong></p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="图注：同一批检测器，非母语者托福作文 61.3% 被误判为 AI，母语者几乎不误判；把用词换得更地道后误判率掉到 11.6%——它抓的是不够标准，不是 AI。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：同一批检测器，非母语者托福作文 61.3% 被误判为 AI，母语者几乎不误判；把用词换得更地道后误判率掉到 11.6%——它抓的是不够标准，不是 AI。</figcaption></figure>
+
+<h2>三、趋同不是 bug，是设计</h2>
+<p>用词的收敛，和人机文字越来越难分，是同一件事的两面，而这件事是被设计出来的，不是意外。</p>
+<p>今天的大模型，出厂前都要过一道叫"对齐"的工序：让人打分，模型照着高分的方向调。人打分的时候，偏爱清晰、得体、四平八稳的表达。于是模型学到的，是那个"最讨喜的平均值"——棱角、怪腔、个人化的毛边，都在这个过程里被磨掉了。它不是不会写得有个性，是被训练成尽量别那样写。</p>
+<p>还有第二层。越来越多网上的新文字是 AI 生成的，而这些文字又会变成下一代模型的训练材料。研究者管这叫"模型崩溃"：反复拿生成的数据去喂模型，它会一代代丢掉分布里那些罕见的、边缘的表达，越缩越窄。人写的东西喂给机器，机器写的东西又喂给机器，绕几圈下来，尾巴就没了。</p>
+<p>所以"AI 味"不是某个模型没调好，是整套机制在往中间挤。它让每个人都能写出 80 分的文字，代价是没人再写出那种带毛病的、一眼能认出是谁的文字。</p>
+<h2>四、但也许没那么可怕</h2>
+<p>把这件事讲成"AI 正在毁灭人类语言"，很爽，但不诚实。</p>
+<p>先说一个流传很广、其实是错的归因。网上有个说法，说大模型爱用破折号和 delve，是因为给它们打分的标注员很多来自尼日利亚等非洲英语区，那里的书面英语就这习惯。听着挺合理。但有人去查了尼日利亚英语的真实语料，破折号的出现率低到几乎可以忽略，反而比全球英语的平均水平还低。这个甩锅式的解释，数据上站不住。</p>
+<p>再说趋同本身。ACL 2025 上一篇研究新闻写作的论文发现，情况是混合的，甚至有反例——2024 年语料的某些词汇多样性指标，反而比 2018 年更高。也有研究说，AI 的写作建议对一部分本来就写得干巴巴的人，反而拓宽了词汇量。"AI 一律把人拉平"这种简单叙事，并不成立。</p>
+<p>还有人提醒，恐慌本身也是一门生意。一位科技行业的评论者算过一笔账：关于 AI 的负面叙事，读者量大约是正面叙事的五倍。媒体天然被激励往警报的方向写；而越是渲染失控、呼吁监管的叙事，客观上越是帮了那几家已经占住位置的大公司。</p>
+<p>这些反驳都成立。所以真正该担心的，不是"语言要完了"这种大词，是更冷、更具体的一件事。</p>
+<h2>五、我们真正在失去的</h2>
+<p>那条曲线告诉我们的，不是哪个词变多了，是"从一段文字认出一个具体的人"这件事，正在变难。</p>
+<p>人类社会有一整套东西，默默建立在"每个人写得不一样"之上。署名之所以有意义，是因为文字有指纹；我们信任一篇东西，有一半是信任那个具体的、可追问的写字的人。这些都压在一个前提上：人和人是不同的，而这种不同，看得见。</p>
+<p>难就难在，用词在被磨平的同时，我们连"这是谁写的"也快判断不清了。斯坦福那七款检测器 61.3% 的误判率说明，眼下唯一的应对——让机器替我们分辨——本身就是坏的：它抓的是"不够标准"，不是"AI"，误伤的偏偏是 Kato 和 Newby 这样的真人。差异在被一台机器抹平，辨认差异的活又交给另一台抓错对象的机器。这是一个闭合的、没有人的循环。</p>
+<p>至于更远处那个问题——语言收窄了，思想会不会跟着收窄？如果所有人都用同一批词、同一种句式去想事情，还想得出不一样的东西吗？这个问题，目前没有任何一项研究能给出可靠的数字，谁给了都是在编。它只能作为一个开着的口子，留在这里。</p>
+<p>能确定的只有那条曲线的起点：2022 年 11 月 30 日之后，我们开始用同一批词写字。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>语言的同质化，是一件可以精确到某一天、能用词频量出来的事实。</p>
+    <p>真正难以挽回的，是我们正在失去从一段文字里，认出一个具体的人的能力。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.science.org/doi/10.1126/sciadv.adt3813" target="_blank" rel="noopener">Delving into ChatGPT usage in academic writing through excess vocabulary（Science Advances, Kobak et al. 2025）</a></div>
+      <div class="footer-source-item"><a href="https://www.cell.com/patterns/fulltext/S2666-3899(23" target="_blank" rel="noopener">GPT detectors are biased against non-native English writers（Patterns, Liang et al. 2023）</a></div>
+      <div class="footer-source-item"><a href="https://www.insidehighered.com/news/quick-takes/2026/02/11/adelphi-student-wins-ai-plagiarism-lawsuit" target="_blank" rel="noopener">Adelphi student wins AI plagiarism lawsuit（Inside Higher Ed, 2026-02）</a></div>
+      <div class="footer-source-item"><a href="https://www.paloaltoonline.com/palo-alto-schools/2026/05/11/parent-sues-palo-alto-school-district-over-artificial-intelligence-procedures/" target="_blank" rel="noopener">Parent sues Palo Alto school district over AI procedures（Palo Alto Online, 2026-05）</a></div>
+      <div class="footer-source-item"><a href="https://sfstandard.com/2026/05/11/ai-detection-cheating-palo-alto/" target="_blank" rel="noopener">AI detection and the Palo Alto case（SF Standard, 2026-05）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
