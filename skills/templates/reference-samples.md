@@ -158,6 +158,16 @@
 - 自嘲式判断带轻微反讽，不是客观陈述
 - 收尾三段对称结构制造记忆点，是追求金句感的手法而非逐条论证
 
+### Michael Lewis（叙事财经）
+**出处**：《The Big Short: Inside the Doomsday Machine》，Michael Lewis，Steve Eisman 相关段落，Goodreads 逐字引文，https://www.goodreads.com/work/quotes/6654434-the-big-short-inside-the-doomsday-machine
+
+> "When you're a conservative Republican, you never think people are making money by ripping other people off," he said. His mind was now fully open to the possibility. "I now realized there was an entire industry, called consumer finance, that basically existed to rip people off."
+
+**人味标记**：
+- 把"整个消费信贷行业在骗人"这个宏大判断，压缩成一个具体的人（Eisman）从"保守派共和党人"到"睁开眼"的私人政治觉醒——由一张脸承载一个结构，不是抽象概括
+- 直接引用人物原话，让人物自己说出判断，作者退到一旁；判断的分量来自"谁在说"而不是形容词
+- "an entire industry ... that basically existed to rip people off" 用最朴素的大白话给一个庞大金融体系定性，不掉术语，反而更狠
+
 ---
 
 ## 三、AI 时代前公众号真·10万+ 爆款（体裁库，无锚定作家时的 fallback 参照）

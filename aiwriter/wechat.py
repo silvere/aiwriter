@@ -212,6 +212,8 @@ def _digest_from_md(md_text: str, max_chars: int) -> str:
     text = md_text
     # 去 YAML frontmatter
     text = re.sub(r"^---\n.*?\n---\n", "", text, count=1, flags=re.DOTALL)
+    # 去文章头部元信息行（"> **发布日期**：… | **分类**：…"），否则会占满摘要
+    text = re.sub(r"^>?\s*\**发布日期\**.*$", "", text, flags=re.MULTILINE)
     # 去标题
     text = re.sub(r"^#+\s+.*$", "", text, flags=re.MULTILINE)
     # 去图片
