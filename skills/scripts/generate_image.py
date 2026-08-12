@@ -21,6 +21,7 @@
     OPENAI_API_KEY       — OpenAI 兼容 API Key（首选）
     OPENAI_BASE_URL      — 可选，指向代理（如 https://hub.jerryai.cn/v1）
     OPENAI_IMAGE_MODEL   — 可选，默认 gpt-image-1
+    OPENAI_IMAGE_SIZE    — 可选，默认 1024x1024（题图等横版场景可设 1536x1024）
     GEMINI_API_KEY       — Google Gemini API Key；兼容回落 GOOGLE_API_KEY
     GEMINI_IMAGE_MODEL   — 可选，默认 gemini-2.5-flash-image
     UNSPLASH_ACCESS_KEY  — Unsplash API Key（搜索兜底，https://unsplash.com/developers）
@@ -115,10 +116,11 @@ def try_openai(prompt, output_path):
 
     base_url = os.environ.get("OPENAI_BASE_URL") or None
     model = os.environ.get("OPENAI_IMAGE_MODEL", "gpt-image-1")
+    size = os.environ.get("OPENAI_IMAGE_SIZE", "1024x1024")
 
     try:
         client = OpenAI(api_key=api_key, base_url=base_url)
-        kwargs = dict(model=model, prompt=prompt, n=1, size="1024x1024")
+        kwargs = dict(model=model, prompt=prompt, n=1, size=size)
         # 只有官方 gpt-image-1 接口支持 quality 参数，代理里不一定支持，直接省略最稳
         response = client.images.generate(**kwargs)
 
