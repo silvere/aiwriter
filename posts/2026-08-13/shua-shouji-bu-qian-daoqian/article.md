@@ -4,11 +4,7 @@
 
 又是凌晨一点，你刷着手机，心里那个熟悉的声音准时上线：别人都在健身、学画画、搞副业，你在干嘛？角落里的吉他落了灰，健身卡用了四次，颜料没拆封，Kindle 在盖泡面。你把手机往被子上一扣，得出今晚的结论：我这个人，废了。
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🖼️</div>
-  <div class="img-placeholder-label">概念图</div>
-  <details><summary>提示词</summary><pre>flat minimalist illustration, person lying in bed at night scrolling phone, soft blue light, no text, clean background</pre></details>
-</div>
+![person lying bed night scrolling](images/concept_01.jpg)
 
 先说我的立场：你不欠任何人道歉——包括心里那个声音。这份赦免针对愧疚，不含无限续杯。
 
