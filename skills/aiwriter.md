@@ -21,7 +21,7 @@ Step 4 逐节写作     → 每节立即 Edit 追加；详见 templates/quotas.m
 Step 5 配图         → Opus 出简报 → Workflow aiwriter-illustrations（生成+渲染+看图自查）
 Step 5.5 金句配额   → 与加粗配额对齐
 Step 6 五刀审稿     → Workflow aiwriter-review（角度/AI味/废话/读者/事实五刀+对抗校验）→ 主控执行修改
-Step 7 组装保存     → 脚本命令固定，按 7.1-7.6 走
+Step 7 组装保存     → 脚本命令固定，按 7.1-7.8 走（含 7.5 题图生成）
 ```
 
 **用户批准节点**：Step 0 收集 / Step 2.5 四道门槛 / Step 3 大纲。其余自动推进。
@@ -406,7 +406,34 @@ python3 skills/scripts/fill_images.py "posts/{今日日期}/{slug}/article.html"
 
 understanding 理解图走 HTML→PNG（Playwright），concept 图走 OpenAI/Gemini，diagram 图走 matplotlib/HTML/SVG。本地缺 Node/Playwright/Chromium 时理解图占位自动跳过（不中断），由 CI 兜底渲染。
 
-### 7.5 推送 GitHub
+### 7.5 生成题图（封面图）
+
+题图和 Step 5 的配图不是一回事：配图是"帮读者理解内容"，配的是 understanding/concept/diagram；题图是"让读者想点进来"，是公众号草稿的封面——**摄影质感，不是插画/flat design**，这是和 concept 配图最大的区别，不要混用同一套 prompt 风格。
+
+**主控设计 prompt**（判断活，不外包给脚本）：基于文章标题和 Step 2.5 门槛 C 的核心判断，写一段英文摄影风格 prompt。三条硬要求：
+1. **视觉隐喻贴合核心判断**——看一眼图，大致能猜到话题方向（不要求读懂细节，方向不能错，不能是随便一张跟主题无关的美图）
+2. **摄影质感**——用 `editorial photograph` / `cinematic lighting` / `shallow depth of field` / `85mm lens` 这类词；禁止 `flat design` / `illustration` / `vector`（那是 concept 配图的风格）
+3. **单一视觉焦点，无文字无 logo 无水印**——一个画面只讲一件事，禁止塞多个隐喻元素
+
+调用统一走 `generate_image.py`（OpenAI 兼容优先，Gemini 次选，Unsplash/Pexels 搜图兜底，全部失败也不阻塞流程）：
+
+```bash
+python3 skills/scripts/generate_image.py "<英文摄影风格 prompt>" "posts/{今日日期}/{slug}/cover.jpg"
+```
+
+落地路径注意：是 `posts/{今日日期}/{slug}/cover.jpg`，**不带 `images/` 前缀**——`aiwriter/wechat.py::_pick_cover` 按这个路径优先选取作为公众号草稿封面，选中即生效，不需要额外配置。建议加 `OPENAI_IMAGE_SIZE=1536x1024` 生成横版图（更接近公众号封面裁切比例）。
+
+密钥来源：`AIWriter/.env` 里目前只配了 `GEMINI_API_KEY`（额度有限，容易 `rate_limit`）。若未在 `.env` 里另配 `OPENAI_API_KEY`，从 `~/.claude/settings.local.json` 的 `env` 段临时取（只在这条命令的子进程环境变量里用一次，不写入 `.env`、不打印、不落日志——遵守"API key 只存 settings.local.json"的硬约束）：
+
+```bash
+OPENAI_API_KEY=$(python3 -c "import json;print(json.load(open('/Users/jingweisun/.claude/settings.local.json'))['env'].get('OPENAI_API_KEY',''))") \
+OPENAI_IMAGE_SIZE=1536x1024 \
+python3 skills/scripts/generate_image.py "<prompt>" "posts/{今日日期}/{slug}/cover.jpg"
+```
+
+失败处理：exit code 2（软失败：配额/网络问题）或 1（硬失败）都不阻塞——跳过本步继续，`wechat-sync` 会自动 fallback 到正文第一张图作为封面。
+
+### 7.6 推送 GitHub
 
 ```bash
 git add "posts/{今日日期}/{slug}/"
@@ -414,7 +441,7 @@ git commit -m "feat: 新文章《{标题}》"
 git push origin main
 ```
 
-### 7.6 同步到微信公众号草稿箱
+### 7.7 同步到微信公众号草稿箱
 
 ```bash
 aiwriter wechat-sync "posts/{今日日期}/{slug}"
@@ -424,9 +451,10 @@ aiwriter wechat-sync "posts/{今日日期}/{slug}"
 
 - 未配置 → 命令报错"未配置 WECHAT_APPID / WECHAT_APPSECRET"，跳过本步即可（GitHub Actions 自托管 runner 会兜底自动同步）
 - 同步成功后会写 `posts/{日期}/{slug}/.wechat-sync.json`，防止 CI 重复同步
+- 封面优先取 7.5 生成的 `cover.jpg`；没有 `cover.*` 才 fallback 到正文第一张光栅图
 - 之后到 mp.weixin.qq.com 后台「草稿箱」预览/排版/群发
 
-### 7.7 （可选）保存 Markdown 到 Obsidian
+### 7.8 （可选）保存 Markdown 到 Obsidian
 
 ```bash
 python3 skills/scripts/setup_vault.py "{vault_path}" "{slug}"
@@ -442,6 +470,7 @@ python3 skills/scripts/setup_vault.py "{vault_path}" "{slug}"
 🌐 网址：https://silvere.github.io/aiwriter/posts/{日期}/{slug}/article.html
 📊 字数：约 X,XXX 字
 🖼️ 配图：X 张已填充
+🎨 题图：{已生成 cover.jpg | 未生成，wechat-sync 将回退取正文第一张图}
 📬 微信草稿：{已同步 media_id=xxx | 未同步，等 CI 兜底}
 ```
 
