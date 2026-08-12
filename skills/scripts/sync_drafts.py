@@ -125,7 +125,9 @@ def main() -> int:
             rel = d.relative_to(_REPO)
             if not (d / "article.html").exists():
                 print(f"::warning::{rel}/article.html 不存在，跳过"); skipped += 1; continue
-            if (d / ".wechat-sync.json").exists():
+            # --force 的唯一用途就是重发"已经同步过"的文章，所以它必须能越过本地标记；
+            # 否则这道检查会先于下面的强制分支把目标筛掉，让 --force 永远是空操作。
+            if (d / ".wechat-sync.json").exists() and not args.force:
                 print(f"  ⏭  {rel} 已有标记，跳过"); skipped += 1; continue
 
             title = _article_title(d)
