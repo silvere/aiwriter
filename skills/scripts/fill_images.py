@@ -29,6 +29,7 @@ from __future__ import annotations
 import argparse
 import base64
 import hashlib
+import io
 import json
 import os
 import re
@@ -86,13 +87,34 @@ def _extract_keywords(prompt: str, n: int = 5) -> str:
     return " ".join(filtered[:n])
 
 
+# 微信 material/add_material 按**文件内容**校验类型（不看扩展名），WebP 一律返回
+# errcode=40113 unsupported file type。Pexels/Unsplash 的 CDN 按 Accept 头做内容协商——
+# 请求头里带 image/webp 就回 WebP，去掉就回真 JPEG。所以在源头声明不收 WebP。
+_ACCEPT_IMAGE = "image/jpeg,image/png,image/*;q=0.8"
+
+
+def _is_webp(data: bytes) -> bool:
+    return len(data) >= 12 and data[:4] == b"RIFF" and data[8:12] == b"WEBP"
+
+
+def _webp_to_png(data: bytes) -> Optional[bytes]:
+    """兜底：万一某个源无视 Accept 仍回 WebP，转成 PNG。无 Pillow 时返回 None，
+    调用方据此换下一个图源——宁可少一张图，也不让 WebP 流进仓库卡死微信同步。"""
+    try:
+        from PIL import Image
+        buf = io.BytesIO()
+        Image.open(io.BytesIO(data)).convert("RGB").save(buf, format="PNG")
+        return buf.getvalue()
+    except Exception:
+        return None
+
+
 def _download_url(img_url: str, dest: Path) -> bool:
-    """下载图片并写入文件，自动跳过重复图（基于 MD5）。"""
+    """下载图片并写入文件，自动跳过重复图（基于 MD5）、拒收无法转换的 WebP。"""
     try:
         req = urllib.request.Request(
             img_url,
-            headers={"User-Agent": "AIWriter/1.0",
-                     "Accept": "image/webp,image/apng,image/*,*/*;q=0.8"},
+            headers={"User-Agent": "AIWriter/1.0", "Accept": _ACCEPT_IMAGE},
         )
         with urllib.request.urlopen(req, timeout=30) as resp:
             data = resp.read()
@@ -101,6 +123,11 @@ def _download_url(img_url: str, dest: Path) -> bool:
         h = _img_hash(data)
         if h in _used_hashes:
             return False   # 重复图，拒绝
+        if _is_webp(data):
+            data = _webp_to_png(data)
+            if data is None:
+                print(f"  ⚠  跳过 WebP 图（无 Pillow 可转换）: {img_url[:60]}")
+                return False
         _used_hashes.add(h)
         dest.write_bytes(data)
         return True
