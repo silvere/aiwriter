@@ -4,11 +4,7 @@
 
 昨天我发现，我那套自己跑了两个月的自动化系统，有一场任务卡死了 8 小时 39 分钟。
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🖼️</div>
-  <div class="img-placeholder-label">概念图</div>
-  <details><summary>提示词</summary><pre>flat minimalist illustration, person lying in bed at night scrolling phone, soft blue light, no text, clean background</pre></details>
-</div>
+![person lying bed night scrolling](images/concept_01.jpg)
 
 不是报错，不是崩溃。日志里干干净净，只有开头一行"无新消息"，然后是长达八个多小时的空白，最后一行退出码。这期间它没有产出任何东西，也没有报告任何异常。
 
