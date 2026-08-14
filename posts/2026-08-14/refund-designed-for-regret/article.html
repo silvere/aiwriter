@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>退款是为"会后悔的人"设计的，而 AI 不会后悔</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 与商业</span>
+  <h1>退款是为"会后悔的人"设计的，而 AI 不会后悔</h1>
+  <div class="hero-meta">
+    <span>2026-08-14</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">2026 年 4 月，当所有人都在庆祝 AI 终于学会自己结账时，美国运通做了一件不合群的事：它单独宣布，如果你的 AI 助手买错了东西，这笔钱它来赔。听上去像一句普通的售后承诺。但如果你在支付行业待过，你会立刻竖起耳朵——这句话的潜台词是，运通不敢相信另一件所有同行都在默认的事。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <p>那件被默认的事，是账单背后那个人还在。</p>
+<p>半个世纪以来，一张信用卡账单的另一头，一直站着一个具体的人。他会心疼，会后悔，会为一笔货不对板的订单打半小时电话。整套退款和拒付制度，就是为这个会后悔的人写的。运通那句承诺之所以扎眼，是因为它默认了一件别人不愿说破的事：那个替你按下"购买"的东西，可能不再是这样一个人。</p>
+<h2>一句不合群的承诺</h2>
+<p>先看这一年发生了什么。2025 年 9 月 29 日，OpenAI 和 Stripe 用 Apache 2.0 协议开源了一套叫 ACP 的东西，同一天 ChatGPT 的即时结账上线，第一个接入的是手工艺电商 Etsy。一个月后，PayPal 作为支付方加入。年底，Stripe 推出整套面向 Agent 的商务组件。到 2026 年 6 月，Visa 宣布与 OpenAI 战略合作，万事达发布面向机器的 Agent Pay。</p>
+<p>这些协议解决的是同一个技术问题：用密码学签名证明"这是一个合法的 Agent，在你授权的范围内花钱"。Google 联合 Coinbase 做的 AP2 走得更细，把授权拆成两段——你先签一张"意图授权"，Agent 挑好商品后再签一张"购物车授权"，留下一条谁也赖不掉的记录。万事达则把卡凭证代币化，绑死到某个特定 Agent、特定商户、特定同意策略上。</p>
+<p>所有这些机制，回答的都是"谁授权了"。没有一个回答另一个更难的问题：授权了，但它买错了、买多了、买了你根本不想要的东西，算谁的？</p>
+<p>在英美 500 名风控专家里，Darwinium 问过这个问题，答案是一地碎片：39% 说该 AI 提供商担责，20% 甩给消费者，14% 推给商户，11% 认为是银行的事，还有 15% 干脆说大家一起扛。一件事如果有五个负责人，通常意味着它没有负责人。运通选择站到消费者这一边，是这张碎片图里唯一一个明确的落点，也因此显得孤单。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="责任被摊成五份，就等于没有主责方——这正是运通兜底时面对的空白" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">责任被摊成五份，就等于没有主责方——这正是运通兜底时面对的空白</figcaption></figure>
+
+<h2>退款背后，站着一个会后悔的人</h2>
+<p>要看懂运通在怕什么，得先看清拒付这套东西到底是靠什么撑住的。</p>
+<p>它的法律源头是美国 1974 年的《公平信用账单法》，到今天五十二年。这部法律有一个从没被写进条文、却支撑着一切的前提：一笔争议交易由人发起，而这个人事后可以说"我没授权"或"东西不对"。拒付权，说到底是法律替"人会反悔"这件事上的一份保险。</p>
+<p>保险能维持，不是因为规则有多严，而是因为反悔的人始终是少数。在线交易里，卡不在场的拒付率大约在 0.6% 到 1% 之间，线下刷卡还要更低。这个数字之所以长期都压在低位，靠的是一个朴素的事实：绝大多数人拿到东西就算了，只有极少数真觉得亏了才会费劲去争。风控、定价、准备金，全建在这条低而稳的曲线上。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="拒付率几十年可控，靠的是多数人不反悔这条人类基率；友好欺诈两年翻倍，是它开始松动的信号" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">拒付率几十年可控，靠的是多数人不反悔这条人类基率；友好欺诈两年翻倍，是它开始松动的信号</figcaption></figure>
+
+<p>一旦发起争议的不再是"觉得亏了的人"，曲线就开始松动。行业里管消费者钻空子恶意拒付叫"友好欺诈"——明明收到了货，却谎称没收到来骗回钱。2024 年，这类"第一方欺诈"占到全部已报告欺诈的 36%，一年前这个数字还是 15%，翻了一倍多。到了商户那头，账更难看：每被拒付掉 1 美元，算上手续费、丢掉的货、行政成本和高拒付率的处罚，实际损失是 3.75 到 4.61 美元，比 2021 年涨了 37%。</p>
+<p>拒付从来不是一条冰冷的规则，而是一个关于"人在什么时候会反悔"的概率赌注。<strong>它赌大多数人不会反悔，而这个赌注赢了五十年，只因为下注的对象一直是人。</strong></p>
+<h2>协议只回答了"谁授权"</h2>
+<p>现在把买家换成 Agent，这个赌注的对象就变了。</p>
+<p>旧制度只认两种状态：授权，或未授权。你刷了卡是授权，卡被盗刷是未授权，拒付机制在这两格之间干净利落地判活判死。Agent 制造了第三种状态：你授权了它去买，它也确实在权限内买了，但买回来的不是你想要的。这一格，旧制度里没有格子可放。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="旧制度只有授权与未授权两格，Agent 造出第三格——授权了却买错，而这一格里没有拒付" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">旧制度只有授权与未授权两格，Agent 造出第三格——授权了却买错，而这一格里没有拒付</figcaption></figure>
+
+<p>有人会说，软件替人花钱不是新鲜事，脚本刷单、盗刷欺诈这些东西存在二十年了，Agent 有什么不一样？不一样的地方，恰恰藏在"授权"两个字里。盗刷是未授权的，所以它是欺诈，拒付兜得住，损失有人认。Agent 是你亲手授权的，于是它天然被划进"授权交易"那一格——你几乎丧失了拒付的理由，可它又不是你本人，那份"我会不会反悔"的人类概率，在它身上根本不成立。被人类授权、却不是人类本身，这个组合是全新的。审计链能记得清清楚楚是谁签的字，但它记录的恰恰是"你自己点了头"——查得到授权，不等于追得回损失，反而堵死了你回头喊冤的那条路。</p>
+<p>而各家协议对这个组合的默认处理，是把它绕开。ACP 把自己定位成一个只在各方之间传数据的管道，不去分配谁对谁错；OpenAI 不是记录商户，结算、退款、拒付的责任仍旧留在商户和它的支付服务商身上。万事达的立场几乎相反：只要令牌有效、授权时策略被遵守，责任照旧按现有代币化规则由发卡行承担——可这只覆盖"令牌有效"的情形，没回答 Agent 误判了你意图的那片灰区。运通是唯一一个走进灰区、明确说"这块我兜"的。</p>
+<h2>拼多多的"仅退款"，是一次人类尺度的预演</h2>
+<p>想知道"发起争议的一方无法被有效追责"会怎样，不用等 Agent，中国的商家已经替所有人预演过一遍。</p>
+<p>那场预演的名字叫"仅退款"。平台把争议的裁决权几乎无条件地倒向买家：一件商品，声称有问题就能退钱、还不用退货。它本意是保护消费者，结果催生出一整条"薅羊毛"产业链——社群里公开叫卖攻略，有人专门组织下单再仅退款，从每一单赔付里抽走三到五成。2024 年，网经社对两千多家商户的调研里，89.05% 的人强烈反对这套机制；有 7.9% 的商户说，过去一年里，他们八成的订单都遭遇过仅退款。</p>
+<p>当反悔不再有代价，那条低而稳的曲线，就会被一群不心疼的人踩塌。</p>
+<p>得说清楚边界，仅退款和 Agent 不是一回事。仅退款是人在利用规则的漏洞，而 Agent 的新特性是不会心疼、可以无限复制。一个薅羊毛的人一天能薅几单，受限于他有几个账号、几双手、几分精力；一段被优化过、甚至被恶意注入过的 Agent 代码，复制一万份的成本和复制一份几乎没差别。仅退款是人类尺度的地基松动，Agent 是把这个尺度乘上了一个没有上限的系数。</p>
+<h2>不会后悔的买家，和一个正被私下重写的地基</h2>
+<p>把镜头拉回运通那句承诺，它孤单的原因现在清楚了：它是唯一一个承认地基已经在动的人。</p>
+<p>这个判断有它最硬的反方，值得原样端出来。PayPal 负责中小企业的高管 Michelle Gill 认为，危险的从来不是 Agent，而是"现有的基础设施本就是为人类的错误搭建的"——问题在基础设施陈旧，不在 AI 天生不可信。她说对了一半：旧地基本来就是打在"人会反悔"这条概率上的一块补丁，不是什么坚实的基石。但这块补丁能用五十年，恰恰因为下注的对象一直是人；Agent 动的不是这块补丁，是补丁底下那条它赖以成立的概率本身。</p>
+<p>但另外两位从业者的话，指向了同一处裂缝。网络安全公司 Flare 的 CEO Norman Menz 说得直接：没有 Agent，在线欺诈本就已经是个大问题，Agent 只会指数级放大攻击面——坏人可以劫持一个合法的 Agent，也可以伪造一个。Akoya 负责政策的 Courtney Robinson 说：责任归属完全悬空，正在一家家公司之间被单独谈判，没有任何标准。</p>
+<p>把这三句话放在一起，地基是不是在动，取决于你站在哪家公司；而补地基的方式，不是一条写给所有人看的公共规则，而是一份份关起门来签的私下协议。Visa 的风险数据说，过去半年暗网提到"AI Agent"的次数涨了 450%，恶意机器人交易量涨了四分之一——踩踏还没大规模到来，但踩踏的人已经在门口集合。</p>
+<p>所以，在你把钱包交给一个 AI 买手之前，真正该问的不是"它买东西准不准"。上海市消保委 2026 年的一份调查里，八成多人已经试过让 AI 帮忙购物，只有 16.06% 觉得它能准确买对东西——所有人都盯着"准不准"这件事。该问的是另一件没人写在说明书上的事：这笔账单出问题的那天，谁还会为它心疼，谁能替你去争，谁认这个错。</p>
+<p><strong>退款和拒付，从来都是为会后悔的人准备的。</strong>当那个会后悔的人退场，制度不会立刻垮，它只是先失去了那个它赖以运转、却从没写下来的假设。而一个从没被写下来的假设，就算已经失去，你也很难向人证明，它曾经在那里。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>所有支付巨头都在解决同一个技术问题——怎么证明一个 Agent 是合法的、在授权内花钱。没有人解决那个更难的：授权了，它却买错了，算谁的。</p>
+    <p>退款和拒付，本就是为会后悔的人准备的。买家换成不会后悔的 Agent，这套地基不会当场崩塌，只会先丢掉它赖以成立、却从没写下来的那个前提。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://stripe.com/newsroom" target="_blank" rel="noopener">Stripe Newsroom：OpenAI 与 Stripe 开源 ACP 与 Instant Checkout（2025-09）</a></div>
+      <div class="footer-source-item"><a href="https://cloud.google.com/blog" target="_blank" rel="noopener">Google Cloud Blog：Agent Payments Protocol (AP2)</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com" target="_blank" rel="noopener">Fortune / PYMNTS：American Express Agent Purchase Protection（2026-04）</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com" target="_blank" rel="noopener">Fortune Brainstorm Tech 座谈（2026-06-12）：Michelle Gill / Norman Menz / Courtney Robinson 原话</a></div>
+      <div class="footer-source-item"><a href="https://chargeflow.io" target="_blank" rel="noopener">Chargeflow / Chargebacks911：CNP 拒付率、友好欺诈占比与拒付连带成本（2024–2026）</a></div>
+      <div class="footer-source-item"><a href="https://www.darwinium.com" target="_blank" rel="noopener">Darwinium：Agent 交易责任归属专家调研</a></div>
+      <div class="footer-source-item"><a href="https://www.100ec.cn" target="_blank" rel="noopener">网经社 / 新京报：拼多多"仅退款"商户调研（2024）</a></div>
+      <div class="footer-source-item"><a href="https://www.tmtpost.com" target="_blank" rel="noopener">上海市消保委：2026 年 AI 购物体验消费者调查（八成试用 / 16.06% 认为匹配准确）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
