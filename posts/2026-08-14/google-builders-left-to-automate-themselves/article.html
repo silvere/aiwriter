@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>造了半个 Google 的四个人，辞职去造一台“以后不需要他们”的机器</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 与商业</span>
+  <h1>造了半个 Google 的四个人，辞职去造一台“以后不需要他们”的机器</h1>
+  <div class="hero-meta">
+    <span>2026-08-14</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">2026 年 8 月 5 日，桑达尔·皮查伊发了一封内部备忘录，用了“塑造 AGI 的未来”“对 Alphabet 和人类都至关重要”“我想不出比戴密斯更合适的人”这种话。措辞很体面。同一天，市场把 Alphabet 的股价盘中砸下去超过 5%。<br><br>备忘录夸的那个人，戴密斯·哈萨比斯，当天卸掉了 Google DeepMind 的 CEO。而它没细说的另一件事是：Google 的首席科学家杰夫·迪恩，干满 27 年，带着另外三个人一起走了——去开一家公司，这家公司写在明面上的目标，是让他们四个人这辈子干的活，以后不再需要人来干。<br><br>更离谱的是，出钱资助这家公司的，是 Google 自己。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一句体面话，翻译过来就是"他不管现在了"</h2>
+
+    <p>先说哈萨比斯这一头，因为它最容易被那封备忘录糊弄过去。</p>
+
+    <p>官方说法是，哈萨比斯"转任" Google DeepMind 主席、Alphabet 首席科学家，好让他"专注于长期战略和加速科学突破"。他自己在 X 上也是这个调子：我这辈子都在追求 AGI，如今到了关键时刻，我要以主席和首席科学家的新身份，专注长期的事。</p>
+
+    <p>一家公司什么时候会用"专注长期战略"来形容一个还在巅峰、还没到退休年龄的负责人？通常是他不再管当下那摊具体的活了的时候。哈萨比斯自己那句话说得其实很白——他要"交出日常运营职责"，好腾出时间和空间去看大图景。接手日常的是原来的技术负责人科拉伊·卡武克曲奥卢，升任 DeepMind 高级副总裁，管 Gemini（包括下一代 Gemini 4）的路线图，直接向皮查伊汇报。</p>
+
+    <p>翻过来就是：定方向的那个人被请去看星辰大海，真正要在明年之前把模型憋出来的担子，压到了另一个人肩上。市场当天用 5% 的跌幅给这套辞令投了票——皮查伊那句"想不出更合适的人"和交易屏幕上的红色，两句话你只能信一句。</p>
+
+    <p>而在同一天的公告里，跟哈萨比斯"退居二线"并列的，是四个直接走人的名字。这四个名字，才是这件事真正扎眼的地方。</p>
+
+    <h2>走的这四个人，是"AI 工程"这门手艺本身</h2>
+
+    <p>自媒体标题写"Google 首席科学家离职"，好像走的是一个高管。不是。走的是一个学科。</p>
+
+    <p>杰夫·迪恩和桑贾伊·格玛沃特，1999 年前后一起进的 Google。这两个人搭档造出来的东西，是 MapReduce、Bigtable、Spanner——今天你能想到的任何一家大公司，后台那套"怎么让上万台机器像一台机器一样干活"的分布式系统，本质上都是在抄他俩二十年前的作业。迪恩后来在 2011 年和吴恩达、格雷格·科拉多、还有第四个人一起，办了 Google Brain，也就是后来 DeepMind 的半壁江山。</p>
+
+    <p>那第四个人，叫黎国祺（Quoc Le）。他后来干的最出名的一件事，叫神经架构搜索（NAS），通俗说就是"让 AI 自己去设计 AI 的结构，不用人调"——AutoML 这个词背后站着的就是他。</p>
+
+    <p>第三位是奥里奥尔·维尼亚尔斯，DeepMind 研究副总裁，Gemini 的联合技术负责人之一。他 2014 年跟伊利亚·苏茨克维、黎国祺一起写的那篇 seq2seq 论文，是今天所有大模型"编码器—解码器"范式的祖宗；他还带队做了 AlphaStar，那个在《星际争霸 2》里打到宗师段位、上了 Nature 封面的东西。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图注：走的不是四个高管，是分布式系统、深度学习框架、seq2seq、AutoML 这几门手艺的第一作者——现代 AI 工程的地基，署的就是这几个名字" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：走的不是四个高管，是分布式系统、深度学习框架、seq2seq、AutoML 这几门手艺的第一作者——现代 AI 工程的地基，署的就是这几个名字</figcaption></figure>
+
+
+    <p>把这四个人的简历叠一块看，你会发现一件事：过去二十年里，"怎么当一个顶级的机器学习研究员和工程师"这件事，他们四个就是标准答案本身。</p>
+
+    <strong>所以真正的问题不是"谁走了"，而是他们四个人凑一块，跑去干了件什么活。</strong>
+
+    <h2>他们辞职去干的活，字面意思是"以后不需要他们这种人"</h2>
+
+    <p>这家新公司叫 Discovery Loop，注册成特拉华州的公益公司（public benefit corporation）。名字里的 Loop（闭环）不是随便起的。</p>
+
+    <p>迪恩在 X 上把话说得很直白：我们的做法，是把"做实验"这个闭环自动化掉。提出一个假设、跑一个实验、评估结果——科学发现说到底就是这么一个循环，而这个循环，很多领域里可以整个交给机器去跑。公司起步先啃机器学习研究和工程本身，往后再扩到硬件设计、药物发现、清洁能源这些地方。</p>
+
+    <p>你把这两段话拼一起读：一个由 AutoML 发明人、seq2seq 作者、Google Brain 创始人组成的团队，成立一家公司，目标是自动化机器学习研究与工程。这四个人本身，就是"机器学习研究与工程"这门手艺现存最贵的人肉样本。他们辞职，是为了造一台能替代"他们这种人"的机器。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="图注：Discovery Loop 要自动化的那个'假设—实验—评估'闭环，正是这四个人二十年来亲手在跑的活；而给这台机器出钱、出算力的，是他们前东家 Google" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：Discovery Loop 要自动化的那个'假设—实验—评估'闭环，正是这四个人二十年来亲手在跑的活；而给这台机器出钱、出算力的，是他们前东家 Google</figcaption></figure>
+
+
+    <p>这里就到了整件事最阴间的一层。Discovery Loop 的种子轮，由 Radical Ventures 和 Khosla Ventures 联合领投。参投名单里有一个熟悉的名字：Alphabet。Google 不光投了钱，还兼任这家公司的云服务合作伙伴——算力也它出。</p>
+
+    <p>捋一遍就是：四个 Google 的核心建造者跑出去开公司，要自动化掉"AI 研究员"这个岗位；而 Google 一边送走他们，一边掏钱当股东、供算力当房东，资助他们把这件事做成。<strong>一家公司花钱出力，帮别人来革自己最核心工种的命，这操作你在商学院案例库里翻不到第二个。</strong></p>
+
+    <p>当然，Google 这么做有它自己的算盘——押注前员工、绑定未来的科研 AI、顺便留个战略窗口，都说得通。只是从"人"的角度看，这笔投资的潜台词格外刺耳：连 Google 自己都愿意下注，赌这四个人在外面造的那台机器，比他们留在公司里继续当研究员更值钱。</p>
+
+    <h2>Google 不缺钱，缺的是有人愿意留下来把它造出来</h2>
+
+    <p>有人会说，大厂高管出走创业，这是硅谷天天发生的事，至于上升到"学科撤稿"吗？</p>
+
+    <p>单看辞职本身，确实不至于。至于的地方在于时间点，以及走的是哪个岗位的人。</p>
+
+    <p>就在这场人事地震前的三个月，Google 的旗舰模型 Gemini 3.5 Pro 一直在难产。皮查伊 5 月 19 日在 I/O 大会舞台上预告了它，6 月的发布窗口没赶上，Google 中途更新了训练数据想把编程能力提上去，效果不理想，到 7 月已经被报道第三次跳票。旗舰模型憋不出来的这几个月，恰好也是人往外跑得最凶的几个月。</p>
+
+    <p>跑的还都是最不该跑的人。Gemini 有两位联合技术负责人，一个是诺姆·沙泽尔，6 月离职去了 OpenAI；另一个就是维尼亚尔斯，8 月离职去创业。几周之内，一个模型的两位技术负责人前后脚清空。诺贝尔奖得主约翰·江珀，去了 Anthropic。更早的 5 月，DeepMind 英国的员工以 98% 的赞成票投票成立了工会，导火索是对五角大楼军事 AI 合同的抗议。士气这东西没法量化，但《财富》那篇 8 月 10 日的调查里，一个工程师的话已经够说明问题了——据报道，他说他"从没在 Gemini 那片办公区见戴密斯走动过"。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="图注：同一时段，Google 把 2026 年资本开支指引一路上调到约 2050 亿美元——钱和算力从不是瓶颈，瓶颈是愿意留下来把模型憋出来的人" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：同一时段，Google 把 2026 年资本开支指引一路上调到约 2050 亿美元——钱和算力从不是瓶颈，瓶颈是愿意留下来把模型憋出来的人</figcaption></figure>
+
+
+    <p>要说清楚一点：当天股价跌 5%，不能全赖在人事上。Google 同期把 2026 年的资本开支指引一路上调到约 2050 亿美元，市场对"AI 到底要烧多少钱"本来就紧张，人事地震只是又添了一把火。两个因素叠在一起，不能简单归因。</p>
+
+    <p>但恰恰是资本开支这条线，把话说穿了。Google 从不缺钱，也不缺卡，资本开支能一路往上加。它缺的是另一样东西——愿意在旗舰模型难产的第三个月，还留下来把它憋出来的人。而这四个最会造的人给出的答案是：与其留在这儿当那个被 crunch 到每周六十小时的研究员，不如出去造一台以后不用人 crunch 的机器。</p>
+
+    <p>那封夸了半天"塑造 AGI 未来"的备忘录，是 Google 那一周发出去最不诚实的一份文件。真正诚实的那份，是同一天生效的新组织架构图——它清清楚楚地写着，教了机器二十年怎么做研究的四个人，最后得出的结论是，把这活儿干完的最快办法，是自己别在这儿干了。而他们的前老板，还给他们写了张支票。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>Google 不缺钱也不缺卡，2026 年的资本开支指引一路上调到约 2050 亿美元；它缺的是愿意在旗舰模型难产的第三个月，还留下来把它憋出来的人。</p>
+    <p>而最会造的四个人给出的答案是辞职——去造一台以后不用人 crunch 的机器，前老板还掏钱当股东、供算力当房东。教了机器二十年怎么做研究，他们的结论是：自己别在这儿干了。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/08/05/google-chief-scientist-jeff-dean-leaving-company-after-27-years.html" target="_blank" rel="noopener">CNBC：Google chief scientist Jeff Dean leaving after 27 years</a></div>
+      <div class="footer-source-item"><a href="https://x.com/JeffDean/status/2085034604172603724" target="_blank" rel="noopener">Jeff Dean 在 X 宣布创办 Discovery Loop</a></div>
+      <div class="footer-source-item"><a href="https://x.com/JeffDean/status/2085035498222002595" target="_blank" rel="noopener">Jeff Dean：automate the experimental loop（方法论跟帖）</a></div>
+      <div class="footer-source-item"><a href="https://x.com/demishassabis/status/2085034334914769203" target="_blank" rel="noopener">Demis Hassabis 在 X 说明新角色</a></div>
+      <div class="footer-source-item"><a href="https://radical.vc/our-investment-in-discovery-loop/" target="_blank" rel="noopener">Radical Ventures：Our Investment in Discovery Loop</a></div>
+      <div class="footer-source-item"><a href="https://www.geekwire.com/2026/the-startup-idea-that-convinced-a-uw-computer-science-legend-to-leave-google-after-27-years/" target="_blank" rel="noopener">GeekWire：说服一位 UW 计算机传奇离开 Google 的创业点子</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com/2026/08/10/how-stalled-models-missed-deadlines-and-staff-burnout-lead-to-the-unraveling-of-googles-deepmind/" target="_blank" rel="noopener">Fortune：How stalled models, missed deadlines, and staff burnout led to the unraveling of Google's DeepMind</a></div>
+      <div class="footer-source-item"><a href="https://www.axios.com/2026/07/23/googles-deep-mind-ai-model-race" target="_blank" rel="noopener">Axios：Google's DeepMind and the AI model race</a></div>
+      <div class="footer-source-item"><a href="https://9to5google.com/2026/07/16/gemini-3-5-pro-delays/" target="_blank" rel="noopener">9to5Google：Gemini 3.5 Pro delays</a></div>
+      <div class="footer-source-item"><a href="https://www.investing.com/news/stock-market-news/alphabet-shares-fall-5-as-ai-pioneer-jeff-dean-exits-in-major-shakeup-4838743" target="_blank" rel="noopener">Investing.com：Alphabet shares fall 5% as Jeff Dean exits</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com/2026/05/05/google-deepmind-unionize-vote-military-ai-contracts-internal-backlash-pentagon-deal-israeli-defense-forces/" target="_blank" rel="noopener">Fortune：DeepMind UK 员工 98% 投票成立工会</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
