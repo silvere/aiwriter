@@ -4,11 +4,7 @@
 
 ## 一、一份规划里最有用的，不是那几条路
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🖼️</div>
-  <div class="img-placeholder-label">概念图</div>
-  <details><summary>提示词</summary><pre>flat minimalist illustration, person lying in bed at night scrolling phone, soft blue light, no text, clean background</pre></details>
-</div>
+![person lying bed night scrolling](images/concept_01.jpg)
 
 这两天我干了一件具体的事：为一个人做了一份 3-5 年的职业规划分析。出于隐私，我不展开他是谁。
 
