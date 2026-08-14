@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>别问哪条路是对的，问你多久能发现它是错的</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">认知深度</span>
+  <h1>别问哪条路是对的，问你多久能发现它是错的</h1>
+  <div class="hero-meta">
+    <span>2026-08-15</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">AI 把职业半衰期压短之后，'选对路'已经不是一个能当场检验的目标。真正能当场算出来的判据只有两个：你多久能发现自己错了，以及错了之后手里还剩什么。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、一份规划里最有用的，不是那几条路</h2>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🖼️</div>
+  <div class="img-placeholder-label">概念图</div>
+  <details><summary>提示词</summary><pre>flat minimalist illustration, person lying in bed at night scrolling phone, soft blue light, no text, clean background</pre></details>
+</div>
+
+    <p>这两天我干了一件具体的事：为一个人做了一份 3-5 年的职业规划分析。出于隐私，我不展开他是谁。</p>
+
+    <p>方法有点特别。我没有问他想做什么——<strong>人对自己想做什么的自述往往不可靠</strong>，那更接近一种自我形象的维护，而不是行为的记录。我改成从他的作品倒推：一千多条他自己写的代码提交记录，四百多篇他写过的东西。看时间真正花在哪里，看他在什么地方反复回来，看他在哪一类事情上总是走到一半就停下。</p>
+
+    <p>最后写出四条互斥的路线，每条都有赌注、第一年动作、推荐配比。</p>
+
+    <p>交出去之后我自己回头看，发现<strong>最有用的不是那四条路线，也不是最后那个推荐配比</strong>。</p>
+
+    <p>最有用的是每条路线下面那两行不起眼的东西：<strong>什么信号出现时，你应该放弃这条路；以及，这条路失败之后，你手里还剩什么。</strong></p>
+
+    <p>而这两行，恰恰是我在几乎所有职业建议里都没见过的。</p>
+
+    <p>那些建议长得都差不多：学 AI、做管理、去做不可替代的事、深耕垂直领域、all in 自媒体。它们全都在回答同一个问题——<strong>该选哪条路</strong>。而这个问题隐含一个前提：未来是可以被预测的，所以选对是有意义的。这个前提正是过去三年被打得最碎的那个。</p>
+
+    <p>流传最广的那条建议还有个更难堪的毛病：<strong>它不可证伪</strong>。"学会用 AI 的人会取代不用 AI 的人"——你转型失败了，它说你还不够会用；你成功了，它说你看吧。一条无论发生什么都成立的话，不含任何能指导行动的信息。</p>
+
+    <p>也有人拿历史说话：每次技术革命最终都创造了比消灭的更多的岗位。宏观上这可能是对的，但宏观和你之间隔着一个致命的时间差——<strong>新岗位长出来的速度，和你房贷的还款周期，是两个不同的时钟。</strong> 你不能拿一个五十年尺度的乐观结论，去支付一个十八个月尺度的账单。</p>
+
+    <h2>二、第一个判据：证伪周期</h2>
+
+    <p>不问"选哪条"，那问什么？</p>
+
+    <p>我给那四条路线各留了<strong>一个</strong>"第一年真正算数的动作"。不是四个，是一个。标准很苛刻：它必须在三个月内出结论，而且结论必须能<strong>直接证伪这条路线的核心假设</strong>。</p>
+
+    <p>举个例子。其中一条路赌的是"我的技术设计能力有对外影响力"。它第一年唯一算数的动作，不是写更多设计稿，而是：<strong>把已经写好的那份设计稿，真正走完对外发布的流程。</strong></p>
+
+    <p>走通了，假设成立。走不通，而且卡在流程而不是内容上，那这条路的核心假设当场被证伪——他的瓶颈从来不是技术能力，是分发。</p>
+
+    <p>这个动作三个月内必有结论。而"深耕技术影响力"这个方向，如果没有这个动作，三年后你也说不清自己到底做到没有。</p>
+
+    <p>这就是<strong>证伪周期</strong>：从你做出决定，到你能确知这个决定错了，中间隔多久。</p>
+
+    <p>规划的价值不在于预测得准。规划的价值在于<strong>它错的时候能及时通知你</strong>。一份不能被证伪的规划不是规划，是信仰——信仰不需要证据，也不会给你退出的时机。</p>
+
+    <p>这里必须写死一个区别，否则很容易滑进另一个坑：<strong>要缩短的是验证周期，不是投入周期。</strong></p>
+
+    <p>有一派主张"别做规划了，保持敏捷，随时准备转向"。听起来和我说的很像，其实相反。同一份倒推材料里有个很扎眼的模式：他真正产生复利的两个方向，投入都在十八个月以上（这个数字来自他自己的时间分布，不是什么通用阈值）；而那些"随时转向"的尝试，几乎全部停在"技术上能跑通了"那一刻，一个都没有走到有人使用。</p>
+
+    <strong>敏捷本身不产生资产。你要快速验证的是方向对不对，不是快速更换你的投入。</strong>
+
+    <h2>三、第二个判据：残值</h2>
+
+    <p>第二个判据更少被提到，可能更重要。</p>
+
+    <p>四条路线对比做完，我加了一栏原本不在计划里的东西：<strong>如果这条路失败了，剩下什么？</strong></p>
+
+    <p>排出来的顺序和"哪条期望收益最高"完全不同。</p>
+
+    <p>残值排第一的那条路，赌注其实最大、最可能失败——它要求他向外部项目提交代码、进入真实协作，而这恰好是他最不擅长的部分。但即使彻底失败，他手里会剩下一份公开的方法论文档和一次真实的外部协作经历。<strong>这两样东西，之后走哪条路都还能用。</strong></p>
+
+    <p>残值排最后的那条，是把手上一个自己做的工具产品化。它听起来最稳妥、最可控——东西已经在手里了。但如果失败，剩下的是什么？是又一个"技术上能跑通、但没有人使用"的项目。</p>
+
+    <p>而他的作品里反复出现的正是这个模式：<strong>从"能跑通"到"有人用"这一段，动力会归零；越靠近变现的项目，完成度越低。</strong></p>
+
+    <p>所以那条看起来最稳妥的路，恰恰最危险——它的失败模式，正是他已经反复经历过的那一种。打个比方：那不是一次新的尝试，而是又盖了一座交着电费却再也不走进去的房子。</p>
+
+    <strong>注意，残值高不等于风险低。</strong> 上面那条残值第一的路，同时也是四条里最可能失败的一条。残值判据和风险偏好无关，它问的不是"哪条更安全"，而是"输掉之后，你是空手还是带着东西离场"。别拿它当选最稳那条的借口。
+
+    <p>在一个变化快到无法预测的环境里，<strong>押注"期望收益最高的路"是赌博，押注"输了也还能站着的路"才是策略。</strong> 因为前者要求你预测对，后者不要求。</p>
+
+    <h2>四、今晚就能回答的两个问题</h2>
+
+    <p>如果你正卡在"要不要转型"上，别再花时间比较那几条路的优劣了——你比较不出来，信息不足，而且未来不配合。</p>
+
+    <p>换成这两个问题：</p>
+
+    <strong>第一，我现在这条路，有没有一个三个月内能出结论、并且结论能证明我错了的动作？</strong> 如果没有，你现在做的不是规划，是在等。今晚给它补一个。
+
+    <strong>第二，如果这条路失败了，我手里会剩下什么？</strong> 如果答案是"什么都不剩，只剩这段时间"，那么无论它看起来多有前途，它都是一场赌博。
+
+    <p>这套判据不是万能的，我得说清楚它什么时候会误杀：<strong>赌注周期本身就长于三年的事</strong>——基础研究、养育一个孩子、某些要漫长积累才显形的手艺——你没法在三个月内证伪它们，硬套只会把它们全砍掉。对这类事得换别的判据。但至少你要知道，自己手上这件事属于哪一类。</p>
+
+    <p>AI 会不会消灭你的工作，这个问题我答不了。</p>
+
+    <p>但"如果我押错了，我多久能知道"，和"知道的时候我手里还剩什么"——这两个问题，你今晚就能答。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p></p>
+    <p></p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <a href="{{SOURCE_URL_1}}" target="_blank" rel="noopener">{{SOURCE_NAME_1}}</a> ·
+      <a href="{{SOURCE_URL_2}}" target="_blank" rel="noopener">{{SOURCE_NAME_2}}</a>
+      <!-- 按实际来源数量增减 -->
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
