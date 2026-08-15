@@ -4,11 +4,7 @@
 
 ## 一、一个被讲滥了的故事，和它遮住的东西
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🖼️</div>
-  <div class="img-placeholder-label">概念图</div>
-  <details><summary>提示词</summary><pre>flat minimalist illustration, person lying in bed at night scrolling phone, soft blue light, no text, clean background</pre></details>
-</div>
+![person lying bed night scrolling](images/concept_01.jpg)
 
 Peter Steinberger 讲过一件事：他做了个 AI agent，默认拥有他本人在自己电脑上的全部权限。他把它放进一个公开的 Discord，邀请陌生人进来玩。第二天早上醒来，八百多条消息。
 
