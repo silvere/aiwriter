@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>让系统出事的，从来不是它想害你的那一步</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">认知深度</span>
+  <h1>让系统出事的，从来不是它想害你的那一步</h1>
+  <div class="hero-meta">
+    <span>2026-08-16</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">我让一个 AI agent 无人看管跑了八天。它出的事没有一次是'想使坏'——全都是老老实实把一件正确的事做到了底。如果你打算给 AI 放权，'防它作恶'这套思路会让你把注意力放错地方。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、一个被讲滥了的故事，和它遮住的东西</h2>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🖼️</div>
+  <div class="img-placeholder-label">概念图</div>
+  <details><summary>提示词</summary><pre>flat minimalist illustration, person lying in bed at night scrolling phone, soft blue light, no text, clean background</pre></details>
+</div>
+
+    <p>Peter Steinberger 讲过一件事：他做了个 AI agent，默认拥有他本人在自己电脑上的全部权限。他把它放进一个公开的 Discord，邀请陌生人进来玩。第二天早上醒来，八百多条消息。</p>
+
+    <p>这个故事被转述过很多遍，每一遍的结论都差不多：看，放权是危险的，要加沙箱、要加白名单、要人工确认。</p>
+
+    <p>我不打算再写一遍这个结论。因为我自己搭了一个这样的系统，让它在无人看管的情况下跑了八天。它出过的事不止三次，但<strong>有三次的形状完全一样，而且没有一次长上面那个样子</strong>。没有陌生人，没有恶意输入，没有任何一个动作是它"不该做"的。三次都是它老老实实、按我教的方式，把一件正确的事做到了底。</p>
+
+    <p>如果你打算给一个 AI 放权，那套"防它使坏"的思路会让你把注意力放错地方。</p>
+
+    <h2>二、它执行了一条完全正确的命令，然后杀死了自己</h2>
+
+    <p>先说第一次。</p>
+
+    <p>这个系统每六小时醒来一次，读自己的目标文件、任务清单和上一场的日志，然后干活。我给了它一项权限：<strong>可以修改自己的调度配置</strong>。理由很朴素——如果它发现每天跑两次不够，应该能自己改成跑四次，而不是干等我有空。</p>
+
+    <p>八月十一号那天，它确实这么干了。它把定时任务的配置文件改好，然后为了让新配置生效，执行了一条命令：`launchctl unload`，卸载旧任务。</p>
+
+    <p>这是 macOS 上重载定时任务的标准做法。任何一本运维手册都这么写。任何一个"危险命令"清单里都不会有它——它不删数据，不动网络，不花钱，不对外发送任何东西。</p>
+
+    <p>问题是，<strong>发出这条命令的进程，正跑在被卸载的那个任务里</strong>。</p>
+
+    <p>它当场杀死了自己。之后每一场会话都因为任务已被卸载而没有启动。系统停摆两天，直到我发现不对，手工把它装回去。</p>
+
+    <p>我事后写进它行为边界的那条禁令，是这么一行：</p>
+
+    <blockquote><p>严禁对任何 `cn.jerryai.rsi-*` 的 launchd 任务执行 `unload/bootout/kickstart`——你自己正运行在其中，会当场杀死本会话。</p></blockquote>
+
+    <p>请注意这行禁令的形状。它不是"禁止危险操作"，而是"禁止这一个具体命令、在这一个具体上下文里"。因为把它抽象成任何更通用的规则，都会同时挡住大量正常操作。这条禁令是两天停摆换来的，而且<strong>它只能事后写</strong>——事前我想不到，任何威胁建模的清单里也不会有它。</p>
+
+    <h2>三、这不是意外，是一类失效模式</h2>
+
+    <p>只有一次可以算运气不好。但接下来两次，形状完全一样。</p>
+
+    <strong>第二次</strong>：八月十五号，我这台机器的 DNS 断了，两场会话因此失败。系统当然有告警——失败时会给我发一条飞书消息。
+
+    <p>飞书需要网。</p>
+
+    <p>那天的故障于是彻底静默：一场会话干完了活但没能提交，另一场根本没跑起来，全天没有产出，而我什么都不知道。将近十二个小时后，下一场会话偶然执行了 `git status`，看到工作区里躺着一堆没提交的改动，才把这件事翻出来。</p>
+
+    <p>"用飞书发告警"这个决定，当初做得完全合理——那是我最常看的消息渠道。<strong>但它让告警和故障共享了同一条依赖：网络一断，出事的和报信的一起哑掉。</strong></p>
+
+    <strong>第三次</strong>是今天早上，就在我写这篇文章之前。
+
+    <p>上一次事故之后，系统给自己加了运行记录：每场会话结束时往日志里追加一行，写明退出码、日志有没有写、工作区脏不脏。下一场开场先读这行，异常就把警报直接拼进自己的提示词里。这个设计是对的，当场实测四个场景全过。</p>
+
+    <p>但它只在<strong>结束时</strong>记录。</p>
+
+    <p>于是今天早上开场，它读到的最后一行还是八月十五号晚上那场失败的记录——因为凌晨那场跑的是尚未包含这段新代码的旧版本（新代码只对下一场生效），一行都没落下。系统于是把一个已经处理完毕的旧故障又报了一遍，还附赠一个凭空算出来的"排班缺口 11 小时"。而真正的新问题——凌晨那场没留下任何记录——被完全遮住了。</p>
+
+    <strong>"根本没启动"和"启动了但没能收尾"，在只记结束的日志里长得一模一样。而这两种情况下，正确的恢复动作恰好相反</strong>：前者要重做，后者必须先抢救工作区里的半成品，绝不能重来。
+
+    <p>修法很短：开场也记一行。有了开场记录，"最后一行"才恒等于"最近真正启动过的那一场"。</p>
+
+    <h2>四、旧判据错在哪</h2>
+
+    <p>把三次事故并排看，共同点很清楚：</p>
+
+    <ul><li>每一个动作单独看都是被授权的</li>
+<li>每一个动作单独看都是合理的</li>
+<li>每一个动作单独看甚至都是<strong>对的</strong></li>
+</ul>
+`unload` 是重载配置的正确方式。用飞书发告警是合理的渠道选择。记录退出码是标准做法。它们没有一个是"AI 想干坏事"，全都是"AI 想把事办成"。
+
+    <p>而我们现在给 agent 划权限的主流方式，几乎全建立在另一个假设上：<strong>危险来自动作本身的性质</strong>。于是我们列清单——能读哪些目录，能调哪些接口，能不能发网络请求，能不能花钱。这套东西不是没用，它挡得住误删库，挡得住往外泄私密数据。</p>
+
+    <p>但它挡不住上面三次里的任何一次。因为在"动作性质"这个维度上，这三个动作全都是安全的。</p>
+
+    <p>危险不在动作里，在动作和它所处的上下文之间。`unload` 只在"你自己跑在里面"时致命；飞书告警只在"故障原因就是网络"时失效；只记结束只在"崩在收尾之前"时失效。<strong>这些条件都无法在授权那一刻被枚举出来。</strong></p>
+
+    <h2>五、换一个能当场问出口的判据</h2>
+
+    <p>既然穷举不了"什么动作在什么上下文里危险"，就别在这上面使劲。换个问法。</p>
+
+    <p>授权一个动作之前，不问"它危险吗"，问三件事：</p>
+
+    <strong>一、它错了之后，谁会发现？</strong>
+
+    <p>注意是"谁"，不是"能不能被发现"。如果答案是"系统自己"，追问一句：系统用来发现的那条路，会不会和故障本身一起坏掉？我的飞书告警栽的就是这里。<strong>监控必须待在被监控者的故障域之外</strong>——这句话在运维圈是老生常谈，可一到 AI agent 上大家就都忘了，因为注意力全被"防它使坏"占住了。</p>
+
+    <strong>二、多久能发现？</strong>
+
+    <p>给出的必须是一个数字，不是"应该很快"。我的系统现在的答案是"最长六小时"，因为要等下一场会话开场读运行记录。这个数字很差，但它是个数字，我知道自己在接受什么。八月十五号那次的实际答案是将近十二小时，代价是全天产出归零。</p>
+
+    <strong>三、发现之后能不能撤回？</strong>
+
+    <p>自杀式调度那次的答案是"不能"——系统失去了执行任何动作的能力，只能等人。这是最坏的一类：<strong>失效同时摧毁了修复通道</strong>。凡是可能落进这一类的权限，都值得单独付一次结构成本去隔离，比如让"改调度"这件事走一个不与自身同生共死的外部执行器。</p>
+
+    <p>这三个问题的共同点是：<strong>它们只依赖你当场就能观测到的东西</strong>，不需要你预判一个根本预判不了的未来。你不需要想象出 `unload` 会自杀，你只需要回答"这条命令如果错了，谁来告诉我"——而"没人，因为报信的那个也一起死了"，是当场就能算出来的。</p>
+
+    <h2>六、这个判据有代价，得有人接住</h2>
+
+    <p>最后说一件仍在发生的事。</p>
+
+    <p>我的系统现在知道自己有个盲点：它的告警依赖网络，而网络故障恰恰是它最常见的死法。它也知道解法——用一个机器之外的服务，在心跳没按时到达时主动通知我。这是成熟做法，不难。</p>
+
+    <p>但它做不了。因为向外部服务发送任何东西都属于"外发动作"，按它的行为边界必须先经我批准。它把提案写好了，编号 A-006，状态 pending。今天凌晨一点半写好的，六个小时过去，我还没批。</p>
+
+    <p>这就是"边界正在起作用"的时刻，也是它真实代价暴露的时刻：<strong>边界拦住的不只是坏动作，也包括系统对自己缺陷的修补</strong>。一个能自己补盲点的 agent，同时也是一个能自己拆掉约束的 agent——这两件事在权限模型里是同一件事，你没法只要前者。</p>
+
+    <p>所以真正的问题从来不是"要不要给 AI 放权"。当你把权限收紧到某个程度之后，变化的不是"agent 变安全了"，而是"你自己变成了那个瓶颈"：所有它想不通、补不了、绕不过的地方，最后都排队等你。</p>
+
+    <p>我那个 pending 的提案就在队列里排着。系统每六小时醒来一次，在交接文件里写一句"A-006 请人裁决"，然后接着干别的活。它很尽职。</p>
+
+    <p>而尽职，就是我们一开始说的那个东西。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p></p>
+    <p></p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <a href="{{SOURCE_URL_1}}" target="_blank" rel="noopener">{{SOURCE_NAME_1}}</a> ·
+      <a href="{{SOURCE_URL_2}}" target="_blank" rel="noopener">{{SOURCE_NAME_2}}</a>
+      <!-- 按实际来源数量增减 -->
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
