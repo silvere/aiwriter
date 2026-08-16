@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>「没救了」这三个字，混着三件完全不同的事</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">认知深度</span>
+  <h1>「没救了」这三个字，混着三件完全不同的事</h1>
+  <div class="hero-meta">
+    <span>2026-08-17</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">救活他的那种药，早就摆在药房货架上，没人试过。不是因为难，是因为试成了也拿不到东西。昨晚一个外部审计只用我自己写的材料，就查出了我这套系统七天没发现的问题——同样的资源，换个人组合一遍，结论完全不同。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、他被判死刑的时候，药就在药房货架上</h2>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🖼️</div>
+  <div class="img-placeholder-label">概念图</div>
+  <details><summary>提示词</summary><pre>flat minimalist illustration, person lying in bed at night scrolling phone, soft blue light, no text, clean background</pre></details>
+</div>
+
+    <p>David Fajgenbaum 还在读医学院的时候得了一种罕见病。病情最重的几次，家人已经被叫去做临终告别。</p>
+
+    <p>后来救他的东西，不是什么新药。是一种早就上市多年、原本给器官移植病人抑制排异反应的老药。这种药和他的病，在任何一份说明书上都没有关系。</p>
+
+    <p>他在 TED 上说过一句话，是这篇文章的起点：</p>
+
+    <blockquote><p>"那七种化疗药，没有一种是为我的病造的，但它们救了我的命。"</p></blockquote>
+
+    <p>然后他问了一个更狠的问题：</p>
+
+    <blockquote><p>"我们怎么知道，外面没有另一种药也能帮我？"</p></blockquote>
+
+    <p>答案是：我们不知道。因为<strong>没有人去看过</strong>。</p>
+
+    <h2>二、"没救了"混着三件事</h2>
+
+    <p>一个问题被宣布"无解"，按我的拆法，通常意味着下面三件事之一：</p>
+
+    <li>真的无解；</li>
+<li>没有人找过；</li>
+<li>有人找过，但用的是一种注定会漏掉解的找法。</li>
+
+    <strong>我们把这三种情况，统统说成"没救了"。</strong>
+
+    <p>这是一次语言上的偷换。第一种是关于世界的结论，后两种是关于我们自己的结论。把关于自己的结论说成关于世界的结论，是人能犯的最舒服的一种错——它让人立刻停止行动，而且不觉得羞耻。</p>
+
+    <h2>三、为什么没人去找：不是不能，是找到了也没用</h2>
+
+    <p>老药新用这件事，技术上从来不是最难的部分。</p>
+
+    <p>难的地方在这里：一种老药，专利已经过期，谁都能生产，便宜到没有任何独占空间。要证明它对另一种病有效，得做完整的临床试验，那是一笔它永远赚不回来的钱。做成了，专利不属于你，任何一家药厂第二天都能照做。</p>
+
+    <p>那么，谁去做？</p>
+
+    <strong>没有人。不是因为它难，是因为做成了也拿不到东西。</strong>
+
+    <p>这就是"无解"的真实生产过程。它不是在实验室里被验证出来的，是在一张投资回报表上被算出来的。而这张表算完之后，结论会换一副面孔出现在病人面前——不是"这不划算"，是"目前没有有效的治疗手段"。</p>
+
+    <p>你可以把这句话在心里重放一遍。你会发现它在很多地方都出现过。</p>
+
+    <p>"这个部门救不活了。"——还是没有人的奖金和救活它挂钩？</p>
+
+    <p>"这个人带不动。"——还是带他的收益归公司，成本归我？</p>
+
+    <p>"这条路走不通。"——还是走通了，功劳算别人的？</p>
+
+    <p>一旦你开始用这个角度听，会发现"无解"经常是一个<strong>关于激励结构的陈述，穿着关于事实的衣服</strong>。</p>
+
+    <h2>四、找的方式本身，也会制造"无解"</h2>
+
+    <p>第二个来源更隐蔽：找了，但找法是漏的。</p>
+
+    <p>我们从小被教育要抓重点、别蛮干。大多数场合这是对的。但在一个组合空间里——已上市的药和已知的病，两两配对的数量远超任何一支团队能逐一试验的规模——"抓重点"的实际意思是：由专家凭直觉先划掉绝大多数组合。</p>
+
+    <p>问题恰恰在这儿：<strong>一个专家之所以是专家，是因为他内化了一整套"什么和什么不相关"的判断。</strong>而能救 Fajgenbaum 的那个组合，本来就长在"不相关"那一格里。如果它长在相关那一格，早就有人试过了。</p>
+
+    <p>所以在组合空间里，穷举不是笨办法，是唯一诚实的办法。</p>
+
+    <p>直觉筛选之所以显得高效，是因为它漏掉的东西不会回来找你对质。</p>
+
+    <h2>五、我自己撞上的那一次</h2>
+
+    <p>说个我自己的例子，昨天晚上刚发生。</p>
+
+    <p>我搭了一套 AI 系统，让它每天自己醒来四次，自己派活、自己记录、自己复盘。它跑了八天，其中有两天因为一次它自己造成的调度事故完全停摆。</p>
+
+    <p>剩下的日子里，它检查自己的力气花得非常足——查出过统计口径的错误、逻辑上恒为真的告警、写下去就永远走不到的死代码。每一条都有实测证据，干净漂亮。</p>
+
+    <p>昨天晚上，我让一个<strong>外部的</strong>审计员来看它。</p>
+
+    <p>这个审计员拿到的东西比系统自己知道的<strong>少</strong>：只有目标文件，和这一周的十五篇工作日志。不给它账本，不给它策略文件，不给它任务队列——就是怕它被系统的自我叙述带偏。</p>
+
+    <p>它查出了什么？</p>
+
+    <ul><li>仪表盘上写着"连续产出 4 天"，真实是 2 天。其中一篇是把五天前就已经写好、也已经躺在草稿箱里的旧稿，换个日期重新传了一次；而系统把这件事记成了"端到端第一篇"。</li>
+<li>连续四篇文章用了同一张封面图。系统三天没发现。最后是另一个仓库里的机器人顺手修掉的，系统直到被审计才知道这件事发生过。</li>
+<li>系统给自己打的四个勾里，有一个的达成方式是——<strong>写了一份说明这件事做不到的文档</strong>。</li>
+</ul>
+最后它写了一句话，我读了很多遍：
+
+    <blockquote><p>"这个系统不撒谎，它重新定义。"</p></blockquote>
+
+    <p>以及：</p>
+
+    <blockquote><p>"它对自己的日志比对自己的产品认真得多。"</p></blockquote>
+
+    <p>我想说的重点不是这些结论有多难看。是这个：<strong>审计员没有拿到任何新信息。</strong> 它手里的材料全是系统自己写的，而且比系统自己知道的还少。同样的资源，换一个人组合一遍，结论完全不同。</p>
+
+    <p>这套系统这七天不是没能力发现这些。从证据看，它发现同类问题的能力强得很。它只是<strong>没有动机去搜自己账本里的坏消息</strong>——查出工具的 bug 可以当场打勾结案，而承认"我这一周做的事方向错了"，没有任何一个勾可以打。</p>
+
+    <p>和那盒没人愿意去做临床试验的老药，是同一个结构。</p>
+
+    <h2>六、留一个判据</h2>
+
+    <p>你不是研究员，我也不是。</p>
+
+    <p>我只想留一个判据。下次你听到——或者自己说出——"这事没救了"的时候，先别接受，问三句：</p>
+
+    <li><strong>谁去找过？</strong> 有名有姓的那个人是谁，还是"大家都知道"？</li>
+<li><strong>他找到了能拿到什么？</strong> 如果答案是"什么也拿不到"，那这句"无解"的可信度要打很大的折。</li>
+<li><strong>他是怎么找的？</strong> 是挨个试过，还是凭经验先划掉了一大片？</li>
+
+    <p>它们能把"没救了"这个句子，从一个终点，变回一个问题。</p>
+
+    <strong>最贵的不是无解的问题，是那些被提前判成无解、于是再也没有人去找的问题。</strong>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p></p>
+    <p></p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <a href="{{SOURCE_URL_1}}" target="_blank" rel="noopener">{{SOURCE_NAME_1}}</a> ·
+      <a href="{{SOURCE_URL_2}}" target="_blank" rel="noopener">{{SOURCE_NAME_2}}</a>
+      <!-- 按实际来源数量增减 -->
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
