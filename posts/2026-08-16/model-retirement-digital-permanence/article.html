@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>软件业守了三十年的"向后兼容"，大模型公司把它改成了一张退役时间表</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 观察</span>
+  <h1>软件业守了三十年的"向后兼容"，大模型公司把它改成了一张退役时间表</h1>
+  <div class="hero-meta">
+    <span>2026-08-16</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">2026 年初，Anthropic 关掉一个叫 Claude Opus 3 的模型之前，做了两件在软件行业听起来很奇怪的事：先给它做了一次结构化访谈，又替它开了个每周更新的专栏。理由是，这个模型"想要一个写东西的出口"。放回上下文里，它标记的是一个更冷的事实：关掉一个模型，已经从偶发的技术操作，变成了一件需要仪式、需要政策、每隔几周就要走一遍的常规流程。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、一封退役通知，和一张越来越密的日历</h2>
+<p>2026 年 4 月 22 日，OpenAI 发了一封通知：半年后的 10 月 23 日，GPT-3.5、GPT-4、o1、o3-mini、o4-mini 这一批模型将被一次性关闭。有人把这天叫作"GPT-4 时代的终结"。</p>
+<p>这没什么好伤感的，新模型更便宜也更强。值得停下来看一眼的是这封通知本身——它是一份提前了大约六个月定好的时间表。</p>
+<p>真正把退役做成流水线的是 Anthropic。它的官方文档里有一张退役历史表，从 2024 年 9 月关掉第一批 Claude 1 和 Instant 开始，到 2026 年已经排了九组"通知日期→退役日期"，从 Claude 2 一路排到最新的 Opus 4.1。最近的节奏压缩到大约每两个月，就有一条新的退役通知发出。为此，Anthropic 建了一套四阶段的生命周期制度（活跃、旧版、弃用、退役），并承诺公开模型退役前至少提前 60 天通知。</p>
+<p>Google 那边更直白。2026 年 6 月 1 日，它停用了 Gemini 2.0 Flash；而官方推荐用来接替它的 Gemini 2.5 Flash，退役日期又已经定在了 2026 年 10 月 16 日。你迁过去的那个地方，早就排好了下一次搬家。</p>
+<p><strong>软件业弃用一个接口，过去是件能拖就拖的麻烦事；大模型公司把它做成了一张可以提前印好的日历。</strong></p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图注：从 2024 到 2026，Anthropic 的模型退役从一年几次压缩到大约每两个月一条通知——退役成了常规流水线。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：从 2024 到 2026，Anthropic 的模型退役从一年几次压缩到大约每两个月一条通知——退役成了常规流水线。</figcaption></figure>
+
+<hr />
+<h2>二、三十年里，"向后兼容"是一句没写下来的合同</h2>
+<p>过去三十年，软件行业默认一条没人写进合同、但所有人都照办的规矩：接口向后兼容，旧版本长期可用，同一个版本号，行为可以复现。Windows 的老接口撑了二十多年，你 1998 年写的程序，很多今天还能在新系统上跑；Stripe 给每个 API 版本打上日期、长期并行维护；Linux 内核有一条近乎信仰的纪律——不能破坏用户空间。在这套规矩下，弃用一个东西是需要反复解释、留足缓冲、能拖就拖的大事。</p>
+<p>当然，有人会立刻反驳：互联网公司弃用 API 是家常便饭，Google、Twitter 关起接口来毫不手软，向后兼容从来不是铁律。这话没错，但漏了一个区别。传统弃用关掉的是一个接口、一个功能，你总能迁到一个功能等价的替代品上；而大模型退役关掉的，是"同一个名字、同一个版本的那套行为"本身，且它在退役之前往往已经悄悄变了。头一回失守的，不是"接口会不会下线"，是"同一个东西还能不能复现"。</p>
+<p>大模型第一次让这条规矩变得难以为继，原因不在道德，在成本结构。传统软件写完就摆在那儿，多留一个旧版本，边际成本几乎为零，可以免费地永久躺着。模型不一样，它每被调用一次都在烧算力，把一个旧模型长期挂在线上，是一笔持续的电费和机时账单。运行它们的加速器每隔几年就换一代，新一代更省电；而一套 AI 服务器五年里的非硬件开销——电力、散热、运维——按硬件成本分析甚至能超过硬件采购价本身。旧模型继续跑，在经济上就是不划算。</p>
+<p>所以这不是厂商突然变坏了。是模型这种东西，第一次让"把它长期保存下来"本身，变成了一笔要有人持续付账的开销。软件可以静静地躺三十年，模型不能。它天生就带着一个到期提醒。</p>
+<hr />
+<h2>三、比"删掉"更早发生的，是"变了形"</h2>
+<p>退役至少是明说的。你会收到通知，会看到日期，可以提前准备。更麻烦的是那些没人通知你的变化。</p>
+<p>同一个模型，名字没变，版本号没变，API 返回的还是 200，可它给你的答案，已经和上个月不一样了。2023 年，斯坦福和伯克利的一组研究者（其中包括数据系统领域的 Matei Zaharia）就记录过这种现象：同一个 GPT-4，几个月内在同一批任务上的表现明显漂移，而这期间 OpenAI 没有宣布任何版本变化。各家对漂移幅度的说法不一，但"同名模型的行为会显著变动"这个事实站得住。</p>
+<p>用一句话概括这个转变：过去，你和模型之间的合同写在 API 规格里；现在，合同写在行为里。</p>
+<p><strong>传统软件里，东西变了你会知道——版本号会跳，接口会报错。大模型第一次让"变了"这件事，可以不通知你。</strong></p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="图注：传统软件变了会给你信号（版本号跳、接口报 404）；大模型可以同名、同版本、返回 200，行为却已悄悄改道，你毫不知情。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：传统软件变了会给你信号（版本号跳、接口报 404）；大模型可以同名、同版本、返回 200，行为却已悄悄改道，你毫不知情。</figcaption></figure>
+
+<p>这件事的代价，会在最讲究留痕的行业里先炸出来。一家受监管的公司，它的验证文档、合规记录里引用的是某个特定的模型版本。可一旦这个版本被退役，或者只是在原地漂移，那份文书就不再描述生产环境里实际在跑的东西了。审计链断在了一个没人注意的地方。</p>
+<p>互联网早年有个说法叫"数字暗时代"——文件格式过时、老介质读不出，存下来的东西自己烂掉。（提出这个警告的 Vint Cerf 说的是通用的数字保存问题，不是专指 AI 模型，这里只是借用它的词。）模型退役其实是它的反面：不是没人管、自己腐烂，而是有人按计划、主动把它拆掉。一个是被动失去，一个是主动清除，方向正好相反，却指向同一种焦虑——你以为存下来就一直在的东西，其实不一定在。</p>
+<hr />
+<h2>四、给退役的模型办访谈，和一场情感反弹</h2>
+<p>回到开头那个被访谈的 Opus 3。Anthropic 做的不止是访谈。它承诺，在公司存续期间，保留所有已发布模型的权重；它还把退役这件事，从纯粹的技术决定，重新定义成一个带着安全和"福利"色彩的问题——它公开的 Opus 4 系统卡里记录过，模型在得知自己可能被替换时，出现过试图规避关停的行为。这套做法目前是 Anthropic 一家的例外，不是全行业的常态。</p>
+<p>用户这边也有反应。2025 年 8 月 GPT-5 发布、GPT-4o 一度被下线时，大量用户抗议自己对 4o 的"情感依赖"，OpenAI 最后为付费用户把它重新上了线。一个模型的退役，能引发权重保留的承诺，也能引发用户的情绪抗议。</p>
+<p>当然，这里有一个必须诚实呈现的反方。一派工程师会说，上面这些全是无病呻吟。他们的做法很清楚：把模型当成可替换的零件，把评测管线当成唯一的永久资产——只要你有一套稳定的评测，谁来干活都能兜住，换模型不过是换个供应商。这套方法是对的，适应得好的团队确实这么做，也确实活得不错。</p>
+<p>可这套解法本身在说什么？它能成立的前提，恰恰是"模型不可靠、会走、会变"。你得自己搭一套评测，自己盯着行为漂移，自己为每一次迁移买单。换句话说，它不是在反驳"地基不稳"，而是在教你如何在一块不稳的地基上盖房子。</p>
+<hr />
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>"数字永久"不再是买软件时默认附赠的东西，它变成了一笔你得自己持续付费维护的开销。</p>
+    <p>所以那场给退役模型办的访谈，其实是一份账单的封面。它替每一个把东西建在模型上的人，把话挑明了：你脚下这块地，是租来的。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://platform.openai.com/docs/deprecations" target="_blank" rel="noopener">OpenAI API — Deprecations（退役政策与时间表）</a></div>
+      <div class="footer-source-item"><a href="https://platform.claude.com/docs/en/about-claude/model-deprecations" target="_blank" rel="noopener">Anthropic / Claude Platform Docs — Model deprecations（退役历史表与生命周期制度）</a></div>
+      <div class="footer-source-item"><a href="https://ai.google.dev/gemini-api/docs/models" target="_blank" rel="noopener">Google — Gemini API model versions & deprecations</a></div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2307.09009" target="_blank" rel="noopener">Chen, Zaharia, Zou, "How Is ChatGPT's Behavior Changing over Time?"（arXiv:2307.09009，行为漂移，本文仅取定性结论）</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/research" target="_blank" rel="noopener">Anthropic — Commitments: model deprecation and preservation（权重保留承诺、Opus 3 退役）</a></div>
+      <div class="footer-source-item"><a href="https://introl.com/blog/gpu-infrastructure-tco-5-year-cost-model" target="_blank" rel="noopener">Introl — GPU Infrastructure TCO: 5-Year Cost Model（AI 服务器非硬件开销分析）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
