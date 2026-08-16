@@ -44,12 +44,31 @@ from typing import Optional
 # 让 understanding 类能 import 同目录的 render_illustration（含 symlink 调用）
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-# 本次运行内已下载图片的 MD5，防止同一篇文章出现重复图
+# 已用图片的 MD5，防止重复图。
+# 2026-08-16 起改为【跨文章】去重：启动时预载仓库内全部已用配图的指纹——
+# 此前图库搜图兜底曾让连续 3 篇文章（2026-08-14/15/16）选中同一张热门库存照并成为封面。
 _used_hashes: set[str] = set()
 
 
 def _img_hash(data: bytes) -> str:
     return hashlib.md5(data).hexdigest()
+
+
+def _seed_used_hashes_from_repo() -> None:
+    """把 posts/*/*/images/ 下所有既有图片的 MD5 预载入 _used_hashes（跨文章去重）。"""
+    try:
+        repo_posts = Path(__file__).resolve().parents[2] / "posts"
+        for img in repo_posts.glob("*/*/images/*"):
+            if img.suffix.lower() in {".png", ".jpg", ".jpeg", ".gif", ".webp"}:
+                try:
+                    _used_hashes.add(_img_hash(img.read_bytes()))
+                except OSError:
+                    continue
+    except Exception:
+        pass  # 预载失败不阻塞填图，仅退化为单篇去重
+
+
+_seed_used_hashes_from_repo()
 
 # 自动从项目根的 .env 加载环境变量（symlink 调用也生效，因 resolve() 会跟随软链）
 try:

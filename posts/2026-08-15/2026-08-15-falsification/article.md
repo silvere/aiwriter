@@ -4,7 +4,6 @@
 
 ## 一、一份规划里最有用的，不是那几条路
 
-![person lying bed night scrolling](images/concept_01.jpg)
 
 这两天我干了一件具体的事：为一个人做了一份 3-5 年的职业规划分析。出于隐私，我不展开他是谁。
 
