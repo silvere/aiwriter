@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>美国给最强 AI 划了条「你不许太会黑客」的线——线是保密的，判官是 NSA，没有上诉，而它管这叫「自愿」</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 治理</span>
+  <h1>美国给最强 AI 划了条「你不许太会黑客」的线——线是保密的，判官是 NSA，没有上诉，而它管这叫「自愿」</h1>
+  <div class="hero-meta">
+    <span>2026-08-15</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">六月，美国政府一纸出口管制令，让 Anthropic 两个刚发布三天的模型全球下线。三周后，白宫签了份评估前沿模型的新行政令——它管自己叫「自愿」。先演示怎么拔插头，再请你「自愿」配合。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、先把"自愿"两个字讲干净</h2>
+<p>这份行政令编号 14409，2026 年 6 月 2 日签署，名字很体面，叫《促进先进人工智能创新与安全》。</p>
+<p>它写得客客气气。核心机制是这样的：一个开发者在把自己最强的前沿模型对外发布之前，可以让政府提前拿到访问权限，最多三十天，先看看这个模型有没有危险的能力。政府和开发者还能一起商量，哪些"受信任的伙伴"也能提前拿到。全程用词是自愿（voluntary）。行政令甚至专门留了一句话，大意是：本命令不设立任何强制性的许可、事前审批或者发牌要求。</p>
+<p>听上去人畜无害，甚至有点体贴。没有牌照，没有审批，你爱送就送，不送拉倒。</p>
+<p>问题从来不在它写了什么，在它没写的那部分，以及它专门写成"看不见"的那部分。因为决定你到底该不该把模型送去审查的那条线——那条线本身，是保密的。</p>
+<hr />
+<h2>二、线在哪？保密。判官是谁？NSA。上诉？没有</h2>
+<p>行政令要管的，不是所有 AI 模型，只管一类叫"受管辖前沿模型"（covered frontier model）的东西。一个模型算不算这一类，标准不看它多聪明、跑分多高，只看一件事：它有没有足够强的网络攻击能力——具体说，能不能自己发现软件里的漏洞、并且自己利用这些漏洞。</p>
+<p>那么，"足够强"到底是多强？这条线画在哪？</p>
+<p>画在一份保密的基准测试流程里。这套流程由几家机构在签署后六十天内制定完成——财政部、通过 NSA（国家安全局）行事的国防部门（顺便一提，美国国防部现在改叫"战争部"了，这是另一个故事）、通过 CISA 行事的国土安全部，再加上给意见的国家网络主管、总统科技助理、以及通过 NIST 行事的商务部。听起来阵仗很大。但这套决定生死的基准，是 classified——保密的。开发者不知道，外部研究者不知道，你也不知道。</p>
+<p>把这套判定机制拆开，一环一环看清楚，你会发现它长这样：</p>
+<p>判你的，是 NSA 局长一个人，他有单独的认定权。他用什么标准判，保密。他判之前，没有公开的技术门槛供你对照。他判完之后，你不服，没有上诉的地方。这套认定的依据和结果，不需要向国会做非保密的汇报，不归审计署管，也不接受任何人依据信息公开法去申请查看。</p>
+<p><img alt="图注：判定你算不算「太危险」的那条线，被四道「没有」层层封死——没有公开标准、没有上诉、没有审计、没有信息公开申请。" src="images/illus_01.png" /></p>
+<p><em>图注：判定你算不算「太危险」的那条线，被四道「没有」层层封死——没有公开标准、没有上诉、没有审计、没有信息公开申请。</em></p>
+<p>一个模型危不危险，本来是个技术问题，可以拿标准、拿测试、拿数据说话。这份行政令把它变成了一个人的裁量权，还把这个人手里的尺子锁进了保险柜。</p>
+<hr />
+<h2>三、看不见的线，逼你"自愿"去自首</h2>
+<p>现在设身处地想一下，你是个开发者。规矩是自愿的，好，你可以选择不送审。可门槛是保密的，你不知道自己那个模型踩没踩线。</p>
+<p>那你怎么办？</p>
+<p>行政令给你留了一条自保的路：你可以主动去找 NSA，问一句"我这个在研的模型，够得着你们那条线吗？"这条路，也叫自愿。</p>
+<p>于是"自愿"这两个字的真实含义，浮出水面了。它不是"你可以不参与"，它是"因为你不知道线在哪，所以你最好每一个够得着前沿的模型，都主动送去问一遍"。你自愿地、反复地、把你最强的模型，连同它所有已知和未知的弱点，交给一个不告诉你判定标准的机构，请它看一看。</p>
+<p><img alt="图注：门槛越保密，你越不敢不送审——「自愿」被设计成一个你只能主动跳进去的闭环。" src="images/illus_02.png" /></p>
+<p><em>图注：门槛越保密，你越不敢不送审——「自愿」被设计成一个你只能主动跳进去的闭环。</em></p>
+<p>更妙的是，这个闭环连正向激励都没有。一个开发者要是真觉得自己模型接近那条线，主动去申报，等于亲手把"我可能很危险"这件事写成材料递上去——在没有任何强制、也没有任何合同或竞争好处兜底的情况下，这动作更像自首，而不是合规。规矩设计成这样，聪明人的第一反应不是坦白，是祈祷自己没踩线。</p>
+<hr />
+<h2>四、它们捏着鼻子认，因为见过插头被拔</h2>
+<p>既然主动申报这么亏，公司为什么还愿意去参加一套"自愿"的框架？</p>
+<p>因为它们见过插头被拔。</p>
+<p>回到开头那件事。六月，Anthropic 的两个新模型发布刚三天，一纸出口管制令下来，全球下线。政府拿出的证据，据报道只是口头的，说有另一家公司声称把模型"越狱"了——而那次所谓越狱，本质是让模型去读代码、修 bug。就凭这个，一个服务着几亿人的前沿模型，因为没法在用户里实时区分国籍，被迫在全球范围硬关。有人把这件事叫做"给前沿 AI 的一个 kill switch"。</p>
+<p><img alt="图注：政府不需要行政令里的强制条款，一道出口管制令就让刚发布三天的前沿模型全球下线——「自愿」框架背后，站着一个已经演示过的强制手段。" src="images/illus_03.png" /></p>
+<p><em>图注：政府不需要行政令里的强制条款，一道出口管制令就让刚发布三天的前沿模型全球下线——「自愿」框架背后，站着一个已经演示过的强制手段。</em></p>
+<p>这件事和行政令没有直接的条文关系，它走的是出口管制，不是 14409。但它是最好的注脚。它告诉所有前沿实验室一件事：政府哪怕没有那份行政令里明写的强制条款，光靠手上已有的工具，就能让你的旗舰产品在三天内消失。</p>
+<p>在这个背景下，你再去看"自愿"这个词。当拒绝的代价可能是被无预警下架，当你的大客户是国防、情报和被政府视作关键基础设施的市场，"自愿"参加就成了那种你最好别真拿它当选择题的自愿。</p>
+<hr />
+<h2>五、行业的确求过监管——但它们求的是另一套</h2>
+<p>有一个反驳必然会来，先堵上：这套东西，不是这些大公司自己求来的吗？活该。</p>
+<p>一半对。</p>
+<p>OpenAI 公开写过，它认为应该由联邦政府来牵头测试和评估那些最强的系统，还专门点名要强化一个叫 CAISI 的民用标准机构去做这件事。Anthropic 的"负责任扩展政策"里，白纸黑字承诺在能力越过某个档位时主动通知美国政府、接受更深的政府监督，甚至把合适的监管类比拉到了核能和金融那个量级。七月底，一千两百多名前沿实验室的员工联署了一份叫"Pacing the Frontier"的声明，说这个世界还缺少刻意给前沿进度踩刹车的技术和治理工具——Anthropic 以公司名义背了书。这份联署，发在八月一日那个截止期前两天。</p>
+<p>所以是的，行业反复呼吁过"让联邦政府来管"。</p>
+<p>但它们要的那套，和落地的这套，是两个东西。它们要的是一个可问责的评估体系：由 CAISI 这类民用标准机构主导，标准尽量公开，出了事能查、能问、能改。落地的却是一套由 NSA 主导、门槛保密、没有上诉、连国会都看不到非密报告的流程。</p>
+<p><img alt="图注：行业点的是「公开可问责」那份外卖，送到手里的盒子还是那个盒子，掌勺的换成了 NSA。" src="images/illus_04.png" /></p>
+<p><em>图注：行业点的是「公开可问责」那份外卖，送到手里的盒子还是那个盒子，掌勺的换成了 NSA。</em></p>
+<p>顺带说一句最不容易被绕过去的荒诞。这条线判的，是你的模型会不会自己找漏洞、利用漏洞。而握着这把保密尺子、拥有唯一认定权的 NSA，本身就是全世界最擅长找漏洞、并且以囤积漏洞为业的机构。<strong>让最大的那个黑客，来认定谁算黑客。</strong></p>
+<hr />
+<h2>六、一套保密的框架，和它管的公司一起，在闭门会里"完成"了</h2>
+<p>八月一日，是这套框架该交作业的日子。</p>
+<p>那天，公开渠道什么都没有。没有联邦公报的通知，没有 NIST 或 CISA 挂出的文件，没有白宫的声明。有媒体直接把标题写成"白宫 AI 框架截止日已过，未见任何公开成果"。</p>
+<p>然后八月三日、四日，另一批报道来了。白宫的说法是，框架已经"按计划"完成，只是不打算公开发布。八月四日那天，白宫把框架拿去和一批公司闭门评审了——参加的名单里，有 Meta、英伟达、微软、OpenAI、Anthropic。</p>
+<p>也就是说，一套用来评估 AI 公司模型的框架，评审会请来的正是要被它评估的那些 AI 公司；评完之后，这套框架继续对公众保密。据报道，直到开会当天，这些公司都还没见过框架的细节，连"前沿模型"怎么定义、开放权重的模型算不算，都还没个说法。</p>
+<p>这就是它今天的样子：一套决定谁能发布最强模型的规则，标准是保密的，判官是不接受上诉的，作业是关起门来和被管的人一起对完的，然后不给外面看。</p>
+<p>所以别再纠结它到底叫"自愿"还是"强制"了，这个问法本身就被带偏了。判断一套治理是好是坏，就问三件最朴素的事：<strong>标准公不公开，判定给不给上诉，过程让不让局外人核对。</strong>这三样，14409 一样都没有——保密的门槛，单人的裁量，闭门的评审。连美国国会自己都看出了这个窟窿，已经有议员提出新法案，想用透明度要求、独立审计和事故上报，把这份行政令留下的问责真空补上。</p>
+<p>而最后被这条看不见的线真正拴住的，是谁？是那些守规矩的、想要政府合同的、在美国市场做生意的公司。至于那些根本不参加这套框架的外国实验室，这条线对它们，一寸都够不着。</p>
+<p>先演示怎么拔插头，再请你"自愿"配合。这套顺序，从六月那道下架令开始，就没变过。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>别再纠结它叫「自愿」还是「强制」，这个问法本身就被带偏了。判断一套治理好坏，就问三件最朴素的事：标准公不公开，判定给不给上诉，过程让不让局外人核对。14409 一样都没有。</p>
+    <p>而最后被这条看不见的线真正拴住的，是那些守规矩、要政府合同、在美国市场做生意的公司；至于根本不参加的外国实验室，这条线一寸都够不着。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.whitehouse.gov/presidential-actions/2026/06/promoting-advanced-artificial-intelligence-innovation-and-security/" target="_blank" rel="noopener">Executive Order 14409, "Promoting Advanced Artificial Intelligence Innovation and Security"（白宫）</a></div>
+      <div class="footer-source-item"><a href="https://www.federalregister.gov/documents/2026/06/05/2026-11415/promoting-advanced-artificial-intelligence-innovation-and-security" target="_blank" rel="noopener">同上，联邦公报正式文本 91 FR 34565（federalregister.gov）</a></div>
+      <div class="footer-source-item"><a href="https://www.congress.gov/crs-product/IF13268" target="_blank" rel="noopener">Congressional Research Service：EO 14409 简报 IF13268（congress.gov）</a></div>
+      <div class="footer-source-item"><a href="https://openai.com/index/advancing-ai-safety-through-state-and-federal-action/" target="_blank" rel="noopener">OpenAI：Advancing AI safety through state and federal action（公司官方，呼吁强化 CAISI）</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/responsible-scaling-policy" target="_blank" rel="noopener">Anthropic：Responsible Scaling Policy（公司官方）</a></div>
+      <div class="footer-source-item"><a href="https://www.lawfaremedia.org/article/a-kill-switch-for-frontier-ai" target="_blank" rel="noopener">Lawfare：A Kill Switch for Frontier AI（Fable 5 / Mythos 5 出口管制下架事件）</a></div>
+      <div class="footer-source-item"><a href="https://fortune.com/2026/08/04/baffling-white-house-wont-publicly-release-ai-model-evaluation-framework-it-reviewed-today-with-openai-anthropic-microsoft-and-others/" target="_blank" rel="noopener">Fortune：白宫拒绝公开其与 OpenAI、Anthropic 等评审的 AI 评估框架（2026-08-04）</a></div>
+      <div class="footer-source-item"><a href="https://www.axios.com/2026/08/03/white-house-finalizes-ai-framework-behind-closed-doors" target="_blank" rel="noopener">Axios：White House finalizes AI framework behind closed doors（2026-08-03）</a></div>
+      <div class="footer-source-item"><a href="https://www.techpolicy.press/five-questions-the-us-government-should-answer-about-its-secretive-frontier-ai-framework/" target="_blank" rel="noopener">TechPolicy.Press：关于这套保密前沿 AI 框架的五个问题</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
