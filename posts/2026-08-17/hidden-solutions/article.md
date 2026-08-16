@@ -4,11 +4,7 @@
 
 ## 一、他被判死刑的时候，药就在药房货架上
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🖼️</div>
-  <div class="img-placeholder-label">概念图</div>
-  <details><summary>提示词</summary><pre>flat minimalist illustration, person lying in bed at night scrolling phone, soft blue light, no text, clean background</pre></details>
-</div>
+![person lying bed night scrolling](images/concept_01.jpg)
 
 David Fajgenbaum 还在读医学院的时候得了一种罕见病。病情最重的几次，家人已经被叫去做临终告别。
 
