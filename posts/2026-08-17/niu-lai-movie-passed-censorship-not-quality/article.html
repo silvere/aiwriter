@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>《牛来》能合法上映，不是因为审丑经济成全它，是因为审查从来不问“拍得好不好”</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">影视与文化</span>
+  <h1>《牛来》能合法上映，不是因为审丑经济成全它，是因为审查从来不问“拍得好不好”</h1>
+  <div class="hero-meta">
+    <span>2026-08-17</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">8月5日，一部叫《牛来》的国产3D动画电影在全国院线“裸映”——没有预告片，没有路演，只有一张水墨海报。首日票房3420元，上映9天累计7169元，几乎要在无人注意中直接下映。8月14日前后一段“烂到极致”的观影片段传开，票房一路冲到600万元以上；片名“牛来”被股民谐音成“牛市来”，三只跟电影毫无业务关联的“牛”字股同时上榜热股榜。多数报道只关心它为什么火，但一个更前置的问题被漏掉了：这部完成度远低于行业及格线的动画片，是怎么合法拿到公映许可证的？</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>导语</h2>
+<p>8月5日，一部叫《牛来》的国产3D动画电影在全国院线"裸映"——没有预告片，没有路演，只有一张水墨海报。首日票房3420元，上映9天累计7169元，单日最低188元，排片一度全国仅剩6场，几乎要在无人注意中直接下映。8月14日前后，一段"烂到极致"的观影实拍片段在社交平台传开，8月15日排片回升、票房破十万，8月16日单日票房冲上378万元，累计突破500万元，周末过后滚到600万元以上；片名"牛来"被股民谐音成"牛市来"，同花顺热股榜上金牛化工、公牛集团、铜牛信息三只跟电影毫无业务关联的股票同时上榜。这条新闻多数版本讲的是"审丑经济有多离谱""股民有多疯"，默认这部片子能合法上映本身不是问题，只关心它为什么火——但一个更前置的问题被漏掉了：一部完成度远低于行业及格线的动画片，是怎么拿到公映许可证、堂而皇之走进全国院线的？</p>
+<h2>一、票房的过山车：从一杯奶茶钱到500万</h2>
+<p>8月5日首映当天，《牛来》票房3420元；上映前9天累计7169元，到第10天（8月14日）也只涨到7705元左右，观影人次236，单日最低时只卖出188元的票，排片一度萎缩到全国6场，比大多数三四线城市一家影院单日的员工餐补还低。真正的转折发生在8月14日前后：一段观众实拍的观影片段在社交平台突然传开，"烂到极致"变成一句可以转发的评价，围观从线上迁移到线下。8月15日中午，票房破11万，排片涨回600多场；当天傍晚，单日票房冲到35万元，比前一日（8月14日单日票房约3900元）暴涨近90倍。第二天，也就是8月16日下午，单日票房突破378万元，累计过450万，当晚滚到500万以上，挤进2026年国产动画票房榜前十；周末结束时，累计票房超过600万元，猫眼专业版给出的最终预测是1837万元。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图：十天之内，票房从一杯奶茶钱涨到年度动画票房前十，转折点只用了不到48小时。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图：十天之内，票房从一杯奶茶钱涨到年度动画票房前十，转折点只用了不到48小时。</figcaption></figure>
+<p>十天之内，这部片子完成了从"卖不出一份外卖钱"到"跻身年度动画票房前十"的转向，全靠一个词——"烂"。网友截图里流传的具体吐槽包括：人物动作僵硬到像二十年前的电脑游戏，场景穿模频发，配音口型对不上，宣传海报上的水墨国风在片中完全找不到踪影，被讽为"海报诈骗"。豆瓣上一条高赞短评写道："烂得难以置信！也算开眼了！"——某种程度上，这条短评比任何专业影评都更接近这部片子真正的传播逻辑。<strong>观众买的不是一张电影票，是一次可以截图发朋友圈的"打卡权"。</strong></p>
+<h2>二、"裸映"不是营销鬼才，是走投无路</h2>
+<p>多数报道都强调这是"零宣发"，但零宣发背后是什么，很多版本语焉不详，甚至暗示这是一次精心策划的反向营销。真实情况更朴素：导演信雨萌是发行方的熟人朋友，发行方看到成片后一度劝她别上院线，最后是"好不容易做出来了，帮她上一下"才走了发行流程。全片从导演、制片、配音到剪辑、建模，几乎由信雨萌一人完成——这是她的第一部作品，出品公司大连璟园文化影视传媒此前的身份是一家装饰工程公司，2021年才更名转型进入影视行业，注册资本10万元，2025年参保员工只有1人。唯一的宣传物料是一张水墨风海报，没有预告片、没有路演、没有主创采访。</p>
+<p>把"裸映"简单等同于"营销策略"，忽略了这背后有两种完全不同的动机：一种是对内容有底气、故意省宣发费；另一种是团队规模和资金实在撑不起宣发，能上院线已经是极限。《牛来》属于后者。这个区分很重要，因为下一节要讲的问题——过审——恰恰不关心一部片子是主动裸映还是被动裸映，它只关心几件和"好不好看"完全无关的事。</p>
+<h2>三、技术审查这道关卡，从来不查"好不好看"</h2>
+<p>中国电影的技术审查，查的是放映安全——坏帧、音画不同步、黑屏、解码故障这类会让影院出放映事故的问题，不审查制作质量本身。只要内容不违规、手续齐全，就能拿到公映许可证。《牛来》剧本备案编号影动备字〔2021〕第104号，这只是立项备案；2024年通过技审拿到的电审动字〔2024〕第33号，才是真正意义上的公映许可证——流程完全合规。虎嗅一篇评论对这一点的概括很准："它最大的悲哀不是烂，是烂得理直气壮，烂得符合流程，烂得挑不出程序上的错。"</p>
+<p>这套"不问质量"的逻辑，不只留在放映技术审查这一个环节——题材导向的财政补贴审批，同样不把制作质量当硬门槛。2010年上映的3D动画《雷锋的故事》可以作为对照坐标：官方公布制作成本2100万元，画面质量同样崩坏，却因为贴合红色题材、登陆央视播出，顺利拿到了按票房/排片分级发放的"阶梯补贴"。真正该被警惕的从来不是"烂片能不能过审"这件事本身，是"烂片能不能靠合规这道口子去套取和电影质量毫无关系的其他利益"。《牛来》本身不具备这种套利结构——单人小微企业，没有外部资本介入，也没有复杂的关联公司网络，这次更接近意外爆红，不是刻意的资本操作。但这类制度留白，才是比这一部片子更长期存在的风险。</p>
+<h2>四、裸发不是公式，《功夫女足》证明了另一种可能</h2>
+<p>如果把"零宣发"直接总结成一条可复制的营销公式，会漏掉一个反例。同期上映的《功夫女足》同样走"裸片空降"路线，上映前5天才官宣定档，没有铺天盖地的路演，靠的是导演个人品牌和观众对内容的信任自发传播——结果是首日排片占比76.8%，上映27分钟票房破亿。同样是"裸"，《牛来》是被动无奈，《功夫女足》是主动自信，票房结局天差地别。但两者有一点完全一样：无论主动裸发还是被动裸映，走的都是同一套只看流程合规、不看内容质量的技术审查——审查不会替市场做二次筛选，真正筛出天差地别结局的，是市场自己。</p>
+<h2>五、下次看到"烂片意外爆红"，先查一下过审记录</h2>
+<p>片名谐音"牛市来"带火三只毫无业务关联的"牛"字股，不是新鲜事——2016年和2024年，特朗普两次当选总统，"川普"谐音股川大智胜都应声上涨，这类谐音炒作在A股是有传统的"流派"。财经评论员郭施亮提醒，这种依靠情绪炒作的行情持续性极弱，股价终将回归真实价值，盲目追高风险不小。这条线足够抓眼球，但它不是这次事件里最该被记住的部分。</p>
+<p>东方财富证券研究所副所长陈果的一句话点出了更深一层的东西："当精致遍地时，粗犷也就成了猎奇；当AI遍地时，'不含AI'反而大放异彩。"这句话解释的是观众为什么愿意为一部烂片买单，但解释不了另一个更前置的问题：如果没有过审这道门槛先放行，再多猎奇心理也变不成一张电影票。<strong>下次再看到"烂片意外爆红"的新闻，别急着感叹观众审丑或者股民疯狂，先问一句——它是怎么通过技术审查、堂而皇之走进全国院线的，这个流程漏洞，明天还会不会被更多人复制。</strong></p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>东方财富证券研究所副所长陈果的一句话点出了更深一层的东西：“当精致遍地时，粗犷也就成了猎奇；当AI遍地时，‘不含AI’反而大放异彩。”这句话解释的是观众为什么愿意为一部烂片买单，但解释不了另一个更前置的问题：如果没有过审这道门槛先放行，再多猎奇心理也变不成一张电影票。</p>
+    <p>下次再看到“烂片意外爆红”的新闻，别急着感叹观众审丑或者股民疯狂，先问一句——它是怎么通过技术审查、堂而皇之走进全国院线的，这个流程漏洞，明天还会不会被更多人复制。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.thepaper.cn/newsDetail_forward_33789819" target="_blank" rel="noopener">动画电影《牛来》被嘲到出圈：单日票房暴涨近90倍（澎湃新闻）</a></div>
+      <div class="footer-source-item"><a href="https://finance.ifeng.com/c/8vdxOtnfPCj" target="_blank" rel="noopener">风暴眼丨观众买电影票摆出涨停，《牛来》活成了股民的"许愿池"（凤凰网）</a></div>
+      <div class="footer-source-item"><a href="https://www.wenxuecity.com/news/2026/08/15/126743393.html" target="_blank" rel="noopener">《牛来》"烂"到出圈，排片翻百倍、票房破10万（文学城）</a></div>
+      <div class="footer-source-item"><a href="https://www.huxiu.com/article/4883410.html" target="_blank" rel="noopener">《牛来》票房从7700元逆袭千万：烂片如何成为流量奇观（虎嗅网）</a></div>
+      <div class="footer-source-item"><a href="https://www.thepaper.cn/newsDetail_forward_33788939" target="_blank" rel="noopener">深度｜这么糙的《牛来》为什么能公映？听专业人士详解（澎湃新闻）</a></div>
+      <div class="footer-source-item"><a href="https://finance.sina.com.cn/jjxw/2026-08-16/doc-ininpfmn9675922.shtml" target="_blank" rel="noopener">电影《牛来》火到A股，3只"牛字辈"股冲上热股榜（新浪财经/21财经）</a></div>
+      <div class="footer-source-item"><a href="https://finance.sina.com.cn/roll/2026-08-17/doc-ininqhww0478796.shtml" target="_blank" rel="noopener">周末，《牛来》火了！"概念股"也火了（中国基金报）</a></div>
+      <div class="footer-source-item"><a href="https://ent.sina.cn/2026-08-14/detail-ininhnxp2881155.d.html" target="_blank" rel="noopener">为什么《牛来》会选择零宣发上映？（新浪娱乐）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
