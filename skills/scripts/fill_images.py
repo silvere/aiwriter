@@ -89,9 +89,12 @@ _STYLE_WORDS = {
     "on", "at", "to", "for", "is", "are", "was", "were",
 }
 
-# 占位符匹配：class 后允许额外属性（如 understanding 的 data-caption）；</div> 可选
+# 占位符匹配：class 后允许额外属性（如 understanding 的 data-caption）；</div> 可选。
+# 末尾再顺带吃掉紧跟着的、按模板手写的降级图注行（md 的 *caption* 或已转换成 html 的
+# <p><em>caption</em></p>）——否则 data-caption 生成的 figcaption 会和这行手写图注重复渲染两次。
 _PLACEHOLDER_RE = re.compile(
-    r'<div class="img-placeholder (concept|diagram|understanding)"[^>]*>(.*?</details>)\s*(?:</div>)?',
+    r'<div class="img-placeholder (concept|diagram|understanding)"[^>]*>(.*?</details>)\s*(?:</div>)?'
+    r'(?:\s*\n\s*(?:\*[^\n*]+\*|<p><em>[^<]*</em></p>))?',
     re.DOTALL,
 )
 _PRE_RE = re.compile(r"<pre>(.*?)</pre>", re.DOTALL)
