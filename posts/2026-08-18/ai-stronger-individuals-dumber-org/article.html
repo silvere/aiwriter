@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 让每个员工都更强了，公司却在悄悄变笨</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 深度观察</span>
+  <h1>AI 让每个员工都更强了，公司却在悄悄变笨</h1>
+  <div class="hero-meta">
+    <span>2026-08-18</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">2025 年 Stack Overflow 的调查里，八成开发者在用 AI 写代码，信任它答案的只有 29%。一件工具越来越不被信任，却越用越多——被这对数字盖住的，是求助正在从「问身边的人」改道成「问 AI」。而那个「转头问一句」的动作，过去顺带传下去的东西，正在断掉。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、越不信，越在用</h2>
+<p>先把这组数字说完整，因为它是后面所有推断的地基。</p>
+<p>Stack Overflow 2025 年的调查覆盖了近五万名开发者。八成以上在用或准备用 AI 编程工具，这是采用率；信任其答案的只有 29%，比 2024 年掉了十一个百分点，这是信任度。两条线一个往上一个往下，中间张开的口子，Stack Overflow 自己起了个名字，叫"采用—信任差距"。</p>
+<p>差距是怎么被消化的？调查里还有几个数字。66% 的人说，他们现在花更多时间去修 AI 生成的那种"看着几乎对、其实不对"的代码。而在设想"AI 无所不能"的那个未来里，仍然选择去问人的理由，排第一的是"不信任 AI 的答案"（75.3%），紧跟着是"出于伦理或安全的顾虑"（61.7%）和"我想真正弄懂自己的代码"（61.3%）。</p>
+<p>把这些拼起来，浮现的是一条改了道的求助路径：低风险、日常的问题，默认先问 AI，快、不用欠人情、不怕问了个蠢问题被人记住；只有当 AI 明显不靠谱、或者事关重大，人才被重新请回来。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图注：越用越多，越用越不信——被这道『采用—信任差距』盖住的，是求助从『问人』改道成了『问 AI』，问人退为兜底。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：越用越多，越用越不信——被这道『采用—信任差距』盖住的，是求助从『问人』改道成了『问 AI』，问人退为兜底。</figcaption></figure>
+
+<p>这里要诚实。这份调查能证明的，是开发者对 AI 答案的信任在降、是"信不过时才去找人"，它并不能直接证明"绝大多数日常求助都已经从问人转成了问 AI"——后者是一个更强的行为断言，眼下还没有大规模的硬数据能钉死它。国内一个技术论坛上有人写过一篇《带甲方新人有感》，说新人遇到任何问题，第一反应都是问 AI 而不是扭头问坐在一米外的人。这是真实的观察，但它是个案，不是统计。</p>
+<p>更稳的说法是：一条以前靠人和人之间完成的求助通道，正在被一条人和机器之间的通道分流。分流多少，暂时没人量得准。但只要这个分流真实存在，接下来的问题就成立——被这条通道顺带运送的，到底是什么？</p>
+<h2>二、有些本事，只能"看会"，不能"问会"</h2>
+<p>要回答这个问题，得请出六十年前的一本小书。</p>
+<p>1966 年，哲学家迈克尔·波兰尼写下一句后来被反复引用的话：我们知道的，比我们能说出来的多（we can know more than we can tell）。他举的例子是认脸——你能在一千张脸里认出某个人，却几乎说不清你到底根据什么认出来的。后人把这叫"波兰尼悖论"：大量真本事是"知道怎么做、但讲不出规则"的，它从来不以条款的形式存在。</p>
+<p>这类知识有个要命的性质：你没法通过"提一个规范的问题"把它取出来。因为提问的前提，是你已经知道该问什么、答案长什么样。而隐性知识恰恰是那种你说不清、因此也问不出口的东西。AI 再强，它擅长的是回答被问清楚的问题；它帮不了你的，是那些你根本不知道该问的地方。</p>
+<p>组织管理学者野中郁次郎把这件事讲得更具体。他那个被商学院讲烂了的 SECI 模型，第一步叫"社会化"——隐性知识传给隐性知识。他说得很明白：这一步没有捷径，唯一的途径是共享经验、是观察、是模仿，是新人在老手旁边并肩干活，看他怎么下手、在哪儿犹豫、为什么这里绕了个弯。</p>
+<p>那个绕了个弯的地方，往往就是二十年攒下的判断。哪个模块当年为什么这么设计、哪段代码碰不得、客户嘴上要的和真正想要的差在哪儿——这些从没写进任何文档，也写不进去，因为写下来的一瞬间它就丢了一半。它过去靠一次次"你看这个咋弄"，在人和人之间一点点渗过去。</p>
+<p>AI 的个人化问答，恰好绕开的就是"社会化"这一环。它把你要的答案直接递到你手上，干净、高效、不需要你去打扰任何人。代价是，那个"打扰"本身，才是知识流过去的通道。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="图注：知识循环的四步里，只有『社会化』靠人挨人地看着学、问出来——而 AI 把答案直接递到手上，恰好把这一环短路了。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：知识循环的四步里，只有『社会化』靠人挨人地看着学、问出来——而 AI 把答案直接递到手上，恰好把这一环短路了。</figcaption></figure>
+
+<h2>三、这根线，AI 之前已经被剪过一次</h2>
+<p>切断这条通道的第一刀，其实不是 AI 砍的。</p>
+<p>2021 年，微软把自己六万一千名员工的协作数据拿出来做了一项研究，发表在《自然·人类行为》上。结论是：当全公司转向远程办公，员工之间的协作网络变得更"孤岛化"了——各人缩回自己那一小簇熟人里，跨团队的连接明显减少，员工花在跨群体协作上的时间份额，相对疫情前掉了大约四分之一。</p>
+<p>这里要说清楚：那项研究测的是远程办公的后果，不是 AI 的。把它搬到这里，不是说 AI 干了同样的事，而是说，同一条通道——人和人之间那些没安排、没必要、纯属顺带的接触——在 AI 大规模进来之前，已经被远程办公先削过一遍了。</p>
+<p>被削掉的那部分，社会学里有个不起眼的名字，叫弱关系。走廊里撞见、茶水间等咖啡时的两句闲聊、隔壁工位探过头来的一句"你这个我以前踩过坑"。这些接触低效到几乎不该存在，KPI 上永远记不进去。可组织里大量的经验、预警和门路，恰恰是搭着这些没用的接触传过去的。</p>
+<p>现在的情形是两重叠加。第一重，物理上，大家已经不怎么在一个屋里了；第二重，认知上，就算在一个屋里，遇到问题也先低头问屏幕，而不是抬头问人。两刀落在同一个地方。第一刀削薄了偶遇的机会，第二刀替换掉了本来还剩下的那点主动求助。</p>
+<h2>四、账面上更快，账面下更空</h2>
+<p>个人那本账好算，公司这本账要难看得多。</p>
+<p>沃顿商学院的伊森·莫里克，一直在讲这件事的一个侧面：当 AI 接手了那些原本交给新人的基础活儿，活儿照样干完了，甚至更快，但伴随这些活儿本该长出来的成长，消失了。他还点破了更扎心的一层：真正能把 AI 用出水平的，恰恰是那些本来就有专长的资深员工——只有他们的判断力，够得着 AI 什么时候在一本正经地胡说。</p>
+<p><strong>AI 放大的，是已经有本事的人；跳过的，是本该在这些活儿里长出本事的人。</strong></p>
+<p>这就构成一个很别扭的时间差。存量的老手，用 AI 如虎添翼；增量的新人，用 AI 越用越顺手，却没有在任何一次求助里，被逼着去理解一件事为什么这么做。他们学会的是"怎么拿到答案"，不是"怎么判断答案对不对"。等到有一天老手退休、而新人要坐上那个需要判断力的位子，会发现自己手里只有一堆用过就忘的答案。</p>
+<p>MIT 的经济学家达龙·阿西莫格鲁给这件事做了个更冷的模型，管它叫"知识坍塌"。（这篇 2026 年的工作论文还没经过同行评审，得如实说一句。）他的推演是：当 AI 的准确率越过某个临界点，哪怕它给每个人的即时答案质量都在变好，整个系统赖以运转的那份公共知识——通用的那一层——反而会开始萎缩。短期每一次决策都更对了，长期的知识底子却在被一点点抽走。</p>
+<p>工程圈里流传着一个更黑色幽默的说法。过去衡量一个团队的脆弱程度，看"巴士系数"——多少人被巴士撞了，这个项目就没人懂了，数字越小越危险。而现在有人说，AI 把它推向了一个新极限：巴士系数归零。不是"只剩一个人懂"，是一个提交了几十个 AI 生成补丁的项目，那套架构的完整设想，从一开始就没在任何一个人的脑子里存在过——它只存在于某个人和 AI 的一段聊天记录里，那段记录关掉，就再也拼不回来了。（这类描述目前还是行业观察者的模式归纳，不是某一起实名事故，得打个折看。）</p>
+<p><strong>公司账面上，新人上手更快了；账面下，一批人的经验，正随着他们退休一起，永久离场。</strong></p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="图注：账面上，个人产出和上手速度都在涨；账面下，集体经验和判断力在被抽空——两条线正在剪刀式分开。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：账面上，个人产出和上手速度都在涨；账面下，集体经验和判断力在被抽空——两条线正在剪刀式分开。</figcaption></figure>
+
+<h2>五、能不能把老师傅装进硬盘</h2>
+<p>当然，有一种反驳听上去很有道理：AI 不光会绕过隐性知识，它还能反过来把隐性知识捞出来、存起来啊。</p>
+<p>这不是空想，是一门正在卖的生意。已经有一批公司（Glean、eGain 这类）在推销这样的方案：用 AI 去访谈资深专家，把他们那些讲不清的窍门、变通、"凭手感"的判断一点点问出来，映射进一张可检索的知识图谱——赶在老师傅退休之前，把他脑子里的东西抢救下来。用野中的话说，这是在给 SECI 里的"外部化"装一台发动机，把隐性变显性。</p>
+<p>这条路不假，但它有三个洞。</p>
+<p>其一，证据几乎全来自厂商和咨询公司自己的口径，很难找到带着具体公司、人名、前后对比的独立验证。那些被反复引用的吓人数字——某某损失多少亿、多少成关键专长只在员工脑子里——追下去大多是估算，源头存疑，我在这篇里一个都没敢当硬数据用。</p>
+<p>其二，逻辑上它自己拌了自己一跤。这些方案一边说"要赶紧把隐性知识捕获下来"，一边又把"这种知识的深度正是人类不可被替代的原因"当卖点。可如果它真能被一台机器完整地问出来、存下来，那它就没那么不可替代；如果它真不可替代，那台机器就注定只能捞到浮在表面的那层。两句话不能同时为真。</p>
+<p>其三，也是最要命的一层：AI 真正擅长的，是在已经被写下来的知识里做模式匹配。它能把文档、代码、聊天记录里的东西整合得很好，容易让人误以为它已经把那个人的全部本事都装进去了。但波兰尼那句话还立在那儿——最深的那部分，本来就是说不出、因而也录不下的。你录下来的，是老师傅愿意说、也说得出的那一半；剩下那一半，随人走。</p>
+<p>所以隐性知识会不会流失，答案不是简单的"会"。SECI 是个螺旋，被破坏的环节理论上能重建，AI 也确实能在"显性—显性"那几环上帮大忙。真正的问题只落在一个环节上：社会化——人挨着人、看着学、问出来的那一环。这一环，是整个链条里最难自动化的，偏偏也是眼下被 AI 绕得最彻底的。</p>
+<p>这件事不需要什么宏大的结论，只提醒一件很具体的事：下次一个新人放着 AI 不用、绕过来问你一个本可以自己查到的问题，别嫌他浪费时间。那句话来回的功夫，可能是这家公司账面上看不见、却真正在增值的东西。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>AI 让每个员工单独看都更强了，这是真的。可组织的本事，从来不是每个人本事的简单相加——它有很大一块，活在人和人之间那些没效率的来回里：一次求助、一句提醒、一个绕了弯的解释。这条通道被机器分流掉多少，眼下没人量得准，但它正在变窄。</p>
+    <p>所以真正该盯的，不是「我司用上 AI 了没有」，而是「我司还有没有人在互相问、互相带」。前者是账面上的效率，后者是账面下的记忆。等到需要有人接住老手那身本事的时候，才发现没人接得住——那笔账，比任何一次提效都贵。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://survey.stackoverflow.co/2025/" target="_blank" rel="noopener">Stack Overflow 2025 Developer Survey（AI 采用与信任）</a></div>
+      <div class="footer-source-item"><a href="https://www.nature.com/articles/s41562-021-01196-4" target="_blank" rel="noopener">Microsoft & UC Berkeley: The effects of remote work on collaboration among information workers, Nature Human Behaviour (2021)</a></div>
+      <div class="footer-source-item"><a href="https://en.wikipedia.org/wiki/The_Tacit_Dimension" target="_blank" rel="noopener">Michael Polanyi, The Tacit Dimension (1966)</a></div>
+      <div class="footer-source-item"><a href="https://en.wikipedia.org/wiki/SECI_model_of_knowledge_dimensions" target="_blank" rel="noopener">Nonaka & Takeuchi, SECI model of knowledge creation</a></div>
+      <div class="footer-source-item"><a href="https://www.oneusefulthing.ai/" target="_blank" rel="noopener">Ethan Mollick, on the "apprenticeship" problem of AI</a></div>
+      <div class="footer-source-item"><a href="https://www.nber.org/papers/w34910" target="_blank" rel="noopener">Daron Acemoglu et al., AI, Human Cognition and Knowledge Collapse, NBER Working Paper w34910 (2026, 未经同行评审)</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
