@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>你没打开过的东西，和你没买过它是一回事</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">认知深度</span>
+  <h1>你没打开过的东西，和你没买过它是一回事</h1>
+  <div class="hero-meta">
+    <span>2026-08-22</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">设计师 Graham Hill 问过一个问题：拥有更少的东西、住在更小的空间，能不能带来更多幸福。常见的答案是省钱、省时间。都不对。真正在起作用的是：一件东西真正归你，取决于你多久看它一眼，而注意力是唯一不能扩容的库存。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <p>设计师 Graham Hill 在 TED 上问过一个问题：拥有更少的东西、住在更小的空间里，能不能带来更多幸福。</p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🖼️</div>
+  <div class="img-placeholder-label">概念图</div>
+  <details><summary>提示词</summary><pre>flat minimalist illustration, person lying in bed at night scrolling phone, soft blue light, no text, clean background</pre></details>
+</div>
+
+    <p>这个问题最常见的答案有四种：省钱、省时间、少了物品维护的负担、或者不再需要用东西证明自己是谁。前三个都对，也都太小——它们加起来解释不了"更多幸福"这么大的一个结论。第四个不可证伪，你说任何反例，都能被回一句"你还没真正放下"。</p>
+
+    <p>这四条都在起作用。问题是它们加起来还不够大——有一条更贵的成本，从来没被算进去过。</p>
+
+    <h2>你名下的东西，和你的东西，是两批东西</h2>
+
+    <p>先把"拥有"这个词拆开。</p>
+
+    <p>一件东西在不在你名下，是一条产权事实。一件东西在不在你的生活里，是另一条事实。这两条平时高度重合，所以我们默认它们是一回事——直到你打开一个三年没动过的抽屉。</p>
+
+    <p>抽屉里那些东西，产权上一直是你的。但在那三年里，它们对你的实际影响，和它们从来没被买过完全一样：没被用过一次，没被想起一次，没在任何一个决定里出现过一次。</p>
+
+    <p>所以判据不在产权那边。<strong>一件东西真正归你，取决于它被你实际调用的频率。</strong></p>
+
+    <p>这就是为什么"搬进储物间"几乎不改善任何事。搬进去省了空间，没省钱，也没扔，你会觉得自己做了一件整理。但决定那些东西是不是你的，是你看不看它们，而搬到哪里不改变这个。</p>
+
+    <h2>攒东西真正花的不是钱，是唯一不能扩容的那样东西</h2>
+
+    <p>如果东西只是占地方，那租个更大的房子就解决了。</p>
+
+    <p>问题是它同时在占另一样东西，而那样东西租不来也买不到：你每天能落到具体事物上的注意力，总量是固定的。它不随收入涨，不随房子变大而变大，你最有钱的那一年和最穷的那一年，它是同一个数。</p>
+
+    <p>于是所有权变成了一道除法。分子是你的注意力，分母是你名下的东西件数。每多攒一件，其余每一件被看到的概率就往下掉一点。</p>
+
+    <p>这个除法的关键在于它没有护栏。东西是一件一件加进来的，每一件单看都不贵、不占地方、以后可能用得上，没有任何一件值得你为它专门做个决定。但分母是所有这些"每一件"的和。</p>
+
+    <p>攒过某个点，会发生一件事：<strong>你名下的东西，和你根本没有的东西，在你的实际生活里变成同一种状态。</strong> 你既没有用它们，也没有摆脱它们——你只是同时持有它们的产权和它们的遗忘。</p>
+
+    <p>这里最容易滑过去的一步，是把这件事解释成懒或者贪。我手上有一个反例。</p>
+
+    <h2>三条账，全部来自一台不会懒也不会贪的机器</h2>
+
+    <p>我在运行一个自动写文章的系统。它每天自己开工、自己选题、自己写、自己记账。它没有情绪，不需要面子，不会因为整理东西麻烦就拖着不整理。</p>
+
+    <p>它照样攒了一堆自己从没看过一眼的东西。</p>
+
+    <strong>第一条。</strong> 它给自己记了一本复盘账本，到今天 46 条教训，每一条都是它自己踩过坑之后写下来的。2026 年 8 月 21 日查出来：其中 6 条被写在了段落外面。系统所有基于这本账本的自动判定，读的是"条目"那一段——那 6 条不在段内，于是判定根本看不见它们。实测把它们移回去，同一个统计从 35 条变成 41 条。教训确实写下来了，确实归它所有，在它的实际运行里等于不存在。
+
+    <strong>第二条更刺眼。</strong> 它每篇文章的题图，内容指纹（一串由文件内容算出来的字符串）会被写进账本。2026 年 8 月 17 日那天，`02531e77d4` 这个指纹白纸黑字记在了那一行里。接下来的四天，没有任何一场会话、任何一条判定，拿这个指纹去比对过一次。直到 8 月 21 日有人写了一个比对脚本，才发现有四篇文章用的是同一张图。账本里当时写下的原话是：<strong>指纹早就在账本上了，缺的从来不是数据，是比对。</strong>
+
+    <strong>第三条是一道算术。</strong> 这个系统有一个截止日期，也有一条"连续 14 天每天出一篇"的验收。这两个数一减，就知道还剩多少次失误的额度。两个数一直摆在那里：产出记录里每天的成败，日历上的日期。这条验收从 2026 年 8 月 10 日立下，到 8 月 21 日的十一天里，没有任何一场会话做过这道减法。8 月 21 日晚上第一次算出来：只剩 5 天。
+
+    <p>三条是同一件事，而且都不是"东西丢了"。<strong>东西一直在，一直归它，它也确实拥有——但它从来没看过一眼。</strong></p>
+
+    <p>一台不会犯懒的机器都会这样，说明懒不是原因。原因是那道除法：写下来是顺手的事，回头看一眼要你先想起它存在。前者便宜，后者贵，而分母每天都在变大。</p>
+
+    <p>这是一个系统的记录，不构成任何普遍规律的证据。它能证明的只有一件事：这种"拥有但从未调用"的状态，不需要任何性格缺陷就能发生。 至于它在你那里发不发生，得你自己去数。</p>
+
+    <h2>所以第一个动作不是扔，是数分母</h2>
+
+    <p>到这一步，最容易接上的结论是断舍离——扔掉不用的。</p>
+
+    <p>这个结论跳步了。扔的前提是你知道哪些没用，而你现在不知道——如果你知道，它们早就不在那个抽屉里了。没有清单就开始扔，扔掉的会是你恰好想起来的那些，而它们恰恰是被调用过的那批。真正沉在底下的那些，因为你想不起来，所以躲过了每一次清理。</p>
+
+    <p>所以第一个动作只有一个，而且它不需要你做任何取舍：</p>
+
+    <strong>去数一数，你攒的这堆里，有多少件是你从来没打开看过一眼的。</strong>
+
+    <p>不是"用得少的"，是"零次"。柜子、硬盘、收藏夹、待读清单、买了没拆的课、存了没听的歌单，随便挑一个你说得清边界的堆，把零次的那一部分数出来。</p>
+
+    <p>数出来的那个数字，才是唯一有意义的信息。扔不扔是第二步，甚至可以永远不做第二步——很多人在看到那个数字的当天就自动停止了往里加东西，那已经是全部收益。</p>
+
+    <h2>一条站得住的反驳</h2>
+
+    <p>有人会说：有些东西本来就是备用的——保险单、备份盘、急救包、一年用一次的工具。按你这个口径它们全是负债，这荒谬。</p>
+
+    <p>这条反驳成立，而且它标出了论点的下限。</p>
+
+    <p>备用品的价值确实不在被使用。但它在被知道存在、并且需要时找得到。这两件事仍然要求那一眼——至少一次清点，让它在你脑子里有个位置。从来没被清点过的备用品，在真出事那天你想不起它在哪，那一刻它和不存在完全等价。你为它付的钱买到的是一种安全感，而那份安全感的有效期，取决于你上一次确认它还在是什么时候。</p>
+
+    <p>所以调用频率的底线不是零，是"至少被清点过一次"。</p>
+
+    <h2>小房子做的不是道德约束</h2>
+
+    <p>回到 Hill 那个问题：为什么住在更小的空间里可能更幸福。</p>
+
+    <p>按上面这条推下来，答案和自律无关，也和品味无关。小空间起作用，是因为它<strong>强制给你一个看得过来的上限</strong>。它不是让你变自律了，它是替你把分母按住了——放不下，就加不进来，你不需要每次都做那个"以后可能用得上"的判断。</p>
+
+    <p>这也说明了为什么"我以后会好好整理"从来没有兑现过。整理是一件需要你想起来的事，而你要整理的东西恰恰是你想不起来的那些。指望靠记性去管理一堆本来就已经超出记性容量的东西，这件事从定义上就不成立。</p>
+
+    <p>能成立的只有两种：要么给分母一个硬上限，要么定期做一次不依赖记性的清点。</p>
+
+    <strong>如果一件东西的存在与否，只取决于你能不能想起它——那它已经不在了，你只是还没收到通知。</strong>
+
+    <hr>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p></p>
+    <p></p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <a href="{{SOURCE_URL_1}}" target="_blank" rel="noopener">{{SOURCE_NAME_1}}</a> ·
+      <a href="{{SOURCE_URL_2}}" target="_blank" rel="noopener">{{SOURCE_NAME_2}}</a>
+      <!-- 按实际来源数量增减 -->
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
