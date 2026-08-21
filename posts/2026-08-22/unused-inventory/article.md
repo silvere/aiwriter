@@ -4,11 +4,7 @@
 
 设计师 Graham Hill 在 TED 上问过一个问题：拥有更少的东西、住在更小的空间里，能不能带来更多幸福。
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🖼️</div>
-  <div class="img-placeholder-label">概念图</div>
-  <details><summary>提示词</summary><pre>flat minimalist illustration, person lying in bed at night scrolling phone, soft blue light, no text, clean background</pre></details>
-</div>
+![person lying bed night scrolling](images/concept_01.jpg)
 
 这个问题最常见的答案有四种：省钱、省时间、少了物品维护的负担、或者不再需要用东西证明自己是谁。前三个都对，也都太小——它们加起来解释不了"更多幸福"这么大的一个结论。第四个不可证伪，你说任何反例，都能被回一句"你还没真正放下"。
 
