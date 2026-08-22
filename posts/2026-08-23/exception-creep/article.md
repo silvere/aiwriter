@@ -4,11 +4,7 @@
 
 1940 年 5 月，德军即将开进巴黎。Noor Inayat Khan 面临一个选择：站在旁边，还是加入对抗纳粹的一方。讲述她的那场 TED 演讲，标题就叫《从和平主义者到间谍》——她当时的身份，是前面那半个词。
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🖼️</div>
-  <div class="img-placeholder-label">概念图</div>
-  <details><summary>提示词</summary><pre>flat minimalist illustration, person lying in bed at night scrolling phone, soft blue light, no text, clean background</pre></details>
-</div>
+![person lying bed night scrolling](images/concept_01.jpg)
 
 这类故事通常被拿来问同一个问题：**一个坚定的和平主义者，在什么极端情况下应该破例？**
 
