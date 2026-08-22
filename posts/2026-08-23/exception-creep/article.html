@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>废掉一条原则的，从来不是它的反对者</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">认知深度</span>
+  <h1>废掉一条原则的，从来不是它的反对者</h1>
+  <div class="hero-meta">
+    <span>2026-08-23</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">1940 年 5 月，德军即将开进巴黎，一个和平主义者面临要不要拿起武器的选择。这个故事通常被用来讨论「什么情况下可以破例」。但真正决定一条原则生死的，不是破例那一刻，是破例之后有没有人回头看它还拦不拦得住原来那件事。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <p>1940 年 5 月，德军即将开进巴黎。Noor Inayat Khan 面临一个选择：站在旁边，还是加入对抗纳粹的一方。讲述她的那场 TED 演讲，标题就叫《从和平主义者到间谍》——她当时的身份，是前面那半个词。</p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🖼️</div>
+  <div class="img-placeholder-label">概念图</div>
+  <details><summary>提示词</summary><pre>flat minimalist illustration, person lying in bed at night scrolling phone, soft blue light, no text, clean background</pre></details>
+</div>
+
+    <p>这类故事通常被拿来问同一个问题：<strong>一个坚定的和平主义者，在什么极端情况下应该破例？</strong></p>
+
+    <p>这个问法听上去很严肃，其实是个陷阱。它假定难的地方在于找到那条门槛线。而真正让原则死掉的地方，根本不在那里。</p>
+
+    <h2>三种常见答案，没有一种能在事前用</h2>
+
+    <strong>第一种是后果权衡</strong>：当破例带来的善明显大于它造成的恶，就该破例。
+
+    <p>它把"该不该"换成了"算得准不准"。可后果恰恰是事前算不出来的那个量。更要命的是它没有判别力——每一个破例的人，都真诚地相信自己算过了。一条谁都能声称自己满足的条件，不是条件。</p>
+
+    <strong>第二种是最后手段</strong>：只有当一切非暴力的办法都穷尽之后，才可以动手。
+
+    <p>这句是对的，但"穷尽"没有判据。同一个时刻，你可以说还没穷尽，也可以说已经穷尽，两种说法都无法被反驳。它是一套事后叙事，不是事前判据——它只在你已经做完决定之后，替你把这个决定讲得体面一点。</p>
+
+    <strong>第三种是价值分层</strong>：和平本来就是服务于生命与正义的手段，当手段和它要服务的目的打架，手段让位。
+
+    <p>这不是回答，是把问题重新描述了一遍。而且它把破例描述得太干净了。现实里没有人站在两个标好高低的层级中间做选择，人是在一个模糊的具体场景里，给自己找一条例外条款。</p>
+
+    <p>三种答案有一个共同的毛病：<strong>它们全都在回答"该不该"，而"该不该"在事前无法验证，在事后又总是能自圆其说。</strong> 一个既不能事前验证、也不能事后证伪的判据，什么也没判。</p>
+
+    <h2>真正的问题不在破例那一刻</h2>
+
+    <p>一条原则的一生里，最危险的时刻不是它被人正面攻击的时候。有人跟你说"和平主义是天真的"，你会警觉，会辩护，会把它守得更紧。正面攻击反而让原则变硬。</p>
+
+    <p>真正废掉它的是另一种情形：<strong>你自己给它加了一条例外。</strong></p>
+
+    <p>这条例外不是敌人塞进来的，是你出于善意加上去的——因为你发现它在某个场景下会误伤，会拦住本来不该拦的东西，会让你在一个明显应该行动的时刻动弹不得。所以你加了一句"除非……"。</p>
+
+    <p>每一条这样的例外，单独看都合理。问题出在下一步：<strong>加完之后，没有人回去看它还拦不拦得住原来那件事。</strong></p>
+
+    <p>这就是原则真正的死法。它不是被推翻的，是被一句一句"除非"稀释掉的，而每一句都由它最忠诚的执行者亲手写下。</p>
+
+    <h2>两次真实的失败，是同一条路的两头</h2>
+
+    <p>这不是个比喻。下面两条是我在同一天里撞上的两次真实失败——2026 年 8 月 22 日，我在给一套自己写文章、自己审稿的系统加两条自动检查的规则。一次太松，一次太紧。</p>
+
+    <strong>第一次，例外让规则在它自己的样本上当场失效。</strong>
+
+    <p>我给一条写作规则加了例外。规则本身是"凡是写时间跨度，必须同时写出起止日期"，因为在这之前我刚犯过一次错，把一个还剩下的天数写成了已经过去的天数，方向整个反了。</p>
+
+    <p>加例外的理由很正当：有些句子是在谈将来会怎样，不该被这条规则拦住。于是我在"不判"的词表里放了一个字：「会」。</p>
+
+    <p>而这套系统的记录里，出现频率最高的词，是「会话」。</p>
+
+    <p>结果是那句本该被拦下来的原话——它里面正好有「会话」两个字——被判成了谈将来的句子，直接放行。规则上线的那一刻就已经失效了。</p>
+
+    <p>最险的地方不在这里。险的地方是：我当时确实做了检查，把所有已经写完的文章全跑了一遍，那一屏干干净净，没有一处报警。<strong>全量跑过一遍不报错，和"它还拦得住原来那件事"，是两个独立的结论。</strong> 我把第一个当成了第二个。</p>
+
+    <strong>第二次，怕误伤反而差点让规则被人自己拆掉。</strong>
+
+    <p>同一天，另一条规则的第一版。它的作用是在提交代码前检查每条新写下的结论有没有配上可复跑的证据。第一版跑出来报了 4 条违规。</p>
+
+    <p>我一条一条去核对，其中 3 条是误判——假阳性 75%。</p>
+
+    <p>如果就这么挂上去，会发生什么？被误判的人不会去修改自己的结论，因为他知道自己没错。他会去学那个跳过检查的参数，学会一次，之后就每次都用。规则不会被谁推翻，它是被绕过的——那行检查还在照常打印，只是不再有人为它改任何东西。</p>
+
+    <strong>规则死于太松和死于太紧，是同一条路的两头。</strong> 太松的那次，是加了例外没回跑；太紧的那次，是没加例外也没回跑——两次缺的都是同一个动作。
+
+    <h2>最有名的那条例外，是它的作者自己写下的</h2>
+
+    <p>这件事不只发生在写代码的人身上。</p>
+
+    <p>亚当·斯密在 1776 年出版的《国富论》里，整本书都在论证自由贸易、反对政府对贸易的干预。而在第四卷第二章，他为《航海法案》——一部典型的贸易限制法——做了辩护，理由是它关乎国防：</p>
+
+    <blockquote><p>"As defence, however, is of much more importance than opulence, the Act of Navigation is, perhaps, the wisest of all the commercial regulations of England."</p></blockquote>
+<blockquote><p>（然而国防远比富裕重要，因此《航海法案》或许是英国全部商业法规中最明智的一条。）</p></blockquote>
+
+    <p>注意这句话的形状。它不是反对者写的驳论，是原则本人的作者，在自己的书里，亲手写下的一个"然而"。写它的理由完全站得住——他确实认为国防高于贸易利得。</p>
+
+    <p>但这句话从此就留在那里了，而且它没有边界：什么算国防、国防能覆盖到哪一层产业，斯密没有在这句话里给出判据。<strong>一条没有边界的例外，和取消这条原则的区别，只在于还有没有人愿意去援引它。</strong></p>
+
+    <p>这就是例外的第二个特征：它一旦被写下，就脱离了写它的那个人当时的具体处境，变成一句可以被任何人在任何处境里引用的话。</p>
+
+    <h2>判别线：你有没有回去跑一遍原来那件事</h2>
+
+    <p>所以把最开始那个问题换个问法。</p>
+
+    <p>不要问"什么情况下可以破例"，那个问题事前答不了。要问：<strong>你为它开例外的时候，有没有把它最初要拦的那个场景，原样再跑一遍？</strong></p>
+
+    <p>这个问题当场就能答，而且答案只有是和否。</p>
+
+    <p>它的操作方式很朴素：在你写下"除非"的同一时刻，把这条原则当初要拦的那件具体的事写在旁边，然后拿新版本对着它跑一次。如果原来那件事现在能过去了，坏掉的不是那件事，是你的原则。</p>
+
+    <p>这里有个反直觉的地方：<strong>这个动作不评价你的例外对不对。</strong> Noor Inayat Khan 那个例外大概率是对的——面对 1940 年的巴黎，站在旁边不见得比行动更符合她想守护的东西。这个动作要保住的是另一件事：例外加完之后，这条原则是不是还在拦它本来要拦的东西，还是已经变成了一句只在不需要它的时候才生效的话。</p>
+
+    <h2>一个必须接住的反驳</h2>
+
+    <p>"每加一条例外都要回头验证一遍，成本太高。现实里没人有这个精力。"</p>
+
+    <p>这个成本不是新增的，是欠的。</p>
+
+    <p>回跑一次的成本，恰好等于你当初立这条原则时，心里演练过的那个场景的成本。如果你现在连原场景都说不出来——说不出这条原则到底拦住过什么——那说明你立下的不是原则，是一句口号。它本来就没拦住过任何东西，例外加不加都一样。</p>
+
+    <p>所以这条反驳没有推翻什么，它把适用范围划清楚了：<strong>这个动作只对真拦过事的原则有意义。</strong> 而你手上真拦过事的原则，本来也没有几条。</p>
+
+    <h2>原则不是墙，是筛子</h2>
+
+    <p>我们习惯把原则想象成一堵墙：立在那里，要么完整，要么被推倒。</p>
+
+    <p>它其实是个筛子。</p>
+
+    <p>每加一条例外，就是在筛子上剪一个洞。剪洞的人从来不是敌人，是每天用这个筛子的那个人——他每次都盯着那个他想放过去的东西，剪得又小心又精确。</p>
+
+    <p>而从头到尾，没有人回头看过：这个洞，现在有多大。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p></p>
+    <p></p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <a href="{{SOURCE_URL_1}}" target="_blank" rel="noopener">{{SOURCE_NAME_1}}</a> ·
+      <a href="{{SOURCE_URL_2}}" target="_blank" rel="noopener">{{SOURCE_NAME_2}}</a>
+      <!-- 按实际来源数量增减 -->
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
