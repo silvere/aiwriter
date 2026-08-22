@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管你模型能不能上线的那道闸，写着「自愿」俩字，Claude 最猛的模型照样被关了 19 天</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 深度报道</span>
+  <h1>管你模型能不能上线的那道闸，写着「自愿」俩字，Claude 最猛的模型照样被关了 19 天</h1>
+  <div class="hero-meta">
+    <span>2026-08-22</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">2026 年 6 月，Anthropic 最强的公开模型 Claude Fable 5 上线三天，被一封以国家安全为由的政府信摁下线，全球停摆 19 天；同月 GPT-5.6 也被攥着关了约两周。管这件事的第 14409 号行政令白纸黑字写着「不设强制预审、明确自愿」——可决定模型能否上线的那条门槛线，被定为「保密」，你无权看。前沿模型的开关，正从实验室搬向华盛顿。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <p>2026 年 6 月 12 日，星期五，下午五点二十一分，Anthropic 收到一封信。</p>
+
+    <p>发信的是美国政府，落款的理由是国家安全。要求写得很具体：立刻停止向所有非美国公民提供 Claude Fable 5 和 Claude Mythos 5 的访问，不管这个人坐在地球上哪个角落。</p>
+
+    <p>![Claude Fable 5 从上线到恢复整整 19 天，一个合法模型能不能对外服务，决定权不在实验室手里。](images/illus_01.png)</p>
+
+    <p>*Claude Fable 5 从上线到恢复整整 19 天，一个合法模型能不能对外服务，决定权不在实验室手里。*</p>
+
+    <p>Fable 5 是 Anthropic 当时最强的公开模型，三天前——6 月 9 日——刚上线，每百万 token 输入 10 美元、输出 50 美元，上下文一百万。从上线到收信，中间隔了整整三天。</p>
+
+    <p>麻烦在于，一个 API 服务没办法在你敲下回车的那一刻，实时验明你是哪国国籍。既然核不出谁是非美国公民，那就只能一刀切：Anthropic 把 Fable 5 和 Mythos 5 对全世界所有人下线，包括美国人自己。</p>
+
+    <p>然后就是 19 天。</p>
+
+    <h2>你造的模型，开关不在你手里</h2>
+
+    <p>这件事最该让人坐直的地方，不是"被政府管了"，是被管的那个姿势。</p>
+
+    <p>Anthropic 没犯法。它按流程发布了一个通过内部安全评估的模型，明码标价，公开上线。三天后一封信来了，它照办，全球下线自己卖得最贵的产品，一关 19 天——期间每天都在烧钱、掉用户、被对手抢客。它做错了什么？什么也没做错。它只是不再是那个能决定"我的模型现在要不要对外服务"的人了。</p>
+
+    <p>（补一句背景：政府这封信针对的，是一个被发现的越狱方法——有人找到了绕过 Fable 5 安全防护的路子。Anthropic 事后配合政府重新训了安全分类器。这是 Anthropic 自己在声明里说的。）</p>
+
+    <strong>按下上线键的那只手，和松开这只手的权力，第一次被分给了两个人。</strong>你负责把手放上去，华盛顿负责决定它什么时候必须拿开。
+
+    <p>到 6 月 30 日，商务部长 Howard Lutnick 出面，宣布撤销 6 月 12 日那封信里的管制。他的说法是，基于工业与安全局（BIS）对 Mythos 5 和 Fable 5 扩散风险的重新评估，这两个模型的出口、再出口、境内转移不再需要许可证。他还补了一句：过去两周，"我们与 Anthropic 密切合作，分析并批准了 Fable 5"。</p>
+
+    <p>批准。一家公司发布自己训练的模型，配的动词是"批准"。7 月 1 日，Fable 5 恢复访问。从下线到恢复，掐头去尾，19 天。</p>
+
+    <h2>"自愿"这两个字，是怎么变成摆设的</h2>
+
+    <p>你大概会以为，把一个商业模型摁下线 19 天，背后总得有一部写得明明白白的强制审查法撑着。</p>
+
+    <p>没有。恰恰相反。</p>
+
+    <p>管这件事的，是 2026 年 6 月 2 日签署的第 14409 号行政令，三天后登上联邦公报，编号 91 FR 34565。这份行政令里有一句很关键的话，大意是：本命令不授权设立任何强制性的政府许可、审批或预先审查制度，来管理 AI 模型的开发、发布与分发。它甚至专门点明，开发者把模型提前 30 天交政府预看这套流程，是"明确自愿"的。</p>
+
+    <p>白纸黑字，自愿。（笑）</p>
+
+    <p>那 Fable 5 那 19 天算什么？算另一扇门。</p>
+
+    <p>![行政令那扇“自愿”的门你可以拒绝，BIS 出口管制那扇门不需要你同意——Fable 5 走的正是后者。](images/illus_02.png)</p>
+
+    <p>*行政令那扇“自愿”的门你可以拒绝，BIS 出口管制那扇门不需要你同意——Fable 5 走的正是后者。*</p>
+
+    <p>行政令这扇门是胡萝卜：你自愿把模型提前 30 天交出去，政府帮你做一遍安全评估，你好我好。你不想走，行，没人拿枪逼你。</p>
+
+    <p>另一扇门是大棒，而且它压根不在行政令里——它在 BIS 手上的出口管制条例（EAR）里。政府要摁停你的模型，用不着援引那份"自愿"的行政令，只要以国家安全为由，把你的模型当成一项受管制的出口技术处理就行。Fable 5 走的就是这扇门。所以你确实有权拒绝走"自愿"那扇——然后从另一扇被请出去。</p>
+
+    <p>这就叫自愿。</p>
+
+    <p>OpenAI 那边客气一点，剧本一模一样。6 月 26 日，GPT-5.6 三档模型（旗舰 Sol、日用 Terra、最便宜的 Luna）先"预览"，访问权只发给约 20 家经政府审查过的机构；应谁的要求？白宫的国家网络主任办公室和科技政策办公室。这么关着，一直关到 7 月 9 日才对所有人开放，中间隔了约两周。Sam Altman 后来跟 CNBC 形容这段审批，用的词是跟高层官员"来回沟通"。</p>
+
+    <p>一个把最强模型关了 19 天，一个把新模型攥在手里两周、只给 20 家先看。两家的做法不一样，共同点只有一条：上线的时间表，最后那支笔不在他们手里。</p>
+
+    <h2>那条线画在哪，不告诉你</h2>
+
+    <p>到这一步，讲道理的人会说：行，要国家安全审查就审查，把规矩挑明，大家照着办不就完了。</p>
+
+    <p>规矩确实有。你不能看。</p>
+
+    <p>行政令要求，签署后 60 天内——也就是 8 月 1 日之前——由国家安全局、财政部、国土安全部下属的 CISA，加上商务部下属的 NIST，一起搭一套流程，评估 AI 模型的高级网络能力，据此划一条门槛：越过它，你就是"受管辖的前沿模型"，得进审查通道。</p>
+
+    <p>这套流程，行政令给它的定语是 classified——保密。</p>
+
+    <p>![受管辖前沿模型的门槛线，被行政令定语为“保密”：你被告知它存在，却无权看它画在哪。](images/illus_03.png)</p>
+
+    <p>*受管辖前沿模型的门槛线，被行政令定语为“保密”：你被告知它存在，却无权看它画在哪。*</p>
+
+    <p>保密的意思是，那条决定你的模型要不要过审的门槛线，画在哪、多高、拿什么指标算，你不知道，你的对手不知道，公众也不知道。它由国家安全局牵头、会同几个白宫办公室一起定，没有公开定义。你被明确告知有这么一条线，越过就得过闸；同时被明确告知，这条线你没资格看。</p>
+
+    <p>对一家要砸几亿美元、耗一两年训一个前沿模型的公司来说，这是最难受的一类规矩。它不是"不许做 X"——那还能绕开。它是"有个 X 不许做，但 X 是什么，等你踩上去那天你就知道了"。你只能把模型练出来，交上去，然后等一封信——那封信可能就在某个周五下午五点二十一分到达。</p>
+
+    <h2>这道闸不新，新的是它拦的东西</h2>
+
+    <p>上市前先过政府这道闸，这件事本身一点不新鲜。</p>
+
+    <p>新药进市场前要过 FDA 的上市前批准，无线电设备铺货前要过 FCC 的设备认证，军民两用技术出境前要过出口管制的许可。哪个国家都一样：一件东西在合法进入市场、或者跨境流动之前，先得让政府点个头。这套逻辑跑了几十年，没人觉得奇怪。</p>
+
+    <p>AI 这道闸，是把同一套老逻辑，架到了一个它从没管过的东西上——一个像打补丁一样发布、单次训练成本以亿计、上线只要点一下部署键的软件。药和飞机零件愿意在闸前排队，是因为它们造得慢、改得贵、看得见摸得着；一份模型权重可以今天上线、后天更新、大后天就降价，快到监管的节奏根本追不上。于是就有了这么个别扭产物：<strong>一道贴着"自愿"标签的闸，配一根随时能落下的出口管制大棒。</strong></p>
+
+    <p>而这道闸自己，也没那么利索。行政令定的是 8 月 1 日前交出那套保密评估流程。8 月 1 日过去了，到今天快三周，政府没有公开宣布任何一项做完了。（得说清楚：这是"没见到官方宣布"，不等于官方承认没做完。）闸已经在运转——Fable 5 和 GPT-5.6 就是活证据——可那本决定谁过谁不过的规则手册，对外始终是一页空白。</p>
+
+    <p>所以那封下午五点二十一分的信，真正的分量不在于它关了 Claude 19 天。在于它当众演示了一件事：2026 年，一个前沿模型能不能活着上线，最后那个开关，已经从实验室的服务器机房，搬到了华盛顿一张你看不见的名单上。</p>
+
+    <p>你还是能造模型。<strong>你只是不再能决定，它什么时候、以及到底能不能，真的见到人。</strong></p>
+
+    <p>而那条决定它命运的线画在哪——不告诉你。</p>
+
+    <hr>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>前沿模型的开关，已经从实验室的机房，搬到了华盛顿一张你看不见的名单上。你还能造模型，只是不再能决定它什么时候、以及到底能不能，真的见到人。</p>
+    <p>这道闸嘴上说自愿，手里却握着出口管制那根大棒；它划了一条决定生死的门槛线，又把线画在哪定为保密。规矩确实有——你不能看。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.federalregister.gov/documents/2026/06/05/2026-11415/" target="_blank" rel="noopener">第 14409 号行政令 · 联邦公报 91 FR 34565（2026-06-05，行政令原文一手）</a></div>
+      <div class="footer-source-item"><a href="https://platform.claude.com/" target="_blank" rel="noopener">Claude Fable 5 与 Mythos 5 发布说明 · Anthropic 官方文档（一手：上线日期 / $10·$50 每百万 token / 100 万上下文）</a></div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/news" target="_blank" rel="noopener">Anthropic 官方声明：Fable 5·Mythos 5 下线与恢复（一手公司声明：6-12 下午 5:21 ET 政府函件 / 全球下线 / 7-1 恢复 / 共 19 天）</a></div>
+      <div class="footer-source-item"><a href="https://www.commerce.gov/" target="_blank" rel="noopener">商务部长 Howard Lutnick 与 BIS：撤销出口管制、"批准 Fable 5"（2026-06-30，政府一手声明）</a></div>
+      <div class="footer-source-item"><a href="https://openai.com/" target="_blank" rel="noopener">OpenAI：GPT-5.6（Sol·Terra·Luna）发布与政府审查（公司一手：6-26 限量预览 / 约 20 家受审机构 / 7-9 公开；Altman 对 CNBC "来回沟通"表述）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
