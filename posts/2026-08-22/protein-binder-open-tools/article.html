@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude 设计的蛋白质，15 个靶点中了 14 个——可它一个工具都没发明，用的全是你也能免费下载的开源软件</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">行业观察</span>
+  <h1>Claude 设计的蛋白质，15 个靶点中了 14 个——可它一个工具都没发明，用的全是你也能免费下载的开源软件</h1>
+  <div class="hero-meta">
+    <span>2026-08-22</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">这条新闻真正吓人的地方，不是「AI 会设计蛋白质了」，而是它设计蛋白质用的东西，你电脑上也能装——Claude 一个自研工具都没有，赢的地方是知道该怎么用。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>导语</h2>
+
+    <p>先说结论，省得你划走：这条新闻真正吓人的地方，不是「AI 会设计蛋白质了」，而是它设计蛋白质用的东西，你电脑上也能装。</p>
+
+    <p>2026 年 8 月 18 日，Anthropic 甩出一份技术报告，说自家的 Claude 自主设计了一批蛋白质结合体，扔进真实的湿实验室里合成、检测，结果 15 个靶点里有 14 个至少命中了一个能用的设计。你可能对这个数字没概念，那我换个说法：这一行的老师傅们平时的命中率是一到一成半，Claude 干到了两成二到三成半。</p>
+
+    <p>然后我去翻它到底用了什么秘密武器。翻完人傻了。</p>
+
+    <p>一个秘密武器都没有。</p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>an abstract minimalist visualization of a small protein binder molecule locking precisely onto a large target protein surface, glowing connection point, floating open-source software toolboxes and code fragments in the background, flat design, tech illustration, single orange accent color on cool grey palette, no text, no labels, clean white background</pre></details>
+</div>
+
+    <h2>一、先把牛皮吹破一半，剩下那一半才值得看</h2>
+
+    <p>这种新闻的标准剧本，你我都熟。第一天是「AI 攻克蛋白质设计，人类攻克疾病指日可待」，第二天是「所以某某癌症要被治好了？」，第三天股票涨一波，第四天没人记得。</p>
+
+    <p>所以我们先按 Anthropic 自己说的来，把话说死。</p>
+
+    <p>Anthropic 在报告里白纸黑字写了一句：<strong>结合体不是药</strong>（protein binders are not drugs）。做出一个能牢牢咬住目标蛋白的分子，只是新药研发这条几公里长的路上的第一步。后面还有能不能进细胞、有没有毒、身体会不会一脚把它踢出去、能不能量产、临床三期烧不烧得起钱——每一关都能让 99% 的候选分子当场去世。所以谁要是拿这条新闻告诉你「Claude 要治好阿尔茨海默了」，你可以直接拉黑他，他不是蠢就是想骗你接盘。</p>
+
+    <p>把这层泡沫戳破之后，剩下的那点硬东西，反而更有意思。</p>
+
+    <p>它到底做了什么，得说清楚。这次的活儿叫「de novo 蛋白质结合体设计」，翻过来就是：给你一个靶点蛋白（比如某个跟癌症、跟老年痴呆有关的蛋白），你要从零画出一个全新的、自然界里不存在的小蛋白，让它能精准地贴上去、咬住。这活儿难就难在「从零」——不是照着已有的抄，是凭空造一把只配这一把锁的钥匙。</p>
+
+    <p>这一批，Claude 用两个模型（Claude Opus 4.8 和一个叫 Mythos Preview 的预览版）在 15 个有临床价值的靶点上跑。这些靶点不是随便挑的软柿子：PD-L1，癌症免疫治疗里最核心的那个刹车蛋白；TREM2，跟阿尔茨海默死磕的；TNFα，年销一度冲到两百亿美元的修美乐（Humira）咬的就是它；EGFR，肿瘤圈的老熟人。硬骨头。</p>
+
+    <p>跑下来，一共交出 1320 个设计，湿实验确认了 354 个真的能咬住。命中率我给你摆全：多臂并跑的 48 小时里，Opus 4.8 是 22.6%，Mythos Preview 是 26.7%；等到让 Mythos Preview 单挑一个靶点、给它 24 小时，命中率飙到 35.1%。而这一行公开承认的平常水平，是 10% 到 15%。</p>
+
+    <p>数字很漂亮。但漂亮的数字满地都是，我不是来给你念成绩单的。我关心的是另一个问题——它凭什么？</p>
+
+    <h2>二、我去查它的秘密武器，结果查出一张免费软件清单</h2>
+
+    <p>一般人的第一反应是：Anthropic 肯定偷偷练了个专门搞生物的超级模型。这么想很合理，也很符合我们对「大厂放大招」的想象。</p>
+
+    <p>现实是，没有。</p>
+
+    <p>Anthropic 没有训练任何一个自己的蛋白质模型。Claude 在这件事里的身份，说穿了是个「会自己动手装软件、自己读说明书」的操作员。它干的活儿是：拿到靶点之后，自己去查这个靶点的资料，自己决定该调哪些工具，自己把工具装上、跑起来，再从跑出来的一堆候选里自己挑、自己排序，最后把选中的序列打包，交给实验室去合成。</p>
+
+    <p>那它调的都是些什么工具？我把清单抄给你，你感受一下这个「秘密」有多秘密——</p>
+
+    <p>搭蛋白质骨架用的：PXDesign（贡献了 358 个设计）、RFdiffusion3（267 个）、Genie 3（185 个）、FreeBindCraft（135 个）、BoltzGen（134 个）、RFdiffusion（118 个）、Proteina-Complexa（100 个）。往骨架上填氨基酸序列，主要靠 SolubleMPNN，这是知名工具 ProteinMPNN 的一个变体。最后筛选和排序候选，用的是 ESMFold2、ESMFold2-Fast 和 Protenix v2。</p>
+
+    <p>这张清单里，没有一个是 Anthropic 家的。全部是这个领域早就摆在那儿、公开、免费、任何一间实验室、任何一个研究生都能下载来用的开源软件。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图注：Claude 手里没有一件自研武器，它调用的全是这个行业公开免费的开源工具——真正稀缺的从来不是工具。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：Claude 手里没有一件自研武器，它调用的全是这个行业公开免费的开源工具——真正稀缺的从来不是工具。</figcaption></figure>
+
+    <p>这意味着什么？意味着这场胜利里，「工具」这一项的贡献，理论上等于零。因为这些工具，跟 Claude 竞争的每一个人类专家，桌上都有一套一模一样的。大家用的是同一批锤子、同一批钉子。</p>
+
+    <p>那 Claude 到底赢在哪了？</p>
+
+    <h2>三、同一个公开赛，同样的工具，它是人类选手的十倍</h2>
+
+    <p>光说命中率高，你可能觉得是 Anthropic 自己关起门来跟自己比，那不算数。所以这次最狠的一刀，是它敢去跟人类同台。</p>
+
+    <p>负责做湿实验验证的公司叫 Adaptyv Bio，它之前办过一个公开的蛋白质设计竞赛，全世界的研究者都能报名，用的就是前面那批开源工具，去挑战一个叫 RBX1 的靶点。人类选手们下场，最后的命中率是 3.7%。</p>
+
+    <p>Anthropic 让 Mythos Preview 单挑同一个 RBX1，命中率 40%。</p>
+
+    <p>我怕你划得太快没算过来，我再摆一组更具体的：面对 RBX1，Claude 交了 90 个设计，中了 28 个；那场人类公开赛，全体选手一共交了 245 个设计，中了 9 个。它用三分之一的产量，中出了三倍的结果。而且不只是「能咬住」，是「咬得死死的」——Claude 设计出的最强那个结合体，亲和力做到了 3.9 纳摩尔，而公开赛冠军是 45 纳摩尔（这个数字越小咬得越紧，3.9 比 45 强了十倍不止）。</p>
+
+    <p>同样的靶点，同样能下载的免费工具，人类是一批，Claude 是一个。差出十倍。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="图注：RBX1 靶点，同一批公开工具、同一个公开赛的门槛，人类选手命中 3.7%，Claude 命中 40%——差距不在工具，在用工具的判断。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：RBX1 靶点，同一批公开工具、同一个公开赛的门槛，人类选手命中 3.7%，Claude 命中 40%——差距不在工具，在用工具的判断。</figcaption></figure>
+
+    <p>到这一步，那个真问题就藏不住了。</p>
+
+    <p>如果工具是免费的、公开的、大家都有的，那 Claude 多出来的那十倍，只可能来自一个地方：<strong>知道该用哪个工具、知道哪个候选该留哪个该扔、知道该按什么顺序把它们排出来。</strong></p>
+
+    <p>这套东西，过去有个统一的名字，叫「经验」，或者叫「专家的判断力」。它不写在任何一个软件的说明书里，它长在一个干了十几年的老师傅脑子里。你把 RFdiffusion 和 ESMFold 免费送给一个刚入行的研究生，他也做不到 40%，因为他不知道这七八个骨架工具里这次该信哪个，不知道跑出来一千个候选里哪几十个值得往下走。</p>
+
+    <p>Claude 这次真正干成的事，是把这套「长在脑子里、说不清道不明」的判断，跑通了一遍。</p>
+
+    <h2>四、专家这个职业，被 Claude 当场拆成了两半</h2>
+
+    <p>我们过去理解一个「专家」，是把他当成一个不可分割的整体：他既有判断力，也会动手。你请他来，是这两样一起买的。</p>
+
+    <p>Claude 这次干的事，等于当着所有人的面，把「专家」这个词，沿着中间劈开了。</p>
+
+    <p>一半是判断层：查资料、定策略、在一堆工具里选、在一堆结果里挑、排优先级。另一半是操作与验证层：真的把分子合成出来、真的放进试管里测它咬不咬得住。</p>
+
+    <p>你去看这次的分工就明白了。人类专家保留了什么？他们定下了整个实验的协议和框架（agent 是在专家设定的 protocol 下跑的），他们挑定了那 15 个靶点，以及——最关键的——他们守住了湿实验那一端：真正的合成和检测，是 Adaptyv Bio 和 Twist Bioscience 两家专业的合同实验室干的，而且是拿到 Claude 的设计后原封不动地做，一个字没改。</p>
+
+    <p>那 Claude 吃掉了哪一半？正中间那一整块判断层。查靶点、选工具、缩候选、做排序——这些过去被认为最值钱、最需要「悟性」、最不可能被自动化的活儿，被一个通用大模型当成一个多步骤的软件任务，跑完了。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="图注：人类守住了定协议、选靶点和湿实验两端，Claude 吃掉的是过去被认为最值钱的中间判断层。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：人类守住了定协议、选靶点和湿实验两端，Claude 吃掉的是过去被认为最值钱的中间判断层。</figcaption></figure>
+
+    <p>这件事之所以让我后背发凉，是因为它根本不只关生物学的事。</p>
+
+    <p>把「蛋白质设计」这四个字换掉，换成任何一个「有一套公开的专业软件 + 一套只在老师傅脑子里的使用经验」的行业，这个故事一字不改都成立。做芯片版图的 EDA 工具是公开的，会不会用是手艺；做建筑结构的有限元软件是公开的，会不会调参是经验；律师检索判例的数据库是对所有人开放的，知道搜什么、信哪条是本事；财务建模的 Excel 谁都有，会不会搭那个模型才是饭碗。</p>
+
+    <p>我们这代人被反复教育的一句安全咒语是：「别怕 AI，学会用工具的人不会被淘汰，会用 AI 的人淘汰不会用的人。」这句话现在得改了。因为 Claude 这次证明的恰恰是——当工具本身是公开的，「会用这个工具」这件事本身，可以被一个通用模型学走，然后免费送给所有人。到那天，「我会用而你不会」这句话背后的溢价，就开始蒸发了。</p>
+
+    <h2>五、设计变便宜之后，钱会往哪儿流</h2>
+
+    <p>拆穿一件事的成本结构，最后总得落到「那谁赚钱」上，不然都是空谈。</p>
+
+    <p>这局里有两家公司很值得看：Adaptyv Bio 和 Twist Bioscience。它们干的是最不性感的活儿——把别人设计好的蛋白质，真的用生物手段造出来，再放进试管里测一测到底行不行。设计端现在被 AI 摁到地上摩擦、成本无限往下掉，可「造出来 + 测一测」这一端，还得靠真实的细胞、真实的试剂、真实的时间。你 AI 一秒钟能吐一万个设计，但每一个都得有人真金白银地去合成、去检测，才知道是不是吹的。</p>
+
+    <p>设计越不值钱，验证就越值钱。水从高处流到低处，钱从被自动化的环节流到还没被自动化的环节。这也是为什么 Anthropic 这次要把湿实验外包出去——它自己不趟这摊浑水，它要的不是当个药厂。</p>
+
+    <p>那 Anthropic 到底图什么？说出来一点都不含蓄。</p>
+
+    <p>它把这次的全部东西——所有的设计、所有喂给 agent 的原始 prompt、所有的湿实验测量数据——一股脑全公开传到了 Hugging Face 上，谁都能下。一家公司，做出了这么亮眼的成果，转头把配方全给了你。反常识吧？</p>
+
+    <p>不反常识。因为 Anthropic 卖的从来不是这批蛋白质，甚至不是这次的方法。它卖的是一句广告词，而这次实验就是这句广告词的证据：<strong>你那套需要多年训练、外人插不进手的专业判断，一个通用模型加一堆免费工具，就能跑到你的两三倍。</strong> 全套数据公开，是为了让你没法说它造假——它要的就是你信这句话，信到愿意为「让 Claude 当你的专家」去付订阅费。</p>
+
+    <h2>六、你该睡不着的那部分</h2>
+
+    <p>说回开头那个吓人的地方。</p>
+
+    <p>这条新闻真正的分量，不在「AI 会造蛋白质」——那是给外行看的标题。它的分量在于：Claude 没有发明任何工具，它用的东西你也下得到，它赢的地方是知道该怎么用。而「知道该怎么用」，恰恰是过去几乎所有专业人士，用来解释「我为什么值这个价」的那个理由。</p>
+
+    <p>工具早就免费了，稀缺的一直是用工具的判断。Claude 这次不是造出了什么新武器，它只是把最后这道护城河——「会用」——也抽干给你看了一遍。</p>
+
+    <p>至于抽到你这行没有，这次没有不代表下次没有。你可以先去数数，你的本事里，有多少是「我会用这套软件而别人不会」。这个数字，就是你该开始睡不着的那部分。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>工具早就免费了，稀缺的一直是用工具的判断。Claude 这次不是造出了什么新武器，它只是把最后这道护城河——「会用」——也抽干给你看了一遍。</p>
+    <p>你可以先去数数，你的本事里有多少是「我会用这套软件而别人不会」。这个数字，就是你该开始睡不着的那部分。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/research/Claude-accelerates-protein-design" target="_blank" rel="noopener">How Claude is accelerating protein design and analytical chemistry（Anthropic 研究页）</a></div>
+      <div class="footer-source-item"><a href="https://www-cdn.anthropic.com/30bf50e22a01388bb29bf077ee3f244531594b7a.pdf" target="_blank" rel="noopener">Autonomous de novo protein binder design with Claude（Anthropic 技术报告 PDF）</a></div>
+      <div class="footer-source-item"><a href="https://www.adaptyvbio.com/blog/anthropic-1" target="_blank" rel="noopener">Benchmarking Claude's protein designs in the wet lab（Adaptyv Bio 案例研究）</a></div>
+      <div class="footer-source-item"><a href="https://huggingface.co/datasets/Anthropic/claude-protein-binder-design" target="_blank" rel="noopener">claude-protein-binder-design 数据集：全部设计、prompt 与测量数据（Hugging Face）</a></div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
