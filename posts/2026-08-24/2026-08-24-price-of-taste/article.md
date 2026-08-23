@@ -4,11 +4,7 @@
 
 牛排端上来的时候，那个点它的人火了。
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🖼️</div>
-  <div class="img-placeholder-label">概念图</div>
-  <details><summary>提示词</summary><pre>flat minimalist illustration, person lying in bed at night scrolling phone, soft blue light, no text, clean background</pre></details>
-</div>
+![person lying bed night scrolling](images/concept_01.jpg)
 
 8 盎司，160 美元。盘子中央那一小块，跟价格完全不成比例。他后来在台上复述当时的心情，用的词是"被激怒"。
 
