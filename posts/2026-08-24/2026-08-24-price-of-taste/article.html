@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>他花 160 美元点了块牛排，然后希望它更小一点</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">认知深度</span>
+  <h1>他花 160 美元点了块牛排，然后希望它更小一点</h1>
+  <div class="hero-meta">
+    <span>2026-08-24</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">2008 年，记者本杰明·华莱士花一年时间，把这个星球上标价最高的东西一样一样吃了一遍。他的舌头没给出那个所有人期待的答案，而他在演讲结尾拿出的那项实验，说的恰好是反面。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <p>牛排端上来的时候，那个点它的人火了。</p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🖼️</div>
+  <div class="img-placeholder-label">概念图</div>
+  <details><summary>提示词</summary><pre>flat minimalist illustration, person lying in bed at night scrolling phone, soft blue light, no text, clean background</pre></details>
+</div>
+
+    <p>8 盎司，160 美元。盘子中央那一小块，跟价格完全不成比例。他后来在台上复述当时的心情，用的词是"被激怒"。</p>
+
+    <p>然后他切下一块，放进嘴里。</p>
+
+    <p>嚼到第二下，他改主意了——他希望这块肉再小一点。神户牛肉的油脂太密，密到吃着吃着，身体自己会开始往后躲。一块 160 美元的牛排，最合理的分量，可能比端上来的还要少。</p>
+
+    <p>这是 2008 年。那一年，记者本杰明·华莱士给自己派了个活儿：把这个星球上标价最高的东西，一样一样，亲口试过去。牛排是其中一天。</p>
+
+    <h2>他不是去享受的</h2>
+
+    <p>那一年，华莱士刚写完一本书，讲的是假酒。</p>
+
+    <p>书里的主角是一瓶 1787 年的拉菲，瓶身上刻着 "Th.J."，据说属于托马斯·杰斐逊。1985 年，它在佳士得敲槌，156,000 美元，创下当时的纪录。那个数字在 1985 年意味着什么，可以这样感受：它买的不是酒——那瓶两百年前的液体早就没法喝了，谁也不会打开它。买的是"这瓶酒被杰斐逊碰过"这句话。</p>
+
+    <p>华莱士去查这瓶酒的来路，查出来的结论写在书里，也被他搬上了讲台：卖酒的那个人是个骗子，那批杰斐逊的瓶子是伪造的。</p>
+
+    <p>也就是说，那 156,000 美元买的那句话，是假的。而在它被拆穿之前，它是真的——真到能上佳士得的槌，真到能进博物馆级的酒柜。</p>
+
+    <p>所以他去尝那些最贵的东西时，脑子里装的不是憧憬，是一整套关于这个市场怎么骗人的知识。他是带着这套知识坐到那些桌子前面去的。</p>
+
+    <h2>1947 年的那瓶酒</h2>
+
+    <p>品鉴会是一位叫 Bipin Desai 的物理学家组织的。他在圈子里以攒稀有酒局出名，一场局能开出别人一辈子见不到的酒。华莱士收到邀请时的说法是：这种邀请，你不会拒绝。</p>
+
+    <p>那晚桌上有一瓶 1947 年的白马庄（Cheval Blanc）。</p>
+
+    <p>他喝了。</p>
+
+    <p>然后他给出的评价是：有一点亚麻籽油的气味，很柔，油润，接近波特酒那种黏稠的丰腴。</p>
+
+    <p>——<strong>他说，他没有那么被打动</strong>。</p>
+
+    <p>这句话从一个刚刚查完假酒案的人嘴里说出来，听上去像是终于有人说了实话。整场演讲里，类似的实话还有好几处。</p>
+
+    <p>白松露也是这样。他的说法是：白松露的魅力在气味里。不在味道，也不在口感，就在那股味儿。</p>
+
+    <p>这句话如果当真，白松露这样东西的物理形态几乎是多余的。你花掉的钱买回来一块疙疙瘩瘩的菌，而真正进入你的那部分，是它挥发到空气里、被你吸进鼻腔的那一点点分子。刨下来的薄片落在面里，与其说是食材，不如说是气味的载体——载体本身的口感，他说，不是重点。</p>
+
+    <p>一晚 30,000 美元的酒店套房，他也去住了。</p>
+
+    <p>TED 给这场演讲写的简介里，还列着他试过的另一样东西：那种传说中的、名声不太好的麝香猫咖啡。（他对这杯咖啡的具体评语，我没能在可靠的转写里找到，所以这里不替他编。）</p>
+
+    <p>他还提到过一场橄榄油的盲品——蒙上标签之后，最贵的那一款排在了后面（这一段我只拿到概述，没拿到他的逐字原话，标出来供你打折扣看）。</p>
+
+    <p>一年下来，清单越拉越长，他的舌头始终没有交出那个所有人期待的答案。</p>
+
+    <h2>最后三分钟，他掉了个头</h2>
+
+    <p>如果这场演讲停在这里，它就是一篇高级版的"智商税"科普——你花的钱越多，边际递减越狠，贵的东西不值。这条路太好走了，走到今天已经被踩成了泥。</p>
+
+    <p>华莱士没有停在这里。</p>
+
+    <p>演讲快结束时，他讲了一个实验：给一群受试者喝同一款酒，只是贴上不同的价签。贴高价签的那一组，报告说更好喝——这不新鲜。不新鲜的部分下面还有一层：<strong>他们的大脑，真的记录到了更多的愉悦</strong>。</p>
+
+    <p>不是他们嘴上说更好喝。是同一杯液体进了不同的人嘴里，因为标签不同，快乐这件事本身在物理上发生了不同的量。</p>
+
+    <p>把这个实验，和他自己那句"没有那么被打动"放在一起看。</p>
+
+    <h2>他和实验里的人，坐在两张不同的桌子上</h2>
+
+    <p>实验里的人不知道自己在被测量。他们只是在喝酒，然后诚实地说出感受。他们的感受被价格改写了，而他们无从察觉——因为一个人没有办法在自己的体验内部，把价格这一味减掉，再尝一次。<strong>没有那个"再尝一次"。</strong></p>
+
+    <p>华莱士不一样。他在那张桌子前坐下之前，已经把这个市场怎么造假、怎么讲故事、怎么让一个瓶子值 156,000 美元，查了个底朝天。他喝那口 1947 的时候，同时在做两件事：喝，和记录自己在喝。</p>
+
+    <p>所以他不是比别人更清醒。他是<strong>知道自己在被测量</strong>。</p>
+
+    <p>这解释了为什么"别被消费主义骗了"这句劝告，说了这么多年，一次也没起过作用。它假定你被骗了，而清醒的人不会被骗。可实验说的是另一回事：价格改的不是你的判断力，是你的感受本身。判断力可以靠警惕守住，感受不行——它在你决定要不要警惕之前，就已经发生完了。</p>
+
+    <p>那块 160 美元的牛排真的很腻，这是真的。同时，如果它标价 16 美元，它大概不会让一个记者用一整段来讲它——这也是真的。这两件事没有一件是假的，它们是同一口肉。</p>
+
+    <h2>那怎么办</h2>
+
+    <p>不是"别买贵的"。华莱士自己也没得出这个结论，他那一年吃到的、喝到的，有些他明确说了好。</p>
+
+    <p>有一个更小的动作，花钱之前做，不是花完之后：<strong>问自己一句，这件事我打算讲给谁听。</strong></p>
+
+    <p>如果这句话在脑子里立刻有了收件人——某个具体的人，某个具体的场合，某条你已经想好怎么措辞的朋友圈——那么这笔钱里，有相当一部分买的是那段话，不是那样东西。这不丢人。那段话也是真东西，它会在某个饭局上真的被讲出来，真的有人听。只是它的保质期，和你以为的不一样：讲完第三遍，它就用完了，而那样东西还在你家里。</p>
+
+    <p>这个动作的好用之处在于它不要求你诚实到痛。它不问"你是不是虚荣"——这种问题问谁谁都答不好。它只问一个事实性的问题：脑子里有没有蹦出一个人。有就是有，没有就是没有，问出口的当下就有答案，而且答案骗不了自己。</p>
+
+    <p>举两个都不算错的例子。</p>
+
+    <p>一件外套，试的时候你脑子里出现的是下周同学会那张桌子，以及你走进去的那一瞬间——这笔钱大部分买的是那一瞬间。那一瞬间会发生，也确实值一点钱，只是它结束得比外套快得多，而外套还要在衣柜里挂三年。</p>
+
+    <p>另一件外套，你试的时候脑子里什么都没有，只有袖口那圈毛贴着手腕的触感，以及"这个我冬天每天都会穿"。这一件贵不贵是另一回事，但它不会在同学会散场之后失效。</p>
+
+    <p>如果想不出收件人，只有你一个人在一个没人看见的下午——那多半是真的想要。</p>
+
+    <p>华莱士那一年最诚实的一句话，是他对着那块变小的牛排说的：他希望它更小一点。那是一句只有已经吃进嘴里的人才说得出的话。清单上剩下的东西，无论标价多少，都替他回答不了这个问题——每一样，都得再吃一口才知道。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p></p>
+    <p></p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <a href="{{SOURCE_URL_1}}" target="_blank" rel="noopener">{{SOURCE_NAME_1}}</a> ·
+      <a href="{{SOURCE_URL_2}}" target="_blank" rel="noopener">{{SOURCE_NAME_2}}</a>
+      <!-- 按实际来源数量增减 -->
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
