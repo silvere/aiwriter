@@ -12,11 +12,7 @@
 
 一个秘密武器都没有。
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🎨</div>
-  <div class="img-placeholder-label">概念图占位</div>
-  <details><summary>生成 Prompt</summary><pre>an abstract minimalist visualization of a small protein binder molecule locking precisely onto a large target protein surface, glowing connection point, floating open-source software toolboxes and code fragments in the background, flat design, tech illustration, single orange accent color on cool grey palette, no text, no labels, clean white background</pre></details>
-</div>
+![abstract visualization small protein binder](images/concept_01.jpg)
 
 ## 一、先把牛皮吹破一半，剩下那一半才值得看
 
