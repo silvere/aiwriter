@@ -30,6 +30,21 @@ except ImportError:
     def md_to_html(text):
         # 代码块
         text = re.sub(r'```[\w]*\n(.*?)```', r'<pre><code>\1</code></pre>', text, flags=re.DOTALL)
+        # 图片 ![alt](url) → figure + figcaption（与 fill_images.py 的理解图输出保持一致；
+        # 放在段落切分前，转成以 < 开头的块，避免被包进 <p>）
+        def _img(m):
+            alt, url = m.group(1), m.group(2)
+            cap = (f'<figcaption style="font-size:13px;color:#888;margin-top:10px;'
+                   f'line-height:1.5">{alt}</figcaption>') if alt else ''
+            return (f'<figure style="margin:32px 0;text-align:center">'
+                    f'<img src="{url}" alt="{alt or "配图"}" '
+                    f'style="max-width:100%;border-radius:12px;'
+                    f'box-shadow:0 4px 20px rgba(0,0,0,.08)">{cap}</figure>')
+        # 顺带吃掉紧跟其后的手写图注行（*caption* 或 <p><em>caption</em></p>）——
+        # 否则会和 figcaption 重复渲染（与 fill_images.py 的占位符处理一致）
+        text = re.sub(
+            r'!\[([^\]]*)\]\(([^)]+)\)(?:[ \t]*\n\s*(?:\*[^\n*]+\*|<p><em>[^<]*</em></p>))?',
+            _img, text)
         # 标题
         text = re.sub(r'^## (.+)$', r'<h2>\1</h2>', text, flags=re.MULTILINE)
         text = re.sub(r'^### (.+)$', r'<h3>\1</h3>', text, flags=re.MULTILINE)
