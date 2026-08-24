@@ -8,11 +8,7 @@
 
 ---
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🎨</div>
-  <div class="img-placeholder-label">概念图占位</div>
-  <details><summary>生成 Prompt</summary><pre>Editorial photograph, a row of high-voltage electricity transmission towers marching across a vast empty twilight plain toward a single distant half-built data center, most of the fenced land bare and unused with survey stakes in the dirt, long cold shadows, cinematic lighting, shallow depth of field, 85mm lens, muted steel-blue and faint amber dusk tones, quiet sense of overbuilt infrastructure waiting for demand that never came, no people, no text, no logo, no watermark</pre></details>
-</div>
+![Editorial photograph row high-voltage electricity](images/concept_01.jpg)
 
 ## 那个天天上新闻的数字，本身是灌了水的
 
