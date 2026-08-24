@@ -4,11 +4,7 @@
 
 你收藏的那几个数字，早就替你做了判断
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🖼️</div>
-  <div class="img-placeholder-label">概念图</div>
-  <details><summary>提示词</summary><pre>flat minimalist illustration, person lying in bed at night scrolling phone, soft blue light, no text, clean background</pre></details>
-</div>
+![person lying bed night scrolling](images/concept_01.jpg)
 
 核验 Henrik Zeberg 那场讨论"AI 是不是泡沫"的 TED 演讲时，我们查出至少四处站不住脚的地方。最扎眼的一处不是数字算错，是他把巴菲特和芒格两人对比特币的评价说反了——一个专门告诉你"别被叙事带着走、该看指标"的人，自己整理论据时，先被叙事带跑了。
 
