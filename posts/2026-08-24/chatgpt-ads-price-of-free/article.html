@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatGPT 今天开始在答案下面放广告，只放给免费用户——付费买的，从此是「别被卖」</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 前沿</span>
+  <h1>ChatGPT 今天开始在答案下面放广告，只放给免费用户——付费买的，从此是「别被卖」</h1>
+  <div class="hero-meta">
+    <span>2026-08-24</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">8 月 24 日，OpenAI 把 ChatGPT 广告一次性铺到 31 个欧洲国家。广告只出现在免费和 Go 用户的答案下面，付费用户一条都看不到。这条决定谁看广告的线，才是这次真正的新闻。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <p>今天是星期一。如果你在德国、法国、西班牙这些地方用免费版的 ChatGPT，你大概率会在某个回答的下面，看到一小块灰色的卡片，角上标着"赞助"。</p>
+
+    <p>如果你是付费用户，你什么都没看到。</p>
+
+    <p>这块卡片看不看得见，取决于你给不给钱。而这件事本身，比卡片里卖什么，重要得多。</p>
+
+    <div class="img-placeholder concept">
+  <div class="img-placeholder-icon">🎨</div>
+  <div class="img-placeholder-label">概念图占位</div>
+  <details><summary>生成 Prompt</summary><pre>a person looking at a glowing screen in the dark, a small price tag reflected in their eyes, minimalist conceptual illustration, tech style, muted blue and grey palette, no text, no labels, clean background</pre></details>
+</div>
+
+    <h2>今天到底发生了什么</h2>
+
+    <p>先把事情说清楚，不带情绪。</p>
+
+    <p>8 月 24 日，OpenAI 把 ChatGPT 里的广告，一次性铺到了 31 个欧洲国家——德国、法国、西班牙、意大利、瑞典、挪威、丹麦、荷兰、奥地利……这是它这门年轻广告生意到目前为止最大的一次扩张。</p>
+
+    <p>广告长什么样，OpenAI 自己写得很细：出现在回答下方，做成单独的卡片，明确标注"赞助"，和正文答案在视觉上分开。谁能看到？只有免费版（Free）和最便宜的 Go 档的用户。掏钱升到 Plus、Pro、Business、Enterprise、Edu 的，一条广告都不会有。未成年人也不给看。</p>
+
+    <p>这不是从今天才开始的。往前翻，2 月 9 日 OpenAI 就在美国上线过一模一样的东西——免费和 Go 两档看广告，先拿本土用户试水。今天这一下，是把在美国跑通的模式，搬到了欧洲。</p>
+
+    <p>所以真正的新闻不是"ChatGPT 有广告了"，那是半年前的旧闻。真正的新闻是：这个在美国跑通了的模式，如今被判定为值得往全世界铺开。</p>
+
+    <h2>那条线</h2>
+
+    <p>现在把注意力从广告卡片本身，挪到一个更安静的地方——那条决定谁看广告的线。</p>
+
+    <p>这条线不是画在功能上，是画在账单上。线的下面，是免费用户和只花小钱的 Go 用户；线的上面，是每月掏二十美元起步的付费用户。同一个 ChatGPT，同一批模型，同样的问题问过去，答案可能一字不差。唯一的区别是：下面那批人的答案后面跟着广告，上面那批人的不跟。</p>
+
+    <p>把这条线看明白，你就看懂了这次的全部。</p>
+
+    <strong>线的下面，你不是用户，你是货。</strong>
+
+    <p>广告要卖给广告主，卖的从来不是那块卡片，是看卡片的那双眼睛。OpenAI 说得很直白：广告怎么匹配？看你当前聊天的话题，看你过去的对话，看你过去点没点过广告。翻译成人话就是，它拿你聊过的东西，去给你配一条最可能让你掏钱的广告。在欧洲，因为有 GDPR 管着，这种个性化匹配得先经你明确同意——但"同意"这个动作本身，恰恰证明了被拿去用的是什么。</p>
+
+    <p>线的上面，你是客户。你每月付的那笔钱，买的是更高的用量、更强的模型，现在还多买到一样东西：<strong>清净。</strong> 你付钱，把自己从那套匹配系统里赎了出来。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图注：同一个 ChatGPT，一条付费线把人分成两种——线下面是被卖的货，线上面是花钱赎身的客户" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：同一个 ChatGPT，一条付费线把人分成两种——线下面是被卖的货，线上面是花钱赎身的客户</figcaption></figure>
+
+    <p>OpenAI 还留了个更诚实的小口子：你可以选择不看广告，代价是每天能免费发的消息更少。</p>
+
+    <p>品品这个选项。它等于把话挑明了摆上桌：想白用我，你总得付点什么。要么付钱（订阅），要么付注意力（看广告），要么付用量（换更少的额度）。三种货币，随你挑，但都得付，而且付的都是你自己身上的东西。</p>
+
+    <strong>免费从来不是没有价格，只是这个价格不写在账单上。</strong>
+
+    <h2>OpenAI 急着撇清的那句话</h2>
+
+    <p>这次公告里，有一句话 OpenAI 说得格外用力，反复强调：广告不会影响答案。</p>
+
+    <p>它给的保证很具体：广告系统和聊天模型是两套分开的系统；广告主没有任何能力去塑造、排序、或者改动 ChatGPT 给你的回答；OpenAI 也不会把你对话里的内容交给广告主。</p>
+
+    <p>一家公司什么时候会把一句话说得这么满？是它知道你正担心这件事的时候。</p>
+
+    <p>想想 ChatGPT 过去凭什么让人放心。你问它一个问题，你默认它给你的那个答案，是它"算"出来的，不是谁"买"下来的。这份默认的信任，是它和满屏竞价广告的搜索引擎之间，最后那点区别。而广告一旦坐到了答案的正下方，这份信任就成了那个被架在火上的东西。</p>
+
+    <p>OpenAI 当然懂这个。所以它拼命在广告和答案之间砌一堵墙，反复告诉你墙有多厚。问题是，这条路怎么走，所有人都看过一遍了——当年的搜索广告，一开始也把"自然结果"和"付费结果"分得清清楚楚，后来那条线是怎么一点点模糊掉的，不用我多说。</p>
+
+    <p>墙砌得越高调，越说明墙那边压着的东西越沉。</p>
+
+    <h2>为什么偏偏是现在</h2>
+
+    <p>一个顺理成章的问题：OpenAI 缺这点广告费吗？</p>
+
+    <p>某种意义上，它比谁都需要。因为它同时在干另一件看起来矛盾的事——把"智能"本身的价格，往地板上砸。</p>
+
+    <p>今年 OpenAI 一路在给自家模型的调用降价，最新的一刀砍下去，某个版本直接降了 80%，降到每一百万个 token 只要两毛钱美元。两毛钱，能让机器读完一整本书。它在拼命让"用 AI"这件事，便宜到接近不要钱。</p>
+
+    <p>把这两件事摆在一起看，逻辑就出来了。</p>
+
+    <p>一边是十亿人。ChatGPT 的周活用户，已经迈过了十亿这道坎。一边是白菜价的智能。当"卖聪明"这门生意被自己做到几乎不赚钱，而你手里又攥着十亿双每天都要盯着屏幕的眼睛——任何一家公司，都会做同一个选择。</p>
+
+    <strong>它把"卖聪明"做到不值钱，不是因为发善心，是因为它找到了一门更值钱的生意——卖你。</strong>
+
+    <p>这不是 OpenAI 的发明。Google 走过，Facebook 走过，YouTube 走过。凡是免费给到十亿人用的东西，最后都会走到答案下面那块广告卡片这里，一个都没跑掉。OpenAI 唯一的不同，是它把别人走了十年的路，三年就走完了。三年前，它还是"智能的未来"；三年后的今天，它是"一个可以在答案下面放广告的地方"。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="图注：一边把智能的价格砸到地板，一边把十亿人的注意力变现——降价和放广告，是同一个决定的两面" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：一边把智能的价格砸到地板，一边把十亿人的注意力变现——降价和放广告，是同一个决定的两面</figcaption></figure>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>所以别把今天这块广告卡片，当成 OpenAI 变坏了。它没变坏，它只是长大了。凡是免费给到十亿人用的东西，最后都会走到这一步——这不是背叛，这是抵达。Google、Facebook、YouTube 都在这条路上，OpenAI 只是把十年走完的路，压进了三年。</p>
+    <p>唯一值得问的问题，那条付费线已经替你回答了：你在线的哪一边？免费的 AI 今天明码标价了，价格是你自己；想不被标价，先付钱。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://openai.com/index/chatgpt-ads-expands-across-europe/" target="_blank" rel="noopener">[ChatGPT Ads expands across Europe（OpenAI 官方公告）](</a> )</div>
+      <div class="footer-source-item"><a href="https://openai.com/index/testing-ads-in-chatgpt/" target="_blank" rel="noopener">[Testing ads in ChatGPT（OpenAI 官方，广告机制说明）](</a> )</div>
+      <div class="footer-source-item"><a href="https://openai.com/index/our-approach-to-advertising-and-expanding-access/" target="_blank" rel="noopener">[Our approach to advertising and expanding access to ChatGPT（OpenAI 官方，广告理念与分档）](</a> )</div>
+      <div class="footer-source-item"><a href="https://help.openai.com/en/articles/20001047-ads-in-chatgpt" target="_blank" rel="noopener">[Ads in ChatGPT（OpenAI 帮助中心，广告如何匹配与如何关闭）](</a> )</div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
