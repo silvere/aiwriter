@@ -88,18 +88,34 @@ def extract_body(md_text):
 
 
 def extract_sources(md_text):
-    """从 ## 数据来源 节提取链接。每条来源独立一行，避免挤成一坨。"""
+    """从 ## 数据来源 节提取来源列表，每条来源独立一行。
+
+    aiwriter2 产出的来源行实际是「说明文字 — 裸 URL （备注）」，不是
+    `[text](url)` markdown 链接语法，旧版正则永远零匹配，footer 占位符
+    因此从未被替换过（见 2026-08-24 人工反馈）。只取顶层来源条目（`- `
+    开头，不含二级缩进备注行），URL 转成可点击链接，其余说明文字保留可见。
+    """
     m = re.search(r'## 数据来源\n(.*?)$', md_text, re.DOTALL)
     if not m:
         return ''
-    links = re.findall(r'\[(.+?)\]\((.+?)\)', m.group(1))
     parts = []
-    for name, url in links:
-        parts.append(
-            f'<div class="footer-source-item">'
-            f'<a href="{url}" target="_blank" rel="noopener">{name}</a>'
-            f'</div>'
-        )
+    for line in m.group(1).split('\n'):
+        if not re.match(r'^- ', line):
+            continue
+        text = line[2:].strip()
+        if not text:
+            continue
+        url_m = re.search(r'https?://\S+', text)
+        if url_m:
+            url = url_m.group(0).rstrip('）)。，,、')
+            label = text[:url_m.start()].rstrip(' —-：:') or url
+            rest = text[url_m.start() + len(url):].strip()
+            item_html = f'<a href="{url}" target="_blank" rel="noopener">{label}</a>'
+            if rest:
+                item_html += f' {rest}'
+        else:
+            item_html = text
+        parts.append(f'<div class="footer-source-item">{item_html}</div>')
     return '\n      '.join(parts)
 
 
