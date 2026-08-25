@@ -8,11 +8,7 @@
 
 这块卡片看不看得见，取决于你给不给钱。而这件事本身，比卡片里卖什么，重要得多。
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🎨</div>
-  <div class="img-placeholder-label">概念图占位</div>
-  <details><summary>生成 Prompt</summary><pre>a person looking at a glowing screen in the dark, a small price tag reflected in their eyes, minimalist conceptual illustration, tech style, muted blue and grey palette, no text, no labels, clean background</pre></details>
-</div>
+![person looking glowing screen dark](images/concept_01.jpg)
 
 ## 今天到底发生了什么
 
