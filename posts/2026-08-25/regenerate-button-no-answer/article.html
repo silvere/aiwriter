@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>那颗「重新生成」按钮，正在教你不再相信有答案</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 与认知</span>
+  <h1>那颗「重新生成」按钮，正在教你不再相信有答案</h1>
+  <div class="hero-meta">
+    <span>2026-08-25</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">你大概有过这样一个瞬间：AI 给的答案其实已经够用了，你却还是点了「重新生成」。不是它错了，是你想看看还有没有更好的。这颗你天天按、却从没细想过的按钮，正在悄悄改掉你对一个答案的态度。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一颗你天天按、却从没想过的按钮</h2>
+<p>打开任何一个 AI 对话框，答案下面都蹲着同一个小东西。ChatGPT 叫它 Regenerate，Claude 叫 Retry，Gemini 干脆一次给你三份草稿，让你自己翻。它们长得不一样，干的是同一件事：告诉你，这个答案你可以不要，再来一个。</p>
+<p>这有什么问题吗？看起来没有。不满意就重来，天经地义，跟你在饭馆觉得菜咸了、让厨房重做一份一样合理。</p>
+<p>可饭馆重做，是因为第一份做错了。AI 重新生成，多数时候第一份并没错。你点它，往往不是因为答案不对，是因为你想知道"还有没有更好的"。ChatGPT 甚至会在旁边默默标上版本号——你正在看第 2 个、第 3 个回答。这个小小的计数器，一直在替你记着一笔账：你已经扔掉了多少个"本来够用"的答案。</p>
+<p>一个按钮而已，值得这么大惊小怪？我想说的恰恰是：正因为它太小、太顺手、太不像个事，它改造你的时候你完全没感觉。它给你的从来不是"更好的答案"，是一种态度——眼前这个答案，不过是当前展示的这一次而已。</p>
+<p>要理解这颗按钮为什么有这种本事，得先知道一件反常识的事：你对面这台机器，从出厂那天起，就没打算给你"一个"答案。</p>
+<h2>机器从出厂起，就没有"一个答案"</h2>
+<p>我们习惯把 AI 想象成一个知道答案的人：你问，它答，答错了就纠正。但它的工作方式完全不是这样。</p>
+<p>大模型每吐出一个字，做的都是同一件事：先算出下一个字所有可能选项的概率——"的"占多少、"是"占多少、几万个候选词各占多少，然后不是雷打不动挑概率最高那个，而是照着这个概率分布随机抽一个。控制这个随机程度的参数叫 temperature（温度）。温度调到接近 0，它就老实挑最可能的，两次回答几乎一样；温度一高，那些排在后面的低概率词也有了真被抽中的机会，于是同一个问题问两遍，答案就不一样了。</p>
+<p>同一个问题两次答案不同，不是机器出了故障，是它本来就这么设计的。哪怕你把温度锁死到 0，GPU 在做浮点运算时那点先天的不确定，也可能让两次输出对不齐。</p>
+<p>想清楚这一点，"重新生成"的真面目就露出来了。你以为你在校对——让它把没写好的地方改改。其实你在做的，是让这台机器照着同一个概率分布，再抽一次签。</p>
+<p><strong>你以为在校对，其实在摇号。</strong></p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图注：同一个问题问两次答案不同，不是出错，是照同一个概率分布再抽一次签——「重新生成」是摇号，不是校对。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：同一个问题问两次答案不同，不是出错，是照同一个概率分布再抽一次签——「重新生成」是摇号，不是校对。</figcaption></figure>
+
+<p>第一次的答案和第二次的答案之间，没有对错高下之分，它们是同一台老虎机摇出的两个结果。你觉得第二个更好，很多时候只是因为它更新、更贴合你此刻的期待，而不是它更接近某个"正确答案"——因为压根就没有那个唯一的正确答案，在后台等着被你摇出来。</p>
+<p>可问题还没完。这台摇号机，为什么天生就带着一个"择优"的动作？答案藏在你看不见的训练车间里。</p>
+<h2>"哪个更好"这个动作，本来发生在车间里</h2>
+<p>今天这些聊天机器人之所以好用，靠的是一道叫 RLHF（基于人类反馈的强化学习）的工序。这道工序从 2017 年被提出来那天起，骨架就是四个字：两两择优。</p>
+<p>具体怎么做？2022 年 OpenAI 那篇训练出 ChatGPT 前身的论文（Ouyang et al., arXiv:2203.02155）写得很清楚：他们让标注员面对同一个问题的 4 到 9 个候选回答，排出个高下，再把这些排序拆成一对一对的比较，喂给一个"奖励模型"，教它学会人类觉得哪个更好。这道工序有多管用？论文里，一个只有 13 亿参数、但经过这套人类择优训练的模型，在人们的偏好投票里，赢过了 1750 亿参数、大它 130 多倍却没经过这套训练的老 GPT-3。</p>
+<p>换句话说，让机器变得"好用"的核心秘密，不是让它更聪明，是让无数人一遍遍地告诉它"这个比那个好"。</p>
+<p>一开始，做这个"择优"动作的是拿钱的标注员，在你看不见的地方。2023 年 5 月，这件事被搬到了明面上。伯克利的一个研究团队上线了一个叫 Chatbot Arena（后来的 LMArena）的东西：你提一个问题，它甩给你两个匿名模型的回答，标着 A 和 B，你投一票选谁更好，投完才告诉你刚才是谁对谁。上线第一周，它就收到了 4700 张投票，用这些票给九个模型排了个类似国际象棋等级分的榜（LMSYS 官方博客，2023-05-03）。</p>
+<p>做"哪个更好"判断的人，就这样从领工资的标注员，变成了图新鲜的路人。择优这个动作，第一次从车间走进了公共广场。</p>
+<p>而"重新生成"按钮，是这条路的终点。它把同一个动作，从车间、从广场，一路搬进了你自己的对话框。现在，坐在屏幕前一遍遍点重来、心里默默比较"这版和上版哪个好"的那个标注员，是你。你没有工资，还乐在其中。</p>
+<p>三个场景，一个动作：择优、重来、再择优。只是代价换了个地方落下——落在了你身上。而这套反复择优的动作一旦成了你人机对话的默认姿势，麻烦就跟着来了：你会越来越难在任何一个答案上停下来。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="图注：「哪个更好」这个动作一路从车间搬到你桌面——做判断的人从付薪标注员，变成路人，最后变成免费又乐在其中的你。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：「哪个更好」这个动作一路从车间搬到你桌面——做判断的人从付薪标注员，变成路人，最后变成免费又乐在其中的你。</figcaption></figure>
+
+<h2>你被悄悄从"满足者"训练成了"最大化者"</h2>
+<p>代价具体是什么？心理学家 Barry Schwartz 在《选择的悖论》里给过一对好用的分法：满足者（satisficer）和最大化者（maximizer）。满足者找到一个够用的就停，买件差不多的毛衣就回家了；最大化者非要确认自己买到了"最好的那件"，逛遍全城、翻完所有链接，最后即便真买到好的，也因为"万一还有更好的没看到"而不痛快。</p>
+<p>"重新生成"按钮，就是一台专门把满足者往最大化者那边推的机器。它在每个答案旁边都挂着一句无声的话：还有下一个哦。你本来看到够用的答案就该走了，可这句话让你多问一句"还有没有更好的"——于是你点了下去。</p>
+<p>不过，这里我得停一下，诚实地泼自己一盆冷水。"选择越多越痛苦"这个说法，这些年其实被打过脸。2010 年，Scheibehenne 几位研究者把 50 个相关实验放在一起做了个元分析，结果发现：选项变多带来的平均伤害，接近于零。选择过载不是什么铁律，很多时候它压根不出现。</p>
+<p>那本文的论证是不是塌了？没有。后来的研究把话说得更准了：选择过载只在三个条件同时满足时才真的咬人——选项之间高度相似、难分优劣；这个选择你还挺在乎；而你偏偏又不是这方面的专家。</p>
+<p>你把这三条对照一下 AI 对话就明白了。一个外行，问一个自己不懂、又打算拿去用的问题（所以在乎），面前是几版听起来都头头是道、又都差不多的答案（高度相似、难分优劣，你还不是专家）——三条全中。<strong>AI 对话不是"选择过载不存在"的反例，恰恰是它最标准的犯罪现场。</strong> 所以我不说"选择永远让人痛苦"那种武断话，我只说：AI 这个场景，精准地踩进了那个高风险区间。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="图注：选择过载不是铁律，只在三条同时满足时才咬人——而外行用 AI 问不懂的问题，三条全中。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：选择过载不是铁律，只在三条同时满足时才咬人——而外行用 AI 问不懂的问题，三条全中。</figcaption></figure>
+
+<p>这件事该怎么看，专家们自己就吵起来了。</p>
+<h2>你在笼子里反复抽签，却以为在旷野里挑</h2>
+<p>像沃顿商学院的 Ethan Mollick 这样的乐观派会反驳我：反复让 AI"再做好一点"，根本不是什么决策疲劳，那是普通人拿到"思维链"的土办法——正因为管用，大家才这么爱用。这话有道理。一个会写代码的人，让 AI 重生成三版，然后挑出他一眼就能判断对错的那版，这是高效，不是退化。</p>
+<p>但请注意 Mollick 这个例子的前提：他判断得了。他是专家，重来对他是筛选工具。而大多数人按下那个按钮时，处在的是相反的境地——他判断不了，重来对他不是筛选，是逃避拍板。同一个按钮，在专家手里是杠杆，在外行手里是拖延症的开关。</p>
+<p>更麻烦的是另一层。哲学家 Susan Schneider 研究"聊天机器人认识论"，她的提醒是一个"温水煮青蛙"的过程：你和 AI 答案的关系一点点地变，每一步你都察觉不到，累积起来却在悄悄侵蚀你自己判断的自主性。而这个笼子，其实比感觉到的还要小。另一篇论文给它起了个名字，叫"生成式单一文化"（generative monoculture，arXiv:2407.02209）：大模型输出的多样性，比它学过的那些原始材料窄得多，而且你换个采样方式、换个问法都救不回来，因为病根在训练本身。</p>
+<p>于是你点"重新生成"，以为自己打开了无穷种可能，其实只是在一个被悄悄缩小的笼子里，反复抽签。按钮让你看到的是一扇扇打开的门——你以为门开了，其实门一直是关着的，而你根本不知道自己被关着。</p>
+<p>这套路我们其实见过一次。2006 年前后，一个叫 Aza Raskin 的工程师发明了"无限滚动"——就是你刷手机时永远刷不到底的那个设计。后来他公开忏悔，还在新墨西哥州告 Meta 的案子里出庭作证，说后悔造出了这东西。无限滚动干的坏事，是拿掉了"翻页""这一集完了"这种天然的停止信号（stopping cue），让你没有一个自然的时刻可以停下来。</p>
+<p>无限滚动能不能一路证明到"重新生成"，我得说句诚实话：它只是个类比，不是证据。没人做过实验，证明这颗按钮真会把一个人训练成拿不定主意的性格。但两者拿掉的，确实是同一样东西——无限滚动拿掉的停止信号是"这一集完了"，"重新生成"拿掉的那个，叫"这就是答案"。<strong>这颗按钮拿走的不是某个坏答案，是"到此为止"这个念头本身。</strong></p>
+<p>回到开头那个瞬间：答案已经够用，你的手还是伸向了那个圈圈箭头。你点下去，问的是"还有没有更好的"；而你本来可以问另一句——"这个答案够用了吗"。这两句听着差不多，却通向两种人：一种永远在摇号，永远差一版；另一种能拍板，然后转身去把事做了。下次，试着把手收回来。你要拿回的不是一个更好的答案，是相信"一个答案够了"的那点能力。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>「重新生成」不给你更好的答案，它给你一种态度：任何答案都可弃、可换、只是当前这一次抽样。它把 RLHF 后台的两两择优一路搬进了你的对话框，让你无偿又上瘾地做那个标注员。</p>
+    <p>它拿掉的不是某个坏答案，是到此为止这个念头。下次手伸向那个圈圈箭头之前，试着问这个答案够用了吗，而不是还有没有更好的——你要拿回的，是相信一个答案够了的能力。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2203.02155" target="_blank" rel="noopener">[Training language models to follow instructions with human feedback (InstructGPT, Ouyang et al., 2022)](</a> )</div>
+      <div class="footer-source-item"><a href="https://lmsys.org/blog/2023-05-03-arena/" target="_blank" rel="noopener">[Chatbot Arena: Benchmarking LLMs in the Wild with Elo Ratings (LMSYS Org, 2023-05-03)](</a> )</div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/1706.03741" target="_blank" rel="noopener">[Deep Reinforcement Learning from Human Preferences (Christiano et al., 2017)](</a> )</div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2407.02209" target="_blank" rel="noopener">[Generative Monoculture in Large Language Models (arXiv:2407.02209)](</a> )</div>
+      <div class="footer-source-item"><a href="https://doi.org/10.1086/651235" target="_blank" rel="noopener">[Can There Ever Be Too Many Options? A Meta-Analytic Review of Choice Overload (Scheibehenne, Greifeneder & Todd, 2010)](</a> )</div>
+      <div class="footer-source-item">The Paradox of Choice: Why More Is Less（Barry Schwartz, 2004）——满足者/最大化者之分</div>
+      <div class="footer-source-item">Chatbot Epistemology（Susan Schneider, *Social Epistemology*, 2025）——AI 对认知自主性的"温水煮青蛙"式侵蚀</div>
+      <div class="footer-source-item">Ethan Mollick 关于"与 AI 反复迭代"的公开观点（沃顿商学院，*Co-Intelligence* 及其 One Useful Thing 专栏）</div>
+      <div class="footer-source-item"><a href="https://www.humanetech.com/" target="_blank" rel="noopener">[Aza Raskin 与无限滚动 / Center for Humane Technology](</a> )</div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
