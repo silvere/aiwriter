@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>你上网看广告，机器上网直接付钱——这个月，有人开始把互联网的客户从「你」换成「你的 AI」</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 与互联网</span>
+  <h1>你上网看广告，机器上网直接付钱——这个月，有人开始把互联网的客户从「你」换成「你的 AI」</h1>
+  <div class="hero-meta">
+    <span>2026-08-26</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">先说一个今年 6 月的数字：在 Cloudflare 这张覆盖了小半个互联网的网络上，抓取网页的流量里，57.4% 已经不是人了，是机器。然后这个月，有人做了一件顺理成章、却没人愿意大声说的事——给这些机器造了一套专门的互联网：配了浏览器，修了收费站，发了钱包。人这边继续看广告，机器那边直接掏钱。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、互联网上的"人"，已经是少数派了</h2>
+
+    <p>我们先把那个前提讲清楚，不然后面的事听着像科幻。</p>
+
+    <p>过去二十年，整个免费互联网能转起来，靠的是一个特别朴素的假设：<strong>来访问的是个人</strong>。是人，才会看到网页上那条广告；是人，才会被"猜你喜欢"劝动；是人，才会办个会员、点个下单。网站免费给你看内容，转头把你的注意力打包卖给广告主——这套生意，前提是屏幕对面坐着一双能被广告打动的眼睛。</p>
+
+    <p>这个前提，正在以肉眼可见的速度失效。</p>
+
+    <p>按 Cloudflare 自己 6 月披露的数据：到今年年初夏，它网络上抓取网页正文的流量，机器占了 57.4%。其中光是给大模型喂数据的训练类爬虫，就占了总流量的 50.6%；真正的搜索引擎爬虫，只剩 10.7%。把镜头再拉近一点——在所有爬虫请求里，跟 AI 有关的那部分，从 2025 年春天的 22%，一年时间涨到了 52%。</p>
+
+    <p>还有个更荒诞的细节：Cloudflare 说，它归类为"正规"的那些爬虫，一多半的抓取，是在反复重新拉取那些<strong>根本没变过</strong>的页面。机器不知疲倦地敲你的门，敲进来一看，跟上次一模一样，转身走了，明天再来。带宽是你出的。</p>
+
+    <p>所以你看，问题不是"AI 会不会取代人上网"，问题是这事<strong>已经发生了</strong>。当一个网站过半的访客是机器，而机器不看广告、不办会员、不点下单——那个"免费换注意力"的古老契约，就没有对手方了。你对着一个爬虫放广告，就像对着监控摄像头表演脱口秀。</p>
+
+    <p>广告网的黄金时代，是建立在"访客是个会冲动的人"这件事上的。这件事，正在变成少数派事件。</p>
+
+    <p>![图注：抓网页正文的流量里，机器已占 57.4%——广告模式赖以生存的"人类访客"，成了少数派。](images/illus_01.png)</p>
+
+    <p>*图注：抓网页正文的流量里，机器已占 57.4%——广告模式赖以生存的"人类访客"，成了少数派。*</p>
+
+    <h2>二、一个空了三十年的状态码，突然有用了</h2>
+
+    <p>讲到怎么给机器收钱，得先请出一个冷门到近乎行为艺术的东西：HTTP 402。</p>
+
+    <p>用过网页的人都间接见过它的兄弟们——404，页面找不到；403，禁止访问；500，服务器崩了。这些是 HTTP 协议里的"状态码"，是网站跟浏览器之间的暗号。而 402 这个号，对应的暗号叫 <strong>"Payment Required"，需要付款</strong>。</p>
+
+    <p>它是 1990 年代末写进 HTTP/1.1 标准的，标注是"保留，留作将来使用"。结果这一"将来"，就是三十年。整整三十年，402 基本没人用，是协议里那个永远没被叫到名字的替补队员。</p>
+
+    <p>它为什么空着？不是技术难。是因为<strong>付费墙对人类不好使</strong>。你想想你自己：一个页面弹出来跟你要钱，你的第一反应是什么？是关掉。人会货比三家，会嫌麻烦，会觉得"凭什么"，会掏出信用卡输到一半又放弃。让一个真人为了看一篇文章、调一次接口，就地掏钱——这事的转化率低到没法做生意。所以三十年里，能收钱的地方都改用了别的招：会员订阅、免费加广告、先注册圈住你。402 就这么一直空着。</p>
+
+    <p>2025 年 5 月，Coinbase 把它捡了起来，做成了一个叫 <strong>x402</strong> 的协议。逻辑简单到一句话能说完：<strong>让付钱这件事，不再需要人。</strong></p>
+
+    <p>流程是这样的：机器去请求一个要收费的资源，服务器不再是让它登录、跳转、填卡号，而是直接甩回一个 402，附带一张明码标价的账单——多少钱、收什么币。机器读懂账单，当场签一笔稳定币（比如 USDC）转账，把付款凭证塞进一个叫 `X-PAYMENT` 的请求头里，重发一次。服务器一验，钱到了，东西给你。整个过程几秒钟，不用登录，不用注册，链上结算完事。</p>
+
+    <p>对人来说的所有摩擦——注册、跳转、犹豫、嫌贵——对机器统统不存在。机器不会嫌麻烦，不会觉得"凭什么"，账单多少就是多少，付完接着干活。</p>
+
+    <p>到今年 3 月，这套协议在 Base 链上跑了超过 1.19 亿笔交易，Solana 上 3500 万笔，年化流水大概 6 亿美元，协议本身零手续费。数字在整个支付行业里还小得可怜。但重点从来不是它现在多大，重点是：<strong>那个空了三十年的收费闸口，第一次找到了一个不会关页面、不会拒付、不会投诉的完美顾客。</strong></p>
+
+    <p>它叫机器。</p>
+
+    <p>![图注：x402 的四步握手——服务器甩回 402 账单，机器签一笔稳定币塞进请求头，重发、验证、交货，全程无需人类点头。](images/illus_02.png)</p>
+
+    <p>*图注：x402 的四步握手——服务器甩回 402 账单，机器签一笔稳定币塞进请求头，重发、验证、交货，全程无需人类点头。*</p>
+
+    <h2>三、这个月，有人把收费站装到了整个互联网门口</h2>
+
+    <p>协议是协议，得有人把它铺到路上。这个月干这件事的，是 Cloudflare。</p>
+
+    <p>要理解这事的分量，得先知道 Cloudflare 是谁：它是坐在小半个互联网<strong>前面</strong>的那家公司。你访问的海量网站，流量在到达网站之前，先经过它的网络。它既是门房，又是保安，还是收发室。</p>
+
+    <p>8 月，它抛出一个词，叫"Agentic Internet（代理互联网）"，并给它定了四条标准：<strong>可读、可发现、可调用、可付费</strong>。翻译成人话就是：一个专门给 AI 智能体用的互联网，机器能读懂它、能找到它、能调用它——还能对它掏钱。为了凑齐这四条，它一口气上了三个东西，你把它们摆一起看，画风就出来了。</p>
+
+    <strong>第一件，浏览器，叫 Kitesurf。</strong> 但这不是给你用的浏览器。它是给机器用的。它跑在 Cloudflare 自己的服务器上，用一种极省的方式运行，比正经的 Chromium 浏览器省 3 到 7 倍的内存和算力，每来一个请求就临时开一个、用完就扔。它照样能通过二十三万多项网页标准测试，能被自动化工具驱动。为什么能这么省？因为它<strong>砍掉了所有为人类准备的东西</strong>——那些界面、按钮、动画、给你看的排版，机器统统不需要。一个不用长眼睛的访客，你给它配什么显示器。
+
+    <strong>第二件，收费站，叫 Monetization Gateway。</strong> 它用的正是上面那套 x402。机器每发一个请求，就在 Cloudflare 的网络边缘就地用稳定币结一次账，不用注册、不用 API key、不用跳转到收银台。目前已经有二十多家公司接进了这套机器付费的流水线。
+
+    <strong>第三件，钱包。</strong> 分两种：一种"账户钱包"，是给人的，你往里充钱、管着额度；另一种"虚拟钱包"，是给机器的，靠 API key 花钱——而你可以给它设定额度上限、能付款的白名单商户、单笔最多花多少。
+
+    <p>浏览器、收费站、钱包。给机器上网用的浏览器，给机器付费用的收费站，给机器花钱用的钱包。你以为这是三个产品，其实这是一整条修好的高速公路——从上路、到过闸、到扣款，一条龙。而收费的那个人，就站在入口。</p>
+
+    <p>顺便说一句，就在上个月，Cloudflare 已经宣布：从 9 月 15 日起，新接入的网站上那些广告支撑的页面，<strong>默认拦截 AI 爬虫</strong>，想抓，可以，按次付费。它甚至把老的"按抓取付费"升级成了"按使用付费"——你的内容被 AI 拿去用了、出现在它的答案里了，才给你结钱，首批拉了 Ceramic.ai 和 You.com 两个搭子。</p>
+
+    <p>一边默认把不付钱的机器挡在门外，一边把付钱的通道修得又宽又顺。这不叫封锁，这叫<strong>装闸机</strong>。</p>
+
+    <p>![图注：浏览器（Kitesurf）+ 收费站（x402 网关）+ 钱包，三件套出自同一家——不是三个产品，是一条从上路到扣款的完整收费公路。](images/illus_03.png)</p>
+
+    <p>*图注：浏览器（Kitesurf）+ 收费站（x402 网关）+ 钱包，三件套出自同一家——不是三个产品，是一条从上路到扣款的完整收费公路。*</p>
+
+    <h2>四、别急着骂"圈地"——它同时解了一个真问题，又埋了一个新雷</h2>
+
+    <p>到这儿最省事的写法，是把 Cloudflare 骂成一个趁乱收过路费的地主。但那样就蠢了，也不诚实。</p>
+
+    <p>先把话说公道：这套东西解决的是一个<strong>货真价实的问题</strong>。前面那 57.4% 的机器流量，绝大多数是 AI 公司免费来搬运创作者的内容——训练也好、现抓现答也好，搬走了，创作者一分钱没见着，还得自己出带宽。这是过去两年内容行业真正的伤口。让机器为它拿走的东西付费，对写东西、做内容的人，是好事，是迟到的好事。这一点，不用替它谦虚。</p>
+
+    <p>但同一个动作，另一面是另一回事。</p>
+
+    <strong>第一层麻烦，是安全。</strong> 一个能自己签字付款的机器，天然是块肥肉。2026 年已经有安全研究把 x402 这类协议的攻击面挨个点了名：白嫖下单、盗走资产、瘫痪服务、薅链上手续费——每一样都对应着"让机器替人花钱"这件事本身的漏洞。更要命的是，这套流程里负责验证付款、结算上链的那个中间角色（叫 facilitator），是一堆商户共用的。共用意味着集中，集中意味着——它一处出问题，接在它后面的一大片服务跟着遭殃。
+
+    <strong>第二层麻烦，更根本，是没人担责。</strong> 你用信用卡被盗刷，有一整套几十年磨出来的规矩兜底：你可以申诉，损失在发卡行、收单行、商户之间分。这套规矩的地基是什么？是<strong>假设付款的时候，有个活人在场</strong>、由这个人来确认"是我本人要付这笔钱"。现在换成一个自主付款的机器，这个地基就塌了一角。它替谁花的钱？授权到什么份上？真花出去的那笔，是它该花的吗？出了错找谁？——用研究者的话说：<strong>付钱这一步是解决了的，难的是信任那一步，还没解决。</strong>
+
+    <p>其实最诚实的证据，就藏在那个钱包上。Cloudflare 给机器钱包配了什么？额度上限、白名单商户、单笔封顶。</p>
+
+    <p>你想过没有，这三个开关意味着什么。它意味着造这个钱包的人，比谁都清楚：<strong>一个能自己花钱的机器，默认状态是会花超的。</strong> 那三个限制不是贴心功能，是自供状。他们不是在防你的机器被坏人利用，他们首先是在防你的机器<strong>自己</strong>。</p>
+
+    <p>![图注：付钱这一步解决了，信任那一步没有——钱包上的额度、白名单、单笔封顶，不是贴心，是"机器会花超"的自供状。](images/illus_04.png)</p>
+
+    <p>*图注：付钱这一步解决了，信任那一步没有——钱包上的额度、白名单、单笔封顶，不是贴心，是"机器会花超"的自供状。*</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>我们总以为 AI 抢的是人的工作、内容、饭碗。但在这条新闻里，它先抢走的，是一个你从没意识到自己拥有的身份——「网站的顾客」。广告互联网的黄金时代，建立在「访客是个会看广告、会冲动、会犹豫的人」之上；这个人一旦被换成只认价格、不看广告、付钱不还价、投诉无门的机器，那套商业模式就得从头改写。而这个月我们看到的，就是改写的第一版草稿。</p>
+    <p>402 这个状态码空了整整三十年，从来不是技术不行，是它一直在等一个完美顾客——不会关页面、不会嫌贵、不会拒付、也不会投诉。现在这个顾客来了，它不是人。而给它开门、修路、发钱包的那几家公司，正站在门口，一边说着「开放」，一边握紧了闸机的钥匙。你还在看广告，你的 AI 已经开始付钱了。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://blog.cloudflare.com/the-agentic-internet/" target="_blank" rel="noopener">[Cloudflare Blog：Building an open Agentic Internet — readable, discoverable, callable, and payable](</a> )</div>
+      <div class="footer-source-item"><a href="https://blog.cloudflare.com/kitesurf/" target="_blank" rel="noopener">[Cloudflare Blog：Introducing Kitesurf, the agent-first browser on Cloudflare Workers](</a> )</div>
+      <div class="footer-source-item"><a href="https://blog.cloudflare.com/content-independence-day-ai-options/" target="_blank" rel="noopener">[Cloudflare Blog：Your site, your rules — new AI traffic options（按抓取/按使用付费、9 月 15 日默认拦截）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.coinbase.com/developer-platform/discover/launches/x402" target="_blank" rel="noopener">[Coinbase：Introducing x402 — a new standard for internet-native payments](</a> )</div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2607.19545" target="_blank" rel="noopener">[arXiv 2607.19545：When HTTP 402 Meets the Blockchain — Risks on Emerging x402 Payments](</a> )</div>
+      <div class="footer-source-item"><a href="https://arxiv.org/html/2605.11781v1" target="_blank" rel="noopener">[arXiv 2605.11781：Five Attacks on the x402 Agentic Payment Protocol](</a> )</div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
