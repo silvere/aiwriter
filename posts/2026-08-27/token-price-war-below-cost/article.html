@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>一百万个字，卖你两毛钱，比一瓶矿泉水还便宜——但这不叫智能降价，这叫有人在亏本抢你</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 与商业</span>
+  <h1>一百万个字，卖你两毛钱，比一瓶矿泉水还便宜——但这不叫智能降价，这叫有人在亏本抢你</h1>
+  <div class="hero-meta">
+    <span>2026-08-27</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">OpenAI 把一款模型的输入价格砍到每百万 token 两毛钱——让顶级 AI 读完十本书，比请它喝口水还便宜。但东西卖得比成本还低，从来不是因为它变便宜了，是因为有人急着把你变成他的人。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、两毛钱背后，是一台一直在烧钱的机器</h2>
+<p>我们先把"便宜"这两个字拆开看，别被它糊弄过去。</p>
+<p>一个 token，你可以粗略理解成 AI 眼里的一个"字"。你问它一句话、它答你一段话，中间来回吞吐的就是 token。按 OpenAI 官方定价页现在的数字：Luna 这一档，输入每一百万 token 两毛钱，输出一美元二。这是它整个 GPT-5.6 系列里最便宜的一档，官方自己给它的定位就是"给那些量特别大、又特别在乎成本的活儿用的"。翻译成人话：<strong>这一档就是拿来给你敞开了用的，用得越狠越好。</strong></p>
+<p>问题是，产生这两毛钱的那台机器，一点都不便宜。</p>
+<p>它跑在一排排 GPU 上，那玩意一张卡几万美元，插电就发烫，几年就得换代淘汰。它吃的是电，而且是海量的电。你每问一句，背后是一片数据中心在轰鸣。这台机器从造出来到跑起来，每一秒都在烧钱——烧显卡的折旧，烧机房的电费，烧工程师的工资，烧那些一次训练就是几千万美元的模型本身。</p>
+<p><strong>一个每分钟都在流血的东西，最后卖给你的价格，比一瓶水还低。</strong></p>
+<p>这中间的窟窿，不会因为你没看见就不存在。它只是被人先垫上了。谁垫的、为什么垫、垫到什么时候，这才是"两毛钱"这三个字底下真正的故事。而不是什么"感谢内卷"。</p>
+<p><img alt="图注：让一台顶级 AI 读完十本书，比请它喝口水还便宜——但产生这两毛钱的机器，每一秒都在烧钱。" src="images/illus_01.png" /></p>
+<p><em>图注：让一台顶级 AI 读完十本书，比请它喝口水还便宜——但产生这两毛钱的机器，每一秒都在烧钱。</em></p>
+<h2>二、三年零四个月，从三十美元跌到两毛，跌了 150 倍</h2>
+<p>要看清这不是"正常降价"，得把时间拉长，看它跌得有多不讲道理。</p>
+<p>2023 年 3 月，OpenAI 发布 GPT-4，当时最能打的旗舰。它的输入价格是多少？每一千 token 三美分，换算成一百万，就是<strong>三十美元</strong>。那会儿开发者们已经觉得"哇好贵"，一个稍微复杂点的应用，一天调用下来账单能吓人一跳。</p>
+<p>同年 11 月，OpenAI 开第一届开发者大会，甩出 GPT-4 Turbo，官方原话是输入比 GPT-4"便宜三倍"，一下降到每百万十美元。全场鼓掌。</p>
+<p>然后你把镜头快进到 2026 年 7 月，同一梯队能力更强的 Luna，输入两毛钱。</p>
+<p>三十美元，到两毛钱。<strong>跌了整整 150 倍。中间只隔了三年零四个月。</strong></p>
+<p>你找个别的行业感受一下这个斜率。三年里，房价跌 150 倍你信吗？猪肉跌 150 倍你信吗？连最卷的消费电子，三年也就跌个几成。而 AI 推理的价格，是从三十跌到零点二——不是打折，是跳楼，是从三十楼纵身往下，中间一层没停。</p>
+<p>当然，这里面有真本事的成分。芯片确实在进步，模型确实在变小变快，推理确实在被优化，这些都是实打实的技术功劳，不能一笔抹掉。研究机构 Epoch AI 长期跟踪这条曲线，结论也是同档能力的推理成本每年都在以惊人的速度往下掉。</p>
+<p>但技术进步解释得了"跌三倍""跌十倍"，解释不了"跌到成本线以下还在跌，还抢着比谁跌得快"。<strong>技术让它有可能变便宜，商业逻辑才让它变得比水还贱。</strong> 前者是物理，后者是战术。你把两者混成一句"技术普惠"，就正好上了套。</p>
+<blockquote>
+<p><strong>降价降到亏本，那不是慷慨，是投名状——纳的是你，交的是给资本市场看的增长曲线。</strong></p>
+</blockquote>
+<p><img alt="图注：GPT-4 的 30 美元到 Luna 的 0.2 美元，三年四个月跌 150 倍——不是打折，是从三十楼往下跳，中间一层没停。" src="images/illus_02.png" /></p>
+<p><em>图注：GPT-4 的 30 美元到 Luna 的 0.2 美元，三年四个月跌 150 倍——不是打折，是从三十楼往下跳，中间一层没停。</em></p>
+<h2>三、就在这个月，剧本裂了——一家往死里降，另一家默默涨了价</h2>
+<p>如果故事只是"大家一起降价冲",那还只是常规内卷。真正有意思的，是这个月发生的一次分岔。</p>
+<p>7 月 30 日，OpenAI 把 Luna 砍了 80%，官方自己都承认这是"GPT-5 系列发布以来最大的一次调价"。往死里降，姿态是"来，随便用，不要钱"。</p>
+<p>结果只隔了 17 天。</p>
+<p>8 月 16 日下午（UTC 时间 16 点），DeepSeek 的新价格生效。它刚在 8 月 13 日把 V4-Pro 正式版铺开，紧接着就动了价目表——而且方向，是<strong>往上</strong>。它第一次搞起了"分时计价"：忙的时段一个价，闲的时段一个价，峰谷分开。说白了，就是电网那套"峰谷电价"，被搬到了 token 上。</p>
+<p>你把这两件事摆一块儿看，画风就很微妙了。</p>
+<p>同一个 8 月，AI 圈两家最能打的，一家把价格往地板上摁，一家把价格往上抬还学会了分时段收费。这不叫巧合，这叫<strong>两种活法</strong>。</p>
+<p>往死里降的那家，背后站着刚融到天量美元的金主，账上不缺钱，它降价的目的不是赚钱，是抢地盘、是把日活冲上去、是给一级市场讲一个"用户还在爆发式增长"的故事。降价对它是投资，烧的是别人的钱，买的是你的习惯。</p>
+<p>往上抬的那家，做的其实是件更诚实的事：<strong>它在告诉你，token 是有成本的，而且忙的时候更贵。</strong> 分时计价这四个字，本质上是承认了一件被"两毛钱"精心遮住的事——机器不是不要钱，是同一杯水，中午高峰和半夜低谷，真实成本根本不一样。</p>
+<p>一个用降价掩盖成本，一个用涨价暴露成本。你说哪个更把你当外人？我倒觉得，后者反而更拿你当明白人。</p>
+<blockquote>
+<p><strong>能长期免费请你喝水的，往往不是水便宜，是他打算之后卖你别的；老老实实告诉你水多少钱一杯的，反而没打你别的主意。</strong></p>
+</blockquote>
+<p><img alt="图注：同一个 8 月，一家降 80% 往地板上摁，一家 17 天后涨价还上了分时计费——降价的在掩盖成本，涨价的在暴露成本。" src="images/illus_03.png" /></p>
+<p><em>图注：同一个 8 月，一家降 80% 往地板上摁，一家 17 天后涨价还上了分时计费——降价的在掩盖成本，涨价的在暴露成本。</em></p>
+<h2>四、智能在跳楼，电费在起飞——中间那个窟窿，正在被塞进电网</h2>
+<p>现在回到那个被两毛钱盖住的窟窿：成本到底去哪了？</p>
+<p>答案是，它没消失，它跑到了你看不见的地方——电网上。</p>
+<p>看两组一手数据。市场研究机构 Gartner 今年披露：2026 年全球数据中心的用电需求，预计比去年涨 27%，从 104 吉瓦冲到 132 吉瓦；全年耗电量预计到 565 太瓦时。其中专门跑 AI 的那些服务器，吃掉了数据中心用电的三分之一，而且照这个势头，到 2027 年 AI 服务器的耗电就要反超所有传统服务器。再往后，到 2030 年，全球数据中心的用电还要再翻到 290 吉瓦。</p>
+<p>再看高盛的口径，单算美国：数据中心用电需求，2025 年 31 吉瓦，2026 年 41 吉瓦，2027 年 66 吉瓦。两年，翻一倍还多。多出来的这些电，几乎全是 AI 这波基建给拽上去的。</p>
+<p>你把这两条曲线画在一张纸上，会看到一把张开的剪刀：<strong>一边，token 的价格三年跌 150 倍，往地板扎；另一边，喂养它的电力需求年年两位数往上蹿，朝天花板顶。</strong> 一个俯冲，一个爬升，中间的口子越张越大。</p>
+<p>这口子就是那个窟窿的真身。你为智能付的钱在飞速变少，可产生智能要烧的电在飞速变多。这笔差价不会凭空蒸发，它只是从"买 token 的你"，转移给了"整张电网"——转移给了电力公司要多发的电，转移给了要新建的变电站、要多烧的天然气、要重新排队的并网申请，最后转移给跟 AI 八竿子打不着、却发现自家电费莫名其妙涨了的普通人。</p>
+<p>所以下次再有人跟你说"AI 让智能变得几乎免费"，你可以补一句：智能是快免费了，但电没有，而且电是不会陪你演"免费"这出戏的。<strong>电表是这个行业里唯一不会说谎的东西。</strong></p>
+<p><img alt="图注：token 价格三年跌 150 倍往下扎，数据中心电力需求年年两位数往上蹿——一把越张越大的剪刀，中间的差价被塞进了整张电网。" src="images/illus_04.png" /></p>
+<p><em>图注：token 价格三年跌 150 倍往下扎，数据中心电力需求年年两位数往上蹿——一把越张越大的剪刀，中间的差价被塞进了整张电网。</em></p>
+<h2>五、这套剧本，你其实在 2025 年的外卖大战里全看过</h2>
+<p>到这儿，"谁在垫钱"这个问题，答案已经呼之欲出了。</p>
+<p>看两个官方数字。今年 3 月 31 日，OpenAI 官宣完成 1220 亿美元融资，投后估值 8520 亿，创了私募纪录。5 月 28 日，Anthropic 官宣 Series H 融资 650 亿，估值 9650 亿，反超 OpenAI 成了全球估值最高的创业公司，同时它披露自己的年化营收已经越过 470 亿美元。</p>
+<p>你注意这个组合：一边是营收已经做到几百亿美元量级的公司，一边还要伸手向一级市场要成百上千亿的美元。一家健康赚钱的生意，是不需要靠这种规模的持续输血来续命的。这么大的融资摆在这么高的降价旁边，答案基本就写在脸上了：<strong>替你垫那两毛钱窟窿的，是投资人的钱。</strong> 你用得越爽，他们烧得越多，账面上的增长曲线越好看，下一轮就越好融——直到有一天融不动为止。</p>
+<p>这套路，你真不陌生。</p>
+<p>倒回 2025 年，中国的外卖大战。美团、饿了么背后的淘宝闪购、还有杀进来的京东，三家为了抢你手机里那一单，把补贴砸到什么地步？据美团自己的财报，它那个一直是现金牛的核心本地商业板块，当季直接由盈转亏，一个季度亏掉一百四十多亿人民币；三家在 2025 年年中那两个季度砸进去的补贴，加起来超过八百亿。</p>
+<p>八百亿买什么？买你打开哪个 App 的手指记忆。那阵子你点顿饭能省十几块，爽不爽？爽。可你心里清楚，这十几块不是哪家良心发现，是它们在拿钱买你的习惯，赌的是补贴停了以后你已经离不开、已经懒得换。补贴大战从来没有"消费者长期赢"这个选项，只有"先让你占便宜、再连本带利收回来"这一种结局。</p>
+<p><strong>现在把外卖换成 token，把美团换成 OpenAI，把你的手指记忆换成你公司的技术栈——是同一个剧本，同一个赌注，同一批人在赌你会离不开。</strong></p>
+<p>区别只在于，外卖你随时能卸载，损失一顿饭钱。而 token 不一样：你今天贪它便宜，把整个产品、整套业务流程、整个团队的工作方式，全都架在它这两毛钱的地基上。等哪天补贴停了、价格分时了、免费额度收了——你搬得动吗？你那套跑起来的系统，早就不是"换一家供应商"那么轻巧了。</p>
+<blockquote>
+<p><strong>补贴期里，你不是他的客户，你是他养在池子里的鱼。水便宜的时候使劲喂，不是心疼你，是等你长肥，好在收网那天，一条都跑不掉。</strong></p>
+</blockquote>
+<p><img alt="图注：资本输血→亏本甩卖→你把业务架上去→收网，同一个剧本你在 2025 年外卖大战里全看过——补贴期里你不是客户，是被养的鱼。" src="images/illus_05.png" /></p>
+<p><em>图注：资本输血→亏本甩卖→你把业务架上去→收网，同一个剧本你在 2025 年外卖大战里全看过——补贴期里你不是客户，是被养的鱼。</em></p>
+<p>便宜是真的便宜，你能占的这点便宜也是真的。占，没问题。但占便宜的时候心里得有本账：<strong>这价格是别人替你烧钱烧出来的，它随时会变；越是白菜价，越别把身家性命架上去。</strong> 等电表和资本市场这两样东西同时不肯再演下去的那天——而这一天一定会来——账单会重新出现，而且会找一个真正的人来付。</p>
+<p>那个人，最好别是当年感谢内卷感谢得最大声的你。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>便宜是真的，你能占的这点便宜也是真的。但这价格是别人替你烧钱烧出来的，它随时会变；越是白菜价，越别把身家性命架上去。</p>
+    <p>等电表和资本市场这两样东西同时不肯再演下去的那天——而这一天一定会来——账单会重新出现，而且会找一个真正的人来付。那个人，最好别是当年感谢内卷感谢得最大声的你。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://openai.com/index/advancing-the-price-performance-frontier-with-gpt-5-6/" target="_blank" rel="noopener">[OpenAI：Advancing the price-performance frontier with GPT-5.6（Luna 降价 80% 至 $0.20/$1.20，2026-07-30）](</a> )</div>
+      <div class="footer-source-item"><a href="https://openai.com/index/new-models-and-developer-products-announced-at-devday/" target="_blank" rel="noopener">[OpenAI：New models and developer products announced at DevDay（GPT-4 Turbo 输入 $10/1M，2023-11-06）](</a> )</div>
+      <div class="footer-source-item"><a href="https://developers.openai.com/api/docs/pricing" target="_blank" rel="noopener">[OpenAI API 官方定价页](</a> )</div>
+      <div class="footer-source-item"><a href="https://api-docs.deepseek.com/news/news260813/" target="_blank" rel="noopener">[DeepSeek API Docs：DeepSeek-V4-Pro GA Release（新定价 2026-08-16 16:00 UTC 生效，引入分时计价）](</a> )</div>
+      <div class="footer-source-item"><a href="https://api-docs.deepseek.com/quick_start/pricing/" target="_blank" rel="noopener">[DeepSeek API Docs：Change Log / Models & Pricing](</a> )</div>
+      <div class="footer-source-item"><a href="https://ai.google.dev/gemini-api/docs/pricing" target="_blank" rel="noopener">[Google：Gemini API 官方定价页](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.gartner.com/en/newsroom/press-releases" target="_blank" rel="noopener">[Gartner：数据中心电力需求 2026 年增长约 27% 至 132GW](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.goldmansachs.com/insights/articles/us-data-center-power-demand-projected-to-double-by-2027" target="_blank" rel="noopener">[Goldman Sachs：US data center power demand（31GW→41GW→66GW）](</a> )</div>
+      <div class="footer-source-item"><a href="https://openai.com/index/accelerating-the-next-phase-ai/" target="_blank" rel="noopener">[OpenAI：Accelerating the next phase（$122B 融资、估值 $852B，2026-03-31）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/news/series-h" target="_blank" rel="noopener">[Anthropic：Series H（$65B 融资、估值 $965B、年化营收 $47B，2026-05-28）](</a> )</div>
+      <div class="footer-source-item"><a href="https://epoch.ai/data-insights/llm-inference-price-trends" target="_blank" rel="noopener">[Epoch AI：LLM inference price trends](</a> )</div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
