@@ -52,6 +52,36 @@ jobs:
           UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
         run: python3 skills/scripts/fill_images.py posts/
 
+      - name: 题图兜底（无 cover 的新文章补排版封面）
+        # 为什么在这里：本步产出的 cover 会被本 job 的 commit 一起推上去，而
+        # wechat-sync 串在本 job 完成之后才检出同步——所以封面一定在“首次同步”前就位，
+        # 堵死“cover 迟到 → 同步回退取正文首图 → 写标记幂等锁死 → 好封面再也贴不上”这个时序坑。
+        # 只补“没有 cover.* 且尚未同步（无 .wechat-sync.json 标记）”的文章：已有手工题图的不覆盖，
+        # 历史已同步老文不动。render_cover.py 走 HTML→PNG，不依赖任何生图 API，必定出图。
+        run: |
+          python3 - <<'EOF'
+          import subprocess, sys, datetime
+          from pathlib import Path
+          COVER_EXT = ('jpg', 'jpeg', 'png', 'gif')
+          RECENT_DAYS = 3   # 与 sync_drafts.py --recent-days 3 对齐：只有这个窗口内的文章会被同步
+          today = datetime.date.today()
+          for ah in sorted(Path('posts').glob('*/*/article.html')):
+              d = ah.parent
+              try:                              # 只兜底最近 3 天的新文，绝不回填历史全站
+                  post_date = datetime.date.fromisoformat(d.parent.name)
+              except ValueError:
+                  continue
+              if (today - post_date).days > RECENT_DAYS:
+                  continue
+              if any((d / f'cover.{e}').exists() for e in COVER_EXT):
+                  continue                      # 已有题图（含手工/摄影封面），不覆盖
+              if (d / '.wechat-sync.json').exists():
+                  continue                      # 已同步老文，封面早已定，不动
+              print('题图兜底 ->', d)
+              subprocess.run([sys.executable, 'skills/scripts/render_cover.py',
+                              str(d), '--out', 'cover.jpg'], check=False)
+          EOF
+
       - name: 生成 posts.json（加速首页加载）
         run: |
           python3 - <<'EOF'

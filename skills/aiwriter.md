@@ -431,7 +431,15 @@ OPENAI_IMAGE_SIZE=1536x1024 \
 python3 skills/scripts/generate_image.py "<prompt>" "posts/{今日日期}/{slug}/cover.jpg"
 ```
 
-失败处理：exit code 2（软失败：配额/网络问题）或 1（硬失败）都不阻塞——跳过本步继续，`wechat-sync` 会自动 fallback 到正文第一张图作为封面。
+失败处理（**务必在推送前就位，别指望后补**）：`generate_image.py` 出 exit code 2（配额/网络软失败）或 1（硬失败）时，**立刻用 HTML→PNG 排版封面兜底**，保证本次 commit 里一定有 `cover.jpg`：
+
+```bash
+python3 skills/scripts/render_cover.py "posts/{今日日期}/{slug}" --out cover.jpg
+```
+
+`render_cover.py` 从 `article.html` 的 `<title>` 读标题、按破折号切主/副标、`article.md` 的「分类」当眉标，走 Chromium 渲染，不依赖任何生图 API，本机必定出图（Chromium 不可用才 exit 2）。
+
+> 🚫 **为什么不能"后补题图"**：`wechat-sync` 的 `_pick_cover` 在**首次同步**时选封面——有 `cover.*` 用它，否则回退取正文第一张图——然后写 `.wechat-sync.json` 标记，之后按标记**幂等跳过**。所以 `cover.*` 必须在触发首次同步的那个 commit 里就位；晚一个 commit 补的题图，草稿已建、标记已锁，再也贴不上（只能 `wechat-sync --force` 删稿重发）。CI 的 `fill-images.yml` 已加「题图兜底」步做二次保险（同一 commit 内、同步之前补排版封面），但主控这一步先兜底最稳。
 
 ### 7.6 推送 GitHub
 
