@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>孙宇晨起诉景甜要的是3000万彩礼，全网传疯的却是他自己标注“纯属虚构”的代孕情节</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">媒介与传播</span>
+  <h1>孙宇晨起诉景甜要的是3000万彩礼，全网传疯的却是他自己标注“纯属虚构”的代孕情节</h1>
+  <div class="hero-meta">
+    <span>2026-08-29</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">8月27日晚，孙宇晨发布长文《我的女友景甜》，文中提到双方谈及海外代孕、因五千万美元的取卵费用谈崩，随后他起诉景甜及其父母追讨转账。但一个几乎没人提的细节是：长文结尾孙宇晨自己写了“本文纯属虚构”；而他委托律师正式提交给法院的起诉状里，追讨的是3000余万元“彩礼”，压根没有代孕这一项诉求。全网记住并疯传的，恰恰是这个被作者本人标注为编的部分。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>导语</h2>
+<p>8月27日晚，孙宇晨发布长文《我的女友景甜》，讲述了一段长达19年的暗恋与恋情，文中提到双方谈及海外代孕、因五千万美元的取卵费用谈崩，随后他起诉景甜及其父母，追讨恋爱期间的转账。这条新闻当晚就冲上热搜，各种版本的"实锤"截图刷屏。但一个几乎没人提的细节是：那篇长文的结尾，孙宇晨自己写了一行字——"本文纯属虚构，如有雷同纯属巧合"；而他委托律师正式提交给法院的起诉状里，追讨的是3000余万元"彩礼"，压根没有代孕这一项诉求。一份文件说这是虚构故事，另一份文件对这段故事只字不提，但全网记住并疯传的，恰恰是这个被作者本人标注为编的部分。</p>
+<h2>一、起诉的是彩礼，疯传的是代孕——这是两份根本不同的文件</h2>
+<p>据孙宇晨代理律师张起淮发布的案件事实说明（新浪财经披露），本次诉讼以景甜及其父母为被告，诉讼请求是追讨恋爱及谈婚论嫁期间支付的彩礼，标的3000余万元人民币，法院已立案并申请了财产保全。这份法律文件里，没有代孕，没有"五千万美元换取卵子"，没有那些在社交平台被反复截图、被营销号写进标题的耸动细节。这些内容只存在于孙宇晨自己发布的长文里——一篇他自己在结尾处标注"纯属虚构"的长文。这里要提醒一句：五千万美元是长文里的取卵费说法，三千余万元人民币是起诉状里的彩礼诉求，币种不同、事项也不同，网上常把两个数字混着说，其实压根不是一回事。</p>
+<p>但社交平台上流传的版本完全是另一回事。多家媒体的标题直接把代孕情节当作既定事实呈现，用的是"实力曝光""内幕揭秘"这类不容置疑的措辞，仿佛这是一份已经查证属实的爆料，而不是一个自称虚构的故事。<strong>一段被作者亲手标注"编的"的情节，比一份正式提交给法院的诉状，传得更远、被信得更彻底。</strong></p>
+<h2>二、"我没法保证每个细节100%"——连他自己都没有完全背书</h2>
+<p>8月28日凌晨，孙宇晨接受采访回应长文内容，原话是："绝大多数我觉得就是符合我意愿的一个真实的陈述吧，在文章中写了是虚构的""我也没有办法保证每个东西都是100%"。他说长文是自己熬了两个晚上、借助AI工具协助写成的，当时人在不丹，白天要处理公司事务，只能在时差里的凌晨动笔。</p>
+<p>这段回应本身就留了一个暧昧的口子——他既没有说"内容都是真的"，也没有说"内容都是编的"，而是用"绝大多数符合我意愿""无法保证每个细节"这种说法，把最容易引发争议的具体情节留在了一个既不肯定也不否认的灰色地带。景甜工作室的声明则是另一个极端：全盘否认恋爱及代孕等一切传闻，称这是"以艺人声誉为要挟的碰瓷行为"，交由司法处理；景甜本人回应"我依然眼光不行，我依然智慧欠奉，但我过去、现在、未来都不会为钱出卖我的爱情"。双方各执一词，案件目前仍处于管辖权异议阶段，没有实体审理结果。</p>
+<h2>三、这不是孙宇晨第一次这么做</h2>
+<p>理解这次事件为什么会这样传播，孙宇晨过去的公众形象是一条不能跳过的线索。2019年，他以456.8万美元拍下巴菲特20周年慈善午餐，随后以"突发肾结石"为由推迟赴约，被质疑是营销炒作；直到2020年1月才实际赴约，他本人事后公开道歉，称自己"过度营销、热衷炒作"。2023年，美国证券交易委员会起诉他和相关公司，指控通过对敲交易制造交易活跃假象、向明星支付未披露报酬进行推广，2026年3月双方和解，他支付了1000万美元——和解不等于认罪，这类证券类和解通常附带"不承认也不否认指控"的条款，这里同样不宜把"和解"直接读成"坐实"。2024年，他又以620万美元拍下一件行为艺术作品——一根用胶带贴在墙上的香蕉，并当众把它吃掉。</p>
+<p>把这几件事放在一起看，孙宇晨长期以来的公众形象，就是擅长制造耸动话题、真假掺半、事后常被证实有夸大或表演成分。这次他自己说长文"存在虚构成分"，对熟悉他过往行事风格的公众来说，不是一个削弱可信度的意外，反而是一个符合预期的确认——观众早就习惯了用"半信半疑、当娱乐看"的方式消费他的内容。</p>
+<h2>四、两年前那只"胖猫"，教训还没被吸取</h2>
+<p>2024年那起被称为"胖猫事件"的案例（21经济网、新京报均有报道），提供了一个先例，虽然主导叙事的人不同，但"耸动数字跑赢原始事实"这个结果是一样的。年轻人刘某跳江身亡后，他的姐姐主动策划，持续发布聊天记录和一张79.9万元的转账截图，塑造出"女友诈骗捞钱"的耸动叙事，并联系他人代写文案、购买流量扩散，事件迅速引爆全网。警方后续查实，女方并未实施诈骗，两人是真实恋爱关系——也就是说，最初点燃全网情绪的那个"实锤"叙事，从一开始就是被加工过的。这次的不同在于，制造耸动细节的是当事人本人，不是像胖猫事件里那样由第三方代理发布——但这个差异并不影响核心结论：不管耸动叙事出自本人还是他人之手，一旦先跑赢了原始事实，公众的情绪反应和现实伤害都已经造成，没有办法收回。</p>
+<figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图：两起事件都是一方主导叙事、耸动数字当钩子，真相跟上时，传播已经先跑完了全程。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图：两起事件都是一方主导叙事、耸动数字当钩子，真相跟上时，传播已经先跑完了全程。</figcaption></figure>
+<p>这次事件里，同样的模式还在继续发酵：网友仅凭"大甜甜挑男人的逻辑，真是十年如一日地扎实"这类联想式评论，就把景甜2022年的旧闻对象张继科也拖进了话题，尽管没有任何实质细节能证明这两件事有关联。张继科本人在直播里一边吃玉米一边回应："跟我没关系""没看"，随即把话题转向了别的事——一次干脆的切割，没有提供任何新信息，但话题本身已经借着联想又扩散了一轮。与此同时，网络上还独立滋生出"孙宇晨曾找景甜要两亿和解费"这类更夸张的传闻，脱离原始信源自我繁殖，以至于需要专门的账号出面辟谣。</p>
+<h2>五、下次看到"实锤"，先找一下原始文件写了什么</h2>
+<p>这次事件里最值得记住的，不是代孕到底是不是真的，也不是这场官司最后谁会赢——目前案件还没进入实体审理，这些都没有答案。真正值得记住的是：一份被作者自己标注"纯属虚构"的故事，和一份正式提交给法院、只字未提这段情节的起诉状，摆在同一个人手里，公众选择相信、传播、当成谈资的，几乎全是前者。<strong>"自曝内容有编造"从来不是免罪金牌，也从来不是让最耸动的部分停止传播的开关——它只是给这场传播多加了一层"反正也说不清"的免责声明。</strong>下次再看到一份足够劲爆的"实锤"，与其急着转发，不如先找一下：真正具有法律效力的那份文件，到底写了什么。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>一份被作者自己标注“纯属虚构”的故事，和一份正式提交给法院、只字未提这段情节的起诉状，摆在同一个人手里，公众选择相信、传播、当成谈资的，几乎全是前者。</p>
+    <p>“自曝内容有编造”从来不是免罪金牌，也从来不是让最耸动的部分停止传播的开关——下次再看到一份足够劲爆的“实锤”，与其急着转发，不如先找一下：真正具有法律效力的那份文件，到底写了什么。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://news.qq.com/rain/a/20260828A02FH700" target="_blank" rel="noopener">[孙宇晨发文《我的女友景甜》并提起诉讼（腾讯新闻）](</a> )</div>
+      <div class="footer-source-item"><a href="https://cj.sina.com.cn/articles/view/7879776328/1d5abd8480680275dw" target="_blank" rel="noopener">[起诉状未含代孕诉求，转账细节尚无实证佐证（新浪财经）](</a> )</div>
+      <div class="footer-source-item"><a href="https://news.qq.com/rain/a/20260828A031MB00" target="_blank" rel="noopener">[景甜工作室发表严正声明（腾讯新闻）](</a> )</div>
+      <div class="footer-source-item"><a href="https://news.qq.com/rain/a/20260828A053IM00" target="_blank" rel="noopener">[孙宇晨回应长文争议："无法保证每个细节100%"（腾讯新闻）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.jfdaily.com/wx/detail.do?id=1167418" target="_blank" rel="noopener">[孙宇晨采访回应全文（解放日报）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.guancha.cn/economy/2026_08_28_828949.shtml" target="_blank" rel="noopener">[景甜本人首次回应（观察者网）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.163.com/dy/article/L5DU5DGR055682OR.html" target="_blank" rel="noopener">[张继科直播回应：跟我没关系（网易）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.sina.cn/news/detail/5336935350403686.html" target="_blank" rel="noopener">["两亿和解费"传闻遭辟谣（新浪新闻）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.21jingji.com/article/20260520/herald/10e856d9cf4037a2d7afd356014ab62a.html" target="_blank" rel="noopener">[胖猫事件始末与警方通报（21经济网）](</a> )</div>
+      <div class="footer-source-item"><a href="https://global.hk01.com/即时娱乐/60384487/" target="_blank" rel="noopener">[孙宇晨拍下巴菲特午餐后"肾结石"缓期赴约（香港01）](</a> )</div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
