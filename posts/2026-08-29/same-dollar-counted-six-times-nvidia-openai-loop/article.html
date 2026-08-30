@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>英伟达给 OpenAI 兜底 1050 亿，又拿芯片抵押借 5000 亿：黄仁勋说这不叫循环——对，这叫一块钱数六遍</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 与资本</span>
+  <h1>英伟达给 OpenAI 兜底 1050 亿，又拿芯片抵押借 5000 亿：黄仁勋说这不叫循环——对，这叫一块钱数六遍</h1>
+  <div class="hero-meta">
+    <span>2026-08-29</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">这周财经圈最热闹的一条消息，是 8 月 17 日英伟达宣布给 OpenAI 在俄亥俄的数据中心兜底最高 1050 亿美元。热闹归热闹，几乎没人停下来问一句最朴素的问题：这 1050 亿，是谁的钱？答案有点尴尬——大头不是 OpenAI 掏的，是英伟达签字担保的。九天后黄仁勋亲自灭火，说这不是循环融资，风险很低。他这句我信。因为这套玩法的真正精髓是，同一笔算力开支在这条链上被记了六遍账，每记一遍，就被当成一次全新的需求欢呼一次。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、先把这周发生的事说清楚：英伟达给别人的租金签了字</h2>
+
+    <p>8 月 17 日，OpenAI、英伟达、软银旗下的 SB Energy 三家一起官宣了这单。事儿本身不复杂：OpenAI 在俄亥俄 Pike County 租一座巨型数据中心，跟 SB Energy 签 20 年租约，初期算力 4.25 吉瓦，带扩容选择权、最终能到 8 吉瓦。这栋楼由 SB Energy 建、SB Energy 持有，英伟达顺手又往 SB Energy 里投了 15 亿美元股权。</p>
+
+    <p>关键在担保这块。英伟达兜的不是"帮 OpenAI 直接把租金付了"，而是一个更绕的东西：<strong>万一 OpenAI 破产或者停止付租，楼主先去转租或者变卖这栋楼，卖回来的钱要是不够约定的"最低价值"，缺口由英伟达补足，上限 1050 亿美元。</strong> 说人话，就是英伟达给 OpenAI 这个租客做了信用背书，告诉出租方："你放心签，他要是跑了，我兜。"</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="英伟达为 OpenAI 的 20 年租约兜底最高 1050 亿美元——让这栋楼租得起的，是英伟达的信用，不是 OpenAI 的现金流。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">英伟达为 OpenAI 的 20 年租约兜底最高 1050 亿美元——让这栋楼租得起的，是英伟达的信用，不是 OpenAI 的现金流。</figcaption></figure>
+
+    <p>这个数字还是砍过一刀的。据《华尔街日报》，英伟达最早琢磨的是给 OpenAI 的数据中心承诺兜底最高约 2500 亿美元，后来缩到了不到 1200 亿。缩水的原因也很实在：消息一出，英伟达自己的股价先跌了，投资者担心的正是——你一家卖芯片的公司，怎么把这么大一坨客户的信用风险，往自己资产负债表上扛？</p>
+
+    <p>一家芯片公司，操心起了客户交不交得起房租。这本身就是个信号。正常生意里，是客户求着供应商赊账；轮到英伟达这儿，是供应商追着给客户的账单做担保，生怕客户买不动自己的货。谁更需要谁，一目了然。</p>
+
+    <h2>二、"这不是循环融资"——黄仁勋在偷偷换一个定义</h2>
+
+    <p>8 月 26 日，英伟达发完 2027 财年第二季度财报，黄仁勋上了 CNBC 的《Mad Money》节目，正面回应"循环融资"的质疑。原话里最硬的一句是"the risk is low"——风险很低。他的逻辑是：算力这东西，就算一个客户经营不善用不上了，也能重新部署给别的客户、别的工作负载，砸不到英伟达手里。</p>
+
+    <p>这话听着挺有道理，但他在悄悄换概念。"循环融资"这个词，被他窄化成了一个特别狭窄的定义：我直接掏钱给你、你转手直接买我的货。照这个定义，英伟达当然可以说"我们不循环"——因为它绕了个弯：不是直接给现金，是给股权投资、给租约担保、给抵押品增信。钱没有明晃晃地转一圈回来，而是变成了一张又一张的信用凭证，垫在整条链的底下。招式升级了，本质没变。</p>
+
+    <p>真正把底裤漏出来的，是黄仁勋自己另一句辩护。他说，这是"第一代需要几百亿美元才能启动、还要几百亿美元才能盈利"的创业公司。这句话翻译过来就是：这些 AI 公司当前的经营现金流，根本撑不起它们签下的采购规模，所以缺的那一大截，得英伟达用自己的信用来补。<strong>他不是在否认循环，他是在解释为什么必须循环——终端赚的钱不够买货，那就由卖货的先把买货的钱给垫上。</strong></p>
+
+    <h2>三、把这条链拉直：同一笔钱，是怎么被数成六笔的</h2>
+
+    <p>黄仁勋反复讲一个"良性循环"的故事：算力越多，AI 越强；AI 越强，用得越多；用得越多，收入越多；收入越多，又买更多算力。听上去是个正反馈飞轮。问题是，这个飞轮转一圈，同一场算力采购会在账本上留下好几个不同的脚印，而每一个脚印，都被当成一件独立的好事来数。</p>
+
+    <p>咱们挑 OpenAI 这条主线，一步步数：</p>
+
+    <p>英伟达先对 OpenAI 承诺最高 1000 亿美元股权投资（2025 年 9 月的意向），这笔记成英伟达的"对外投资"、OpenAI 的"融资到账"——<strong>第一遍</strong>。OpenAI 拿着这些钱和自己的收入，转身签下天量算力采购：给甲骨文的五年合同 3000 亿美元、给微软 Azure 新增 2500 亿美元、给亚马逊 AWS 七年 380 亿美元——这些记成云厂商们的"收入"和"在手订单"，华尔街为之欢呼——<strong>第二遍</strong>。云厂商和数据中心拿这些钱去买英伟达的 GPU，记成英伟达当季"营收"，财报一超预期股价再涨一波——<strong>第三遍</strong>。到了俄亥俄这单，英伟达又给这条租约兜底 1050 亿，让本来立不住的租约立住，记成一笔"信用支持"——<strong>第四遍</strong>。紧接着，英伟达把芯片打包当抵押物，撬动 5000 亿美元第三方债务（这个后面细说），这批芯片的价值又被重新计价、抵押一次——<strong>第五遍</strong>。最后，黄仁勋把这一整套讲成"OpenAI 到 2030 年可能带来约 6000 亿美元英伟达算力需求"，记成对未来的"需求指引"，再欢呼一次——<strong>第六遍</strong>。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="同一场算力采购，沿着这条链被记成至少六种不同的经济活动，每记一次就被当作一次新增需求。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">同一场算力采购，沿着这条链被记成至少六种不同的经济活动，每记一次就被当作一次新增需求。</figcaption></figure>
+
+    <p>同一堆芯片、同一场采购，投资、订单、营收、担保、抵押、未来需求，六个身份轮流上场，每个身份都被市场当成一次崭新的增长信号。这不是有人在造假账，每一笔单看都合规、都真实。问题出在，当你把它们加总起来惊呼"AI 需求何其汹涌"的时候，你其实在把同一块钱，数了六遍。</p>
+
+    <h2>四、同一块芯片，英伟达需要它同时是两样打架的东西</h2>
+
+    <p>芯片被拿去抵押这件事，单拎出来，藏着这轮游戏最精分的一个矛盾。</p>
+
+    <p>8 月 11 日前后，英伟达官宣拉上了六家机构——阿波罗、贝莱德、黑石、博枫、高盛、KKR——计划以英伟达芯片作抵押，撬动超过 5000 亿美元的第三方资本，投进 AI 基础设施。分工是：高盛是里头唯一的银行，负责主导公开债券发行；另外五家另类资产管理机构，负责把长久期的机构和保险资金部署进来。抵押品保值的承诺，还是英伟达自己给的——客户要是违约，芯片转租给别人，不掉价。</p>
+
+    <p>矛盾就在这儿。这批芯片，英伟达需要它在两份文件里，是两样互相打架的东西：</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="折旧表要它赶紧报废，抵押合同要它长期保值——英伟达需要同一块芯片同时是这两样打架的东西。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">折旧表要它赶紧报废，抵押合同要它长期保值——英伟达需要同一块芯片同时是这两样打架的东西。</figcaption></figure>
+
+    <p>在给股东看的折旧表上，AI 芯片得是个贬值飞快的耗材才对。2025 年 11 月，"大空头"迈克尔·伯里（Michael Burry）就是盯着这一条开炮：他指控几家云巨头把英伟达 GPU 按五到六年折旧，可实际上这些芯片两三年就被下一代摁在地上摩擦，经济寿命远没那么长。他给的数字是，2026 到 2028 年间这么一算，全行业约有 1760 亿美元的折旧被少提、利润被虚增；他还专门点了甲骨文和 Meta 的名，说到 2028 年它们的利润可能分别被高估约 27% 和 21%。他在社交平台上撂下一句：<strong>"靠延长资产使用寿命来少提折旧、虚增利润，是当代最常见的财务造假手法之一。"</strong> 他把眼下这套，比作互联网泡沫顶点的思科。</p>
+
+    <p>可是转过身，在那份 5000 亿美元的抵押合同里，同一块芯片又必须是长期保值的硬资产——不然谁会拿一个两三年就归零的东西，去给一笔长久期的债务当抵押？飞机租赁能这么玩，是因为飞机有二三十年的可预期残值和成熟的二手市场；英伟达这套的拧巴之处在于，它一边（在折旧口径上）被质疑寿命只有两三年，一边（在抵押品估值上）被要求稳如老狗，而且给这块抵押品"保证保值"的担保人，恰好又是卖芯片给你的英伟达本人。抵押品的价值担保方，和芯片的销售方，是同一个人。</p>
+
+    <h2>五、"风险很低"是真的——只不过风险不在他那儿</h2>
+
+    <p>黄仁勋那句"the risk is low"，我前面说我信，是真信。对英伟达来说，风险确实很低。客户违约了，芯片砸手里还能转租；股权投资亏了，反正是拿升值的股票投出去的。真正接住这条链尾部风险的，不是英伟达，是那 5000 亿第三方债务背后的钱——那是养老金、是保险资金，是通过高盛发的债券、通过贝莱德黑石们的产品，一层层卖给普通人退休账户的长久期资本。风险没有消失，它只是被从卖芯片的账上，挪到了买债券的人账上。</p>
+
+    <p>这条链有多依赖那么几个大买家，英伟达自己在 SEC 文件里写得清清楚楚。在它提交的 10-Q 里，公司披露：仅一个直接客户就占了某个半年度总营收的 20%，第二个直接客户又占了 15%——两家加起来，就是营收的三分之一还多。而且这个集中度这几年是往上走的，不是往下走。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_04.png" alt="英伟达在 SEC 10-Q 里自己披露：两个直接客户就占了半年营收的 20% 和 15%，收入押在极少数买家身上。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">英伟达在 SEC 10-Q 里自己披露：两个直接客户就占了半年营收的 20% 和 15%，收入押在极少数买家身上。</figcaption></figure>
+
+    <p>这里得诚实补一句：10-Q 里说的"直接客户"，通常是系统集成商、代工厂那一层，不能一一对应到 OpenAI、微软这些最终名字。但它足够说明一件事：英伟达的营收，高度押在极少数下游买家身上；而这极少数买家，又反过来在靠英伟达替它们的账单做担保、做抵押、做增信。买家靠卖家兜底才买得起，卖家靠这几个买家才有营收——两根柱子互相靠着才站得住。风险很低，前提是没有任何一根先倒。</p>
+
+    <h2>六、所以呢</h2>
+
+    <p>我不打算在这儿预测泡沫哪天破、破不破——那是算命，不是分析。这轮 AI 是不是有真需求？有，ChatGPT 的用户是真的，账单也有人真在付。我也没说英伟达在造假，前面数的那六遍账，每一笔单独看都合规、都做得出来。</p>
+
+    <p>我想说的只有一件事，一件读完这篇你今天就能用上的事：往后再刷到"OpenAI 又签下三千亿算力大单""某某 AI 基建再创纪录"这种标题，先别急着当成"需求又暴涨了三千亿"的独立利好去激动。先花三秒钟问一句——这三千亿，是谁的钱，这块钱在这条链的别处，是不是已经被当成"需求"数过一遍了。</p>
+
+    <p>判断一个东西是不是循环，不看当事人怎么定义"循环"，看那笔钱最后回没回到出发的地方。这条链上，它回来了。就这。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p></p>
+    <p></p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/08/17/nvidia-financing-open-ai-data-center-ohio.html" target="_blank" rel="noopener">[Nvidia to provide up to $105 billion guarantee for OpenAI's Ohio data center（CNBC）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.axios.com/2026/08/17/openai-nvidia-ohio-data-center-sb-energy" target="_blank" rel="noopener">[OpenAI announces massive Ohio data center with Nvidia guarantee（Axios）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/08/26/jensen-huang-defends-nvidias-growing-financial-support-for-ai-ecosystem-says-the-risk-is-low-.html" target="_blank" rel="noopener">[Jensen Huang defends Nvidia's growing financial support for AI ecosystem, says 'the risk is low'（CNBC, 2026-08-26）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/08/26/cnbc-transcript-nvidia-founder-ceo-jensen-huang-speaks-with-cnbcs-jim-cramer-on-mad-money-today.html" target="_blank" rel="noopener">[CNBC Transcript: Jensen Huang Speaks with Jim Cramer on "Mad Money"（2026-08-26）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/08/11/nvidia-ai-funding-jensen-huang-china-risk.html" target="_blank" rel="noopener">[Nvidia $500B AI funding: Jensen Huang's plan faces China risk（CNBC, 2026-08-11）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2025/11/11/big-short-investor-michael-burry-accuses-ai-hyperscalers-of-artificially-boosting-earnings.html" target="_blank" rel="noopener">['Big Short' investor Michael Burry accuses AI hyperscalers of artificially boosting earnings（CNBC, 2025-11-11）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2025/11/14/ai-gpu-depreciation-coreweave-nvidia-michael-burry.html" target="_blank" rel="noopener">[The question everyone in AI is asking: How long before a GPU depreciates?（CNBC, 2025-11-14）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001045810&type=10-Q" target="_blank" rel="noopener">[NVIDIA CORP Form 10-Q（SEC EDGAR，客户集中度披露）](</a> )</div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
