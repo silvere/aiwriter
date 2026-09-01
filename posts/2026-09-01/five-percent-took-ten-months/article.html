@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenAI 断了 Cursor 的模型，Cursor 回了句「你占我 5%」——上一家被这么断的公司，已经散成三份了</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 行业</span>
+  <h1>OpenAI 断了 Cursor 的模型，Cursor 回了句「你占我 5%」——上一家被这么断的公司，已经散成三份了</h1>
+  <div class="hero-meta">
+    <span>2026-09-01</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">8 月 29 日，OpenAI 宣布停止向 Cursor 供应模型，理由不是 Cursor 干了什么，是 Cursor 被谁买了。Cursor CEO 的回应里只有一个数字：5%。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、被掐脖子的那家，当天在算百分比</h2>
+
+    <p>8 月 14 日，SpaceX 完成了对 Anysphere 的收购。Anysphere 是 Cursor 的母公司。全股票交易，Cursor 的普通股和优先股换成约 3.89 亿股 SpaceX A 类股，隐含估值 600 亿美元。这被称为有记录以来最贵的一笔创业公司收购。</p>
+
+    <p>十五天后，OpenAI 在自己的 X 账号上发了公告：</p>
+
+    <blockquote><p>"We're ending our partnership with Cursor following its acquisition by SpaceX. Under our proposal, Cursor's direct access to our models would end on November 12."</p></blockquote>
+
+    <p>配套的声明里，把理由讲得很直：</p>
+
+    <blockquote><p>"We are making this choice because we cannot be confident that SpaceX will use our technology within our terms of service, based on our experience with Elon Musk's companies violating contracts."</p></blockquote>
+
+    <p>一句话：你现在归马斯克了，马斯克的公司有违约前科，我不卖给你了。</p>
+
+    <p>Cursor 联合创始人兼 CEO Michael Truell 的回复很短：</p>
+
+    <blockquote><p>"We're sorry to see that OpenAI put out a note saying they plan to block Cursor users from accessing OpenAI models in three months. OpenAI models serve about 5% of Cursor user traffic, and we're speaking with the OpenAI team to resolve this."</p></blockquote>
+
+    <p>遗憾，三个月，5%，还在谈。四个信息点，就把这件事从"生死危机"降格成了"供应商变动通知"。</p>
+
+    <p>马斯克本人的反应更省事，X 上四个词：<strong>"I couldn't care less."</strong></p>
+
+    <p>同一个晚上，Anthropic 联合创始人兼首席运营官 Tom Brown 在 X 上发了这么一条：</p>
+
+    <blockquote><p>"Cursor has been a trusted partner of Anthropic since Sonnet 3.5. We'll continue to increase compute to support Claude models in Cursor and are excited for what comes next with them at SpaceX."</p></blockquote>
+
+    <p>同一桩收购，OpenAI 读出的是"不能信任"，Anthropic 读出的是"期待接下来在 SpaceX 的发展"。这两句话隔了不到二十四小时。</p>
+
+    <p>一家宣布断供，另一家宣布加供，被断的那家说你占我 5%。这个场面不太像掐脖子，更像有人在群里退了群，还发了条公告解释为什么退，而群里剩下的人正在讨论中午吃什么。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图注：OpenAI 收走的是 5%，Cursor 的另外 95% 分给了 Anthropic、Google、xAI 和自研的 Composer" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：OpenAI 收走的是 5%，Cursor 的另外 95% 分给了 Anthropic、Google、xAI 和自研的 Composer</figcaption></figure>
+
+    <h2>二、上一次这么断的时候，通知期不到五天</h2>
+
+    <p>要理解 5% 这个数字有多贵，得回到 2025 年 6 月。</p>
+
+    <p>那年 5 月 6 日，彭博社报道 OpenAI 已就以约 30 亿美元收购 Windsurf 达成协议。那是当时最被看好的 AI 编程工具之一，也是 Cursor 最直接的对手。</p>
+
+    <p>不到一个月，Anthropic 动手了。6 月 3 日，Windsurf 的 CEO Varun Mohan 在 X 上写道：</p>
+
+    <blockquote><p>"With less than five days of notice, Anthropic decided to cut off nearly all of our first-party capacity to all Claude 3.x models."</p></blockquote>
+
+    <p>不到五天通知，砍掉几乎全部 Claude 3.x 的直供容量——不是限流，是把它从 Anthropic 的一手客户名单上划掉。Mohan 还说了一句更难受的：Windsurf 是愿意照单付钱的。钱不是问题，问题是它要被谁买。</p>
+
+    <p>Anthropic 联合创始人兼首席科学官 Jared Kaplan 后来在一场公开场合把话说得很坦白：</p>
+
+    <blockquote><p>"It would be odd for us to be selling Claude to OpenAI."</p></blockquote>
+
+    <p>把 Claude 卖给 OpenAI 用，那多奇怪啊。</p>
+
+    <p>这话没什么好反驳的。奇怪的是后面发生的事：Windsurf 被切断模型访问之后，那笔 30 亿美元的收购最终没做成。2025 年 7 月，Google 花约 24 亿美元把 Windsurf 的 CEO Varun Mohan、联合创始人 Douglas Chen 和核心团队整队挖走，走的是"许可 + 招人"的路子，不买公司。7 月 14 日，Cognition——做 Devin 那家——宣布收购 Windsurf 剩下的 IP、产品、商标和团队。</p>
+
+    <p>从被断供那天算起，一个半月，一家公司被拆成三份：人去了 Google，壳和产品去了 Cognition，原本的收购方 OpenAI 空手而归。</p>
+
+    <p>把两次并排放：Windsurf 那次，通知期不到五天，砍的是它最主要的模型来源，砍完公司没撑住；Cursor 这次，通知期十一周，砍的是占它 5% 流量的东西，被砍的人当天发推说我们再谈谈。</p>
+
+    <p>同样的动作，同一个行业，中间隔了十四个月。差别不在运气。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="图注：十四个月，两次因收购而起的断供——通知期从不到五天变成十一周，结局从公司拆成三份变成一条推文" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：十四个月，两次因收购而起的断供——通知期从不到五天变成十一周，结局从公司拆成三份变成一条推文</figcaption></figure>
+
+    <h2>三、那 5% 是花十个月买回来的</h2>
+
+    <p>Windsurf 出事的时候，Cursor 在场。</p>
+
+    <p>2025 年 10 月，Cursor 发布 2.0 版本，同时端出了 Composer 1——它自己训的编程模型。之后一路迭代，Composer 1.5、Composer 2、Composer 2.5 一版接一版地出，到今天，Cursor 的 Auto 模式经常直接把请求交给自研模型来跑。</p>
+
+    <p>Composer 1 发布是 2025 年 10 月，SpaceX 完成收购是 2026 年 8 月 14 日，中间隔了整整十个月。</p>
+
+    <p>也就是说，Cursor 把 OpenAI 从主力降到 5% 这件事，不是当上 SpaceX 子公司之后才有底气干的，是它自己在还没卖身、还得自己交模型账单的日子里，一行行代码干出来的。免疫力不是嫁妆，是自费打的疫苗。</p>
+
+    <p>动机也不神秘。Cursor 这类工具的商业模型有个公开的丑处：营收看着漂亮，钱大半流向模型商。社交媒体上流传过一份基于公开信息的测算，说 Cursor 在截至 2026 年 1 月的那个季度毛利率是负的——每收进 1 美元，要付出去 1.2 美元出头的 API 成本。这个数字来自第三方推算而非财报，谁也没法拿它当铁证，但方向上跟多家媒体的定性报道是一致的：Cursor 长期被上游成本压着，自研模型是它给自己止的血。</p>
+
+    <p>到 2026 年 8 月，Cursor 的模型菜单上摆着五家：OpenAI、Anthropic、Google、xAI 的 Grok，以及自家的 Composer。OpenAI 是这五个里最能被拿掉的那个。</p>
+
+    <strong>所以 OpenAI 这一刀砍下去的时候，砍到的是它自己十个月前就已经被挪开的位置。</strong>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="图注：Windsurf 被断供 → Cursor 自研模型上线 → SpaceX 交割 → OpenAI 断供，这条线上真正决定结局的是第二个点" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：Windsurf 被断供 → Cursor 自研模型上线 → SpaceX 交割 → OpenAI 断供，这条线上真正决定结局的是第二个点</figcaption></figure><br></div></p>
+
+    <h2>四、OpenAI 拿出的前科，是马斯克在自己输掉的官司里说的一个词</h2>
+
+    <p>OpenAI 声明里给了两条依据，两条都值得查一下。</p>
+
+    <p>第一条：马斯克收购 Twitter 之后，那家公司违反了与 OpenAI 的合同条款。这条我查不到细节。哪份合同、什么时候签的、违反了哪一条、有没有走过法律程序，公开报道里一概没有，所有媒体转述的都是 OpenAI 声明里的同一句话。它可能完全属实，但现在它只是一方的说法。</p>
+
+    <p>第二条更具体：马斯克本人在宣誓作证时承认，xAI 违反过 OpenAI 的服务条款。这条能查到，而且现场比声明里写的有意思得多。</p>
+
+    <p>2026 年 4 月 30 日，加州奥克兰联邦法院，一场陪审团审判的第四天。案子叫 Musk v. Altman——注意原告是马斯克，他告的是 Sam Altman 和 Greg Brockman，说这两个人背离了 OpenAI 的非营利初衷。他是自己走进法庭的。</p>
+
+    <p>庭上，对方律师问他，xAI 有没有"蒸馏"过 OpenAI 的模型来训练 Grok——说白了，就是拿人家模型吐出来的答案当教材，喂自己的学生——律师要一个是或者不是。</p>
+
+    <p>马斯克说：<strong>"Partly."</strong></p>
+
+    <p>一部分。</p>
+
+    <p>三周后的 5 月 18 日，陪审团讨论了不到两个小时，一致判他败诉。输的理由跟对错无关，是他这官司告得太晚，过了加州三年的诉讼时效。马斯克在 X 上说这是日历上的技术性问题，扬言上诉。</p>
+
+    <p>所以 OpenAI 手里这份"前科"，完整版长这样：马斯克自己跑去起诉别人，在自己发起的庭上被问住，答了一个词，最后官司还输了。当时的报道措辞相当克制，只说这种做法"看起来违反"服务条款；OpenAI 引用的时候，把"看起来"三个字直接抹了。</p>
+
+    <p>OpenAI 有没有道理，其实不重要。它根本不需要有道理。</p>
+
+    <p>商业合同里有一类东西叫控制权变更条款。它的作用就是：当你的股东结构发生特定变化，我可以走人，不需要证明你做错了什么。援引条款和讲道理是两码事。OpenAI 把理由写得声情并茂，是公关动作；真正让它能在十五天内下手的，是那张纸上早就有的一行字。</p>
+
+    <h2>五、条款是老的，依赖是新的</h2>
+
+    <p>控制权变更条款一点都不新鲜。做企业软件的合同里几乎全都有。</p>
+
+    <p>它的通行写法大同小异：客户的控制权发生变更，尤其是被供应商的直接竞争对手拿下过半权益时，供应商有权终止协议，或者重新坐下来谈。这是并购尽调里的标准检查项，律师们管它叫高风险条款，因为一个供应商的同意权就能把整笔交易拖住或者抬价。</p>
+
+    <p>条款存在很多年了。有意思的地方在于，你几乎找不到它被真正按下去的公开案例。云厂商、SaaS 厂商、数据库厂商，人人都写，但真到客户被竞争对手收购那天，大多数时候的结果是重新谈价钱，不是断供。</p>
+
+    <p>因为在 SaaS 时代，断供是核武器——你把客户的 CRM 关了，客户去用别家的 CRM，功能差不多，你损失一个大客户，客户损失两个月的迁移工期。核弹按下去，双方一起难看，还没什么用。</p>
+
+    <p>模型层不一样。同一个产品换掉底层模型，用户当天就能感觉到手感变了：补全的节奏、改多文件时的判断、犯蠢的方式，全都换了一套。所以在模型层，这个开关第一次真正有了威慑力。</p>
+
+    <p>然后事实是：这个刚刚变得有威慑力的开关，十四个月里被按了两次。第一次按死了一家公司，第二次按在空气上。</p>
+
+    <p>区别只有一个——第二家公司提前十个月开始，把自己的产品能力从任何一家供应商身上拆下来。</p>
+
+    <p>这件事没有什么高深道理。它只是把一句老话重新算了一遍账：核心能力如果是租来的，你的估值里就永远藏着一张别人手上的期权。行权不要钱，也不用跟你商量，条件只有一条——"你的股东名单让我不高兴"。</p>
+
+    <p>Cursor 现在值 600 亿。Windsurf 曾经差 30 亿成交。两家都被同一种条款瞄准过。</p>
+
+    <p>区别是，一家在被瞄准之前，就自己动手把靶心挪开了。所以 11 月 12 日那天，OpenAI 走的时候只能带走 5%。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>这个刚刚变得有威慑力的开关，十四个月里被按了两次。第一次按死了一家公司，第二次按在空气上。</p>
+    <p>区别只有一个：第二家公司提前十个月开始，把自己的产品能力从任何一家供应商身上拆下来。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://x.com/OpenAI/status/2093515564786540695" target="_blank" rel="noopener">[OpenAI 官方 X 账号 2026-08-29 的断供公告原帖](</a> )</div>
+      <div class="footer-source-item"><a href="https://x.com/mntruell/status/2093532254006063557" target="_blank" rel="noopener">[Michael Truell（Cursor 联合创始人兼 CEO）2026-08-29 的 X 回应原帖](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/08/29/openai-cursor-spacex-model-access.html" target="_blank" rel="noopener">[OpenAI to end model access to Cursor after acquisition by Elon Musk's SpaceX（CNBC，2026-08-29）](</a> )</div>
+      <div class="footer-source-item"><a href="https://the-decoder.com/openai-cuts-off-cursor-after-spacex-acquisition-citing-musks-history-of-breaking-contracts/" target="_blank" rel="noopener">[OpenAI cuts off Cursor after SpaceX acquisition, citing Musk's history of breaking contracts（The Decoder）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.infoworld.com/article/4216503/cursor-customers-will-lose-access-to-openai-coding-models-in-november.html" target="_blank" rel="noopener">[Cursor customers will lose access to OpenAI coding models in November（InfoWorld）](</a> )</div>
+      <div class="footer-source-item"><a href="https://x.com/NotTomBrown/status/2093541294027280657" target="_blank" rel="noopener">[Tom Brown（Anthropic 联合创始人兼 COO）2026-08-29 的 X 原帖](</a> )</div>
+      <div class="footer-source-item"><a href="https://x.com/_mohansolo/status/1930034960385356174" target="_blank" rel="noopener">[Varun Mohan（Windsurf CEO）2025-06-03 的 X 原帖："With less than five days of notice…"](</a> )</div>
+      <div class="footer-source-item"><a href="https://techcrunch.com/2025/06/03/windsurf-says-anthropic-is-limiting-its-direct-access-to-claude-ai-models/" target="_blank" rel="noopener">[Windsurf says Anthropic is limiting its direct access to Claude AI models（TechCrunch，2025-06-03）](</a> )</div>
+      <div class="footer-source-item"><a href="https://techcrunch.com/2025/06/05/anthropic-co-founder-on-cutting-access-to-windsurf-it-would-be-odd-for-us-to-sell-claude-to-openai" target="_blank" rel="noopener">[Anthropic co-founder on cutting access to Windsurf: 'It would be odd for us to sell Claude to OpenAI'（TechCrunch，2025-06-05）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.forbes.com/sites/johanmoreno/2025/06/05/anthropic-cuts-windsurfs-claude-access-before-openai-acquisition/" target="_blank" rel="noopener">[Anthropic Cuts Windsurf's Claude Access Before OpenAI Acquisition（Forbes，2025-06-05）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2025/07/14/cognition-to-buy-ai-startup-windsurf-days-after-google-poached-ceo.html" target="_blank" rel="noopener">[Cognition to buy AI startup Windsurf days after Google poached CEO（CNBC，2025-07-14）](</a> )</div>
+      <div class="footer-source-item"><a href="https://techcrunch.com/2025/07/14/cognition-maker-of-the-ai-coding-agent-devin-acquires-windsurf/" target="_blank" rel="noopener">[Cognition, maker of the AI coding agent Devin, acquires Windsurf（TechCrunch，2025-07-14）](</a> )</div>
+      <div class="footer-source-item"><a href="https://techcrunch.com/2026/04/30/elon-musk-testifies-that-xai-trained-grok-on-openai-models/" target="_blank" rel="noopener">[Elon Musk testifies that xAI trained Grok on OpenAI models（TechCrunch，2026-04-30）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.forbes.com/sites/antoniopequenoiv/2026/04/30/elon-musk-admits-xai-distilled-openai-data-to-train-models-heres-what-that-means/" target="_blank" rel="noopener">[Elon Musk Admits xAI Used OpenAI Technology To Train Its Own Models（Forbes，2026-04-30）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/05/02/musk-testimony-dominated-first-week-musk-v-altman-trial-in-oakland.html" target="_blank" rel="noopener">[Musk testimony dominated first week of Musk v. Altman trial in Oakland（CNBC，2026-05-02）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.nbcnews.com/tech/tech-news/openai-elon-musk-case-verdict-rcna345655" target="_blank" rel="noopener">[Jury throws out Elon Musk's lawsuit against OpenAI and Sam Altman in less than two hours（NBC News，2026-05-18）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/05/18/musk-altman-openai-trial-verdict.html" target="_blank" rel="noopener">[Musk slams Altman trial verdict as a 'technicality,' vows to appeal（CNBC，2026-05-18）](</a> )</div>
+      <div class="footer-source-item"><a href="https://gc.ai/clauses/change-of-control" target="_blank" rel="noopener">[Change of Control 条款在 SaaS 合同中的普遍性与文本示例](</a> )</div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
