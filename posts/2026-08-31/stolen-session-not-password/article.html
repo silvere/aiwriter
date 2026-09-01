@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>有人正在用你的 Claude 额度干活，而他从头到尾没输过你的密码</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 安全</span>
+  <h1>有人正在用你的 Claude 额度干活，而他从头到尾没输过你的密码</h1>
+  <div class="hero-meta">
+    <span>2026-08-31</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">8 月 30 日起，一批 Claude 用户收到了一封不太寻常的邮件：Anthropic 把他们强制登出，删掉了账号里存的支付方式，退回了认定为未经授权的扣费。看上去像是 Anthropic 被黑了。它没有——被黑的是这些用户手上的电脑，而拿走他们账号的人，从头到尾一次密码都没输过。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、额度自己刷新，又自己见底</h2>
+<p>Anthropic 在给受影响用户的邮件里描述了一个症状，我建议每个花钱买 AI 订阅的人都把它记住：如果你的用量额度看起来刷新了，然后在你根本没用 Claude 的时候被抽干，那多半就是这件事。</p>
+<p>英文原话是 "If your usage limits looked like they refilled and then drained while you weren't using Claude, this was likely the cause."</p>
+<p>这句话值得单拎出来，因为它描述的是一种以前不存在的受害体验。银行卡被盗刷，你看到的是余额少了；邮箱被盗，你看到的是发件箱里躺着几封你没写过的信；网盘被盗，你看到的是文件被下载过。这些东西都有一个共同点——你能看出来"东西没了"。</p>
+<p>AI 订阅不一样。额度被偷走，你看到的是"今天怎么这么早就用完了"。</p>
+<p>所以第一反应不会是报警，甚至不会是查账号。第一反应是骂厂商：又偷偷降额度，又暗改限制，又不给个说法。骂完关掉页面，明天接着骂。你被偷了一个多月，情绪上却一直觉得自己是在跟客服吵架。</p>
+<p>Anthropic 这次点了名，六个恶意软件家族：Windows 上的 Vidar、LummaC2、StealC、RedLine、Acreed，以及少量 Mac 上的 Atomic Stealer。这五六个名字不用记，它们干的事一模一样，区别只是谁写的代码、谁在卖。这份名单里没有一个是为 AI 定制的武器。它们全都是这个行业里跑了好几年的通用货，专业名字叫信息窃取木马（infostealer），业务范围是把一台电脑上所有能卖钱的东西打包带走。Claude 不在它们的靶心上，Claude 只是恰好在那台电脑上。</p>
+<p>Anthropic 自己也把话说死了："We have no reason to believe that this malware is related to Claude, installed through Claude, or related to anything you did with Claude."——跟 Claude 无关，不是通过 Claude 装上的，也不是你在 Claude 里做了什么导致的。它补了一句，这类东西通常随着非官方下载或者恶意应用一起进来。</p>
+<p>盗版游戏，破解软件，假安装包，那个"绿色版"的解压工具。就这些。</p>
+<p>话说到这个份上，剩下的问题就只有一个：这次到底波及了多少账号、涉及多少钱、退了多少款。截至本文写作，Anthropic 一个数字都没有公布，受影响账号数没有，金额没有，退款总额也没有。</p>
+<p><img alt="图注：木马一次打包带走的是整台电脑的登录状态，Claude 的会话只是清单里的一行——你不是被针对，你是被顺手拿走的" src="images/illus_01.png" /></p>
+<p><em>图注：木马一次打包带走的是整台电脑的登录状态，Claude 的会话只是清单里的一行——你不是被针对，你是被顺手拿走的</em></p>
+<h2>二、他没输过密码，因为根本不需要</h2>
+<p>微软安全团队在 2025 年 5 月拆解 Lumma Stealer 时，把这类木马的取货范围写得很直白："Lumma Stealer extracts saved passwords, session cookies, and autofill data from Chromium (including Edge), Mozilla, and Gecko-based browsers."</p>
+<p>保存的密码，会话 cookie，自动填充数据。请注意中间那一项。</p>
+<p>密码是"证明你是你"的东西，会话 cookie 是"已经证明过了"的收据。你的二次验证、你的短信、你的指纹、你公司的 SSO（统一登录），全都发生在登录那一瞬间；这一瞬间过完，服务器就发给浏览器一张票，接下来几天几周你每一次刷新页面，验的都是这张票，不再验你的人。</p>
+<p>木马把这张票复制一份带走，服务器那头看见的仍然是一张合法的票。它不知道拿票的人已经换了。它没有办法知道——这张票上根本没写名字。</p>
+<p>同一份微软报告列出的打包清单，值得逐项念一遍：浏览器里保存的密码，会话 cookie，自动填充的地址和卡号，MetaMask、Electrum、Exodus 这类加密钱包的文件，VPN 配置，邮箱凭证，FTP 客户端的数据，Telegram 的登录状态，桌面上的 .pdf、.docx、.rtf 文档，最后再附一份这台机器的系统信息。你的 Claude 会话只是这张清单里的一行，排在自动填充后面，排在钱包前面。</p>
+<p>这个产业的规模，执法机关自己给过数字。微软数字犯罪部门 2025 年 5 月 21 日联合多国执法机构打击 Lumma，通报里的数字是：约 2,300 个恶意域名被查封或暂停；在 3 月 16 日到 5 月 16 日这两个月的窗口里，识别出超过 39.4 万台被感染的 Windows 设备。欧洲刑警组织的 Operation Endgame 行动在 2026 年 6 月针对 SocGholish、StealC、Amadey 这几个家族又打了一轮，通报的合计数字是：下线 326 台服务器和 142 个域名，从大约 38.5 万台被感染的系统里恢复出约 2,700 万条被盗凭证。</p>
+<p>38.5 万台机器，2,700 万条凭证，平均每台机器七十条。</p>
+<p>这就是为什么你不该问"我为什么被针对"。你没有被针对。有人扫了一整片，你在那片里，你的 Claude 在你的电脑里，仅此而已。</p>
+<p><img alt="图注：密码、二次验证、SSO 全都守在登录那一瞬间；会话票据发出之后的日子里，它们一个都不在岗" src="images/illus_02.png" /></p>
+<p><em>图注：密码、二次验证、SSO 全都守在登录那一瞬间；会话票据发出之后的日子里，它们一个都不在岗</em></p>
+<h2>三、为什么偏偏现在轮到 AI 账号</h2>
+<p>赃物是有行情的，这行的人比你更懂什么值钱。</p>
+<p>Group-IB 在 2023 年 6 月发过一份报告：2022 年 6 月到 2023 年 5 月之间，他们在 Raccoon、LummaC2、RedLine 这些窃取木马的日志里找到了超过 10 万条 ChatGPT 账号凭证，光是 2023 年 5 月一个月就新增 26,800 条，按地区分，亚太最多，约 4.1 万条。那个时候这些凭证的卖点还是"里面有聊天记录"——买家想看的是别人往对话框里粘了什么公司文件。</p>
+<p>三年过去，卖点变了。现在偷的不是你说过什么，是你还能用多少。</p>
+<p>订阅制自己把一件东西做成了商品：额度。而额度作为赃物，有三个让同行眼红的属性。</p>
+<p>第一，它不需要洗。偷银行卡得洗钱，偷加密钱包得过混币器，中间层层抽成，风险全在变现那一步。AI 额度不用——它本身就是能直接花掉的东西，花掉的形态是算力。小偷不需要把它换成钱，他只要拿它去干活。</p>
+<p>第二，它有下游，而且下游的胃口大得吓人。Sysdig 的威胁研究团队 2024 年 5 月披露过一类叫 LLMjacking 的攻击：攻击者拿被盗的云凭证，去跑受害者账号底下的大模型推理服务，报告里给出的数字是，被劫持的 Claude 2 类模型可以让受害者一天产生高达 46,000 美元的消耗，不加控制的情况下单次行动一天能烧掉超过 10 万美元。那次偷的是云 API 凭证，不是浏览器里的会话 cookie，路径完全不一样；但它证明的是同一件事——算力本身就是能直接花掉的赃物，而且花起来很快。</p>
+<p>顺着这个差别再走一步：按量计费的云账单会给你告警，包月订阅不会。攻击者薅的是你的限额，你连一条扣款短信都收不到。</p>
+<p>第三，受害者发现得慢。慢到什么程度？慢到你会先怪厂商，再怪自己昨晚多问了几个问题，最后才怀疑账号。</p>
+<p>Anthropic 的用户条款里写着，你不得把账号登录信息、API key 或账号凭据分享给任何人，也不得让别人使用你的账号。这条款是写给你看的，用来在出事时界定你的责任。</p>
+<p>对面那个人不看条款。他甚至不需要你的账号——他要的是你的限额，用完这个月，下个月他还在。</p>
+<p><img alt="图注：38.5 万台机器、2,700 万条凭证，是欧洲刑警组织 2026 年 6 月一轮行动里恢复出来的数字——平均每台机器七十条" src="images/illus_03.png" /></p>
+<p><em>图注：38.5 万台机器、2,700 万条凭证，是欧洲刑警组织 2026 年 6 月一轮行动里恢复出来的数字——平均每台机器七十条</em></p>
+<h2>四、删掉你存的银行卡，是它能做的全部</h2>
+<p>回头看 Anthropic 那三个动作，每一个都值得拆开——强制登出，杀掉的是那张被复制走的票。杀不掉的是那台机器上还活着的木马。你登出，你再登进去，浏览器发一张新票，木马把新票再抄一份——它一直在那儿，它的工作时间是 7×24。</p>
+<p>删掉已保存的支付方式，这一步最说明问题。Anthropic 给的建议是：确认电脑上的恶意软件彻底清干净之后，再把支付方式加回去。翻过来说就是——在你证明自己那台机器是干净的之前，我们不打算让这个账号还有花钱的能力。它没有明说，但这个动作等于承认了一件事：一个 AI 订阅账号，本质上是一个绑着卡、能自动续费、能升级套餐的钱包。</p>
+<p>退款，是把它自己认定为未经授权的扣费还回去。谁来认定，认定的标准是什么，一样没有公布。</p>
+<p>三件事全部发生在你这一侧。因为漏洞确实不在它那儿——木马是你自己电脑上的，这一点 Anthropic 说得没错，也没什么好赖的。</p>
+<p>但"漏洞不在我这儿"和"我什么都做不了"，是两码事。浏览器行业已经在同一个问题上打了整整两轮。</p>
+<p>第一轮是 Chrome 在 2024 年 7 月随 127 版本在 Windows 上推的 App-Bound Encryption，思路是把 cookie 的加密和 Chrome 这个应用本身绑定，木马想拿到 cookie 就得先拿到系统级权限或者往 Chrome 进程里注代码，动静大到杀软能看见。公开报道随后给出的结果是：这道墙立起来没多久，Lumma、Vidar、StealC、Rhadamanthys 这些家族就陆续跑出了绕过版本。</p>
+<p>第二轮才是真正打在要害上的那一拳，叫 DBSC，设备绑定会话凭据。建立会话的时候浏览器生成一对公私钥，私钥塞进 TPM（主板上专门存密钥、只进不出的那块芯片）里出不来，之后浏览器必须周期性地证明"我持有这把私钥"才能把票续下去。票据从此和这台设备长在一起，抄一份走没有用，因为抄不走那把钥匙。Google 在 2026 年 5 月宣布 DBSC 在 Windows 上的 Chrome 里正式可用。</p>
+<p>顺带说一句，这两轮升级到目前为止都发生在 Chrome 里。你要是平时用 Safari 或者 Firefox 登录 Claude，等于连这两轮都没赶上，风险只会更高，不会更低。</p>
+<p>所以真正该问的问题不是"用户为什么要装盗版游戏"。真正该问的是：AI 厂商什么时候把会话绑到设备上。</p>
+<p>在那之前，<strong>你的"已登录"就是一张不记名的票，谁捡到算谁的</strong>。</p>
+<p><img alt="图注：不记名的票谁捡到都能用；绑了设备的票离开那把硬件里的钥匙就是一张废纸——这是行业已有的答案，只是还没轮到 AI 厂商" src="images/illus_04.png" /></p>
+<p><em>图注：不记名的票谁捡到都能用；绑了设备的票离开那把硬件里的钥匙就是一张废纸——这是行业已有的答案，只是还没轮到 AI 厂商</em></p>
+<h2>五、防的是冒充你的人，来的是直接用你的人</h2>
+<p>如果你怀疑自己中招了，顺序很要紧，做反了等于白做：先清机器，再作废会话，最后才改密码。这个顺序不能倒过来——木马还在跑的时候你改的密码、你重新登录换来的新会话，会在几分钟内被同一个东西抄走第二遍，你只是给对方换了一张更新鲜的票。</p>
+<p>"清机器"这三个字比看上去难。这类木马里有相当一部分是一次性的：偷完就自删，杀毒软件事后再扫，报告干干净净，而你的凭证已经躺在别人的日志包里了。所以别拿"我杀毒软件说没事"当结论——换一款你日常不用的反恶意软件做一次全盘扫描；如果这台机器上装过任何破解工具、盗版游戏、来源不明的安装包，最彻底的做法是重装系统。</p>
+<p>然后去 Claude 的设置里，账户那一栏往下拉，有一个活跃会话列表，能看到每个设备、大致位置和最后活跃时间。"登出所有设备"会把除当前之外的会话全部作废；单条会话旁边的三点菜单里有终止，点下去那台设备的令牌立刻失效。用 Claude 账号登录过 Claude Code 的，还要去设置里的 Claude Code 那一栏，把授权令牌一并删掉。</p>
+<p>改密码要改两处：登录 claude.ai 的账号密码是一处；如果你的邮箱密码、系统密码跟这台机器上保存过的密码有重复，一并换掉——被打包带走的从来不只是 Claude 那一行。</p>
+<p>用 API key 写程序的，这条同样适用。木马从 <code>.env</code>、配置文件、环境变量里把 key 原样捞走，跟捞 cookie 是同一个动作、同一个日志包。去 Console 的 API Keys 页面吊销旧的、生成新的，别等到账单上出现你没跑过的推理。</p>
+<p>支付方式最后再说。确认机器干净之前，别急着加回去。</p>
+<p>这些年安全行业教给普通人的所有东西——设一个长密码，开二次验证，绑手机，接短信，用指纹——保护的都是同一个瞬间：你走进门的那一下。整条防线全部堆在门口。</p>
+<p>而这批人不进门。他们等你自己走进去，然后把你落在门里的那张票拿走。</p>
+<p>所以下次再有人问你账号安全做得怎么样，"我开了二次验证"不是一个答案。<strong>二次验证防的是想冒充你的人。现在这批人不冒充你，他们直接用你。</strong></p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>这些年安全行业教给普通人的所有东西——长密码、二次验证、绑手机、接短信、用指纹——保护的都是同一个瞬间：你走进门的那一下。整条防线全部堆在门口。</p>
+    <p>而这批人不进门。他们等你自己走进去，然后把你落在门里的那张票拿走。二次验证防的是想冒充你的人；现在这批人不冒充你，他们直接用你。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.microsoft.com/en-us/security/blog/2025/05/21/lumma-stealer-breaking-down-the-delivery-techniques-and-capabilities-of-a-prolific-infostealer/" target="_blank" rel="noopener">[Microsoft Security Blog：Lumma Stealer — breaking down the delivery techniques and capabilities of a prolific infostealer（2025-05-21）](</a> )</div>
+      <div class="footer-source-item"><a href="https://blogs.microsoft.com/on-the-issues/2025/05/21/microsoft-leads-global-action-against-favored-cybercrime-tool/" target="_blank" rel="noopener">[Microsoft On the Issues：Microsoft leads global action against favored cybercrime tool（Lumma 打击行动通报，2025-05-21）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.bleepingcomputer.com/news/artificial-intelligence/anthropic-warns-infostealer-malware-is-hijacking-claude-sessions-to-drain-usage/" target="_blank" rel="noopener">[Anthropic 给受影响用户的通知邮件（2026-08-30 起发出，本文英文引语出自该邮件，经多家安全媒体转述）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.europol.europa.eu/media-press/newsroom" target="_blank" rel="noopener">[Europol Newsroom：Operation Endgame 历次行动通报（2026-06 针对 SocGholish / StealC / Amadey 一轮）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.group-ib.com/media-center/press-releases/stealers-chatgpt-credentials/" target="_blank" rel="noopener">[Group-IB：Stealers ChatGPT Credentials（2023-06）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.sysdig.com/blog/llmjacking-stolen-cloud-credentials-used-in-new-ai-attack" target="_blank" rel="noopener">[Sysdig Threat Research：LLMjacking — Stolen Cloud Credentials Used in New AI Attack（2024-05）](</a> )</div>
+      <div class="footer-source-item"><a href="https://workspaceupdates.googleblog.com/2026/05/prevent-account-takeovers-with-DBSC-now-generally-available-in-the-Chrome-browser-for-Windows.html" target="_blank" rel="noopener">[Google Chrome：Device Bound Session Credentials 在 Windows 上正式可用（2026-05）](</a> )</div>
+      <div class="footer-source-item"><a href="https://blog.google/security/protecting-cookies-with-device-bound-session-credentials/" target="_blank" rel="noopener">[Google Security Blog：Protecting cookies with Device Bound Session Credentials](</a> )</div>
+      <div class="footer-source-item"><a href="https://support.claude.com/en/articles/10310342-how-do-i-log-out-of-all-active-sessions" target="_blank" rel="noopener">[Anthropic Help Center：How do I log out of all active sessions?](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/legal/terms" target="_blank" rel="noopener">[Anthropic Consumer Terms of Service](</a> )</div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
