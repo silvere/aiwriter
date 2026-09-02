@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>"过去一小时，我的 agent 学会了跑 LTspice"——苹果把这句话交给了法院</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 行业</span>
+  <h1>"过去一小时，我的 agent 学会了跑 LTspice"——苹果把这句话交给了法院</h1>
+  <div class="hero-meta">
+    <span>2026-09-02</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">8 月 31 日苹果递进法院的那份材料里，有一句话不是律师写的，是被告自己写的。苹果给这份材料的定语是：shocking。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、他没还的那台笔记本，一直在替苹果记账</h2>
+
+    <p>Chang Liu 在苹果干了八年，职位是 senior system electrical engineer——高级系统电气工程师，管电的那种。2026 年 1 月，他离职去了 OpenAI。</p>
+
+    <p>走的时候，苹果配给他的那台 MacBook 没有还。</p>
+
+    <p>苹果最早盯上他，用的还是老办法。7 月 10 日提交的那份诉状（案号 5:26-cv-07078）里，苹果的证据是访问记录和下载记录：Liu 离职后仍然能进苹果的内部网络存储，靠的是一个身份验证上没修好的洞；他在入职 OpenAI 之后的几周里下载了数十份苹果机密硬件文件，累计超过一千页，按诉状的说法是"机密技术演示、表格、PDF 和书面工作成果"。</p>
+
+    <p>到这一步为止，一切都还很传统：谁在什么时候登录了什么、拉走了多少东西。服务器日志能告诉你的，就这么多。</p>
+
+    <p>8 月 31 日那份新材料要回答的是下一个问题：东西拉走之后，被拿去干了什么。（顺带说清用词：7 月 10 日那份叫诉状，是立案时递的起诉书；之后每次要求法官做点什么另外递的文件叫书状，8 月 31 日这份是其中一份。）</p>
+
+    <p>苹果称，2026 年 3 月，也就是他离职两个月后，Liu 下载了一份苹果的电源转换电路原理图，把它装进 LTspice 跑了仿真——这是电源工程师的日常工具，用来在焊出实物之前先算一遍电路会怎么表现。跑完之后，他发消息告诉别人，这次仿真是为了电源转换方面的开发工作。</p>
+
+    <p>苹果是怎么知道这件事的？</p>
+
+    <p>他用那份图的机器是一台 Mac mini。那台 Mac mini 通过 iCloud，同步到了他从苹果带走、一直没还的那台 MacBook 上。</p>
+
+    <p>八个月后，2026 年 8 月 21 日，被告方律师把这台 MacBook 交给了苹果。苹果的书状里对这个交付时间点有个括号级的补充：`only after weeks of delay`——拖了好几周才给。</p>
+
+    <p>拿到机器，苹果做了法证分析。法证分析不是什么黑科技，就是把这台设备上的同步记录、文件时间戳、消息记录一条条拉出来排队，还原成一条"这台电脑什么时候打开过什么、往哪儿传过什么"的时间线。</p>
+
+    <p>排完之后，苹果写了这段：</p>
+
+    <blockquote><p>"This shocking evidence—which Defendants chose to ignore despite its availability—demonstrates why Apple urgently needs expedited discovery. The MacBook represents the very limited information Defendants provided so far (and only after weeks of delay), and shows Apple is not conducting 'fishing expeditions' but that its trade secrets are being used and evidence is being destroyed."</p></blockquote>
+
+    <p>翻过来大意是：这份令人震惊的证据——被告明知它就在那儿却选择无视——说明了苹果为什么急需加速取证。这台 MacBook 是被告迄今提供的极其有限的材料（还是拖了好几周才给的），它表明苹果不是在搞"钓鱼式取证"，而是它的商业秘密正在被使用，证据正在被销毁。</p>
+
+    <p>一台没还的公司笔记本，安安静静地在他家躺了八个月，把他后来在新公司干的活，一件一件同步了回来。</p>
+
+    <p>![图注：他用来干活的新机器和他没还的旧机器共用一个 iCloud 账号，苹果不需要看见他，只需要等那台电脑回家](images/illus_01.png)</p>
+
+    <p>*图注：他用来干活的新机器和他没还的旧机器共用一个 iCloud 账号，苹果不需要看见他，只需要等那台电脑回家*</p>
+
+    <hr>
+
+    <h2>二、那句话不是招供，是炫耀</h2>
+
+    <p>书状里最要命的那条证据，是 Liu 自己打的一行字：</p>
+
+    <blockquote><p>"In the past hour, my agent learned how to run LTspice, look at result, tune compensation parameter."</p></blockquote>
+
+    <p>过去一小时，我的 agent 学会了跑 LTspice、看结果、调补偿参数。</p>
+
+    <p>这句话在电源工程师那儿的分量，外行不容易掂出来。补偿参数（compensation parameter）是开关电源环路里最烦的那部分——它决定电源在负载突变的时候会不会震荡，调它没有公式一步到位，全靠改一点、跑一遍仿真、看波形、再改一点。这活很多人调一整天调不出来，是那种熬人的、纯手工的、你必须坐在屏幕前一遍遍点的东西。</p>
+
+    <p>他把这活交给了 agent。一小时。</p>
+
+    <p>这句话的语气也不像一个正在做坏事的人。"In the past hour"——他在计时，他在算这玩意儿帮他省了多少。这是一个工程师刚发现新工具好使、忍不住要跟人说一嘴的语气，里面没有一丝心虚。</p>
+
+    <p>问题在于，要让 agent 学会跑这个仿真，他得先把那张苹果的电路图，完整地、明文地，交到 agent 手里。</p>
+
+    <p>以前偷图的人，图是躺在硬盘里的。这次这张图必须被打开、被读懂、被接进一条流水线，还得被一个会记录的东西反复调用。他不是把图藏起来了，他是把图接上了电。</p>
+
+    <strong>过去，机密被偷走之后会安静下来。现在它得开始工作，而工作是有动静的。</strong>
+
+    <hr>
+
+    <h2>三、以前的人是怎么被抓的：一张单程机票，和一个同事的眼睛</h2>
+
+    <p>苹果告前员工偷东西，前面有过两回；隔壁谷歌还有一回更贵的。这三次是怎么破的，值得摆出来对照。</p>
+
+    <p>Xiaolang Zhang 是苹果自动驾驶项目 Project Titan 的工程师。2018 年，他休完陪产假回来说要辞职去中国的小鹏汽车。他拿走的东西里有一份 25 页的文档，内容是自动驾驶车电路板的工程原理图，他把它下载到了妻子的电脑上。他是在圣何塞机场被 FBI 抓的，因为他买了一张飞中国的单程机票。2022 年 8 月认罪，2024 年 2 月判决：120 天监禁，三年监督释放，赔偿 146,984 美元。</p>
+
+    <p>Jizhong Chen 同样出自 Project Titan，2019 年 1 月被捕。苹果注意到他，是因为一个同事看见他在项目大楼里拍照——用广角，拍得很宽，同事觉得可疑，报告了。苹果内部审查之后，在他的个人设备上找到了约一百张涉密照片和两千多份含手册与原理图的机密文件。</p>
+
+    <p>Anthony Levandowski 这个不是苹果的，是谷歌的。Waymo 起诉 Uber 那桩案子，Waymo 的律师主张他离职前复制了 14,000 份文件。案子开庭没几天就和解，Uber 拿出 0.34% 的股权，按当时 720 亿美元估值算，约合 2.45 亿美元。</p>
+
+    <p>把苹果那两件事的破案环节单独抽出来看：一张飞中国的单程机票，一个同事的余光。全靠巧合和人眼。</p>
+
+    <p>商业秘密案难打，难就难在这里。东西是无形的，拷贝不留缺口，你拿走一份图纸，原件还在原处。检方和原告能拿到什么证据，长期取决于当事人有没有在某个环节犯一个愚蠢的、可被肉眼观察到的错误。买单程机票是愚蠢的。在楼里举着相机拍广角是愚蠢的。</p>
+
+    <p>这次没有人看见 Chang Liu 干任何事。</p>
+
+    <p>话别说得太满。苹果最初把他告上法庭，靠的还是老路子——访问日志和下载记录，这跟前两案没有本质区别。日志能证明的是"他拿了"。</p>
+
+    <p>而商业秘密案真正难打的从来不是"他拿了"，是"他用了"。文件躺在硬盘里，被告方可以说我只是忘了删、从来没打开过，这是这类案子里最标准的抗辩。要凿穿这层，过去只能靠单程机票、靠同事的余光、靠对方自己开口承认。</p>
+
+    <p>苹果这次拿到"他用了"，靠的是两样东西：一个他自己没关掉的 iCloud 同步，和一句他自己打的、一个字都不用别人添的消息。</p>
+
+    <p>![图注：前两起苹果案都得等当事人犯一个肉眼可见的蠢，这次的证据是他干活时顺手生成的](images/illus_02.png)</p>
+
+    <p>*图注：前两起苹果案都得等当事人犯一个肉眼可见的蠢，这次的证据是他干活时顺手生成的*</p>
+
+    <hr>
+
+    <h2>四、OpenAI 的辩护，正好指着那根绞索</h2>
+
+    <p>9 月 1 日，也就是苹果交材料的第二天，OpenAI 向同一个法院提交了回应。</p>
+
+    <p>OpenAI 的核心说法是，这整件事是 `a mess of Apple's own making`——苹果自己搞出来的一摊烂事。书状里还有一句更硬的：苹果 `cannot use its own sloppy procedures to blame others for its own mess`，不能拿自己稀烂的流程去怪别人。</p>
+
+    <p>OpenAI 具体点了苹果两条（这是 OpenAI 的单方主张，苹果并没认）：苹果鼓励员工用个人 iCloud 账号访问工作文档；离职流程一塌糊涂，员工走的时候根本分不清哪些是个人的、哪些是公司的。</p>
+
+    <p>OpenAI 还在法庭文件里放了个数字：它已经为硬件项目招了大约 400 名前苹果员工。这个数字它没多解释，但摆在那儿的意思不难读——苹果这案子冲的不只是偷窃，是人往外跑。</p>
+
+    <p>这段辩护本身很聪明。它绕开了"到底用没用那张图"，改去打"苹果自己也不干净"。</p>
+
+    <p>只是绕出来的位置有点不巧。</p>
+
+    <p>OpenAI 指着骂的那条——员工的个人 iCloud 和公司文件搅在一起——正是把 Mac mini 上那次仿真送回苹果那台 MacBook 的通道。苹果这次拿得出证据，靠的恰恰是 OpenAI 认定它管理稀烂的那套东西。</p>
+
+    <p>OpenAI 在法庭上说：你看，苹果的边界全是漏的。苹果在同一个法庭上说：对，所以我们才看得见。</p>
+
+    <strong>两边争的从来不是他有没有用那张图。是这事算不算苹果自己活该。</strong>
+
+    <hr>
+
+    <h2>五、图能还，跑出来的东西还不了</h2>
+
+    <p>按公开报道的诉状内容，苹果 7 月提出的诉求里有很传统的一条：命令被告返还苹果商业秘密和机密信息的全部副本。这句话是商业秘密诉讼的标准配置，几乎每一份这类起诉书里都有。</p>
+
+    <p>这句话在商业秘密法里躺了几十年，一直好使，因为过去被拿走的东西就是"副本"——一份图纸、一个文件夹、一块硬盘。你把它交回来、把拷贝删干净，损害就算按住了。至于人脑子里记住的部分，法律基本上放弃追究，默认那点东西泄漏得慢、复现得难。</p>
+
+    <p>按苹果这次的指控，被拿去用的不再只是一份副本，而是一次跑完的仿真、一组已经调出来的补偿参数，和一个 agent 在一小时里"学会了"的一套操作——打开工具、载入这张图、读波形、改参数、再来一遍。</p>
+
+    <p>那张 PDF 当然能还，交回去、删干净，技术上没有任何难度。</p>
+
+    <p>还不回去的是那次仿真跑出来的结果，和据此调出来的那组参数——按苹果的指控，它们已经进了 OpenAI 的电源开发工作。这里不需要把 agent 说得多玄（它并不会跨会话"记住"什么，删掉配置就没了），要紧的是更朴素的一件事：一个已经算出来的正确答案，一旦被人看过一眼、写进了别处，就不存在"退回"这个操作。</p>
+
+    <p>![图注：商业秘密法假设被拿走的是可以清点的副本，而这次被指控用掉的是一次跑完的仿真和一组调出来的参数](images/illus_03.png)</p>
+
+    <p>*图注：商业秘密法假设被拿走的是可以清点的副本，而这次被指控用掉的是一次跑完的仿真和一组调出来的参数*</p>
+
+    <p>Zhang 被抓那年，他拿走的是 25 页纸。法院判他赔 146,984 美元，那是一个可以被清点的东西——多少页、值多少钱、还回来多少。</p>
+
+    <p>到 Chang Liu 这儿，苹果书状里没有页数。有的是一个小时。</p>
+
+    <strong>他把偷来的东西接上电的那一刻，"还回来"这三个字就已经不够用了。</strong>
+
+    <p>而苹果能把"他用了"这一环钉住，不是因为他藏得不够好。是因为 agent 干得太快、太顺、太值得说一句——快到他非得打开对话框，敲下 "In the past hour"。</p>
+
+    <p>那一刻，他手边所有的机器都在替苹果记账。</p>
+
+    <p>10 月 1 日上午九点，Davila 法官会在圣何塞第 4 法庭开庭，听苹果讲为什么这件事等不了。</p>
+
+    <hr>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>苹果能把「他用了」这一环钉住，不是因为他藏得不够好，而是因为 agent 干得太快、太顺、太值得说一句——快到他非得打开对话框，敲下 In the past hour。</p>
+    <p>那一刻，他手边所有的机器都在替苹果记账。10 月 1 日上午九点，Davila 法官会在圣何塞第 4 法庭开庭。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.courtlistener.com/docket/73602437/apple-inc-v-liu/" target="_blank" rel="noopener">[Apple Inc. v. Liu et al., No. 5:26-cv-07078 (N.D. Cal.) 案卷](</a> )</div>
+      <div class="footer-source-item"><a href="https://9to5mac.com/wp-content/uploads/sites/6/2026/07/Apple-Inc.-v.-Liu-et-al.pdf" target="_blank" rel="noopener">[Apple 起诉状全文 PDF（2026-07-10）](</a> )</div>
+      <div class="footer-source-item"><a href="https://9to5mac.com/2026/08/31/apple-openai-forensic-macbook-evidence/" target="_blank" rel="noopener">[Apple 8-31 书状披露的法证证据与 LTspice 消息](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.investing.com/news/stock-market-news/apple-alleges-openai-employee-accessed-circuit-plans-after-joining-startup-4883277" target="_blank" rel="noopener">[Reuters：Apple 指控 OpenAI 员工入职后仍访问电路图](</a> )</div>
+      <div class="footer-source-item"><a href="https://9to5mac.com/2026/09/01/openai-calls-trade-secret-dispute-a-mess-of-apples-own-making/" target="_blank" rel="noopener">[OpenAI 9-1 回应书状："a mess of Apple's own making"](</a> )</div>
+      <div class="footer-source-item"><a href="https://openai.com/index/apple-is-getting-this-wrong/" target="_blank" rel="noopener">[OpenAI 官方声明：Apple is getting this wrong](</a> )</div>
+      <div class="footer-source-item"><a href="https://appleinsider.com/articles/24/02/08/stealing-apple-trade-secrets-can-get-you-120-days-in-prison-and-a-boatload-of-debt" target="_blank" rel="noopener">[US v. Xiaolang Zhang 量刑（2024-02）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2019/01/30/apple-autonomous-vehicle-engineer-accused-of-stealing-trade-secrets.html" target="_blank" rel="noopener">[US v. Jizhong Chen 起诉（2019-01）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.nbcnews.com/tech/tech-news/uber-waymo-reach-surprise-245-million-settlement-self-driving-trade-n846306" target="_blank" rel="noopener">[Waymo v. Uber 和解：0.34% 股权，约 2.45 亿美元](</a> )</div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
