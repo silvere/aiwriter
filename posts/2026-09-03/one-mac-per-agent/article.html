@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenAI 把几万台 Mac mini 摞进了机房，就为了教 AI 点鼠标——你买不到 32G 那一档，怪它</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 行业</span>
+  <h1>OpenAI 把几万台 Mac mini 摞进了机房，就为了教 AI 点鼠标——你买不到 32G 那一档，怪它</h1>
+  <div class="hero-meta">
+    <span>2026-09-03</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">你现在去苹果官网配一台 M4 的 Mac mini，32G 那一档没了。不是缺货，是选项直接从下拉菜单里消失。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、显卡能切开卖，Mac 不能</h2>
+
+    <p>The Information 在 9 月初报道，OpenAI 过去几个月买了数万台 Mac mini 和 Mac Studio。不配显示器，不配键盘，不配鼠标，整机直接进机房当计算节点，专门用来跑强化学习，训练那种能自己操作电脑的 agent。Anthropic 在干同一件事，路线不同，走的是 AWS 租。报道还说 OpenAI 还在继续买。OpenAI 到今天没有确认过这个数字，苹果也没有。</p>
+
+    <p>看到这条新闻的正常反应是：训练 AI 不是应该买显卡吗，买这玩意儿干什么。</p>
+
+    <p>因为这一轮要训练的东西，需要的不是浮点数，是<strong>一台能被点的电脑</strong>。</p>
+
+    <p>你让 agent 学会"用电脑"，它得真的去做这些事：打开 Finder 翻到某个文件夹，在 Numbers 里改一个单元格，把一份 PDF 拖进邮件正文，点掉一个突然弹出来的系统更新提示，等一个加载转圈转完，发现自己点错了再原路退回去重来。每一步都得有个真的操作系统在下面接着，得有真的窗口层级、真的剪贴板、真的文件系统权限、真的那个"应用程序未响应"的转菊花。</p>
+
+    <p>强化学习还有个更贵的要求：这一整套环境得能一键推倒重来。学一次不算学会，得让它在同一个初始状态上反复试一万次，试错、拿反馈、再试。所以你需要的不是一台电脑，是一万个可回滚的电脑状态。</p>
+
+    <p>一张 H100 可以用 MIG 切成七份，分给七个互不相干的租户，各跑各的。</p>
+
+    <p>一台 Mac 不能切。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="图注：同样是算力，GPU 的最小单位是一张卡的七分之一，macOS 的最小单位是一整台机器——差别不在硬件，在许可证。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：同样是算力，GPU 的最小单位是一张卡的七分之一，macOS 的最小单位是一整台机器——差别不在硬件，在许可证。</figcaption></figure>
+
+    <hr>
+
+    <h2>二、卡住这件事的，是一份 2011 年写好的许可证</h2>
+
+    <p>苹果的 macOS 软件许可协议里有这么一句：在你已经拥有并且已经在跑 macOS 的每一台 Mac 上，你可以额外安装、使用和运行<strong>最多两份</strong>（up to two）macOS 的副本或实例，跑在虚拟操作系统环境里。</p>
+
+    <p>后面还跟着限定：这两份只能用于软件开发、开发过程中的测试、运行 macOS Server，或者个人非商业用途。再往后还有一句，不许把它用在 service bureau、分时、终端共享或者类似性质的服务上——说人话就是，不许拿去当云卖。</p>
+
+    <p>这不是一句写在合同里没人管的道德劝诫。你在 Apple Silicon 上试着起第三个 macOS 虚拟机，Virtualization framework 会直接把你顶回来，报错原文是 `The maximum supported number of active virtual machines has been reached`。这条从 Mac OS X Lion 就在，2011 年。</p>
+
+    <p>AWS 把 Mac 搬上云的时候没有绕过这一条，它是照着许可证的形状把服务捏出来的。AWS 自己的文档写着，EC2 Mac 实例是<strong>裸金属实例，跑在单租户专用主机上</strong>，理由原文是 "to comply with macOS licensing"——为了符合 macOS 的许可。一台专用主机，一个实例。文档还有一句更有意思的："Because Amazon EC2 Mac instances are bare-metal instances, macOS has direct access to the Mac mini hardware."</p>
+
+    <p>更狠的是租期。AWS 文档原话：`As part of Apple's macOS Software License Agreement (SLA), there is a 24-hour minimum allocation period for macOS in the cloud.` 你申请到一台专用主机，24 小时的钟就开始走，最早也要等满 24 小时才能释放。</p>
+
+    <p>我们来算一笔账。us-east-1 区的 mac-m4.metal，按需价 1.23 美元一小时。乘 24，一次分配最少 29.52 美元。你的 agent 上去点了四分钟鼠标，然后崩了，你也得按一整天付。</p>
+
+    <p>而一台 M4 的 Mac mini，官网 599 美元起。租不到三十次，够你把机器买回家。OpenAI 选择买断，这不是什么高瞻远瞩的战略眼光，这是小学算术。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="图注：许可证把云上 Mac 的最小计费单位钉成了 24 小时——你用四分钟，账单按一整天出，这才是几万台机器被搬进自家机房的直接原因。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：许可证把云上 Mac 的最小计费单位钉成了 24 小时——你用四分钟，账单按一整天出，这才是几万台机器被搬进自家机房的直接原因。</figcaption></figure>
+
+    <hr>
+
+    <h2>三、那用 Linux 不就完了——问题是分数不认</h2>
+
+    <p>既然 macOS 这么麻烦，用 Ubuntu 不就完了——容器随便开几百个，一分钱不用给苹果，这是任何一个工程师都会先问的问题。</p>
+
+    <p>对，所以大家一直在 Ubuntu 上刷分。OSWorld 这个基准的原始论文里写着两个数：人类基线 72.36%，当时最好的模型 12.24%。到 2025 年 12 月，Simular 的 Agent S3 报出 72.6%，第一次越过人类基线。现在公开的 leaderboard 上，最高那条已经到 85.4%。两年时间，从人类的六分之一干到人类的一点二倍。</p>
+
+    <p>然后你把同一套东西挪到 macOS 上。MacAgentBench 这个基准有 676 个任务、25 个应用，仓库里贴出来的成绩是：OpenClaw 配 Claude Opus，73.7%；Agent-S3 配同一个 Opus，66.9%；不套任何框架的裸 baseline，39.2%。</p>
+
+    <p>同一个 Claude Opus，不套框架 39.2%，套上最好的框架 73.7%——在 macOS 上折腾到今天，最好的成绩刚刚够到 OSWorld 两年前给人类定的那条 72.36% 的线。Ubuntu 那边早就翻过去了。</p>
+
+    <p>而且这个基准的 README 里坦白得很直接：任务跑在 macOS 的 Docker 容器环境里，你得先下一个大约 50GB 的 macOS 虚拟机镜像，每个任务开一个独立容器。OSWorld 的 README 更是干脆写着，macOS 主机一般不支持 KVM，在 macOS 上建议用 VMware。翻译过来就是：Linux 那套靠内核虚拟化把机器切碎、把成本摊薄的省钱办法，在苹果这儿不成立。</p>
+
+    <p>于是做这个方向的研究者只能这么干。macOSWorld 有 202 个任务、30 个应用，整套跑在 AWS 的 Mac mini 上；今年新出的 MacArena 有 421 个任务、50 个应用，跑在苹果自家的 Virtualization 框架上。</p>
+
+    <p>你要提高吞吐，办法只有一个：加台数。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="图注：Ubuntu 上的成绩早已翻过人类基线，macOS 上折腾到今天，最好的组合才刚够到那条线——缺口就是买机器的理由。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：Ubuntu 上的成绩早已翻过人类基线，macOS 上折腾到今天，最好的组合才刚够到那条线——缺口就是买机器的理由。</figcaption></figure>
+
+    <hr>
+
+    <h2>四、另一头，普通人在抢同一个箱子</h2>
+
+    <p>刚才那个拿到 73.7% 的 OpenClaw，不是哪家大厂的产品。它是一个开源的自托管 agent 运行时，2025 年底放出来，几周之内在 GitHub 上冲过 15 万星。</p>
+
+    <p>它跟聊天框的区别在于它不下班。它是常驻在你机器上的后台进程，跨会话保留记忆，能执行 shell 命令，能开浏览器，你睡觉的时候它接着干活，通过你本来就在用的聊天软件跟你说话。</p>
+
+    <p>跑它最舒服的机器是哪台？Mac mini M4 Pro，64G 内存。这个配置能以每秒 10 到 15 个 token 跑 32B 参数的模型，整机功耗 20 到 40 瓦。统一内存加上不用装空调，是它成为"个人 AI 服务器"首选的全部理由。</p>
+
+    <p>所以现在有两拨人在抢同一个 SKU：一拨在机房里成千上万台地摞，一拨在客厅电视柜上放一台。</p>
+
+    <p>撞车的结果 5 月就摆出来了。苹果一口气砍掉了四个配置：M4 Mac mini 的 32G 没了，M4 Pro Mac mini 的 64G 没了，M3 Ultra Mac Studio 的 256G 没了，M4 Max Mac Studio 的 128G 也没了。库克在 2026 财年第二财季的电话会上说，供需平衡还要好几个月。</p>
+
+    <p>再看另一张表。苹果 2026 财年第三财季（截至 6 月 27 日）的财报里，Mac 业务收入 104 亿美元，同比涨 29%，六月季度历史最高。公司总收入 1094 亿美元，涨 16%。库克在通稿里的原话是，这是苹果史上最强的六月季度，iPhone、Mac 和服务三条线全部两位数增长。</p>
+
+    <p>8 月 25 日，苹果宣布 Mac Studio 和 Mac mini 换代，9 月 22 日发货。</p>
+
+    <p>从头到尾，苹果一个字都没提 OpenAI。它也确实不需要提。</p>
+
+    <p>这里要替苹果说句公道话：内存配置消失这件事，不能全算在 OpenAI 头上。2026 年全球 DRAM 本来就在涨，AI 服务器把高带宽内存的产能吃掉一大块，涨价是行业性的，跟谁买 Mac mini 没关系。苹果自己给的口径也是两条并列——供给紧张，加上需求超预期。</p>
+
+    <p>但这两条不是互相替代的关系，是互相放大的关系。如果只是内存涨价，苹果的合理动作是涨价，不是砍配置；如果只是需求平平，涨价的成本可以慢慢往售价上转。砍掉四个高内存档位，意味着这些档位的订单量已经大到会挤占别的产品线——而 Mac 收入同比涨 29%、创六月季度纪录这个数摆在那儿，说明它不是一个"卖不动只好下架"的故事。买走高内存 Mac 的人，和让 Mac 创纪录的人，大概率是同一批。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_04.png" alt="图注：机房和客厅抢同一个箱子，最先消失的是中间那几档内存——这是普通买家第一次直接为算力竞赛买单。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">图注：机房和客厅抢同一个箱子，最先消失的是中间那几档内存——这是普通买家第一次直接为算力竞赛买单。</figcaption></figure>
+
+    <hr>
+
+    <h2>五、想看谁是真干活的，去数它买了多少台</h2>
+
+    <p>这几年判断一家公司在 AI 上认不认真，大家习惯看两样东西：模型跑分，和融资额。这两样都能修饰。跑分可以挑基准、可以调采样、可以在提交前多试几遍；融资额更是想写多少写多少。</p>
+
+    <p>采购单不行。几万台 Mac mini 是要有人签字、有人验收、有人插网线、有人给它们腾出地方的。这东西造不了假，也没法在发布会上一笔带过。</p>
+
+    <p>所以在 computer-use 这个方向上，最诚实的指标已经变成了一个特别土的数：机房里有多少台真机。</p>
+
+    <p>这一轮跟前几年还有个不一样的地方，在代价的落点。之前 AI 抢 H100、抢电、抢水，普通人是有距离感的——你又不买 H100，你家也没有变电站。这次它抢的东西你每天都在用，甚至是你原本已经放进购物车的那一档内存。</p>
+
+    <p>你在苹果官网点开那个下拉菜单，发现 32G 不见了，那一刻你已经是这场军备竞赛的乙方了，只是没人通知你。</p>
+
+    <p>AI 学会用电脑之前，得先把电脑买光。就这。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>判断一家公司在 computer-use 上认不认真，跑分能修饰，融资额能修饰，采购单不能。几万台 Mac mini 是要有人签字、有人验收、有人插网线的。</p>
+    <p>这一轮 AI 抢的不再是你摸不着的 H100，而是你原本已经放进购物车的那一档内存。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://github.com/aws-samples/amazon-ec2-mac-getting-started/blob/main/ec2-macos.md" target="_blank" rel="noopener">[Amazon EC2 Mac 上手指南（AWS 官方样例仓库，24 小时最低分配期与裸金属单租户条款原文）](</a> )</div>
+      <div class="footer-source-item"><a href="https://github.com/JetAstra/MacAgentBench" target="_blank" rel="noopener">[MacAgentBench 基准仓库（676 任务 / 25 应用，各框架成绩）](</a> )</div>
+      <div class="footer-source-item"><a href="https://github.com/xlang-ai/OSWorld" target="_blank" rel="noopener">[OSWorld 基准仓库（macOS 主机不支持 KVM 的说明）](</a> )</div>
+      <div class="footer-source-item"><a href="https://github.com/trycua/cua" target="_blank" rel="noopener">[Cua：跨系统 computer-use 集群与 Lume（基于 Apple Virtualization.Framework）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.apple.com/newsroom/2026/07/apple-reports-third-quarter-results/" target="_blank" rel="noopener">[Apple 2026 财年第三财季财报（Mac 收入 104 亿美元，同比 +29%）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.macrumors.com/2026/05/05/apple-mac-studio-mac-mini-ram-cuts/" target="_blank" rel="noopener">[Apple 下架 Mac mini / Mac Studio 高内存配置（MacRumors，2026-05-05）](</a> )</div>
+      <div class="footer-source-item"><a href="https://eclecticlight.co/2022/08/04/virtualisation-on-apple-silicon-macs-8-how-apple-limits-vms/" target="_blank" rel="noopener">[macOS 虚拟机数量上限的技术与许可来源（The Eclectic Light Company）](</a> )</div>
+      <div class="footer-source-item"><a href="https://developer.apple.com/forums/thread/729580" target="_blank" rel="noopener">[Apple 开发者论坛：第三个 macOS 虚拟机的报错原文](</a> )</div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2606.06560" target="_blank" rel="noopener">[MacArena：在线 macOS 环境上的 computer-use 基准（421 任务 / 50 应用）](</a> )</div>
+      <div class="footer-source-item"><a href="https://os-world.github.io/" target="_blank" rel="noopener">[OSWorld 官方项目页（人类基线 72.36%）](</a> )</div>
+      <div class="footer-source-item"><a href="https://leaderboard.steel.dev/leaderboards/osworld/" target="_blank" rel="noopener">[OSWorld 公开榜单（当前最高分）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.simular.ai/articles/simulars-computer-use-agent-outperforms-humans" target="_blank" rel="noopener">[Simular Agent S3 越过 OSWorld 人类基线（72.6%）](</a> )</div>
+      <div class="footer-source-item"><a href="https://instances.vantage.sh/aws/ec2/mac-m4.metal" target="_blank" rel="noopener">[mac-m4.metal 按需价格与规格](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.techrepublic.com/article/news-openai-mac-mini-mac-studio-ai-agents/" target="_blank" rel="noopener">[OpenAI 采购数万台 Mac mini / Mac Studio 的报道（TechRepublic 转述 The Information）](</a> )</div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
