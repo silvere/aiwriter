@@ -80,26 +80,65 @@ def _write_marker(post_dir: Path, media_id: str, title: str, *, note: str) -> No
         }, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+def _newest_synced_date(posts: list[tuple[str, Path]]) -> str | None:
+    """已同步文章里最新的那篇的目录日期；一篇都没同步过则 None。"""
+    dates = [date_part for date_part, d in posts if (d / ".wechat-sync.json").exists()]
+    return max(dates) if dates else None
+
+
+def _resolve_cutoff(posts: list[tuple[str, Path]], *, recent_days: int,
+                    max_backfill_days: int, today: str | None = None) -> str:
+    """选文下界日期。
+
+    为什么不能只用「今天往前 N 天」这一个固定窗口（2026-09-04 的事故）：
+    self-hosted runner 从 8-31 起离线了 4 天，每次触发都排队 24 小时被 GitHub 超时取消。
+    runner 回来那天，`--recent-days 3` 的窗口只剩 09-01 起，8-31 那篇已经滑出窗口——
+    它不会报错、不会重试，就这么永久漏发了。窗口锚在「今天」，而积压是按「上次成功同步」
+    算的，两者一旦错位，中间的文章静默消失。
+
+    所以下界改成锚在**已同步文章的最新日期**上：那一天之后的未同步文章都是真积压，
+    不管 runner 停了几天都能补回来。同时保留两道护栏：
+      - 下界不晚于原来的 N 天窗口（正常情况下行为完全不变）；
+      - 下界不早于 max_backfill_days（防止 runner 停几个月后，一次性把几十篇
+        老文重新推进草稿箱——历史上有 60+ 篇早期文章从来没有标记）。
+    """
+    now = datetime.now(timezone.utc)
+    today = today or now.strftime("%Y-%m-%d")
+
+    def _ago(days: int) -> str:
+        return (now - timedelta(days=days)).strftime("%Y-%m-%d")
+
+    window = _ago(recent_days)
+    newest = _newest_synced_date(posts)
+    if newest is None:                      # 从没同步过 → 只认原窗口，不回溯全史
+        return window
+    return min(window, max(newest, _ago(max_backfill_days)))
+
+
 def _resolve_targets(args) -> list[Path]:
     if args.post:
         p = Path(args.post)
         if not p.is_absolute():
             p = (_REPO / p).resolve()
         return [p]
-    cutoff = (datetime.now(timezone.utc) - timedelta(days=args.recent_days)).strftime("%Y-%m-%d")
-    targets = []
-    for html in sorted(_REPO.glob("posts/*/*/article.html"), reverse=True):
-        d = html.parent
-        date_part = d.relative_to(_REPO).parts[1]  # posts/<date>/<slug>
-        if date_part >= cutoff and not (d / ".wechat-sync.json").exists():
-            targets.append(d)
-    return targets
+    posts = [
+        (html.parent.relative_to(_REPO).parts[1], html.parent)   # posts/<date>/<slug>
+        for html in sorted(_REPO.glob("posts/*/*/article.html"), reverse=True)
+    ]
+    cutoff = _resolve_cutoff(posts, recent_days=args.recent_days,
+                             max_backfill_days=args.max_backfill_days)
+    print(f"::notice::选文下界 {cutoff}"
+          f"（窗口 {args.recent_days} 天，已同步最新 {_newest_synced_date(posts) or '无'}）")
+    return [d for date_part, d in posts
+            if date_part >= cutoff and not (d / ".wechat-sync.json").exists()]
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--post", help="显式指定 post 目录")
     ap.add_argument("--recent-days", type=int, default=3, help="自动选最近 N 天未同步文章")
+    ap.add_argument("--max-backfill-days", type=int, default=30,
+                    help="runner 停机后回溯补发的最大天数上限（防止一次性重发早期无标记老文）")
     ap.add_argument("--dry-run", action="store_true", help="只列计划不真同步")
     ap.add_argument("--force", action="store_true", help="强制重发：跳过标题去重，先删除草稿箱已存在的同标题草稿再新增")
     args = ap.parse_args()
