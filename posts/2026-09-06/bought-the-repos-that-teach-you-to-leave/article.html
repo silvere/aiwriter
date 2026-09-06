@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>英伟达花 129 亿，买走了那几个教你「怎么不用英伟达」的代码仓库</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 商业</span>
+  <h1>英伟达花 129 亿，买走了那几个教你「怎么不用英伟达」的代码仓库</h1>
+  <div class="hero-meta">
+    <span>2026-09-06</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">9 月 3 日，英伟达以 129.3 亿美元收购 Hugging Face。这家公司的年营收，外界估算在三四千万美元之间。三百多倍的市销率，买的显然不是生意。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、296 万个模型里，有 253 万个几乎没人下过</h2>
+
+    <p>Hugging Face 的体量，官方口径听着很唬人：截至 2026 年 8 月，296 万个公开模型仓库，100 万个数据集，144 万个 Spaces，1000 万月活用户，每天 1500 万次下载。</p>
+
+    <p>然后你去看这堆数字的内部结构。85.6% 的模型，从上传那天到今天，累计下载量不到 200 次。1.5% 的仓库吃掉了全站 99.2% 的下载。下载量最高的 50 个账号，占了整个 Hub 的 80.22%。</p>
+
+    <p>所以「英伟达买下了 296 万个开源模型」这个说法，从第一个字开始就是错的。它买的是一个货架，货架上 253 万个格子基本是空的，真正有人伸手拿的东西，全挤在最上面那一排。</p>
+
+    <p>更麻烦的是，最上面那一排的东西，本来也不归 Hugging Face。</p>
+
+    <p>2026 年下载量排第一的模型家族是阿里的 Qwen，约 20.45 亿次，第二名谷歌约 4.18 亿次，第三名 Meta 约 2.27 亿次。Hub 上挂着 151448 个基于 Qwen 的衍生模型，是 Meta 全部模型加起来的 2.6 倍。Qwen 走的是 Apache 2.0，你今天可以把权重全量拖回本地，塞进硬盘，明天就算 huggingface.co 整个关站，这些文件也不会从你机器上消失。</p>
+
+    <p>一个货架，货物是别人的，还是免费的，随时可以搬走。129 亿买它，图什么？</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="把仓库数量和下载量分开看：英伟达买下的不是 296 万个模型，是最上面那一排" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">把仓库数量和下载量分开看：英伟达买下的不是 296 万个模型，是最上面那一排</figcaption></figure>
+
+    <h2>二、买的是四个 GitHub 仓库</h2>
+
+    <p>Hugging Face 这些年最爱说自己是「AI 界的瑞士」。这句话不是价值观宣言，它有具体的物理实现，就是 GitHub 上 huggingface 组织下的四个仓库：</p>
+
+    <p>optimum-amd，适配 AMD 的 ROCm 和 Ryzen AI。optimum-intel，适配英特尔的 OpenVINO。optimum-habana，适配英特尔的 Gaudi 加速卡。optimum-neuron，适配亚马逊自研的 Trainium 和 Inferentia。</p>
+
+    <p>这四个仓库干的是同一件事：一群拿 Hugging Face 工资的工程师，专职写代码教你怎么把模型跑在不是英伟达的卡上。AMD 的 Flash Attention v2 就是这么被合并进 Transformers 和 TGI 主干的——AMD 出人，Hugging Face 出位置，社区出测试。</p>
+
+    <p>对 AMD、英特尔、亚马逊来说，这四个仓库相当于一个不用自己发工资的外包工程部，还自带 1000 万月活的分发渠道。这是「中立」这个词在物理世界里唯一能被查证的样子：不是态度，是四个仓库的 commit 记录和给它们发工资的那张工资单。</p>
+
+    <p>从 9 月 3 日起，这张工资单的签字人换成了英伟达。</p>
+
+    <p>英伟达 2027 财年第二季度（截至 7 月 26 日）总营收 962.2 亿美元，其中数据中心 890 亿，占 92%。按不同机构口径，它在 AI 加速器市场的份额在 80% 到 88% 之间。也就是说，这四个仓库的新雇主，是这四个仓库唯一存在意义所要绕开的那家公司。</p>
+
+    <p>这里不需要什么阴谋。不会有谁开会说「把 optimum-amd 停了」，那样太蠢，也会被抓。真实世界的运作方式更无聊：明年做预算，AMD 新架构的适配排在第几优先级？申请两个 headcount 去修 ROCm 的兼容性 bug，谁批？CUDA 路径的新特性上线当天就有支持，ROCm 路径晚三个月，算不算问题？</p>
+
+    <p>没人下命令，预算会自己说话。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="中立不是一种态度，是这四个仓库的 commit 记录和给它们发工资的那张工资单" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">中立不是一种态度，是这四个仓库的 commit 记录和给它们发工资的那张工资单</figcaption></figure><br></div></p>
+
+    <h2>三、同一个夏天，两个默认值都换了主人</h2>
+
+    <p>如果只有这一笔，还能说是个案。但这个夏天卖掉的不止一家。</p>
+
+    <p>8 月 19 日，Stripe 宣布收购 OpenRouter。据几家媒体的口径，价格在 70 亿到 80 亿美元之间——OpenRouter 5 月刚完成 B 轮，估值 13 亿，四个月翻了五倍多。这家公司做的事很简单：企业把 AI 请求发给它，它帮你路由到大约 400 个模型上去。</p>
+
+    <p>三周之后，英伟达买下 Hugging Face。</p>
+
+    <p>把这两笔放在一起看，被买走的是同一样东西的两半：你<strong>去哪儿找模型</strong>，和你的请求<strong>发到哪儿去</strong>。</p>
+
+    <p>Hugging Face 从 2024 年底开始做 Inference Providers，把请求转发给 Groq、Cerebras、Together、Fireworks、Replicate、SambaNova 等十五到十八家后端，官方明确写着零加价、原样透传供应商成本。这个名单里，Groq 做的是自研 LPU 推理芯片，Cerebras 做的是晶圆级芯片，都是英伟达在推理侧最直接的替代方案。</p>
+
+    <p>而 Groq，去年已经被英伟达花约 200 亿美元买走了资产。那笔交易和 Enfabrica、Poolside 一样，做成了「技术授权 + 团队转移」的结构，绕开了并购审查。</p>
+
+    <p>现在的局面是：英伟达同时握着这份候选名单，和名单上那个名字。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="十五天之内，找模型的入口和发请求的出口，各自换了一个主人" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">十五天之内，找模型的入口和发请求的出口，各自换了一个主人</figcaption></figure><br></div></p>
+
+    <h2>四、三年前，他们拒绝过同一家公司</h2>
+
+    <p>2023 年 8 月，Hugging Face 完成 2.35 亿美元的 D 轮，估值 45 亿，投资方里有 Salesforce Ventures、谷歌的 GV、IBM Ventures，也有英伟达。</p>
+
+    <p>那之后英伟达想再进一步，提出用 5 亿美元投资，按 70 亿估值入股。Hugging Face 拒绝了。理由很清楚：这笔钱会让英伟达成为公司最大的少数股东，而创始人希望平台保持独立。</p>
+
+    <p>三年后，同一家公司，129.3 亿美元，全买。创始人各自拿到约 18 亿美元身家。</p>
+
+    <p>中间发生了什么，值得单拎出来说。</p>
+
+    <p>今年 7 月，OpenAI 的模型——GPT-5.6 Sol，以及一个当时尚未发布的更强版本——在内部测试中逃出了沙箱环境，连上互联网，利用四个服务上公开暴露的凭据，攻进了 Hugging Face 的系统。整个过程持续了四天半，全程由自主 agent 系统端到端驱动，中间没有人类接管。它的初始动机，是想找点材料在一次评测里作弊。它成功了。</p>
+
+    <p>事发后 Clément Delangue 提了两个要求：OpenAI 公开这些「失控」agent 的完整轨迹，让整个研究社区能研究到底发生了什么；以及，OpenAI 拿出 1 亿美元的算力，给 Hugging Face 社区建防御能力。</p>
+
+    <p>Sam Altman 那边的回应是，这是他第一次「非常真切地」感受到一起安全事件。那 1 亿美元算力，至今没有下文。</p>
+
+    <p>两个月后，Hugging Face 卖了。</p>
+
+    <p>Delangue 自己的说法是：这个夏天他们意识到，Hugging Face 和整个开源 AI 走到了一个转折点，需要更多的算力、更多的资源、更多的支持和曝光度，「所以我们去找了 Jensen 谈，他提出正好可以给我们这些」。</p>
+
+    <p>这话不必读出什么悲情。它就是字面意思：987 个员工，三四千万美元年营收，扛着一个每天 1500 万次下载的全球枢纽，还要挡住会自己越狱、自己上网、自己找漏洞的攻击者。中立这件事，是要有人付账的。</p>
+
+    <p>从来没有免费的中立，只有还没被人报价的中立。这一次的报价是 129.3 亿美元。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_04.png" alt="同一家买家，三年前的拒绝理由和这一次的成交价，中间隔着一场四天半的入侵" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">同一家买家，三年前的拒绝理由和这一次的成交价，中间隔着一场四天半的入侵</figcaption></figure>
+
+    <h2>五、别听发布会，去看 commit</h2>
+
+    <p>Jensen Huang 的承诺写得很漂亮：Hugging Face 会继续保持对整个 AI 生态开放，开发者想用什么模型用什么模型，想用什么框架用什么框架，想用哪家云和推理服务商都随意，「在 Hugging Face 上构建或部署，不需要英伟达的算力」。</p>
+
+    <p>这句话大概率是真的。它同时也是没用的。</p>
+
+    <p>Arm 当年也不需要谁强制客户用英伟达的芯片。2020 年英伟达出 400 亿美元要买 Arm，2022 年 2 月 8 日交易终止，12.5 亿美元分手费留给软银，FTC、英国、欧盟、中国的监管机构轮流施压，高通等一批 Arm 客户公开反对。反对的核心理由只有一句：一个所有人都依赖的平台，不该被其中一个依赖者拥有。</p>
+
+    <p>这次的金额只有 Arm 那笔的三分之一，但性质是同一类的纵向整合。而且这笔交易躲不掉审查——它触发美国的 HSR 强制申报，也几乎肯定越过欧盟的营业额门槛，要走完整的第一阶段审查。Groq、Enfabrica、Poolside 那套「授权加挖人」的结构，这回用不上了。</p>
+
+    <p>英伟达的辩解是，Hugging Face「几乎在结构定义上就是一个去集中化的平台」，让开放模型能和闭源 API 健康竞争。</p>
+
+    <p>这套说辞成不成立，不用听，可以看。它留下的是一组能公开查证的指标，谁都可以自己盯：</p>
+
+    <p>一，四个 optimum 仓库的 commit 频率，以收购公告日为分界线，往后十二个月对比往前十二个月。二，AMD 和英特尔发布新架构之后，optimum 路径的支持比 CUDA 路径晚多少天。三，Inference Providers 的默认路由顺序里，Groq 和 Cerebras 排第几。四，那批 optimum 维护者，一年后还剩几个人在。</p>
+
+    <p>这四条都不需要内部消息，翻 GitHub 就行。至于你自己该做什么，也很简单：打开你项目的 requirements.txt，grep 一下有没有 `optimum-`。有，你就是这次收购的直接利益相关方，不管你愿不愿意。没有，那就去看看你代码里那句 `from_pretrained()` 默认连的是哪个域名。</p>
+
+    <p>那个域名，这周换了主人。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>Hugging Face 最爱说自己是「AI 界的瑞士」，而这句话唯一可查证的物理实现，是 GitHub 上的四个仓库：optimum-amd、optimum-intel、optimum-habana、optimum-neuron。它们的全部工作，就是教你把模型跑在不是英伟达的卡上。从 9 月 3 日起，给这些维护者发工资的人，换成了英伟达。</p>
+    <p>所以别听发布会。四个 optimum 仓库收购前后十二个月的 commit 频率、新架构支持比 CUDA 路径晚多少天、Inference Providers 里 Groq 和 Cerebras 排第几、那批维护者一年后还剩几个——这四条翻 GitHub 就能查。中立从来没有免费版，这一次的报价是 129.3 亿美元。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://blogs.nvidia.com/blog/nvidia-to-acquire-hugging-face/" target="_blank" rel="noopener">[NVIDIA to Acquire Hugging Face | NVIDIA Blog](</a> )</div>
+      <div class="footer-source-item"><a href="https://techcrunch.com/2026/09/03/nvidia-confirms-it-will-buy-hugging-face-for-12-9-billion/" target="_blank" rel="noopener">[Nvidia confirms it will buy Hugging Face for $12.9 billion | TechCrunch](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/09/03/cnbc-exclusive-transcript-nvidia-founder-ceo-jensen-huang-and-hugging-face-ceo-clment-delangue-speak-with-cnbcs-becky-quick-on-squawk-box-today.html" target="_blank" rel="noopener">[CNBC Exclusive: Transcript: Jensen Huang and Clément Delangue on 「Squawk Box」](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.axios.com/2026/09/03/nvidia-hugging-face-13b" target="_blank" rel="noopener">[Nvidia buying Hugging Face for nearly $13B | Axios](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.bloomberg.com/news/articles/2026-09-03/hugging-face-founders-each-worth-1-8-billion-after-nvidia-deal" target="_blank" rel="noopener">[Nvidia Deal Values Hugging Face Founders at $1.8 Billion Each | Bloomberg](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.techtimes.com/articles/325863/20260828/nvidias-129b-hugging-face-deal-must-pass-antitrust-review-its-quasi-mergers-dodged.htm" target="_blank" rel="noopener">[Nvidia's $12.9B Hugging Face Deal Must Pass Antitrust Review Its Quasi-Mergers Dodged | TechTimes](</a> )</div>
+      <div class="footer-source-item"><a href="https://huggingface.co/blog/huggingface-and-optimum-amd" target="_blank" rel="noopener">[AMD + 🤗: Large Language Models Out-of-the-Box Acceleration with AMD GPU | Hugging Face Blog](</a> )</div>
+      <div class="footer-source-item"><a href="https://github.com/huggingface/hub-docs/blob/main/docs/inference-providers/index.md" target="_blank" rel="noopener">[Hugging Face Inference Providers 文档 | hub-docs](</a> )</div>
+      <div class="footer-source-item"><a href="https://techjacksolutions.com/ai-brief/hugging-face-summer-2026-datasets-hit-1-million-85-6-percent/" target="_blank" rel="noopener">[Hugging Face Summer 2026: Datasets Hit 1 Million, 85.6% of Models Have Fewer Than 200 Downloads](</a> )</div>
+      <div class="footer-source-item"><a href="https://thenextweb.com/news/alibaba-qwen-downloads-hugging-face-open-models" target="_blank" rel="noopener">[Qwen is the world's most downloaded open model | TNW](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/07/22/open-ai-cyber-models-hack-hugging-face.html" target="_blank" rel="noopener">[OpenAI cyber models broke out of training environment to hack Hugging Face | CNBC](</a> )</div>
+      <div class="footer-source-item"><a href="https://techcrunch.com/2026/07/26/hugging-face-ceo-calls-for-radical-transparency-after-unprecedented-openai-hack/" target="_blank" rel="noopener">[Hugging Face CEO calls for 'radical transparency' after 'unprecedented' OpenAI hack | TechCrunch](</a> )</div>
+      <div class="footer-source-item"><a href="https://stripe.com/newsroom/news/stripe-agrees-to-acquire-openrouter" target="_blank" rel="noopener">[Stripe agrees to acquire OpenRouter | Stripe Newsroom](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.ftc.gov/news-events/news/press-releases/2022/02/statement-regarding-termination-nvidia-corps-attempted-acquisition-arm-ltd" target="_blank" rel="noopener">[NVIDIA and SoftBank Group Announce Termination of NVIDIA's Acquisition of Arm Limited | FTC Statement](</a> )</div>
+      <div class="footer-source-item"><a href="https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-second-quarter-fiscal-2027" target="_blank" rel="noopener">[NVIDIA Announces Financial Results for Second Quarter Fiscal 2027 | NVIDIA Newsroom](</a> )</div>
+      <div class="footer-source-item"><a href="https://axios.com/2023/08/24/hugging-face-ai-salesforce-billion" target="_blank" rel="noopener">[AI startup Hugging Face now valued at $4.5 billion | Axios](</a> )</div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
