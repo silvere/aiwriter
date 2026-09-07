@@ -136,3 +136,5 @@ Arm 当年也不需要谁强制客户用英伟达的芯片。2020 年英伟达�
 - [NVIDIA and SoftBank Group Announce Termination of NVIDIA's Acquisition of Arm Limited | FTC Statement](https://www.ftc.gov/news-events/news/press-releases/2022/02/statement-regarding-termination-nvidia-corps-attempted-acquisition-arm-ltd)
 - [NVIDIA Announces Financial Results for Second Quarter Fiscal 2027 | NVIDIA Newsroom](https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-second-quarter-fiscal-2027)
 - [AI startup Hugging Face now valued at $4.5 billion | Axios](https://axios.com/2023/08/24/hugging-face-ai-salesforce-billion)
+- [Hugging Face goes from a 'scrappy' startup named after an emoji to $13 billion Nvidia acquisition | Fortune](https://fortune.com/2026/09/03/hugging-face-goes-from-a-scrappy-startup-named-after-an-emoji-to-13-billion-nvidia-acquisition/)
+- [Hugging Face 公司概况与员工数 | Tracxn](https://tracxn.com/d/companies/hugging-face/___89yhA9z0-ZrLstW87xWDVe15Bkl70IZOkQf38SXzmQ)
