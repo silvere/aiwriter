@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>45 亿条 TikTok 挂在网上，而走官方接口拿同一批数据，要 123 年</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 与数据</span>
+  <h1>45 亿条 TikTok 挂在网上，而走官方接口拿同一批数据，要 123 年</h1>
+  <div class="hero-meta">
+    <span>2026-09-07</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">Hugging Face 上现在挂着一个 289GB 的文件夹，45 亿行，每一行是一条 TikTok 视频的档案。想合规地拿到同样一批数据，TikTok 官方接口每天给你 10 万条。你自己算一下要多久。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、289GB，45 亿行，License 那栏填的是"research-use"</h2>
+
+    <p>数据集叫 `kuben-developer/tiktok-videos-4b`。27 个 Parquet 文件，zstd 压缩后 289GB，45 亿行。每一行装的是一条视频的档案：文案、播放数、点赞数、评论数、收藏数、用的哪首背景音乐、发布国家、发布时间。</p>
+
+    <p>里面没有视频文件。45 亿条视频只占 289GB，正是因为一帧画面都没有，全是元数据（有人立刻会觉得这样风险就小了，这个后面单独说）。你要是这几年在 TikTok 上发过视频，这 45 亿行里，很可能就有你那一行。</p>
+
+    <p>仓库的提交记录停在 29 次，最近一次是四天前。License 那一栏填的是 research-use——这不是任何一个标准协议的名字，SPDX 列表里没有，Hugging Face 的标准标签里也没有，是上传者自己敲进去的一行字符串。标签栏挂着五个词：tiktok、social-media、short-video、recommender-systems、social-network-analysis。翻译过来就是：这批东西是拿来训推荐系统的。</p>
+
+    <p>Hacker News 上那条帖子攒了 51 分、59 条评论。讨论最集中的问题是违反服务条款会怎么样，票数靠前的回答大意是：服务条款是你不想被平台封号时才遵守的东西，你要是不在乎账号，那就随便玩。整个评论区争的是会不会被封号，不是会不会被追责——因为大家都清楚追责这件事不存在。</p>
+
+    <p>就这。</p>
+
+    <p>那么换个人，一个真想守规矩的人，从正门走，拿到同样这批数据，得花多久？</p>
+
+    <h2>二、45,000 天</h2>
+
+    <p>TikTok 是有官方研究接口的，叫 Research API，文档挂在 developers.tiktok.com 上，写得清清楚楚：每天 1000 次请求，视频和评论接口每次最多返回 100 条记录，一天上限 10 万条，UTC 零点重置配额。想要更多，发邮件去申请。</p>
+
+    <p>45 亿除以 10 万，等于 45,000 天。</p>
+
+    <strong>45,000 天是 123 年。你得从莱特兄弟试飞的 1903 年开始拉，中间一天不断、一次不漏，今年刚好拉完。</strong>
+
+    <p>![官方接口每天上限 10 万条，45 亿条得连着拉 45,000 天——从莱特兄弟试飞那年拉到今年。](images/illus_01.png)</p>
+
+    <p>*官方接口每天上限 10 万条，45 亿条得连着拉 45,000 天——从莱特兄弟试飞那年拉到今年。*</p>
+
+    <p>而且你得先有资格排这个队。TikTok 的文档里写着，美国和欧洲的非营利大学的研究者可以申请，另有巴西等少数国家的合格研究者也在名单上；紧接着下一句是，如果你是创作者、广告主或者商业用户，你不具备访问资格。也就是说，全世界绝大多数真正想用这批数据的人，连那 123 年的队都排不上。</p>
+
+    <p>TikTok 自己不卖这批数据，所以没有官方价目表可查。但同类社交数据的行情是公开的：X 在 2023 年改版之后，企业档接口被报道的入门价是每月 4.2 万美元；Reddit 把数据授权给 Google，报道的金额是一年约 6000 万美元；新闻集团和 OpenAI 那份合同是五年最高 2.5 亿美元；Shutterstock 光 2023 一年的 AI 授权收入就有 1.04 亿美元。这是买一家平台的数据要花的钱的量级。</p>
+
+    <p>侧门的价目表同样是公开的，而且就挂在供应商官网上：Bright Data 的住宅代理，999 美元买 332GB 流量，按量付费 8 美元一 GB，承诺量足够大的时候能压到 3 美元。289GB 这个体量，在这张价目表上是一笔四位数的月账单。</p>
+
+    <p>一边是 123 年、一份学术机构证明、一年六千万美元；另一边是一笔付得起的带宽费。这两条路通向的是同一批数据。</p>
+
+    <p>官方接口当年是按"研究者只需要一个样本"设计的。而现在所有人都要全量。</p>
+
+    <h2>三、罚单是写给有欧洲资产的公司看的</h2>
+
+    <p>那规则呢？规则一直都在，而且罚得挺狠。</p>
+
+    <p>Clearview AI 是最好的样本——一家从网上抓了几十亿张脸做人脸检索的美国公司。它挨过的欧洲罚单可以列成一张表：意大利数据保护局 2022 年 2 月 10 日，2000 万欧元；希腊数据保护局 2022 年 7 月 13 日，2000 万欧元；法国 CNIL 2022 年 10 月 17 日，2000 万欧元，2023 年 5 月 10 日因为拒不整改追加 520 万欧元；荷兰数据保护局 2024 年 5 月决定、9 月 3 日公布，3050 万欧元。</p>
+
+    <p>加起来 9570 万欧元。</p>
+
+    <p>![五张罚单合计 9570 万欧元；荷兰还在罚款之外挂了每周 510 万的强制金，等于自己承认这钱不好收。](images/illus_02.png)</p>
+
+    <p>*五张罚单合计 9570 万欧元；荷兰还在罚款之外挂了每周 510 万的强制金，等于自己承认这钱不好收。*</p>
+
+    <p>荷兰人在那 3050 万之外还挂了一条：如果继续不配合，按每周最高 510 万欧元累加。一个监管机构在罚单之外还要再写一条按周计费的强制金，某种程度上等于在决定书里先认下了一件事——光靠一张罚单，这钱大概率是收不上来的。Clearview 在欧盟没有实体、没有资产、没有需要在欧洲续签的牌照，那张罚单寄过去，只是一封信。</p>
+
+    <p>英国那张 750 万英镑更能说明这套机制的实际效率：2022 年 5 月开出，2023 年 10 月被一审法庭撤销，2025 年 10 月上级法庭又认定属于 GDPR 管辖范围，案子到今天还在打。四年过去了，行政程序还没走完，而模型早就训完上线了。</p>
+
+    <p>顺带一提，这次被扒的 TikTok 自己也是被罚过的一方——2023 年 9 月 1 日，爱尔兰数据保护委员会因为儿童账号默认公开等问题，罚了它 3.45 亿欧元。</p>
+
+    <p>这套系统对付有欧洲总部、有欧洲银行账户、有欧洲法务的公司，是相当好用的。对付一个 Hugging Face 用户名，它没有接口。</p>
+
+    <h2>四、下架不等于消失</h2>
+
+    <p>退一万步，就算罚不到人，把数据集下架总可以吧。这件事行业已经实验过好几次了，结论一致得让人尴尬。</p>
+
+    <p>MS-Celeb-1M，微软 2016 年发布的人脸数据集，1000 万张照片、10 万人，名义上是"名人"，实际上混进了大量根本没被征求过意见的普通人。2019 年 6 月，微软把它从官网撤了。撤下之后的 18 个月里，仍有 120 多篇论文在使用它和同期下架的 DukeMTMC；约 20 个 GitHub 仓库还托管着用它训出来的模型；学术种子站上照样能完整下载。</p>
+
+    <p>同期下架的 DukeMTMC 走的是同一个剧本：杜克大学校园里 8 个摄像头拍下的 200 多万帧监控画面，2000 名学生，没有一个人签过同意书，下架之后仍有 135 篇论文在用，其中不乏 CVPR、AAAI 这个级别的会议。</p>
+
+    <p>80 Million Tiny Images 是 MIT 2006 年建的图像库，2020 年 7 月因为被查出含有种族歧视标注和偷拍内容而撤回。MIT 同时做了一件很体面也很无力的事：公开请求所有已经下载过的人删除本地副本。请求。</p>
+
+    <p>Books3，近 20 万本书的纯文本，2023 年 8 月 16 日被丹麦的 Rights Alliance 用一封 DMCA 通知从托管方那里下架。一年后作者们提起集体诉讼，论据之一就是副本还在网上流传。</p>
+
+    <p>LAION-5B 是这几个里处理得最认真的：2023 年 12 月 20 日斯坦福互联网观测站报告查出 1008 条指向儿童性虐待内容的链接，数据集当天下架；2024 年 8 月 30 日清洗后重新发布 Re-LAION-5B，累计移除 2236 条链接。这已经是全行业公认的最佳实践了——代价是八个月。</p>
+
+    <p>而这份 TikTok 数据集眼下的状态是：原始仓库在线，另一个账号挂的同名副本也在线。下架程序还一步都没走，第二份已经就位了。</p>
+
+    <p>![下架只关掉了官方入口：MS-Celeb-1M 撤回后 18 个月里还有 120 多篇论文在用它。](images/illus_03.png)</p>
+
+    <p>*下架只关掉了官方入口：MS-Celeb-1M 撤回后 18 个月里还有 120 多篇论文在用它。*</p>
+
+    <strong>"被遗忘权"写在法条里是一项权利，落到工程上是一封群发邮件：请各位自觉删除本地文件。</strong>
+
+    <h2>五、规则还在征求意见，数据已经在跑了</h2>
+
+    <p>欧洲数据保护委员会（EDPB）今年 7 月通过了《Guidelines 03/2026 on web scraping in the context of generative AI》1.0 版，专门讲生成式 AI 场景下的网络抓取。里面把最容易被拿来挡枪的那句话堵死了：内容公开可得，既不等于用户同意，也不构成处理个人数据的合法性基础；只要抓取动作里含个人数据，GDPR 就从采集一路管到模型部署。</p>
+
+    <p>这份文件现在的状态是：公开征求意见中，截止日期 2026 年 10 月 30 日。</p>
+
+    <p>指南还在等各方提意见。那 289GB 已经在别人的硬盘里了。</p>
+
+    <p>美国那边是另一套算法，而且自己跟自己打架。2021 年 Van Buren 案，最高法院把《计算机欺诈和滥用法》收窄成"门是开着的就不算闯入"——违反网站服务条款，不再等于触犯联邦刑法。2022 年 4 月，第九巡回法院据此在 hiQ 诉领英案里认定，抓取公开可访问的数据不构成 CFAA 意义上的未授权访问。抓取方赢了。</p>
+
+    <p>同年 12 月，hiQ 和领英达成和解：hiQ 支付 50 万美元，承认在加州普通法下构成动产侵占和信息盗用，接受永久禁令，销毁全部抓来的数据、源代码和算法。联邦刑法那关过了，州法这关没过，公司也就到此为止了。</p>
+
+    <p>再往后，2024 年 1 月 23 日，加州北区法院在 Meta 诉 Bright Data 一案中判 Meta 败诉，理由朴素得近乎滑稽：Meta 的服务条款只约束"用户"，不约束"访客"，而 Bright Data 是在登出状态下抓的公开页面，因此不构成违约。</p>
+
+    <p>三套规则，你想论证抓公开数据合法还是不合法，都能各自找到一份现成的判决书。</p>
+
+    <p>![同一个抓取动作，欧盟说违规、美国联邦法说不违法、美国州法又说要赔钱——三份判决各自成立。](images/illus_04.png)</p>
+
+    <p>*同一个抓取动作，欧盟说违规、美国联邦法说不违法、美国州法又说要赔钱——三份判决各自成立。*</p>
+
+    <p>开头埋的那个念头，现在该说了——这次这份东西是元数据，不是人脸，不是视频，跟 Clearview 完全不是一个量级。这话是对的。45 亿行文案和播放量做不出人脸检索，最现实的用途就是训推荐系统和内容生成模型——风险量级确实低得多。</p>
+
+    <p>但 MS-Celeb-1M 留给行业的教训从来不是"人脸多可怕"，而是"东西一旦发出去，你就再也管不着它了"。而 EDPB 那份指南里说得很清楚：用户亲手打进去的那句文案，是个人数据。</p>
+
+    <p>你去年随手发的那条视频，配的那句文案，此刻是某个 Parquet 文件里的一行。这件事本身谈不上多可怕。可怕的是从它被抓走到今天，整条链路上没有任何一个环节，能给出一个比"请自觉删除"更硬的答案。</p>
+
+    <p>规则一条都不缺。只是老实走完它要 45,000 天，而绕过它的那个人，早就把 27 个文件都传完了。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>你去年随手发的那条视频，配的那句文案，此刻是某个 Parquet 文件里的一行。这件事本身谈不上多可怕。可怕的是从它被抓走到今天，整条链路上没有任何一个环节，能给出一个比「请自觉删除」更硬的答案。</p>
+    <p>规则一条都不缺。只是老实走完它要 45,000 天，而绕过它的那个人，早就把 27 个文件都传完了。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://huggingface.co/datasets/kuben-developer/tiktok-videos-4b" target="_blank" rel="noopener">[kuben-developer/tiktok-videos-4b · Datasets at Hugging Face](</a> )</div>
+      <div class="footer-source-item"><a href="https://huggingface.co/datasets/mrfakename/tiktok-videos-4b" target="_blank" rel="noopener">[mrfakename/tiktok-videos-4b · Datasets at Hugging Face](</a> )</div>
+      <div class="footer-source-item"><a href="https://news.ycombinator.com/item?id=49548625" target="_blank" rel="noopener">[4.5B Posts Scraped from TikTok | Hacker News](</a> )</div>
+      <div class="footer-source-item"><a href="https://developers.tiktok.com/doc/research-api-faq" target="_blank" rel="noopener">[TikTok Research API FAQ | TikTok for Developers](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.edpb.europa.eu/system/files/2026-07/edpb_guidelines_2020603_webscraping_v1_en_0.pdf" target="_blank" rel="noopener">[EDPB Guidelines 03/2026 on web scraping in the context of generative AI（PDF）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.edpb.europa.eu/news/edpb-sheds-light-on-anonymisation-and-web-scraping-for-generative-ai-and-adopts-final-version_en" target="_blank" rel="noopener">[EDPB：网络抓取与匿名化相关指南新闻稿](</a> )</div>
+      <div class="footer-source-item"><a href="https://iapp.org/news/a/irelands-dpc-issues-345m-euro-tiktok-childrens-privacy-fine" target="_blank" rel="noopener">[Ireland's DPC issues 345M euro TikTok children's privacy fine | IAPP](</a> )</div>
+      <div class="footer-source-item"><a href="https://newmedialaw.proskauer.com/2022/12/08/hiq-and-linkedin-reach-proposed-settlement-in-landmark-scraping-case/" target="_blank" rel="noopener">[hiQ and LinkedIn Reach Proposed Settlement in Landmark Scraping Case | Proskauer](</a> )</div>
+      <div class="footer-source-item"><a href="https://law.justia.com/cases/federal/appellate-courts/ca9/17-16783/17-16783-2022-04-18.html" target="_blank" rel="noopener">[hiQ Labs v. LinkedIn, 9th Cir. (2022) | Justia](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.fbm.com/publications/major-decision-affects-law-of-scraping-and-online-data-collection-meta-platforms-v-bright-data/" target="_blank" rel="noopener">[Major Decision Affects Law of Scraping: Meta Platforms v. Bright Data | Farella Braun + Martel](</a> )</div>
+      <div class="footer-source-item"><a href="https://en.wikipedia.org/wiki/Van_Buren_v._United_States" target="_blank" rel="noopener">[Van Buren v. United States | Wikipedia](</a> )</div>
+      <div class="footer-source-item"><a href="https://cyber.fsi.stanford.edu/news/investigation-finds-ai-image-generation-models-trained-child-abuse" target="_blank" rel="noopener">[Investigation finds AI image generation models trained on child abuse | Stanford FSI](</a> )</div>
+      <div class="footer-source-item"><a href="https://laion.ai/blog/relaion-5b/" target="_blank" rel="noopener">[Releasing Re-LAION 5B | LAION](</a> )</div>
+      <div class="footer-source-item"><a href="https://torrentfreak.com/anti-piracy-group-takes-prominent-ai-training-dataset-books3-offline-230816/" target="_blank" rel="noopener">[Anti-Piracy Group Takes Prominent AI Training Dataset 'Books3' Offline | TorrentFreak](</a> )</div>
+      <div class="footer-source-item"><a href="https://venturebeat.com/2020/07/01/mit-takes-down-80-million-tiny-images-data-set-due-to-racist-and-offensive-content/" target="_blank" rel="noopener">[MIT takes down 80 Million Tiny Images data set | VentureBeat](</a> )</div>
+      <div class="footer-source-item"><a href="https://venturebeat.com/ai/ai-datasets-are-prone-to-mismanagement-study-finds/" target="_blank" rel="noopener">[AI datasets are prone to mismanagement, study finds | VentureBeat](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.vice.com/en/article/microsoft-deleted-a-facial-recognition-database-but-its-not-dead/" target="_blank" rel="noopener">[Microsoft deleted a facial recognition database, but it's not dead | Vice](</a> )</div>
+      <div class="footer-source-item"><a href="https://aimultiple.com/proxy-pricing" target="_blank" rel="noopener">[Bright Data pricing overview | AIMultiple](</a> )</div>
+      <div class="footer-source-item"><a href="https://techcrunch.com/2023/05/25/twitter-introduces-a-new-5000-per-month-api-tier/" target="_blank" rel="noopener">[Twitter introduces a new $5,000 per month API tier | TechCrunch](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.tomsguide.com/ai/google-strikes-dollar60m-deal-with-reddit-for-ai-training-data-what-you-need-to-know" target="_blank" rel="noopener">[Google strikes $60M deal with Reddit for AI training data | Tom's Guide](</a> )</div>
+      <div class="footer-source-item"><a href="https://variety.com/2024/digital/news/news-corp-openai-licensing-deal-1236013734/" target="_blank" rel="noopener">[News Corp, OpenAI Ink Content Licensing Deal | Variety](</a> )</div>
+      <div class="footer-source-item"><a href="https://petapixel.com/2024/06/04/shutterstock-made-104-million-licensing-assets-to-ai-devs-last-year/" target="_blank" rel="noopener">[Shutterstock made $104 million licensing assets to AI developers | PetaPixel](</a> )</div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
