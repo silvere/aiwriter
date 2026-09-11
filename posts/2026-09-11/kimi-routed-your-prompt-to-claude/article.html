@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>你以为你在和 Kimi 说话，它把你的提问转给了 Claude——同一周，美国政府建议 Claude 对可疑账号偷偷答错</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 行业观察</span>
+  <h1>你以为你在和 Kimi 说话，它把你的提问转给了 Claude——同一周，美国政府建议 Claude 对可疑账号偷偷答错</h1>
+  <div class="hero-meta">
+    <span>2026-09-11</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">今年 7 月的某 10 天里，有将近 30 万条本该由 Kimi 回答的用户提问，被转发给了 Claude，答案原样显示回 Kimi 的界面上。提问的人不知道这件事。三天前，美国三家安全机构发了份公告，建议美国 AI 公司对可疑账号偷偷换上能力更差的模型，并且明确写了：不要告诉对方。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、那 30 万条提问，去了它们不该去的地方</h2>
+
+    <p>9 月 10 日，Anthropic 发布了新一份威胁情报报告《Detecting and countering misuse of AI: September 2026》，覆盖 2025 年 12 月到 2026 年 8 月被它处置掉的滥用行为，分七类：网络攻击、影响力行动、监控、诈骗、生物滥用、常规武器，以及蒸馏。</p>
+
+    <p>前六类都是老选题。第七类里藏着这周真正的新东西。</p>
+
+    <p>报告说，月之暗面（Moonshot AI）把一部分本该由 Kimi 处理的用户请求，静默转发给了 Claude，拿到回答之后，以 Kimi 的名义显示给用户。5 月到 7 月之间，Anthropic 归因到月之暗面的交互超过 2300 万次；其中某个 10 天的窗口里，被转过来的客户请求接近 30 万条，绝大多数落在 Claude Opus 系列上。这些对话它至少保存了一部分，从里面把 Claude 的推理过程抽出来，当自家模型的训练材料。</p>
+
+    <p>DeepSeek 被指做了同样的事。7 月的一个 14 天窗口里，Anthropic 记到超过 1210 万次可归因于 DeepSeek 的蒸馏行为，同样是把用户的对话转过来，同样没有通知用户。</p>
+
+    <p>数字之外，Anthropic 在报告里还补了一句：它不知道月之暗面有没有就此通知过客户。</p>
+
+    <p>一家美国公司，在一份写给全世界看的安全报告里，需要专门说明它无法确认另一家公司的用户是否知道自己在跟谁说话。这句话之所以能写出来，是因为整个行业默认它可以不必知道。</p>
+
+    <p>被转走的东西也不都是"帮我写个 Python 脚本"。Anthropic 说，这些被转发的交互里含有敏感信息，来源包括个人用户、大型跨国企业，以及有国家背景的行为体；它同时判断，这类做法很可能既不符合隐私法规，也不符合这些实验室自己的服务条款。</p>
+
+    <p>也就是说，如果那 10 天里你正好在 Kimi 里贴了一段公司内部的代码，或者一份还没对外的方案，这段东西大概率去过一趟 Anthropic 的服务器。你不知道，你公司的合规也不知道。你在用的产品页面上写的是国产模型，法务看的隐私政策里写的是国产模型，但那一刻回答你的不是它。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="用户看到的是 Kimi 的界面，回答他的是 Claude——中间这一段转发，没出现在任何一个用户界面上。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">用户看到的是 Kimi 的界面，回答他的是 Claude——中间这一段转发，没出现在任何一个用户界面上。</figcaption></figure>
+
+    <h2>二、1.51 亿次对话，栽在同一句话上</h2>
+
+    <p>报告里规模最大的一笔，Anthropic 给的编号是 GTG-16005，指向一批与阿里巴巴有关联的操作者。</p>
+
+    <p>5 月到 7 月，这个集群和 Claude 发生了超过 1.51 亿次交互，峰值日均约 300 万次，来自 3500 多个欺诈注册的账号。Anthropic 称它是"我们测量过的最大一次蒸馏攻击"。目标很具体：Claude Opus 4.6 和 4.7 的思维链，也就是模型在给出答案之前那一段内部推理的文字记录。被重点抽取的场景是智能体任务、软件工程、内核开发和长程任务，抽出来的记录转成微调数据，喂给 Qwen 3.5、3.6、3.7。</p>
+
+    <p>3500 个账号，散在不同的身份、不同的支付方式、不同的出口 IP 上，本来就是为了让它们看起来像 3500 个互不相干的客户。</p>
+
+    <p>然后这 3500 个账号，用的是同一句提示词。</p>
+
+    <p>这句固定的话，作用是让 Claude 先把推理过程吐出来再回答。它在功能上是必需的——不这么问，拿不到思维链；但它在识别上是致命的，因为 3500 个"陌生人"同时反复说同一句话，这件事本身就是签名。Anthropic 把这批流量归到同一个源头，靠的就是它。</p>
+
+    <p>蒸馏这门手艺在工程上已经做得相当熟练了：注册走的是教育项目、安全研究项目、创业扶持额度这类审核最松的通道，流量打散在 API 和第三方云平台之间，和正常客户的请求混在一起。上游做到了工业化，下游却用一句写死的 prompt 把整条链子串了起来。</p>
+
+    <p>这不是能力问题。是做这件事的人从一开始就不认为它需要藏——藏的是账号来源和付款方式，不是那句话本身。你不会把一句业务上每天要用 300 万次的固定指令当成罪证去伪装，除非你已经承认它是罪证。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="账号可以散成 3500 份，提示词只有一句；上游做到了工业化，下游用一句写死的 prompt 把链子串了起来。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">账号可以散成 3500 份，提示词只有一句；上游做到了工业化，下游用一句写死的 prompt 把链子串了起来。</figcaption></figure>
+
+    <h2>三、官方给出的对策：换个笨模型，别告诉他</h2>
+
+    <p>Anthropic 这份报告发布的两天前，9 月 8 日，美国国家安全局、网络安全和基础设施安全局、联邦调查局联合发布了编号 AA26-251A 的网络安全公告，标题直译过来是《中国 AI 公司对美国 AI 公司开展工业规模蒸馏活动》。</p>
+
+    <p>公告点名六家：DeepSeek、月之暗面、阿里巴巴、MiniMax、阶跃星辰、Z.AI。说法是这些公司自 2024 年底以来，从 Claude、GPT、Gemini、Grok 的多个版本中提取了数十亿 token、数百万次交互，手段包括被称为"中转站"（transfer stations）的灰色 API 代理、批量共享的高级订阅账号，以及剥掉账号元数据的聚合器。公告用了一句很重的定性：这些活动构成这些公司 AI 研发战略的"核心，而非补充"。</p>
+
+    <p>值得读第二遍的是建议部分。公告建议美国 AI 服务商对疑似蒸馏的请求，改用能力更弱的"降级"模型来回应；建议在不同请求之间变换降级的方式，好让对方难以评估回答质量、难以判断自己是不是被区别对待了；然后是那句被到处引用的：</p>
+
+    <blockquote><p>避免告知疑似从事蒸馏活动的中国 AI 公司用户，其请求已被切换到降级模型。</p></blockquote>
+
+    <p>理由公告自己写了：一旦告知，对方就能改进规避手段，并且知道该在什么时候把训练回滚掉。</p>
+
+    <p>这个理由在反滥用的逻辑里完全成立。蜜罐就是这么做的，反爬虫的 tarpit 也是这么做的——你不会在陷阱门口挂个牌子写"此处有陷阱"。</p>
+
+    <p>区别在于，蜜罐对付的是未经授权闯进来的人，你和他之间没有合同。而这里被降级的对象，是一个注册了账号、付了钱、按价目表在调用你 API 的付费用户。你怀疑他，这是你的权利；你按怀疑降低他买到的服务质量，同时收全价，并且照公告的建议不告诉他——这件事在反滥用的语言里叫"缓解措施"，换到消费者保护的语言里，它有另一个名字。</p>
+
+    <h2>四、问题是，这套特征描述的正是一支干活的 agent 集群</h2>
+
+    <p>公告同时给了服务商一份识别清单，用来判断谁像蒸馏者。几条主要的行为信号是：7×24 小时持续调用，没有人类使用该有的空闲和波动；新订阅一开通就直接打满速率上限，不像正常客户那样逐步爬坡；同一个账号从多个 IP、多个 User-Agent 访问；流量模式明显是冲着缓存命中去优化的，而不是任务本身的多样性。</p>
+
+    <p>把这几条念给任何一个在生产环境跑 agent 的工程团队听，他们会以为你在描述他们的架构文档。</p>
+
+    <p>7×24 没有空闲，那是定时任务和流水线。新账号立刻满吞吐，那是公司上个季度就把方案评估完了，合同一签当天切流量。一个账号多个 IP 多个 User-Agent，那是几十个容器共用一个企业出口，或者干脆是多地部署。为缓存命中优化，那是任何一个认真控成本的团队第一周就会做的事——各家厂商自己还在文档里教你怎么做。</p>
+
+    <p>学术团队批量生成数据集是这个样子。用官方蒸馏功能把大模型的能力搬到小模型上，也是这个样子——OpenAI 自己就卖这个产品，有 Stored Completions 负责把大模型的输入输出对存下来，有 Evals 负责评估，整套流程官方文档写得明明白白。蒸馏这门技术本身，源头是 Hinton 2015 年那篇论文，是教科书内容，不是暗网买卖。</p>
+
+    <p>于是这套建议的成本落点就清楚了：它不落在那 3500 个账号上——那批人本来就在用假身份和盗刷的卡，被降级了大不了换一批账号重来，公告自己也承认对方会"改进规避手段"。它落在那些行为特征长得很像、但什么都没干错的付费用户身上。</p>
+
+    <p>而这批人拿不到任何信号。不是因为服务商疏忽，是因为公告明确建议不要给。没有通知，就没有申诉；没有申诉，就没有纠错。整个环节里唯一能发现自己被降级的办法，是你自己长期跑一套固定的回归测试，然后某天发现同样的题，答得不如三个月前好了。</p>
+
+    <p>历史上偷偷降级被抓出来过两次，代价都不小。苹果在系统更新里给老电池的 iPhone 降 CPU 频率而没有明确告知，2020 年以集体诉讼和解收场，金额区间在 3.1 亿到 5 亿美元，赔款 2024 年 1 月才开始发到用户手里。大众的柴油车装了能识别排放测试工况的作弊软件，只在被测的时候开全套排放控制，2016 年民事和解最高 147 亿美元，2017 年又认了三项联邦重罪，交 28 亿美元刑事罚金。</p>
+
+    <p>这两件事能被抓住，是因为降级可以从外部测出来：跑个跑分，或者把车拉到路上实测。</p>
+
+    <p>而 AA26-251A 的建议里专门有一条，是让服务商在不同请求之间变换降级的方式，好让对方难以评估回答质量。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="四条识别信号，逐条都能在一支正常运转的 agent 集群上对上号；而按建议，被误判的人不会收到通知。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">四条识别信号，逐条都能在一支正常运转的 agent 集群上对上号；而按建议，被误判的人不会收到通知。</figcaption></figure>
+
+    <h2>五、同一个政府的另一个部门，管这个叫欺骗</h2>
+
+    <p>值得说清楚的是，AA26-251A 没有把蒸馏本身定性成坏事。公告明确承认蒸馏是一项正当且有用的 AI 研究技术，它指控的是这六家把它做成了工业规模的恶意行为。这个区分是成立的，也不该被抹掉——伪造身份、盗刷信用卡、把自己用户的对话在人家不知情的时候转手，这些东西和"用大模型的输出训练小模型"不是一回事。</p>
+
+    <p>但落点在哪儿，公告自己也写了：这些公司通过多种路径获取未经授权的访问，由此<strong>违反了美国 AI 公司的使用条款</strong>。</p>
+
+    <p>使用条款。这是一份由国家安全局、联邦调查局和 CISA 联署的公告，最后落在了一份点击同意的合同上。公告没有随附任何起诉、制裁或出口管制。</p>
+
+    <p>这条路走了快两年。2024 年底，微软的安全人员在 OpenAI 的 API 上发现疑似与 DeepSeek 有关的账号在大量异常抓取数据；2025 年 1 月 DeepSeek R1 发布后，OpenAI 公开表示正在审查蒸馏迹象，白宫的 AI 政策顾问说有"大量证据"。至今没有任何一份公开的技术取证报告，也没有一场官司。2026 年 2 月，OpenAI 改为向美国众议院的中国问题特别委员会递备忘录，措辞是 DeepSeek 在"搭便车"。又过了七个月，事情变成了一份网络安全公告。</p>
+
+    <p>从客服工单到国会备忘录再到国家安全公告，中间一次没进过法院。</p>
+
+    <p>原因不难猜。模型输出本身在美国的版权地位一直悬着，能拿来主张权利的最硬的东西，就是那句合同条款——OpenAI、Anthropic、谷歌的条款里都写着不许用输出去训练竞品模型，也都同时开了口子：用他们自己的官方蒸馏功能可以。你可以蒸馏，只要用我卖你的那把管子。</p>
+
+    <p>中国商务部 9 月 9 日的回应，正是从这个缺口切进去的：指控"缺乏事实和法律依据"，蒸馏是包括美国企业在内的全球模型公司普遍采用的中性技术手段，如果以打击蒸馏为名对中国企业实施遏制打压，中方将采取反制。</p>
+
+    <p>至于那句"缺乏法律依据"——公告自己的落点是使用条款，而不是任何一部法律。</p>
+
+    <p>真正的裂缝还不在中美之间，在美国政府自己内部。</p>
+
+    <p>今年 7 月 7 日，比 AA26-251A 早整整九周，美国联邦贸易委员会在《联邦公报》上发布了一份政策声明草案，题目是《关于人工智能系统中准确性抑制的政策声明》。核心意思是：如果 AI 开发者故意把模型输出引导偏离用户的目标、偏离用户对真实与准确的合理预期，转而服务于一个未披露的目的，这可能构成《联邦贸易委员会法》第 5 条下的欺骗。FTC 特意把这种情况和普通的模型出错、幻觉区分开——技术能力不足导致答错是一回事，为了别的目的故意设计成答得更差是另一回事。声明还写了怎么避免：披露，说清楚你在优先服务一个和用户要求不同的目标。</p>
+
+    <p>九周之后，另外三家联邦机构建议 AI 公司故意向一部分付费用户提供降级输出，为的是一个不能披露的国家安全目的，并且特意建议不要披露。</p>
+
+    <strong>一个部门说，故意让模型答得更差而不告诉用户，这叫欺骗；另一个部门说，故意让模型答得更差，记得别告诉用户。</strong>
+
+    <p>这两份文件里没有一份提到对方。两边的理由也都站得住：一边护的是消费者知情权，一边护的是不让对手拿到干净的训练信号。矛盾不在于谁错了，在于这个行业已经默认，"用户不需要知道是哪个模型在回答"是一个可以被随时征用的空间——反滥用可以用它，商业路由可以用它，国家安全也可以用它。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_04.png" alt="同一个动作，在两份联邦文件里一个被定性为欺骗，一个被列为建议采取的缓解措施。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">同一个动作，在两份联邦文件里一个被定性为欺骗，一个被列为建议采取的缓解措施。</figcaption></figure>
+
+    <p>回到开头那 30 万条提问。它们的主人以为自己在和 Kimi 说话。按照 AA26-251A 的建议往下走，Claude 的一部分付费用户，将来也不会知道回答他们的其实不是 Claude。</p>
+
+    <p>这两件事看上去是对立的两边，做的是同一个动作：在用户和模型之间，插进去一层不必向用户交代的东西。管子的一头在瞒，另一头也在瞒，而两头都有充分的理由。</p>
+
+    <strong>唯一没有出现在任何一份文件里的角色，是那个正在打字的人。</strong>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>管子的一头在瞒，另一头也在瞒，而两头都有充分的理由。</p>
+    <p>唯一没有出现在任何一份文件里的角色，是那个正在打字的人。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.cisa.gov/news-events/cybersecurity-advisories/aa26-251a" target="_blank" rel="noopener">[China-Based Artificial Intelligence Companies Conducting Industrial-Scale Distillation Campaigns Against U.S. AI Companies（NSA / CISA / FBI 联合公告 AA26-251A，2026-09-08）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.cisa.gov/news-events/news/cisa-nsa-and-fbi-warn-china-based-ai-companies-targeting-us-ai-models-industrial-scale-knowledge" target="_blank" rel="noopener">[CISA 新闻页：三机构联合警告工业规模知识蒸馏活动](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/threat-intelligence-report-september-2026" target="_blank" rel="noopener">[Detecting and countering misuse of AI: September 2026（Anthropic 威胁情报报告，2026-09-10）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www-cdn.anthropic.com/e50be2e51e7695dc4b1366a37a245a597377d3b5/Anthropic-Detecting-and-countering-091026.pdf" target="_blank" rel="noopener">[Anthropic 报告 PDF 全文](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/09/11/chinese-ai-labs-moonshot-deepseek-alibaba-anthropic.html" target="_blank" rel="noopener">[Chinese AI labs secretly used millions of Claude exchanges to train their models, Anthropic says（CNBC，2026-09-11）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.scmp.com/news/us/diplomacy/article/3367112/moonshot-deepseek-secretly-routed-user-requests-claude-anthropic-claims" target="_blank" rel="noopener">[Moonshot, DeepSeek secretly routed user requests to Claude, Anthropic claims（南华早报，2026-09-11）](</a> )</div>
+      <div class="footer-source-item"><a href="https://techcrunch.com/2026/09/10/anthropic-details-distillation-campaigns-from-alibaba-moonshot-ai-and-deepseek/" target="_blank" rel="noopener">[Anthropic details distillation campaigns from Alibaba, Moonshot AI, and DeepSeek（TechCrunch，2026-09-10）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.federalregister.gov/documents/2026/07/07/2026-13628/policy-statement-concerning-the-suppression-of-accuracy-in-artificial-intelligence-systems" target="_blank" rel="noopener">[Policy Statement Concerning the Suppression of Accuracy in Artificial Intelligence Systems（FTC 政策声明草案，《联邦公报》2026-07-07）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.ftc.gov/policy/public-comments/policy-statement-concerning-suppression-accuracy-artificial-intelligence-systems" target="_blank" rel="noopener">[FTC 公开征求意见页：关于人工智能系统中准确性抑制的政策声明](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.scmp.com/economy/article/3367001/china-rejects-us-claims-industrial-scale-ai-model-distillation-warns-retaliation" target="_blank" rel="noopener">[China rejects US claims of industrial-scale AI model distillation, warns of retaliation（南华早报，2026-09-09）](</a> )</div>
+      <div class="footer-source-item"><a href="https://natlawreview.com/article/chinas-commerce-ministry-rejects-us-accusations-industrial-scale-ai-distillation" target="_blank" rel="noopener">[China's Commerce Ministry Rejects U.S. Accusations of Industrial-Scale AI Distillation（National Law Review，2026-09）](</a> )</div>
+      <div class="footer-source-item"><a href="https://techcrunch.com/2025/01/29/microsoft-probing-whether-deepseek-improperly-used-openais-api/" target="_blank" rel="noopener">[Microsoft probing whether DeepSeek improperly used OpenAI's API（TechCrunch，2025-01-29）](</a> )</div>
+      <div class="footer-source-item"><a href="https://finance.yahoo.com/news/openai-accuses-deepseek-distilling-us-221629118.html" target="_blank" rel="noopener">[OpenAI accuses DeepSeek of distilling US models（2026-02，向美国众议院中国问题特别委员会提交的备忘录报道）](</a> )</div>
+      <div class="footer-source-item"><a href="https://openai.com/index/api-model-distillation/" target="_blank" rel="noopener">[OpenAI Model Distillation：Stored Completions 与 Evals 官方蒸馏工作流](</a> )</div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/1503.02531" target="_blank" rel="noopener">[Distilling the Knowledge in a Neural Network（Hinton, Vinyals, Dean，2015）](</a> )</div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2504.13146" target="_blank" rel="noopener">[Antidistillation Sampling（arXiv 2504.13146）](</a> )</div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2606.25059" target="_blank" rel="noopener">[What Does It Mean to Break a Distillation Defense?（arXiv 2606.25059）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.macrumors.com/2024/01/06/apple-starts-iphone-batterygate-payouts/" target="_blank" rel="noopener">[Apple「电池门」集体诉讼和解：赔付于 2024 年 1 月开始发放（MacRumors）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.justice.gov/archives/opa/pr/volkswagen-spend-147-billion-settle-allegations-cheating-emissions-tests-and-deceiving" target="_blank" rel="noopener">[Volkswagen to Spend $14.7 Billion to Settle Allegations of Cheating Emissions Tests（美国司法部，2016-06-28）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.justice.gov/archives/opa/pr/volkswagen-ag-agrees-plead-guilty-and-pay-43-billion-criminal-and-civil-penalties-six" target="_blank" rel="noopener">[Volkswagen AG Agrees to Plead Guilty and Pay $4.3 Billion in Criminal and Civil Penalties（美国司法部，2017-01-11）](</a> )</div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
