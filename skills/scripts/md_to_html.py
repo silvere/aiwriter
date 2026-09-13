@@ -60,6 +60,33 @@ except ImportError:
         return '\n\n    '.join(result)
 
 
+_IMG_BLOCK = re.compile(
+    r'^!\[(?P<alt>[^\]]*)\]\((?P<src>[^)\s]+)\)[ \t]*$'      # 独占一行的 Markdown 图片
+    r'(?:\n[ \t]*\n\*(?P<cap>[^*\n]+)\*[ \t]*$)?',            # 紧随其后的斜体图注（可选）
+    re.MULTILINE,
+)
+
+
+def images_to_figures(text):
+    """把独占一行的 `![图注](images/x.png)` 转成带 figcaption 的 <figure>。
+
+    两个转换器（markdown 库 / 简易降级）都不认识"图片 + 下一行斜体图注"这个组合：
+    降级版会把整行当普通文字原样吐出来，markdown 库则会留下一张裸图外加一段重复的
+    斜体图注。统一在转换前处理掉，正文里的图才有圆角、阴影和图注样式。
+    """
+    def repl(m):
+        alt = m.group('alt').strip()
+        cap = (m.group('cap') or alt).strip()
+        return (
+            '<figure style="margin:32px 0;text-align:center">'
+            f'<img src="{m.group("src")}" alt="{alt}" '
+            'style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)">'
+            '<figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">'
+            f'{cap}</figcaption></figure>'
+        )
+    return _IMG_BLOCK.sub(repl, text)
+
+
 def parse_metadata_from_md(md_text):
     """从 MD 文件头部注释或正文提取元数据"""
     meta = {}
@@ -168,7 +195,7 @@ def main():
 
     # 转换正文
     body_md   = extract_body(md_text)
-    body_html = md_to_html(body_md)
+    body_html = md_to_html(images_to_figures(body_md))
 
     html = re.sub(
         r'<!-- BODY_START -->.*?<!-- BODY_END -->',

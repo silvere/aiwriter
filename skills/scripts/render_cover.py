@@ -76,15 +76,18 @@ def _split_title(title: str) -> tuple[str, str]:
 
 
 def _cover_html(c1: str, c2: str, accent: str, kicker: str, main: str,
-                sub: str, foot: str, badge_n: str, badge_t: str) -> str:
+                sub: str, foot: str, badge_n: str, badge_t: str,
+                badge_x: str = "×↓") -> str:
     # 主标越长字号越小，保证一屏放得下
     n = len(main)
     main_size = 150 if n <= 8 else 118 if n <= 12 else 92 if n <= 18 else 72 if n <= 26 else 56
     e = html.escape
     badge = ""
     if badge_n:
+        # 后缀默认是跌幅箭头；数字不表示"跌"时用 --badge-x "" 关掉，别让画面出现语义不符的符号
+        x_html = f'<span class="x">{e(badge_x)}</span>' if badge_x else ""
         badge = (f'<div class="badge"><div class="n">{e(badge_n)}'
-                 f'<span class="x">×↓</span></div><div class="t">{e(badge_t)}</div></div>')
+                 f'{x_html}</div><div class="t">{e(badge_t)}</div></div>')
     sub_html = f'<div class="sub">{e(sub)}</div>' if sub else ""
     foot_line = e(foot) if foot else ""
     return f"""<!doctype html><html><head><meta charset="utf-8"><style>
@@ -121,7 +124,8 @@ def _cover_html(c1: str, c2: str, accent: str, kicker: str, main: str,
 
 
 def make(post_dir: Path, title: str, kicker: str, sub: str, foot: str,
-         badge_n: str, badge_t: str, palette, out_name: str) -> int:
+         badge_n: str, badge_t: str, palette, out_name: str,
+         badge_x: str = "×↓") -> int:
     if palette is None:
         palette = int(hashlib.md5(post_dir.name.encode()).hexdigest(), 16) % len(PALETTES)
     c1, c2, accent = PALETTES[palette % len(PALETTES)]
@@ -131,7 +135,7 @@ def make(post_dir: Path, title: str, kicker: str, sub: str, foot: str,
     if not sub:
         sub = auto_sub
 
-    doc = _cover_html(c1, c2, accent, kicker, main, sub, foot, badge_n, badge_t)
+    doc = _cover_html(c1, c2, accent, kicker, main, sub, foot, badge_n, badge_t, badge_x)
     out = post_dir / out_name
     with tempfile.NamedTemporaryFile("w", suffix=".html", delete=False, encoding="utf-8") as f:
         f.write(doc)
@@ -157,9 +161,12 @@ if __name__ == "__main__":
     ap.add_argument("--foot", default="")
     ap.add_argument("--badge-n", dest="badge_n", default="")
     ap.add_argument("--badge-t", dest="badge_t", default="")
+    ap.add_argument("--badge-x", dest="badge_x", default="×↓",
+                    help='大数后缀，默认跌幅箭头；数字不表示"跌"时传空串关掉')
     ap.add_argument("--palette", type=int, default=None)
     ap.add_argument("--out", default="cover.jpg")
     a = ap.parse_args()
     title = a.title or _read_title(a.post_dir)
     kicker = a.kicker or _read_kicker(a.post_dir)
-    sys.exit(make(a.post_dir, title, kicker, a.sub, a.foot, a.badge_n, a.badge_t, a.palette, a.out))
+    sys.exit(make(a.post_dir, title, kicker, a.sub, a.foot, a.badge_n, a.badge_t,
+                  a.palette, a.out, a.badge_x))
