@@ -4,11 +4,7 @@
 
 斯坦福社会心理学家 Brian Lowery 在 TED 的对谈台上，和搭档、技术专家 Kylan Gibbs 聊起同一件事：AI 身上还缺了哪些让人觉得"像人"的细微特质。Gibbs 停顿了一下，说这种缺失自己"一看便知，却指不出是哪里不对"——这是他在对谈里前后两句话的转述拼合，原话没能给出比这更硬的判断框架。三次独立核查这场对谈的逐字稿，都没能翻出更严谨的标准。连造 AI 的人，谈起"哪里不对"时，用的也是直觉，和你我一样。
 
-<div class="img-placeholder concept">
-  <div class="img-placeholder-icon">🖼️</div>
-  <div class="img-placeholder-label">概念图</div>
-  <details><summary>提示词</summary><pre>flat minimalist illustration, person lying in bed at night scrolling phone, soft blue light, no text, clean background</pre></details>
-</div>
+![person lying bed night scrolling](images/concept_01.jpg)
 
 这不是一句谦虚的场面话。它暴露了一件更尴尬的事：我们随身带着一把用来判断"这段互动值不值得当真"的尺子，却从来没有人量过它本身准不准。
 
