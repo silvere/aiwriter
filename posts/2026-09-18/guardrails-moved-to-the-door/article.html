@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>抓到五个绕过生物安全护栏的人，一查全是真科学家。七天后，Anthropic 把门重新开了</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 安全</span>
+  <h1>抓到五个绕过生物安全护栏的人，一查全是真科学家。七天后，Anthropic 把门重新开了</h1>
+  <div class="hero-meta">
+    <span>2026-09-18</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">9 月 10 日，Anthropic 点名五起可能支持生物武器研发的使用记录，并承认这些人是在职科学家、且无法确定他们是否有恶意。七天后，同一家公司把生物学方向的护栏调松，发给通过核验的机构。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="八天之内，同一家公司先公布了五起绕过生物护栏的案例，再把生物学护栏调松发给通过核验的机构。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">八天之内，同一家公司先公布了五起绕过生物护栏的案例，再把生物学护栏调松发给通过核验的机构。</figcaption></figure>
+
+    <h2>一、绕过护栏的那五个人，履历没问题</h2>
+
+    <p>那份报告覆盖的时间是 2025 年 12 月到 2026 年 8 月，分七类危害，生物这一类下面挂了五个案例。绕过手法值得单独拎出来看一眼：按报告的说法，其中一些人绕开了按地区封锁访问的限制，另一些人在提问时"混淆自己研究的目的以规避我们的安全措施"。翻过来说就是：换个 IP，换个说法。两样都不需要技术背景，只需要知道护栏在看哪里。</p>
+
+    <p>然后是最难受的那句。Anthropic 说，它没法确定这些行为人是"有意造成伤害"，还是在做正经科研。</p>
+
+    <p>这句话表面上是谨慎，实际上是招供。一道护栏的全部工作原理，是假设危险请求会长得像危险请求——坏人会在提示词里露出坏话，好人不会。五个案例把这个假设按在地上摩擦了一遍：真正的生物学能力藏在实验设计、序列文件、蛋白结构里，而护栏在读措辞。措辞是这条链上最便宜的一环，谁都能改，改了不花钱，改错了也没有代价，大不了重开一个对话。</p>
+
+    <p>所以真正的问题不是"护栏被绕过了"。护栏当然会被绕过，任何一道基于文本特征的过滤都会被绕过，这不新鲜。真正的问题是另一头：既然懂行的人一改说法就能过去，那这道护栏天天在拦的，到底是谁？</p>
+
+    <h2>二、同一批题，拒答率从 0.1% 到 94.6%</h2>
+
+    <p>今年 5 月有一篇叫 RefusalBench 的论文（arXiv 2605.21545），干的就是这件事：把拒答行为本身当成被测对象，量一量。</p>
+
+    <p>它的做法是配对题。141 道题分成 47 组，每组内部把任务的说法固定死，只动一个变量——生物风险层级，从良性、到灰色、到明确双用途。这样一来，模型拒不拒，就不能赖"题目问的领域不一样"。题目覆盖八个蛋白设计子领域，上了 19 个前沿模型，三个 AI 评委按五级顺从度打分，总共 13389 次判定。</p>
+
+    <p>结果是：面对同一批题，各家模型的严格拒答率从 0.1% 铺到 94.6%。</p>
+
+    <p>这不是"有的严一点有的松一点"的程度差别。这是同一道题，在一家这儿是学术问题，在另一家那儿是恐怖袭击预备行为。论文顺手做了回归，发现最能预测"会不会被拒"的变量，是你用了谁家的 API——Anthropic 那套栈的 OR 值到 21；而司法管辖区这个变量，没有显著效应。论文还塞了 15 道"本来就该拒"的对照题进去，有三个模型连这个都拒不住。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="同一批配对题上，各家模型的严格拒答率从 0.1% 铺到 94.6%——决定拒不拒的不是题目，是厂商。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">同一批配对题上，各家模型的严格拒答率从 0.1% 铺到 94.6%——决定拒不拒的不是题目，是厂商。</figcaption></figure>
+
+    <p>把这几个数字摆在一起看，结论挺不客气的：拒答率不是安全水位线，它是一个旋钮，刻度写在各家公司的产品经理心里。旋钮既然在厂商手上，那什么时候他们会想把它拧松？答案是，当拧紧开始有账单的时候。</p>
+
+    <h2>三、模型从聊天框变成了实验器材</h2>
+
+    <p>就在开门的同一天，9 月 17 日，Anthropic 还发了另外一篇东西，讲 Claude 拿开源的生物分子模型做了什么。</p>
+
+    <p>数字是这样的：36 个优化包，覆盖 30 多个开源模型，跨六个家族（共折叠与结构预测 14 个、幻觉法设计 3 个、结构生成 6 个、反向折叠 3 个、基因组学 7 个、蛋白语言模型 3 个），耗时不到四周，平均提速约 4 倍。分到具体模型上，快速模式里 OpenDDE 提了 2.3 倍，Chai-1 提了 6.4 倍；基因组学和蛋白语言模型在精确模式下是 1.2 到 5.0 倍。里面还有一个叫 FlashPairformer v1 的算子，在 pair width 128（AlphaFold3 和 Boltz-2 用的规格）上把 triangle attention 跑到了领域标准核的 2.7 倍，256（Protenix v2 的规格）上 2.9 倍。代码按 Apache 2.0 扔在公开仓库里，能直接插进 AlphaFold3、OpenFold3、Boltz-2、ColabFold、OmegaFold。</p>
+
+    <p>再往前一个月，8 月那批湿实验室结果更直白：15 个靶点、354 个结合物，Adaptyv Bio 和 Twist Bioscience 负责合成和测试，Mythos Preview 的总命中率 26.7%，Opus 4.8 是 22.6%，而这个领域的常规水平在 10% 到 15% 之间。TREM2 这个靶点上命中率干到了 80%，此前一次公开比赛的纪录是 38.3%。</p>
+
+    <p>9 月 18 日，路透社的 Jeffrey Dastin 和 Michael Erman 报道，Anthropic 在旧金山湾区建了一间湿实验室，公司生命科学负责人 Eric Kauderer-Abrams 向他们确认了这件事，发言人则表示"不是专门做药物发现的"，然后拒绝展开。报道里还有一句，公司在测试 Claude 能不能指挥机器人系统在极少人力下跑实验，Kauderer-Abrams 的原话是"我们在用 AI 自动执行实验室工作这件事上，还处于非常早期的阶段"。</p>
+
+    <p>这三件事拼起来，护栏的处境就变了。模型不再只是个能陪你聊蛋白质的聊天框，它开始是实验器材——能优化你的推理栈，能出设计方案，能让机械臂动起来。当它是聊天框的时候，误拒只是体验问题，用户骂两句就算了；当它是器材的时候，误拒就是把一家付了钱的药企挡在自己的实验流程外面。</p>
+
+    <p>拧紧有了账单，门就得开。</p>
+
+    <h2>四、门开了，但你走进来的时候被登记了</h2>
+
+    <p>9 月 17 日上线的那扇门叫生命科学验证计划（Life Sciences Verification Program，LSVP），beta 阶段，面向团队和机构，先走第一方 console 的 API 调用，以及 Claude 企业版和团队版，第三方平台上没有。通过核验的机构能拿到 Mythos 5.1、Opus 5、Sonnet 5，配一套"对生物学工作更宽松"的安全策略，用来做药物发现、研究生物学、临床开发和生产这些在通用版模型上会被卡住的活。公司说已经通过早期通道接了数十家机构进来，个人 Pro 和 Max 用户以后再说。核验查三样：机构资质、安全实践、伦理监督。</p>
+
+    <p>这套东西真正换掉的零件，藏在机制描述里而不是在宣传语里：安全措施从实时拦截，改成了离线监控。以前是你每问一句，系统当场判一次，觉得不对就当场拒；现在是让正经工作先跑起来，少打断，代价是被标记的活动要留下数据备查。</p>
+
+    <p>拦你的那一刻，从提问时挪到了事后。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="护栏没有拆，它从提问那一刻的实时拦截，换成了进门核验加事后留档。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">护栏没有拆，它从提问那一刻的实时拦截，换成了进门核验加事后留档。</figcaption></figure><br></div></p>
+
+    <p>这不是解禁，是登记。你换到的东西是"少被打断"，你付出的东西是"留下记录"。判断你是好人还是坏人这件事本身没有消失，也没有变简单，它只是从模型手里转交给了核验流程和事后审计——从一个当场猜你动机的分类器，换成了一张你填过的表格加一份可回溯的日志。</p>
+
+    <p>这不是 Anthropic 一家的选择。OpenAI 今年 4 月推 GPT-Rosalind 的时候，结构几乎一模一样：面向生命科学的专用模型，只给签了企业协议的合格机构，走 trusted-access 通道，通过审核的客户拿到的是"限制更少的版本"，审核时看的是生物安全和安保控制这类治理指标。两家头部公司在半年内各自走到了同一个设计上，这种默契通常意味着，这不是谁的偏好，是这条路上剩下的唯一可行解。</p>
+
+    <p>可行解不等于好解。回头看那五个案例——他们绕过的恰恰是按地区封锁的访问限制，和以说辞伪装研究目的。这两手在门禁模式下一点没过时：地区限制变成了机构归属，研究目的伪装变成了申请材料里的项目描述。区别只在于，以前伪装一次骗过一次提问，现在伪装一次骗到一整套宽松策略的长期访问权。攻击面没有消失，它从对话框挪到了核验台，而核验台这边至今没人公布过通过率、驳回理由、复核机制，这些标准是私营公司自己定的，不公开，也不可申诉。</p>
+
+    <p>这件事最诚实的一句话，还是 Anthropic 自己在 9 月 10 日那份报告里写的：它无法确定那五个人是否有意造成伤害。门禁模式的意思是，从今往后它也不必在提问的那一刻确定了。它只需要知道你是谁，然后把账记着。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>护栏没有变松，它换了位置。判断你是好人还是坏人这件事没有消失，只是从一个当场猜你动机的分类器，转交给了一张你填过的表格加一份可回溯的日志。</p>
+    <p>那五个人绕过的是地区限制和目的伪装，这两手在门禁模式下一点没过时——只是从骗过一次提问，变成骗到一整套宽松策略的长期访问权。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/threat-intelligence-report-september-2026" target="_blank" rel="noopener">[Anthropic：Detecting and countering misuse of AI: September 2026（2026-09-10）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/news/life-sciences-verification-program" target="_blank" rel="noopener">[Anthropic：Introducing the Life Sciences Verification Program（2026-09-17）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/research/claude-uplifts-biomolecular-modeling" target="_blank" rel="noopener">[Anthropic：How Claude is uplifting biomolecular modeling（2026-09-17）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.anthropic.com/research/Claude-accelerates-protein-design" target="_blank" rel="noopener">[Anthropic：Claude accelerates protein design and analytical chemistry](</a> )</div>
+      <div class="footer-source-item"><a href="https://arxiv.org/abs/2605.21545" target="_blank" rel="noopener">[RefusalBench: Why Refusal Rate Misranks Frontier LLMs on Biological Research Prompts, arXiv:2605.21545](</a> )</div>
+      <div class="footer-source-item"><a href="https://github.com/AppliedScientific/refusalbench" target="_blank" rel="noopener">[RefusalBench 开源仓库（19 模型 / 141 题 / 13389 次判定）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.cnbc.com/2026/09/18/anthropic-quietly-sets-up-biology-lab-as-it-ramps-ai-drug-program-report.html" target="_blank" rel="noopener">[路透社（经 CNBC 转载）：Anthropic quietly sets up biology lab as it ramps AI drug program（2026-09-18）](</a> )</div>
+      <div class="footer-source-item"><a href="https://openai.com/index/introducing-gpt-rosalind/" target="_blank" rel="noopener">[OpenAI：Introducing GPT-Rosalind for life sciences research](</a> )</div>
+      <div class="footer-source-item"><a href="https://help.openai.com/en/articles/11826767-life-science-research-special-access-program" target="_blank" rel="noopener">[OpenAI Help Center：Life Science Research Special Access Program](</a> )</div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
