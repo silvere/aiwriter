@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>四家 AI 公司说好一起踩刹车，第六天被自己的付费用户告了——同一套说辞，1978 年一群工程师试过，输了</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 与监管</span>
+  <h1>四家 AI 公司说好一起踩刹车，第六天被自己的付费用户告了——同一套说辞，1978 年一群工程师试过，输了</h1>
+  <div class="hero-meta">
+    <span>2026-09-19</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">9 月 12 日他们公开约定一起给前沿调速，9 月 18 日状纸递到旧金山。原告不是竞争对手，是这四家的付费订户。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、那篇文章里藏着一句求饶</h2>
+
+    <p>《We Must Pace the Frontier》给了三级方案：第一级，让独立的外部评估员嵌进前沿实验室，拿接近员工的访问权限；第二级，民主国家的前沿实验室之间做协同；第三级，谈成有政府背书的国际限制。</p>
+
+    <p>第二级是要命的那级。Amodei 自己在文里写明，这类安全对话需要美国政府给一个窄口径的反垄断豁免，否则会撞上《谢尔曼法》。</p>
+
+    <p>他为什么急成这样，文章里也写了：一个能力更强、但对齐程度和今天差不多的 agent 集群，六到十二个月内就可能"有能力用一个持久化僵尸网络接管整个互联网"，造成数千亿美元的损失。</p>
+
+    <p>这套逻辑本身没毛病。问题出在它的法律形态上。</p>
+
+    <p>一家公司自己决定把产品往后推，推不推法律不管。几家公司互相打个招呼说咱们都慢点，这个招呼在反垄断法里有专门的名字，叫合意。合意不看动机，看效果——你们是不是一起减少了产出。</p>
+
+    <p>所以 9 月 12 日那天真正发生的事，在法律上长这样：一家公司在公开场合提出减产方案，另外三家在同一天公开表示同意。这四句话加在一起，构成一份写在互联网上的、带时间戳的、任何人都能截图的书面记录。</p>
+
+    <p>再往前六天，9 月 6 日，OpenAI 首席科学家 Jakub Pachocki 发过一篇《An Alien Mind》，把"前沿开发者协同放慢后续开发"列为手上的主要选项之一。也是在那之后，OpenAI 跑去问国会议员：这事儿到底犯不犯法。</p>
+
+    <p>先问合不合法，再公开答应下来。顺序反了。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_01.png" alt="四家公司在 9 月 12 日同一天公开附议，第六天就收到了集体诉讼状。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">四家公司在 9 月 12 日同一天公开附议，第六天就收到了集体诉讼状。</figcaption></figure>
+
+    <h2>二、原告说，我花钱买的会员缩水了</h2>
+
+    <p>案子叫 Buist v. Anthropic PBC，递到加州北区联邦地区法院旧金山分庭。</p>
+
+    <p>四个原告：佛罗里达的 Charles Buist 和 Nick Spetsas，加州的 Cheyenne Hunt 和 Christine Bullock。前三位各自订了 Claude、ChatGPT、Grok 和 Gemini，Bullock 订的是 Claude。他们要求代表全美所有付费订户组成集体。</p>
+
+    <p>诉因是《谢尔曼法》第一条。那条法律的原文短得吓人：任何限制贸易的契约、以托拉斯形式或其他形式的联合、或者共谋，一律违法。它没有写"除非出于善意"，也没有写"除非是为了人类存续"。</p>
+
+    <p>原告的伤害理论不绕弯：你们的订阅费卖的是"能用到最强的模型"和"模型会持续变强"。现在你们约定让模型变强的速度慢下来，价格没动，那就是同价降质。而在反垄断法里，约定降低产品质量和改进速度，等于约定限制产出。</p>
+
+    <p>这个理论能不能站住，法院说了算，胜算也未必高——公开表态算不算"达成协议"，是这类案子最难过的一关。但被告席上坐着四家公司，而它们要花的每一笔律师费、要交出的每一份内部邮件、要接受的每一次取证，都不等判决结果。</p>
+
+    <p>原告律师 Nick Rowley 的说法更值得玩味。他没有站到加速主义那边，他说的是：关于危险技术的决定应当接受透明的政府监督和公共问责，起诉是为了防止 AI 公司之间私下的自利协议导致 AI"迅速脱离人类控制"，人类在面对灭绝级威胁时值得拿到铁板钉钉的保障。</p>
+
+    <p>翻过来的意思是：我不反对减速，我反对这四家关起门来自己决定减不减速。</p>
+
+    <p>两边都在说安全。分歧不在要不要刹车，在刹车踏板归谁。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_02.png" alt="原告和被告都自称站在安全这一边，分歧在于谁有权替所有人决定减速。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">原告和被告都自称站在安全这一边，分歧在于谁有权替所有人决定减速。</figcaption></figure>
+
+    <h2>三、1978 年，一群工程师用过同一套说辞</h2>
+
+    <p>安全能不能当成反垄断的抗辩理由，美国最高法院答过，答案是不能。</p>
+
+    <p>1978 年的 National Society of Professional Engineers v. United States，判例号 435 U.S. 679。全美专业工程师协会的伦理规范里有一条，禁止会员在被选定之前向客户报价，实际效果是取消了工程服务市场的竞标。司法部按《谢尔曼法》第一条起诉。</p>
+
+    <p>协会的抗辩是这样的：工程这行不能靠压价竞争，压价会做出劣质工程，劣质工程会塌，会死人。所以这条禁止竞标的规矩是为了公共安全，应当在合理原则下被放行——合理原则是反垄断分析的常规标准，问的是一项限制到底在促进竞争还是压制竞争。</p>
+
+    <p>1978 年 1 月 18 日辩论，4 月 25 日宣判。Stevens 大法官执笔，写了一句后来被引了半个世纪的话：合理原则，不支持一种建立在"竞争本身不合理"这个假设之上的抗辩。</p>
+
+    <p>同一份判决里还有更贴今天这件事的一句：市场竞争是配置资源的最佳方式，这个假设所承认的是，一桩交易的所有要素——质量、服务、安全、耐久，而不只是眼下的价格——都会因为可以自由地在不同报价之间挑选而变好。</p>
+
+    <p>安全，写在那份清单里。</p>
+
+    <p>法律的立场就此写死了：安全不是竞争的例外项，安全本身就是竞争的产出物之一。你不能拿"我们担心不安全"去申请一张停止竞争的许可证，因为在这部法律的世界观里，竞争才是生产安全的那台机器。</p>
+
+    <p>这套法理对今天这四家的杀伤力在于，它把问题直接顶了回去：如果安全是可以竞争的，那你们为什么不去竞争谁更安全，而要商量谁都别跑太快？</p>
+
+    <p>1978 年那个案子禁的是报价，不是限制产出，事实形态和今天差着十万八千里。但被告方那年立下的不是事实模板，是抗辩法理——"竞争在我们这行会害死人"这个句式，法院 48 年前就当庭驳掉了。今天没有一位 AI 公司的律师能绕开它。</p>
+
+    <h2>四、离今天最近的那个案子，已经有人付过钱了</h2>
+
+    <p>想知道这条路的实际成本，不用翻 1978 年，翻 2024 年就够。</p>
+
+    <p>2024 年 11 月，得克萨斯州牵头的十一位州总检察长，在得州东区联邦法院告了贝莱德、先锋和道富，理由是这三家通过气候联盟协同压减煤炭产量，构成《克莱顿法》第七条和《谢尔曼法》第一条的违法行为。起诉状拿出来的证据是价和量：2019 到 2022 年，煤炭产量下降 18% 到 29%，价格上涨 21% 到 25%。</p>
+
+    <p>被告的动机在公开场合从来不是秘密，是减碳。</p>
+
+    <p>2025 年 8 月 1 日，Kernodle 法官驳回了被告的大部分驳回动议，案子进入取证阶段。2026 年 2 月 26 日，先锋和解，代价是代理投票机制改革外加 2950 万美元。贝莱德和道富还在打。</p>
+
+    <p>把这两个案子的骨架并排摆一下，会发现它们是同一张图纸：几个占据市场大头的竞争者，为了一个在公共舆论里评价很高的目标，协同减少某样东西的产出，最后由买单的消费者站出来主张自己被多收了钱，或者拿到了更差的东西。</p>
+
+    <p>减碳换成防 AI 失控，煤炭产量换成模型能力，电价换成订阅费。剩下的部分一个字都不用改。</p>
+
+    <figure style="margin:32px 0;text-align:center"><img src="images/illus_03.png" alt="把煤炭案的三个位置替换掉，就是今天这桩 AI 案——先锋为此付了 2950 万美元。" style="max-width:100%;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.08)"><figcaption style="font-size:13px;color:#888;margin-top:10px;line-height:1.5">把煤炭案的三个位置替换掉，就是今天这桩 AI 案——先锋为此付了 2950 万美元。</figcaption></figure>
+
+    <p>"我们动机是好的"在这套图纸里的战绩是：没拦住起诉，没拦住取证，没拦住支票。</p>
+
+    <p>监管这边的情况更尴尬。2024 年 12 月，司法部把 2000 年那版《竞争者协作反垄断指南》撤了；2026 年 2 月 23 日，司法部和联邦贸易委员会一起发出征求意见通知，要写新的指南，4 月 24 日截止。到现在，新指南没出来。旧的撤了，新的没来，中间这段空档，企业只能自己猜。</p>
+
+    <p>猜的结果是两家执法机构自己也没对齐。9 月 15 日，FTC 主席 Ferguson 对"一边要监管一边要豁免"的 AI 公司表达了怀疑，担心几家最大的公司一旦拿到协同制定安全标准的许可，标准最后会变成锁死小公司的门槛。9 月 18 日，司法部三号职位 Associate Attorney General Stanley Woodward 说，AI 公司在网络安全风险上的协同不会触发反垄断问题。</p>
+
+    <p>同一个星期，一个说别想，一个说可以，法院收到了状纸。</p>
+
+    <h2>五、真正的开关在国会，编号 S.5105</h2>
+
+    <p>美国法律体系里，能给反垄断开口子的只有国会。法院从来不给，行政部门只能表态不能立法。所以判断这件事往哪走，看的不是 CEO 发了什么文章，是一个法案编号。</p>
+
+    <p>2026 年 7 月 23 日，参议员 Jim Banks 和 Adam Schiff、众议员 Bob Latta 和 George Whitesides，两党两院同时提出《Collaboration on Adversarial Threats and Security Risks Act》，参议院编号 S.5105，众议院编号 H.R.9914。法案内容是一个窄口径的反垄断安全港：允许 AI 公司为应对特定的国家安全风险，善意地共享威胁情报、协同防御措施，同时明确保留对价格操纵、垄断化等行为的既有追责。</p>
+
+    <p>读一遍这个安全港覆盖的范围，再回去读 Amodei 那三级方案，会发现它们只在开头一小段重合。</p>
+
+    <p>安全港放行的是共享威胁情报和防御措施——你发现了一个针对模型权重的入侵手法，可以告诉同行；你们可以一起建一套防泄露的机制。Woodward 那天说的也是这个范围，cybersecurity。全是防御侧。</p>
+
+    <p>Amodei 的第二级要的不是这个。他要的是几家公司坐下来约定，把能力提升的速度一起压住。这属于产品路线图，属于产出，不在任何一张现行或者在审的安全港名单上。</p>
+
+    <p>所以这件事此刻的真实状态可以写成一句话：防御可以一起做，速度不许一起定。</p>
+
+    <p>这也是为什么，接下来该盯的东西不是哪位 CEO 又发了什么长文，是 S.5105 和 H.R.9914 走到了哪一步——有没有出委员会，有没有人提修正案，把"能力节奏"塞进安全港的定义里。在那个词被写进法条之前，每一次"我们说好一起慢下来"的公开表态，都是在免费给原告律师增加一页证据。</p>
+
+    <p>Amodei 在文章里说，留给防住那个能接管互联网的 agent 集群的时间，是六到十二个月。</p>
+
+    <p>国会给一个法案排期，通常要更久。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>防御可以一起做，速度不许一起定——这是《谢尔曼法》眼下给出的全部空间。</p>
+    <p>该盯的不是哪位 CEO 又发了长文，是 S.5105 和 H.R.9914 走到了哪一步。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://darioamodei.com/post/we-must-pace-the-frontier" target="_blank" rel="noopener">[Dario Amodei：We Must Pace the Frontier（2026-09-12）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.axios.com/2026/09/12/anthropic-ai-amodei-pacing" target="_blank" rel="noopener">[Axios：Anthropic, OpenAI CEOs call for slowdown in AI development（2026-09-12）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.cbsnews.com/news/ai-slowdown-lawsuit-openai-anthropic-google/" target="_blank" rel="noopener">[CBS News：Lawsuit says Anthropic, OpenAI, SpaceXAI and Google made illegal agreement on AI slowdown（2026-09-19）](</a> )</div>
+      <div class="footer-source-item"><a href="https://thehill.com/policy/technology/6099571-lawsuit-accuses-anthropic-openai-spacexai-google-of-ai-pacing-collusion/" target="_blank" rel="noopener">[The Hill：Lawsuit accuses Anthropic, OpenAI, SpaceXAI, Google of AI pacing 'collusion'](</a> )</div>
+      <div class="footer-source-item"><a href="https://decrypt.co/377990/openai-congress-ai-slowdown-legal" target="_blank" rel="noopener">[Decrypt：OpenAI Asks Congress Whether an AI Slowdown Would Be Legal](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.law.cornell.edu/supremecourt/text/435/679" target="_blank" rel="noopener">[National Society of Professional Engineers v. United States, 435 U.S. 679 (1978) 判决全文](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.justice.gov/atr/page/file/1050221/dl?inline=" target="_blank" rel="noopener">[美国司法部反垄断局：U.S. v. National Society of Professional Engineers 最终判令](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.naag.org/multistate-case/texas-et-al-v-blackrock-et-al/" target="_blank" rel="noopener">[Texas et al. v. BlackRock et al. 案件档案（全美总检察长协会）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.texasattorneygeneral.gov/sites/default/files/images/press/Order%20on%20MTD%20-%20Blackrock.pdf" target="_blank" rel="noopener">[得州东区联邦法院：Order on Motion to Dismiss, Texas v. BlackRock（2025-08-01）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.ftc.gov/news-events/news/press-releases/2025/05/ftc-doj-file-statement-interest-energy-collusion-case-against-blackrock-state-street-vanguard" target="_blank" rel="noopener">[FTC 与 DOJ 就 BlackRock/State Street/Vanguard 案提交的利益声明（2025-05）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.congress.gov/bill/119th-congress/senate-bill/5105/text" target="_blank" rel="noopener">[Congress.gov：S.5105 — Collaboration on Adversarial Threats and Security Risks Act 全文](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.congress.gov/bill/119th-congress/house-bill/9914/all-info" target="_blank" rel="noopener">[Congress.gov：H.R.9914 — Collaboration on Adversarial Threats and Security Risks Act](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.banks.senate.gov/news/press-releases/sens-banks-and-schiff-introduce-bill-to-help-american-ai-companies-combat-chinese-espionage/" target="_blank" rel="noopener">[Banks 参议员办公室：法案新闻稿与背景说明](</a> )</div>
+      <div class="footer-source-item"><a href="https://whitesides.house.gov/2026/07/23/sens-schiff-and-banks-reps-latta-and-whitesides-introduce-bipartisan-bill-to-combat-ai-distillation-and-other-attacks-to-national-se/" target="_blank" rel="noopener">[Whitesides 众议员办公室：两党法案联合新闻稿（2026-07-23）](</a> )</div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
