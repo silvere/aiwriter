@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>他 2018 年逼着 AI 学界给论文写「危害自评」，2021 年这条规矩被取消——2023 年他在微软内部又写了一份，上周被法院解封</title>
+  <style>
+    /* ── 设计令牌 ─────────────────────────────── */
+    :root {
+      --brand:      #1A56DB;
+      --brand-dark: #1240a8;
+      --danger:     #F05252;
+      --text:       #1a1a2e;
+      --subtext:    #4a4a6a;
+      --bg:         #f8f9ff;
+      --card:       #ffffff;
+      --border:     #e2e8f0;
+      --accent-bg:  #EBF5FF;
+      --radius:     14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+    }
+
+    /* ── 1. 阅读进度条 ────────────────────────── */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--danger) 100%);
+      z-index: 999;
+      transition: width 80ms linear;
+    }
+
+    /* ── 布局 ─────────────────────────────────── */
+    .wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 60%, #302b63 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      border-radius: 0 0 24px 24px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(240,82,82,.85);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero-meta {
+      font-size: 13px;
+      opacity: .7;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      position: relative;
+    }
+    /* 3. 阅读时长 badge */
+    .read-time {
+      background: rgba(255,255,255,.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+
+    /* ── LEAD（导语）─────────────────────────── */
+    .lead {
+      font-size: 18px;
+      color: var(--subtext);
+      border-left: 4px solid var(--brand);
+      padding: 16px 20px;
+      background: var(--accent-bg);
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 40px;
+      line-height: 1.9;
+    }
+
+    /* ── 正文 ─────────────────────────────────── */
+    .article-body h1 { display: none; }
+    .article-body h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 52px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--brand);
+      position: relative;
+    }
+    .article-body h2::before {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 48px; height: 3px;
+      background: var(--danger);
+    }
+    .article-body p { font-size: 16.5px; margin-bottom: 18px; }
+    .article-body strong { font-weight: 700; }
+    .article-body hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+    .article-body ol, .article-body ul { padding-left: 24px; margin: 16px 0 20px; }
+    .article-body li { margin-bottom: 8px; font-size: 16.5px; }
+    .article-body code {
+      background: #f0f4ff;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: "SF Mono", Consolas, monospace;
+      color: var(--brand-dark);
+    }
+
+    /* 引用块 */
+    .article-body blockquote {
+      border-left: 4px solid var(--brand);
+      background: var(--accent-bg);
+      padding: 16px 20px;
+      margin: 24px 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body blockquote p {
+      margin: 0;
+      font-size: 16px;
+      font-style: italic;
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* 4. 图片统一样式 */
+    .article-body figure,
+    figure {
+      margin: 32px 0;
+      text-align: center;
+    }
+    .article-body figure img,
+    figure img,
+    .article-body img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      display: block;
+      margin: 0 auto;
+    }
+    figcaption {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* ── 数据卡 ───────────────────────────────── */
+    .stat-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 32px 0;
+      box-shadow: 0 4px 20px rgba(26,86,219,.06);
+    }
+    .stat-box h3 {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 20px;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 20px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--danger);
+      display: block;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label { font-size: 13px; color: var(--subtext); line-height: 1.4; }
+
+    /* ── Callout（蓝色高亮框）─────────────────── */
+    .callout {
+      background: linear-gradient(135deg, #1A56DB, #302b63);
+      color: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin: 36px 0;
+    }
+    .callout p { font-size: 17px; font-weight: 600; line-height: 1.7; margin: 0; color: #fff; }
+
+    /* ── 警告框 ───────────────────────────────── */
+    .warning-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-left: 4px solid var(--danger);
+      border-radius: 0 12px 12px 0;
+      padding: 20px 24px;
+      margin: 28px 0;
+    }
+    .warning-box p { margin: 0; color: #c53030; font-weight: 600; }
+
+    /* ── 占位符（写作中临时用）────────────────── */
+    .img-placeholder {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 32px 20px;
+      margin: 32px 0;
+      text-align: center;
+      background: var(--card);
+    }
+    .img-placeholder.concept { border-color: #93c5fd; background: #eff6ff; }
+    .img-placeholder.diagram { border-color: #6ee7b7; background: #ecfdf5; }
+    .img-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+    .img-placeholder-label { font-size: 13px; color: var(--subtext); margin-bottom: 8px; }
+    .img-placeholder details summary {
+      font-size: 12px; color: var(--subtext); cursor: pointer;
+    }
+    .img-placeholder pre {
+      font-size: 11px; color: var(--subtext);
+      white-space: pre-wrap; text-align: left;
+      margin-top: 8px; padding: 10px;
+      background: rgba(0,0,0,.04); border-radius: 6px;
+    }
+
+    /* ── 5a. 结论高亮卡 ───────────────────────── */
+    .conclusion-card {
+      background: linear-gradient(135deg, #0f0c29 0%, #1A56DB 100%);
+      color: #fff;
+      border-radius: 18px;
+      padding: 36px 40px;
+      margin: 56px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .conclusion-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .conclusion-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .6;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .conclusion-card p {
+      font-size: 17px;
+      font-weight: 600;
+      line-height: 1.75;
+      margin-bottom: 12px;
+      color: #fff;
+      position: relative;
+    }
+    .conclusion-card p:last-child { margin-bottom: 0; }
+
+    /* ── 5b. 返回顶部按钮 ─────────────────────── */
+    #back-to-top {
+      display: none;
+      position: fixed;
+      bottom: 32px; right: 24px;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px; height: 44px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(26,86,219,.35);
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      line-height: 44px;
+      text-align: center;
+    }
+    #back-to-top:hover { transform: translateY(-3px); }
+
+    /* ── 来源 footer ─────────────────────────── */
+    .footer {
+      margin-top: 40px;
+      padding: 24px 28px;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .footer-sources { font-size: 13px; color: var(--subtext); line-height: 1.7; }
+    .footer-sources strong { color: var(--text); display: block; margin-bottom: 10px; font-size: 14px; }
+    .footer-sources a { color: var(--brand); text-decoration: none; word-break: break-word; }
+    .footer-sources a:hover { text-decoration: underline; }
+    .footer-source-item {
+      padding: 6px 0 6px 18px;
+      position: relative;
+      border-bottom: 1px dashed #eef2f7;
+    }
+    .footer-source-item:last-child { border-bottom: none; }
+    .footer-source-item::before {
+      content: "·";
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    /* ── 响应式 ───────────────────────────────── */
+    @media (max-width: 600px) {
+      .hero { padding: 40px 20px 36px; }
+      .hero h1 { font-size: 22px; }
+      .key-insights { padding: 18px 18px; }
+      .conclusion-card { padding: 28px 22px; }
+      .stat-box { padding: 20px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 1. 阅读进度条 -->
+<div id="progress-bar"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">AI 与版权</span>
+  <h1>他 2018 年逼着 AI 学界给论文写「危害自评」，2021 年这条规矩被取消——2023 年他在微软内部又写了一份，上周被法院解封</h1>
+  <div class="hero-meta">
+    <span>2026-09-21</span>
+    <!-- 3. 阅读时长（JS 自动计算） -->
+    <span class="read-time" id="read-time">计算中…</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- 导语 -->
+  <div class="lead">9 月 17 日解封的法庭文件里，被引用最多的是一句「人类历史上规模最大的劳动盗窃」。写这句话的人叫 Brent Hecht，微软应用科学总监——他也是当年说服整个机器学习学界、给每篇论文都加上危害自评的那个人。</div>
+
+  <!-- 正文 -->
+  <div class="article-body" id="article-body">
+
+    <!-- BODY_START -->
+    <h2>一、金句被引爆，那张图没人看</h2>
+
+    <p>先把文件说清楚。2026 年 9 月 17 日，纽约南区法院解封了一批此前被大面积涂黑的文件。文件本身是"新闻方原告"——《纽约时报》、《纽约每日新闻》、调查报道中心——向 Sidney Stein 法官提交的简易判决联合意见书的未删节版本。案子是 2023 年 12 月立的，到现在快三年。</p>
+
+    <p>意见书里引的，是微软和 OpenAI 员工的内部通信和高管证词。媒体挑出来做标题的有这么几条：</p>
+
+    <p>Brent Hecht 在 2023 年 1 月的一份内部备忘录里，把用未授权内容做训练这件事称为"一场规模空前的、令人震惊的盗窃"，另一处写的是"人类历史上规模最大的劳动盗窃"。OpenAI 的 ChatGPT 负责人 Nick Turley 在 2023 年 6 月写下"生存威胁"，2024 年 2 月又补了一句，说公司的产品"在很大程度上具有替代性，句号"，而且"会随着变好而越来越具有替代性"。还有一段更直白的：OpenAI 研究员 Nick Ryder 告诉 Greg Brockman，自己找到了"一个绕过纽约时报付费墙的窍门"，Brockman 回了两个字，"啊，不错"。</p>
+
+    <p>这些话很好传播。中文互联网这几天转的基本也是这几句，腾讯新闻、新浪财经、凤凰网，标题里轮流出现"劳动窃取""认了""早知道"。</p>
+
+    <p>但这批文件里真正硬的东西不是金句，是 Hecht 在 2024 年 1 月那份内部演示文稿里的一组测量数据：微软自家的 Copilot 答案引擎，让 nytimes.com 这个域名的点击率，相比传统必应搜索下降了八成以上，最高到 93%。Ziff Davis 旗下的域名——IGN、Eurogamer 那一票——是 51% 到 94%。</p>
+
+    <p>这个数字值得单独拎出来对照一下。外部世界关于"AI 摘要吃掉新闻点击"这件事，最权威的公开测量来自皮尤研究中心 2025 年 7 月发布的一项研究：追踪约 900 名美国成年人的真实浏览行为，覆盖 68,879 次谷歌搜索，其中 12,593 次触发了 AI 摘要。结论是，出现 AI 摘要时，用户点击传统结果链接的比例是 8%；没有 AI 摘要时是 15%。点击摘要内部引用链接的比例，1%。</p>
+
+    <p>掉了将近一半。这是过去一年被引用最多的那个数字，出版商拿它去游说，研究者拿它写论文，媒体拿它做标题。而微软内部拿到的数字，是掉九成。</p>
+
+    <div class="img-placeholder understanding" data-caption="同一件事，掌握更精确数字的那一方，是被告。">
+  <div class="img-placeholder-icon">🧩</div>
+  <div class="img-placeholder-label">理解图占位</div>
+  <details><summary>理解图 HTML</summary><pre>
+&lt;div class="illustration"&gt;
+  &lt;div class="kicker"&gt;同一个问题 · 两把尺子&lt;/div&gt;
+  &lt;h2&gt;公开研究量出「掉一半」，微软内部量出「掉九成」&lt;/h2&gt;
+  &lt;div class="sub"&gt;点击留存率 ＝ AI 答案出现之后，原本会发生的点击还剩下多少&lt;/div&gt;
+  &lt;div class="row" style="align-items:center;gap:52px;margin-top:34px"&gt;
+    &lt;div class="bignum" style="color:#E0792B"&gt;7&lt;small&gt;%&lt;/small&gt;&lt;/div&gt;
+    &lt;div style="flex:1"&gt;
+      &lt;div style="font-size:17px;color:#717584;margin-bottom:10px"&gt;皮尤研究中心 · 2025 年 7 月 · 公开发表&lt;/div&gt;
+      &lt;div class="proportion"&gt;
+        &lt;div class="seg" style="width:53%;background:#9AA4B2"&gt;留存 53%&lt;/div&gt;
+        &lt;div class="seg" style="width:47%;background:#F0ECE4"&gt;&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div style="font-size:17px;color:#717584;margin:26px 0 10px"&gt;微软内部演示文稿 · 2024 年 1 月 · 密封至今年 9 月&lt;/div&gt;
+      &lt;div class="proportion"&gt;
+        &lt;div class="seg" style="width:7%;background:#E0792B"&gt;&lt;/div&gt;
+        &lt;div class="seg" style="width:93%;background:#F0ECE4"&gt;留存低至 7%&lt;/div&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+  &lt;div class="punch"&gt;关于「AI 吃掉了多少新闻点击」，&lt;b&gt;数字最精确的一方是被告&lt;/b&gt;&lt;/div&gt;
+&lt;/div&gt;
+</pre></details>
+</div>
+
+    <h2>二、为什么该看那个数字，而不是那句金句</h2>
+
+    <p>金句是可以被消解的，而且已经被消解了。</p>
+
+    <p>Hecht 的话见报当天，微软发言人的回应是一句标准操作：这些评论反映的是"一名员工的个人看法，不是法律分析，不代表公司立场"。</p>
+
+    <p>这套说辞挑不出毛病。任何一家十万人的公司，内部永远有人写措辞激烈的备忘录，这是大公司正常运转的一部分，不是定罪证据。微软还补了一段，说 Copilot 属于转换性使用，不构成对出版商新闻业务的替代，立场都写在法庭文件里了。</p>
+
+    <p>"个人看法"这四个字能罩住"人类历史上最大规模的劳动盗窃"，因为那确实是一句价值判断，是一个人对一件事的道德定性。你可以说他写得对，也可以说他写得过火。</p>
+
+    <p>罩不住 93%。</p>
+
+    <p>那不是看法。那是用微软自己的产品、自己的服务器日志、自己的对照方法，对自己的流量分发行为做的一次测量。它有基准组（传统必应搜索），有实验组（Copilot 答案引擎），有明确的观测对象（nytimes.com 这个域名），有结果。</p>
+
+    <p>这东西在版权诉讼里的位置很微妙。合理使用抗辩有四个要素，第四个是"对原作品潜在市场的影响"。原告要证明的核心是替代——不是"你抄了我的字"，而是"你让读者不必再来找我"。Turley 那句"在很大程度上具有替代性，句号"是替代的自述，93% 是替代的度量。原告把它们放进同一份意见书，用意不难猜。</p>
+
+    <p>同一批文件里还有一组数字：OpenAI 的中期训练数据集中，包含超过 91,692 份来自《纽约时报》、《每日新闻》和调查报道中心的作品副本。</p>
+
+    <p>这个案子会怎么判，我不知道，Stein 法官 2025 年 4 月那次裁决也没碰合理使用这一层，只是把大部分驳回动议挡了回去，让案子继续走。法律结论不是我要下的。</p>
+
+    <p>我想说的是另一件事：这批数字<strong>不是外部研究者挖出来的，是微软自己做出来的</strong>。有人立了项，有人跑了对照，有人做成 PPT 讲给同事听。公司内部存在一套完整的、运转良好的影响评估机制。</p>
+
+    <p>它算出了准确答案。然后答案进了抽屉，直到一张传票把它撬出来。</p>
+
+    <h2>三、做这份评估的人，是靠"做这份评估"成名的</h2>
+
+    <p>现在说回 Brent Hecht。去微软之前，他在西北大学当副教授，带一个叫 People, Space, and Algorithms 的研究组，拿过美国国家科学基金会的 CAREER 奖，在 CHI、CSCW、ICWSM 这些会上拿过最佳论文。他早期的一批工作，被认为是"算法偏见"这个概念的奠基性研究之一。</p>
+
+    <p>2018 年，他和几位同行在 ACM 的博客上发了一篇东西，标题叫《该做点什么了：通过改变同行评审流程来缓解计算研究的负面影响》。主张很简单：论文投稿时，作者必须自己写清楚这项研究可能带来什么负面社会影响；评审不负责判断影响的好坏，只负责评估作者披露得够不够严谨。</p>
+
+    <p>2020 年，NeurIPS——机器学习最大的那个会——采纳了。那一年所有投稿论文都必须附一段 Broader Impact Statement。</p>
+
+    <p>2021 年，NeurIPS 把这条要求取消了，换成一份勾选清单。</p>
+
+    <p>这件事在学界当时有过一轮讨论，结论大致是：作者写得敷衍，评审不知道怎么评，制度成本高于收益。总之它没活过两届。</p>
+
+    <p>再往后，Hecht 去了微软研究院，职位是应用科学合伙人总监。</p>
+
+    <p>这里有个细节，是这整件事最值得琢磨的地方，而且它不在任何一份密封文件里——它就挂在微软官网上，现在还能打开看。</p>
+
+    <p>微软研究院给 Hecht 写的个人页面上，对他研究方向的描述是：<strong>构建可持续的 AI 内容生态，让 AI 用户、AI 公司、内容和数据生产者三方都受益</strong>。同一页还写着，他曾是 ACM FAccT（负责任 AI 研究的头部会议）创始执行委员会成员，并且"在推动 AI 研究者更深入地思考自身工作的社会影响这一运动中，起到了关键的催化作用"，页面里直接点名了 NeurIPS 的作者们。</p>
+
+    <p>这段话是微软自己写的，公开挂着，用来介绍这位研究员有多重要。</p>
+
+    <p>所以事情是这样的：微软招了一个人，公开宣传他的专长是评估 AI 对内容生态的损害；这个人做了评估，量出了 93%，写了备忘录，做了演示；三年后这份东西被法院解封，微软对它的定性是——</p>
+
+    <p>一名员工的个人看法。</p>
+
+    <h2>四、这套制度死了两次</h2>
+
+    <p>第一次是公开死的。2021 年 NeurIPS 投票取消影响声明，理由体面，过程透明，学界讨论了几轮，大家都知道它没了。</p>
+
+    <p>第二次没人看见。</p>
+
+    <p>Hecht 那份备忘录写于 2023 年 1 月。微软发布"新必应"——内置聊天的那一版，后来改名叫 Copilot——是 2023 年 2 月 7 日。</p>
+
+    <p>写在发布前一个月。</p>
+
+    <p>那份带 93% 的演示文稿是 2024 年 1 月，产品已经跑了将近一年，数据是真实用户的真实行为。他在同一份材料里给这个循环起了名字，叫 doom loop：答案引擎截走点击，出版商收入下滑，原创内容产出减少，而模型下一轮要吃的正是这些内容，最后"同时损害我们模型的表现和整个互联网"。</p>
+
+    <p>他还担心过另一件事，用的词是"意外的掩盖"。</p>
+
+    <p>这些材料从写出来那天起就是密封的。不是被反驳、被否决、被公开争论后搁置，是没有任何一个外部的人知道它们存在，直到 2026 年 9 月 17 日，法院把涂黑的部分去掉。</p>
+
+    <strong>让这份影响声明见光的机制，叫传票。</strong>
+
+    <p>把时间线拉平了看，中间那段更难堪。</p>
+
+    <div class="img-placeholder understanding" data-caption="影响评估的每一步都按时完成了，唯一缺的是让结论影响决策的那一环。">
+  <div class="img-placeholder-icon">🧩</div>
+  <div class="img-placeholder-label">理解图占位</div>
+  <details><summary>理解图 HTML</summary><pre>
+&lt;div class="illustration"&gt;
+  &lt;div class="kicker"&gt;一个人 · 一项制度 · 八年&lt;/div&gt;
+  &lt;h2&gt;他两次写下同一份影响声明，第二次只有法院读到&lt;/h2&gt;
+  &lt;svg viewBox="0 0 1000 300" style="width:100%;margin-top:18px"&gt;
+    &lt;line x1="40" y1="150" x2="960" y2="150" stroke="#D7DCE3" stroke-width="2"/&gt;
+    &lt;circle cx="80" cy="150" r="7" fill="#9AA4B2"/&gt;
+    &lt;text x="80" y="128" text-anchor="middle" font-size="19" fill="#22242B"&gt;2018&lt;/text&gt;
+    &lt;text x="80" y="186" text-anchor="middle" font-size="16" fill="#717584"&gt;提议论文自曝危害&lt;/text&gt;
+    &lt;circle cx="250" cy="150" r="7" fill="#9AA4B2"/&gt;
+    &lt;text x="250" y="128" text-anchor="middle" font-size="19" fill="#22242B"&gt;2020&lt;/text&gt;
+    &lt;text x="250" y="186" text-anchor="middle" font-size="16" fill="#717584"&gt;NeurIPS 采纳&lt;/text&gt;
+    &lt;circle cx="410" cy="150" r="7" fill="#9AA4B2"/&gt;
+    &lt;text x="410" y="128" text-anchor="middle" font-size="19" fill="#22242B"&gt;2021&lt;/text&gt;
+    &lt;text x="410" y="186" text-anchor="middle" font-size="16" fill="#717584"&gt;NeurIPS 取消&lt;/text&gt;
+    &lt;circle cx="570" cy="150" r="9" fill="#E0792B"/&gt;
+    &lt;text x="570" y="124" text-anchor="middle" font-size="19" fill="#B4560F"&gt;2023.1&lt;/text&gt;
+    &lt;text x="570" y="186" text-anchor="middle" font-size="16" fill="#717584"&gt;内部备忘录（密封）&lt;/text&gt;
+    &lt;circle cx="660" cy="150" r="7" fill="#22242B"/&gt;
+    &lt;text x="663" y="222" text-anchor="middle" font-size="16" fill="#22242B"&gt;2023.2 新必应发布&lt;/text&gt;
+    &lt;line x1="660" y1="150" x2="660" y2="204" stroke="#22242B" stroke-width="1.5"/&gt;
+    &lt;circle cx="800" cy="150" r="9" fill="#E0792B"/&gt;
+    &lt;text x="800" y="124" text-anchor="middle" font-size="19" fill="#B4560F"&gt;2024.1&lt;/text&gt;
+    &lt;text x="800" y="186" text-anchor="middle" font-size="16" fill="#717584"&gt;量出 93%（密封）&lt;/text&gt;
+    &lt;circle cx="940" cy="150" r="9" fill="#E0792B"/&gt;
+    &lt;text x="940" y="124" text-anchor="middle" font-size="19" fill="#B4560F"&gt;2026.9&lt;/text&gt;
+    &lt;text x="935" y="186" text-anchor="middle" font-size="16" fill="#717584"&gt;法院解封&lt;/text&gt;
+  &lt;/svg&gt;
+  &lt;div class="punch"&gt;评估、测量、成文，一步没少——&lt;b&gt;缺的是让结论碰到决策的那一环&lt;/b&gt;&lt;/div&gt;
+&lt;/div&gt;
+</pre></details>
+</div>
+
+    <p>Hecht 写下"规模空前的盗窃"是 2023 年 1 月，Turley 写下"生存威胁"是 2023 年 6 月。</p>
+
+    <p>而 OpenAI 和出版商签授权协议的时间，按公开报道：美联社 2023 年 7 月，阿克塞尔·施普林格 2023 年 12 月，《金融时报》2024 年 4 月，新闻集团 2024 年 5 月，康泰纳仕 2024 年 8 月。</p>
+
+    <p>两份内部判断，都早于所有这些协议。这一点很要紧，因为它把"公司没想到"这个解释彻底堵死了。谈判桌上那一方，口袋里揣着自己人写的"这可能是史上最大规模劳动盗窃"，然后按每年千万美元量级的价格，把风险买断了。（具体金额多为媒体援引知情人士的估算，双方基本都没在正式文件里确认过，这本身也挺说明问题。）</p>
+
+    <p>这不是失明，是算过账，算完了觉得这个价格能接受。</p>
+
+    <h2>五、所以别再问"做没做过评估"了</h2>
+
+    <p>Hecht 给那个循环起名叫 doom loop，说的是一件在商业上相当反直觉的事：这套打法最后会反噬打它的人。</p>
+
+    <div class="img-placeholder understanding" data-caption="Hecht 警告的循环：答案引擎最终吃掉的是自己下一轮要吃的东西。">
+  <div class="img-placeholder-icon">🧩</div>
+  <div class="img-placeholder-label">理解图占位</div>
+  <details><summary>理解图 HTML</summary><pre>
+&lt;div class="illustration"&gt;
+  &lt;div class="kicker"&gt;DOOM LOOP · 微软内部演示文稿，2024 年 1 月&lt;/div&gt;
+  &lt;h2&gt;截流截到最后，断的是自己的粮&lt;/h2&gt;
+  &lt;svg viewBox="0 0 1000 470" style="width:100%;margin-top:6px"&gt;
+    &lt;defs&gt;
+      &lt;marker id="ah" markerWidth="11" markerHeight="11" refX="8" refY="4" orient="auto"&gt;
+        &lt;path d="M0,0 L9,4 L0,8 Z" fill="#E0792B"/&gt;
+      &lt;/marker&gt;
+    &lt;/defs&gt;
+    &lt;path d="M 500,75 A 160,160 0 0 1 655,215" fill="none" stroke="#E0792B" stroke-width="2.5" marker-end="url(#ah)"/&gt;
+    &lt;path d="M 660,250 A 160,160 0 0 1 505,388" fill="none" stroke="#E0792B" stroke-width="2.5" marker-end="url(#ah)"/&gt;
+    &lt;path d="M 495,388 A 160,160 0 0 1 340,250" fill="none" stroke="#E0792B" stroke-width="2.5" marker-end="url(#ah)"/&gt;
+    &lt;path d="M 340,215 A 160,160 0 0 1 495,75" fill="none" stroke="#E0792B" stroke-width="2.5" marker-end="url(#ah)"/&gt;
+    &lt;rect x="352" y="14" width="296" height="62" rx="10" fill="#FFFFFF" stroke="#D7DCE3"/&gt;
+    &lt;text x="500" y="41" text-anchor="middle" font-size="19" fill="#22242B"&gt;答案引擎直接给出答案&lt;/text&gt;
+    &lt;text x="500" y="64" text-anchor="middle" font-size="16" fill="#717584"&gt;用户不必再点进原文&lt;/text&gt;
+    &lt;rect x="654" y="202" width="300" height="62" rx="10" fill="#FFFFFF" stroke="#D7DCE3"/&gt;
+    &lt;text x="804" y="229" text-anchor="middle" font-size="19" fill="#22242B"&gt;出版商点击与收入下滑&lt;/text&gt;
+    &lt;text x="804" y="252" text-anchor="middle" font-size="16" fill="#B4560F"&gt;nytimes.com 最高降 93%&lt;/text&gt;
+    &lt;rect x="352" y="388" width="296" height="62" rx="10" fill="#FFFFFF" stroke="#D7DCE3"/&gt;
+    &lt;text x="500" y="415" text-anchor="middle" font-size="19" fill="#22242B"&gt;原创报道产出减少&lt;/text&gt;
+    &lt;text x="500" y="438" text-anchor="middle" font-size="16" fill="#717584"&gt;养不起记者，就没有新稿子&lt;/text&gt;
+    &lt;rect x="46" y="202" width="300" height="62" rx="10" fill="#FFFFFF" stroke="#D7DCE3"/&gt;
+    &lt;text x="196" y="229" text-anchor="middle" font-size="19" fill="#22242B"&gt;下一轮训练没东西可吃&lt;/text&gt;
+    &lt;text x="196" y="252" text-anchor="middle" font-size="16" fill="#717584"&gt;模型质量跟着退&lt;/text&gt;
+  &lt;/svg&gt;
+  &lt;div class="punch"&gt;他的原话：这会&lt;b&gt;同时损害我们模型的表现和整个互联网&lt;/b&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+    <p>出版商这一头，现在的账是这么算的。《纽约时报》公司 2026 年第二季度的数字：订阅总数约 1335 万，其中纯数字订阅约 1280 万，比上一季度净增约 28 万。看着不像一家正在被杀死的公司。但同一份财报里，"联盟营销、授权及其他"收入同比增长 510 万美元、7.1%，公司自己给的解释是，增长主要来自 Wirecutter 的联盟推荐收入。</p>
+
+    <p>也就是说，在报表口径上，把这家公司托起来的不是 AI 授权费，是它的好物推荐页面在抽佣。</p>
+
+    <p>至于 AI 内容该值多少钱，目前唯一给出过明确数字的不是谈判桌，是法院：Bartz 诉 Anthropic 案，15 亿美元和解，2026 年 7 月 20 日获终审批准，美国史上最大的版权集体诉讼和解。</p>
+
+    <p>过去两年，"我们做了 AI 影响评估"已经变成一句标配的公关话术，每家公司都在说，红队、对齐、伦理委员会、负责任 AI 原则，PDF 出了一份又一份。而这批解封文件给出的，恰恰是这套说辞最尴尬的一个反例——微软的评估不但做了，还做得比外面所有公开研究都准，结论写得比原告的律师还狠。</p>
+
+    <p>评估没有失灵。评估环节是全流程里唯一正常工作的那一环。</p>
+
+    <p>失灵的是它后面接的东西：没有任何机制规定，这个结论必须被谁看到、必须在哪个会上被讨论、能不能拦住哪怕一次发布。它写完了，存档了，然后产品照常在一个月后上线。</p>
+
+    <p>所以下次再有人告诉你他们做了完整的影响评估，那句话基本不含信息量。值得问的是另外三个：评估结论谁有权看，它能否决什么，以及，除了被起诉之外，它有没有第二条见光的路。</p>
+
+    <p>到目前为止，这三个问题的答案分别是：法官、什么都否决不了、没有。</p>
+    <!-- BODY_END -->
+
+  </div><!-- /article-body -->
+
+  <!-- 5a. 结论高亮卡 -->
+  <div class="conclusion-card">
+    <div class="conclusion-card-label">结论</div>
+    <p>评估没有失灵。评估环节是全流程里唯一正常工作的那一环。失灵的是它后面接的东西：没有任何机制规定，这个结论必须被谁看到、必须在哪个会上被讨论、能不能拦住哪怕一次发布。</p>
+    <p>下次再有人说他们做了完整的影响评估，值得问的是另外三个问题：评估结论谁有权看，它能否决什么，除了被起诉之外它有没有第二条见光的路。</p>
+  </div>
+
+  <!-- 来源 footer（每条来源用 <a href="原始URL"> 标注） -->
+  <div class="footer">
+    <div class="footer-sources">
+      <strong>数据来源</strong>
+      <div class="footer-source-item"><a href="https://www.microsoft.com/en-us/research/people/brhecht/" target="_blank" rel="noopener">[Microsoft Research：Brent Hecht 研究员页面（"可持续 AI 内容生态"与 NeurIPS 影响声明运动的表述出处）](</a> )</div>
+      <div class="footer-source-item"><a href="https://techcrunch.com/2026/09/17/microsoft-exec-called-ai-scraping-the-largest-theft-of-labor-in-human-history-new-unredacted-filings-reveal/" target="_blank" rel="noopener">[TechCrunch：Microsoft exec called AI scraping 'the largest theft of labor in human history,' new unredacted filings reveal（2026-09-17）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.washingtonpost.com/business/2026/09/17/microsoft-exec-called-ai-largest-theft-labor-history-court-records-show/" target="_blank" rel="noopener">[The Washington Post：Microsoft exec called AI the 'largest theft of labor' in history, court records show（2026-09-17）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.niemanlab.org/2026/09/an-astonishing-theft-of-unprecedented-proportions-court-records-show-what-microsoft-and-openai-actually-thought-about-ai-training/" target="_blank" rel="noopener">[Nieman Journalism Lab："An astonishing theft of unprecedented proportions": Court records show what Microsoft and OpenAI actually thought about AI training](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.thewrap.com/industry-news/tech/openai-microsoft-ai-replace-news-publishers-court-filing/" target="_blank" rel="noopener">[TheWrap：OpenAI's Head of ChatGPT Warned Publishers Faced an 'Existential Threat' in Unsealed Docs](</a> )</div>
+      <div class="footer-source-item"><a href="https://futurism.com/artificial-intelligence/microsoft-executive-doom-loop" target="_blank" rel="noopener">[Futurism：Microsoft Director Admitted in Internal Document That AI Is Creating a "Doom Loop"](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.pewresearch.org/short-reads/2025/07/22/google-users-are-less-likely-to-click-on-links-when-an-ai-summary-appears-in-the-results/" target="_blank" rel="noopener">[Pew Research Center：Google users are less likely to click on links when an AI summary appears in the results（2025-07-22）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.sec.gov/Archives/edgar/data/0000071691/000007169126000032/pressrelease6302026.htm" target="_blank" rel="noopener">[纽约时报公司 2026 年第二季度业绩新闻稿（SEC EDGAR）](</a> )</div>
+      <div class="footer-source-item"><a href="https://authorsguild.org/news/court-grants-final-approval-anthropic-copyright-settlement/" target="_blank" rel="noopener">[Authors Guild：Court Grants Final Approval of Anthropic Copyright Settlement（Bartz v. Anthropic，15 亿美元）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.researchgate.net/publication/357171302_It's_Time_to_Do_Something_Mitigating_the_Negative_Impacts_of_Computing_Through_a_Change_to_the_Peer_Review_Process" target="_blank" rel="noopener">[Hecht 等：It's Time to Do Something — Mitigating the Negative Impacts of Computing Through a Change to the Peer Review Process（2018）](</a> )</div>
+      <div class="footer-source-item"><a href="https://www.nysd.uscourts.gov/sites/default/files/2025-04/yf%2023cv11195%20OpenAI%20MTD%20opinion%20april%202025.pdf" target="_blank" rel="noopener">[纽约南区法院：NYT v. Microsoft/OpenAI 案 2025 年 4 月驳回动议裁决原文（PDF）](</a> )</div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<!-- 5b. 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<script>
+  // 1. 阅读进度条
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%';
+  }, { passive: true });
+
+  // 3. 阅读时长（中文约 400 字/分钟）
+  const body = document.getElementById('article-body');
+  if (body) {
+    const chars = body.innerText.replace(/\s/g, '').length;
+    const mins  = Math.max(1, Math.round(chars / 400));
+    document.getElementById('read-time').textContent = `约 ${mins} 分钟`;
+  }
+
+  // 5b. 返回顶部按钮（滚动超过 600px 出现）
+  const btn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 600 ? 'block' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+</script>
+
+</body>
+</html>
