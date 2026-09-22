@@ -25,12 +25,33 @@ import argparse
 import hashlib
 import html
 import re
+import os
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
 _HERE = Path(__file__).resolve().parent
+
+
+def _node_env() -> dict:
+    """让 node 能 require 全局安装的 playwright：把全局 node_modules 加进 NODE_PATH。
+
+    与 render_illustration.py 同款：CI 上 playwright 走 `npm install -g`，
+    而 Node 默认不搜索全局目录，不加这一步题图兜底必然 MODULE_NOT_FOUND。
+    """
+    env = dict(os.environ)
+    try:
+        root = subprocess.run(
+            ["npm", "root", "-g"], capture_output=True, text=True, timeout=15
+        ).stdout.strip()
+    except Exception:
+        root = ""
+    if root:
+        existing = env.get("NODE_PATH", "")
+        env["NODE_PATH"] = root + (os.pathsep + existing if existing else "")
+    return env
+
 
 # (背景渐变起, 背景渐变止, 强调色) —— 全部深色底，白字 + 单强调色
 PALETTES = [
@@ -143,7 +164,7 @@ def make(post_dir: Path, title: str, kicker: str, sub: str, foot: str,
 
     cmd = ["node", str(_HERE / "html_to_png.js"), tmp, str(out),
            "--selector", ".cover", "--width", "1536", "--scale", "2"]
-    proc = subprocess.run(cmd, capture_output=True, text=True)
+    proc = subprocess.run(cmd, capture_output=True, text=True, env=_node_env())
     if proc.returncode == 0:
         print(f"saved: {out}")
         return 0
