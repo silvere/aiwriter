@@ -30,33 +30,9 @@ Brent Hecht 在 2023 年 1 月的一份内部备忘录里，把用未授权内�
 
 掉了将近一半。这是过去一年被引用最多的那个数字，出版商拿它去游说，研究者拿它写论文，媒体拿它做标题。而微软内部拿到的数字，是掉九成。
 
-<div class="img-placeholder understanding" data-caption="同一件事，掌握更精确数字的那一方，是被告。">
-  <div class="img-placeholder-icon">🧩</div>
-  <div class="img-placeholder-label">理解图占位</div>
-  <details><summary>理解图 HTML</summary><pre>
-&lt;div class="illustration"&gt;
-  &lt;div class="kicker"&gt;同一个问题 · 两把尺子&lt;/div&gt;
-  &lt;h2&gt;公开研究量出「掉一半」，微软内部量出「掉九成」&lt;/h2&gt;
-  &lt;div class="sub"&gt;点击留存率 ＝ AI 答案出现之后，原本会发生的点击还剩下多少&lt;/div&gt;
-  &lt;div class="row" style="align-items:center;gap:52px;margin-top:34px"&gt;
-    &lt;div class="bignum" style="color:#E0792B"&gt;7&lt;small&gt;%&lt;/small&gt;&lt;/div&gt;
-    &lt;div style="flex:1"&gt;
-      &lt;div style="font-size:17px;color:#717584;margin-bottom:10px"&gt;皮尤研究中心 · 2025 年 7 月 · 公开发表&lt;/div&gt;
-      &lt;div class="proportion"&gt;
-        &lt;div class="seg" style="width:53%;background:#9AA4B2"&gt;留存 53%&lt;/div&gt;
-        &lt;div class="seg" style="width:47%;background:#F0ECE4"&gt;&lt;/div&gt;
-      &lt;/div&gt;
-      &lt;div style="font-size:17px;color:#717584;margin:26px 0 10px"&gt;微软内部演示文稿 · 2024 年 1 月 · 密封至今年 9 月&lt;/div&gt;
-      &lt;div class="proportion"&gt;
-        &lt;div class="seg" style="width:7%;background:#E0792B"&gt;&lt;/div&gt;
-        &lt;div class="seg" style="width:93%;background:#F0ECE4"&gt;留存低至 7%&lt;/div&gt;
-      &lt;/div&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;
-  &lt;div class="punch"&gt;关于「AI 吃掉了多少新闻点击」，&lt;b&gt;数字最精确的一方是被告&lt;/b&gt;&lt;/div&gt;
-&lt;/div&gt;
-</pre></details>
-</div>
+![同一件事，掌握更精确数字的那一方，是被告。](images/illus_01.png)
+
+*同一件事，掌握更精确数字的那一方，是被告。*
 
 ## 二、为什么该看那个数字，而不是那句金句
 
@@ -126,41 +102,9 @@ Hecht 那份备忘录写于 2023 年 1 月。微软发布"新必应"——内置
 
 把时间线拉平了看，中间那段更难堪。
 
-<div class="img-placeholder understanding" data-caption="影响评估的每一步都按时完成了，唯一缺的是让结论影响决策的那一环。">
-  <div class="img-placeholder-icon">🧩</div>
-  <div class="img-placeholder-label">理解图占位</div>
-  <details><summary>理解图 HTML</summary><pre>
-&lt;div class="illustration"&gt;
-  &lt;div class="kicker"&gt;一个人 · 一项制度 · 八年&lt;/div&gt;
-  &lt;h2&gt;他两次写下同一份影响声明，第二次只有法院读到&lt;/h2&gt;
-  &lt;svg viewBox="0 0 1000 300" style="width:100%;margin-top:18px"&gt;
-    &lt;line x1="40" y1="150" x2="960" y2="150" stroke="#D7DCE3" stroke-width="2"/&gt;
-    &lt;circle cx="80" cy="150" r="7" fill="#9AA4B2"/&gt;
-    &lt;text x="80" y="128" text-anchor="middle" font-size="19" fill="#22242B"&gt;2018&lt;/text&gt;
-    &lt;text x="80" y="186" text-anchor="middle" font-size="16" fill="#717584"&gt;提议论文自曝危害&lt;/text&gt;
-    &lt;circle cx="250" cy="150" r="7" fill="#9AA4B2"/&gt;
-    &lt;text x="250" y="128" text-anchor="middle" font-size="19" fill="#22242B"&gt;2020&lt;/text&gt;
-    &lt;text x="250" y="186" text-anchor="middle" font-size="16" fill="#717584"&gt;NeurIPS 采纳&lt;/text&gt;
-    &lt;circle cx="410" cy="150" r="7" fill="#9AA4B2"/&gt;
-    &lt;text x="410" y="128" text-anchor="middle" font-size="19" fill="#22242B"&gt;2021&lt;/text&gt;
-    &lt;text x="410" y="186" text-anchor="middle" font-size="16" fill="#717584"&gt;NeurIPS 取消&lt;/text&gt;
-    &lt;circle cx="570" cy="150" r="9" fill="#E0792B"/&gt;
-    &lt;text x="570" y="124" text-anchor="middle" font-size="19" fill="#B4560F"&gt;2023.1&lt;/text&gt;
-    &lt;text x="570" y="186" text-anchor="middle" font-size="16" fill="#717584"&gt;内部备忘录（密封）&lt;/text&gt;
-    &lt;circle cx="660" cy="150" r="7" fill="#22242B"/&gt;
-    &lt;text x="663" y="222" text-anchor="middle" font-size="16" fill="#22242B"&gt;2023.2 新必应发布&lt;/text&gt;
-    &lt;line x1="660" y1="150" x2="660" y2="204" stroke="#22242B" stroke-width="1.5"/&gt;
-    &lt;circle cx="800" cy="150" r="9" fill="#E0792B"/&gt;
-    &lt;text x="800" y="124" text-anchor="middle" font-size="19" fill="#B4560F"&gt;2024.1&lt;/text&gt;
-    &lt;text x="800" y="186" text-anchor="middle" font-size="16" fill="#717584"&gt;量出 93%（密封）&lt;/text&gt;
-    &lt;circle cx="940" cy="150" r="9" fill="#E0792B"/&gt;
-    &lt;text x="940" y="124" text-anchor="middle" font-size="19" fill="#B4560F"&gt;2026.9&lt;/text&gt;
-    &lt;text x="935" y="186" text-anchor="middle" font-size="16" fill="#717584"&gt;法院解封&lt;/text&gt;
-  &lt;/svg&gt;
-  &lt;div class="punch"&gt;评估、测量、成文，一步没少——&lt;b&gt;缺的是让结论碰到决策的那一环&lt;/b&gt;&lt;/div&gt;
-&lt;/div&gt;
-</pre></details>
-</div>
+![影响评估的每一步都按时完成了，唯一缺的是让结论影响决策的那一环。](images/illus_02.png)
+
+*影响评估的每一步都按时完成了，唯一缺的是让结论影响决策的那一环。*
 
 Hecht 写下"规模空前的盗窃"是 2023 年 1 月，Turley 写下"生存威胁"是 2023 年 6 月。
 
@@ -174,40 +118,9 @@ Hecht 写下"规模空前的盗窃"是 2023 年 1 月，Turley 写下"生存威�
 
 Hecht 给那个循环起名叫 doom loop，说的是一件在商业上相当反直觉的事：这套打法最后会反噬打它的人。
 
-<div class="img-placeholder understanding" data-caption="Hecht 警告的循环：答案引擎最终吃掉的是自己下一轮要吃的东西。">
-  <div class="img-placeholder-icon">🧩</div>
-  <div class="img-placeholder-label">理解图占位</div>
-  <details><summary>理解图 HTML</summary><pre>
-&lt;div class="illustration"&gt;
-  &lt;div class="kicker"&gt;DOOM LOOP · 微软内部演示文稿，2024 年 1 月&lt;/div&gt;
-  &lt;h2&gt;截流截到最后，断的是自己的粮&lt;/h2&gt;
-  &lt;svg viewBox="0 0 1000 470" style="width:100%;margin-top:6px"&gt;
-    &lt;defs&gt;
-      &lt;marker id="ah" markerWidth="11" markerHeight="11" refX="8" refY="4" orient="auto"&gt;
-        &lt;path d="M0,0 L9,4 L0,8 Z" fill="#E0792B"/&gt;
-      &lt;/marker&gt;
-    &lt;/defs&gt;
-    &lt;path d="M 500,75 A 160,160 0 0 1 655,215" fill="none" stroke="#E0792B" stroke-width="2.5" marker-end="url(#ah)"/&gt;
-    &lt;path d="M 660,250 A 160,160 0 0 1 505,388" fill="none" stroke="#E0792B" stroke-width="2.5" marker-end="url(#ah)"/&gt;
-    &lt;path d="M 495,388 A 160,160 0 0 1 340,250" fill="none" stroke="#E0792B" stroke-width="2.5" marker-end="url(#ah)"/&gt;
-    &lt;path d="M 340,215 A 160,160 0 0 1 495,75" fill="none" stroke="#E0792B" stroke-width="2.5" marker-end="url(#ah)"/&gt;
-    &lt;rect x="352" y="14" width="296" height="62" rx="10" fill="#FFFFFF" stroke="#D7DCE3"/&gt;
-    &lt;text x="500" y="41" text-anchor="middle" font-size="19" fill="#22242B"&gt;答案引擎直接给出答案&lt;/text&gt;
-    &lt;text x="500" y="64" text-anchor="middle" font-size="16" fill="#717584"&gt;用户不必再点进原文&lt;/text&gt;
-    &lt;rect x="654" y="202" width="300" height="62" rx="10" fill="#FFFFFF" stroke="#D7DCE3"/&gt;
-    &lt;text x="804" y="229" text-anchor="middle" font-size="19" fill="#22242B"&gt;出版商点击与收入下滑&lt;/text&gt;
-    &lt;text x="804" y="252" text-anchor="middle" font-size="16" fill="#B4560F"&gt;nytimes.com 最高降 93%&lt;/text&gt;
-    &lt;rect x="352" y="388" width="296" height="62" rx="10" fill="#FFFFFF" stroke="#D7DCE3"/&gt;
-    &lt;text x="500" y="415" text-anchor="middle" font-size="19" fill="#22242B"&gt;原创报道产出减少&lt;/text&gt;
-    &lt;text x="500" y="438" text-anchor="middle" font-size="16" fill="#717584"&gt;养不起记者，就没有新稿子&lt;/text&gt;
-    &lt;rect x="46" y="202" width="300" height="62" rx="10" fill="#FFFFFF" stroke="#D7DCE3"/&gt;
-    &lt;text x="196" y="229" text-anchor="middle" font-size="19" fill="#22242B"&gt;下一轮训练没东西可吃&lt;/text&gt;
-    &lt;text x="196" y="252" text-anchor="middle" font-size="16" fill="#717584"&gt;模型质量跟着退&lt;/text&gt;
-  &lt;/svg&gt;
-  &lt;div class="punch"&gt;他的原话：这会&lt;b&gt;同时损害我们模型的表现和整个互联网&lt;/b&gt;&lt;/div&gt;
-&lt;/div&gt;
-</pre></details>
-</div>
+![Hecht 警告的循环：答案引擎最终吃掉的是自己下一轮要吃的东西。](images/illus_03.png)
+
+*Hecht 警告的循环：答案引擎最终吃掉的是自己下一轮要吃的东西。*
 
 出版商这一头，现在的账是这么算的。《纽约时报》公司 2026 年第二季度的数字：订阅总数约 1335 万，其中纯数字订阅约 1280 万，比上一季度净增约 28 万。看着不像一家正在被杀死的公司。但同一份财报里，"联盟营销、授权及其他"收入同比增长 510 万美元、7.1%，公司自己给的解释是，增长主要来自 Wirecutter 的联盟推荐收入。
 
