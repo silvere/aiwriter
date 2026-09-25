@@ -197,9 +197,11 @@ def main():
     body_md   = extract_body(md_text)
     body_html = md_to_html(images_to_figures(body_md))
 
+    # 用 lambda 作替换，避免正文里的反斜杠（如 C:\Windows\Temp\）被当成替换模板的转义序列
+    _body_block = '<!-- BODY_START -->\n    ' + body_html + '\n    <!-- BODY_END -->'
     html = re.sub(
         r'<!-- BODY_START -->.*?<!-- BODY_END -->',
-        '<!-- BODY_START -->\n    ' + body_html + '\n    <!-- BODY_END -->',
+        lambda _m: _body_block,
         html,
         flags=re.DOTALL
     )
@@ -209,7 +211,7 @@ def main():
     if sources_html:
         html = re.sub(
             r'<a href="\{\{SOURCE_URL_1\}\}".*?<!-- 按实际来源数量增减 -->',
-            sources_html,
+            lambda _m: sources_html,
             html,
             flags=re.DOTALL
         )
